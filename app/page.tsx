@@ -18,18 +18,16 @@ export default function Home() {
   const audioChunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll to the bottom of the chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // --- 1. HANDLE TEXT TYPING ---
   const handleSendText = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || isLoading) return;
 
     const userMessage = inputText.trim();
-    setInputText(""); // Clear input box
+    setInputText(""); 
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     
     const formData = new FormData();
@@ -37,7 +35,6 @@ export default function Home() {
     await sendToBackend(formData);
   };
 
-  // --- 2. HANDLE VOICE RECORDING ---
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -75,11 +72,13 @@ export default function Home() {
     }
   };
 
-  // --- 3. COMMUNICATE WITH RENDER BACKEND ---
   const sendToBackend = async (formData: FormData) => {
     setIsLoading(true);
+    
+    // --- NEW: Attach the entire chat history before sending! ---
+    formData.append("history", JSON.stringify(messages));
+
     try {
-      // ⚠️ Make sure this URL matches your Render URL exactly!
       const response = await fetch("https://tibetan-backend.onrender.com/api/chat", {
         method: "POST",
         body: formData,
@@ -88,7 +87,6 @@ export default function Home() {
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
 
-      // If it was voice, replace the "🎙️ [Voice Audio Sent]" with the actual transcribed text!
       if (formData.has("audio")) {
         setMessages((prev) => {
           const updated = [...prev];
@@ -97,10 +95,8 @@ export default function Home() {
         });
       }
 
-      // Add the AI's response to the chat window
       setMessages((prev) => [...prev, { role: "ai", content: data.ai_text }]);
 
-      // Play the Base64 encoded audio natively in the browser
       if (data.audio_base64) {
         const audioUrl = `data:audio/mp3;base64,${data.audio_base64}`;
         const audio = new Audio(audioUrl);
@@ -117,13 +113,11 @@ export default function Home() {
 
   return (
     <main className="flex flex-col h-screen bg-zinc-900 text-white">
-      {/* HEADER */}
       <header className="p-4 bg-zinc-800 shadow-md text-center">
         <h1 className="text-2xl font-bold">🏔️ Tibetan Tutor</h1>
         <p className="text-xs text-zinc-400">Conversational AI Guide</p>
       </header>
 
-      {/* CHAT HISTORY AREA */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.length === 0 && (
           <div className="h-full flex items-center justify-center text-zinc-500">
@@ -134,11 +128,9 @@ export default function Home() {
         {messages.map((msg, index) => (
           <div key={index} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`flex items-start max-w-[80%] gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-              {/* Avatar */}
               <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-indigo-600" : "bg-red-600"}`}>
                 {msg.role === "user" ? <User size={16} /> : <Bot size={16} />}
               </div>
-              {/* Text Bubble */}
               <div className={`p-3 rounded-2xl ${msg.role === "user" ? "bg-indigo-600 rounded-tr-none" : "bg-zinc-800 rounded-tl-none"}`}>
                 <p className="whitespace-pre-wrap leading-relaxed text-sm">{msg.content}</p>
               </div>
@@ -154,10 +146,8 @@ export default function Home() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* BOTTOM INPUT BAR */}
       <div className="p-4 bg-zinc-800">
         <form onSubmit={handleSendText} className="flex items-center gap-2 max-w-4xl mx-auto">
-          {/* Microphone Button */}
           <button
             type="button"
             onClick={isRecording ? stopRecording : startRecording}
@@ -168,8 +158,6 @@ export default function Home() {
           >
             {isRecording ? <Square size={20} className="fill-white" /> : <Mic size={20} />}
           </button>
-
-          {/* Text Input Box */}
           <input
             type="text"
             value={inputText}
@@ -178,8 +166,6 @@ export default function Home() {
             placeholder={isRecording ? "Listening..." : "Type in English or བོད་ཡིག..."}
             className="flex-1 bg-zinc-700 rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
           />
-
-          {/* Send Text Button */}
           <button
             type="submit"
             disabled={!inputText.trim() || isLoading || isRecording}
