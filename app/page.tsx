@@ -262,15 +262,17 @@ export default function Home() {
 
       <div className="p-4 bg-white border-t border-slate-200">
         <form onSubmit={handleSendText} className="flex items-center gap-3 max-w-3xl mx-auto relative">
+          
+          {/* Microphone Button (Strict w-12 h-12 locks the size so it CANNOT shake) */}
           <button
             type="button"
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isLoading || isPlaying}
-            className={`p-3 rounded-full transition-colors duration-200 flex-shrink-0 relative ${
+            className={`w-12 h-12 flex items-center justify-center rounded-full transition-colors duration-200 flex-shrink-0 relative ${
               isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"
             } disabled:opacity-50`}
           >
-            {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50"></span>}
+            {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
             {isRecording ? <Square size={20} className="fill-white text-white" /> : <Mic size={20} className="text-white" />}
           </button>
 
@@ -283,12 +285,13 @@ export default function Home() {
             className="flex-1 bg-slate-100 border border-slate-200 rounded-full px-5 py-3 text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60"
           />
 
+          {/* Send Button (Locked to w-12 h-12 to perfectly match the Mic button) */}
           <button
             type="submit"
             disabled={!inputText.trim() || isLoading || isRecording || isPlaying}
-            className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"
+            className="w-12 h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"
           >
-            <Send size={20} />
+            <Send size={20} className="ml-1" /> {/* ml-1 slightly nudges the paper airplane to look visually centered */}
           </button>
         </form>
       </div>
