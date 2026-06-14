@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, BrainCircuit } from "lucide-react";
 
 type AudioPart = {
   lang: string;
@@ -21,6 +21,9 @@ export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  // NEW: State to track which AI mode the user selected
+  const [aiMode, setAiMode] = useState<"chat" | "study" | "pro">("chat");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -84,6 +87,9 @@ export default function Home() {
     setIsLoading(true);
     const safeHistory = messages.map(m => ({ role: m.role, content: m.content }));
     formData.append("history", JSON.stringify(safeHistory));
+    
+    // NEW: Attach the selected mode to the backend request!
+    formData.append("mode", aiMode);
 
     try {
       const response = await fetch("https://tibetan-backend.onrender.com/api/chat", {
@@ -198,23 +204,50 @@ export default function Home() {
   return (
     <main className="fixed inset-0 flex flex-col bg-slate-50 text-slate-800 font-sans">
       
-      <header className="flex items-center justify-center p-5 bg-white border-b border-slate-200 shadow-sm z-10 shrink-0">
-        <div className="text-center flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-slate-800">Tibetan Tutor</h1>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Language Guide</p>
+      {/* Header and Controls */}
+      <div className="flex flex-col bg-white border-b border-slate-200 shadow-sm z-10 shrink-0">
+        <header className="flex items-center justify-center p-4">
+          <div className="text-center flex flex-col items-center">
+            <h1 className="text-2xl font-bold text-slate-800">Tibetan Tutor</h1>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Language Guide</p>
+          </div>
+        </header>
+
+        {/* NEW: The 3 Mode Selector Buttons */}
+        <div className="flex justify-center gap-2 p-3 bg-slate-50 border-t border-slate-100 overflow-x-auto">
+          <button 
+            onClick={() => setAiMode("chat")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+          >
+            <Zap size={16} /> Fast Chat
+          </button>
+          
+          <button 
+            onClick={() => setAiMode("study")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+          >
+            <BookOpen size={16} /> Study Book
+          </button>
+
+          <button 
+            onClick={() => setAiMode("pro")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'pro' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+          >
+            <BrainCircuit size={16} /> Pro Model
+          </button>
         </div>
-      </header>
+      </div>
 
       <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center">
         <div className="w-full max-w-3xl space-y-8 pb-4">
           
           {messages.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 mt-20">
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 mt-10">
               <div className="w-24 h-24 rounded-full border border-slate-200 p-1 opacity-70">
                 <img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" />
               </div>
               <p className="text-base text-center max-w-md">
-                Welcome to your Tibetan Tutor. <br/> Type a message or press the microphone to begin.
+                Select a mode above.<br/> Type a message or press the microphone to begin.
               </p>
             </div>
           )}
