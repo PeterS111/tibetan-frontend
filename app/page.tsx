@@ -183,8 +183,8 @@ export default function Home() {
   };
 
   return (
-    {/* MOBILE FIX 1: h-dvh (Dynamic Viewport Height) prevents keyboard crush! */}
-    <main className="fixed inset-0 h-dvh w-full flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
+    <main className="fixed inset-0 h-[100dvh] w-full flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
+      {/* MOBILE FIX 1: h-[100dvh] (Dynamic Viewport Height) prevents keyboard crush! */}
       
       {/* Sidebar Drawer Overlay */}
       {isSidebarOpen && (
