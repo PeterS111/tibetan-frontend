@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Mic, Square, Loader2, Send, Zap, BookOpen, BrainCircuit } from "lucide-react";
-
-import { SignInButton, SignUpButton, Show, UserButton } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = {
   lang: string;
@@ -18,18 +17,49 @@ type Message = {
 };
 
 export default function Home() {
+  const { userId } = useAuth(); // NEW: Grab Clerk User ID
+  const [conversationId, setConversationId] = useState<string | null>(null); // NEW: Track DB Conversation
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  // NEW: State to track which AI mode the user selected
   const [aiMode, setAiMode] = useState<"chat" | "study" | "pro">("chat");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // NEW: Fetch history when user logs in
+  useEffect(() => {
+    if (!userId) {
+      setMessages([]);
+      setConversationId(null);
+      return;
+    }
+
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`https://tibetan-backend.onrender.com/api/history?user_id=${userId}`);
+        const data = await res.json();
+        
+        if (data.conversation_id) {
+          setConversationId(data.conversation_id);
+          const loadedMessages = data.messages.map((m: any) => ({
+            role: m.role,
+            content: m.content,
+            audioSequence: m.audio_sequence || undefined
+          }));
+          setMessages(loadedMessages);
+        }
+      } catch (error) {
+        console.error("Failed to load history:", error);
+      }
+    };
+
+    fetchHistory();
+  }, [userId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -89,9 +119,15 @@ export default function Home() {
     setIsLoading(true);
     const safeHistory = messages.map(m => ({ role: m.role, content: m.content }));
     formData.append("history", JSON.stringify(safeHistory));
-    
-    // NEW: Attach the selected mode to the backend request!
     formData.append("mode", aiMode);
+
+    // NEW: Attach DB tracking IDs
+    if (userId) {
+      formData.append("user_id", userId);
+      const activeConvId = conversationId || crypto.randomUUID();
+      if (!conversationId) setConversationId(activeConvId);
+      formData.append("conversation_id", activeConvId);
+    }
 
     try {
       const response = await fetch("https://tibetan-backend.onrender.com/api/chat", {
@@ -231,7 +267,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* NEW: The 3 Mode Selector Buttons */}
+        {/* The 3 Mode Selector Buttons */}
         <div className="flex justify-center gap-2 p-3 bg-slate-50 border-t border-slate-100 overflow-x-auto">
           <button 
             onClick={() => setAiMode("chat")}
