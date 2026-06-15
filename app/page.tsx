@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, Square, Loader2, Send, Zap, BookOpen, BrainCircuit } from "lucide-react";
 
+import { SignInButton, SignUpButton, Show, UserButton } from '@clerk/nextjs';
+
 type AudioPart = {
   lang: string;
   text: string;
@@ -206,10 +208,26 @@ export default function Home() {
       
       {/* Header and Controls */}
       <div className="flex flex-col bg-white border-b border-slate-200 shadow-sm z-10 shrink-0">
-        <header className="flex items-center justify-center p-4">
+        <header className="flex items-center justify-between p-4 w-full max-w-5xl mx-auto">
+          <div className="w-32"></div> {/* Spacer for centering */}
+          
           <div className="text-center flex flex-col items-center">
             <h1 className="text-2xl font-bold text-slate-800">Tibetan Tutor</h1>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Language Guide</p>
+          </div>
+          
+          <div className="w-32 flex justify-end gap-3 items-center">
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors">Log in</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="text-sm font-semibold bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm">Sign Up</button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton afterSignOutUrl="/" />
+            </Show>
           </div>
         </header>
 
