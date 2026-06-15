@@ -20,7 +20,7 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pastConversations, setPastConversations] = useState<any[]>([]);
 
-  // NEW: Feedback State
+  // Feedback State
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
@@ -75,7 +75,7 @@ export default function Home() {
     setIsSidebarOpen(false);
   };
 
-  // NEW: Submit Feedback Function
+  // Submit Feedback Function
   const submitFeedback = async () => {
     if (!feedbackText.trim()) return;
     setIsSubmittingFeedback(true);
@@ -210,7 +210,7 @@ export default function Home() {
   return (
     <main className="fixed inset-0 h-[100dvh] w-full flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
       
-      {/* NEW: Feedback Modal Overlay */}
+      {/* Feedback Modal Overlay */}
       {isFeedbackModalOpen && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
@@ -237,6 +237,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* Sidebar Drawer */}
       {isSidebarOpen && (
         <div className="absolute inset-0 z-50 flex">
           <div className="w-72 max-w-[80vw] bg-white border-r border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-left duration-200">
@@ -284,7 +285,7 @@ export default function Home() {
           
           <div className="flex-1 flex justify-end gap-3 items-center">
             
-            {/* NEW: Feedback Button Icon */}
+            {/* Feedback Button Icon */}
             <button 
               onClick={() => setIsFeedbackModalOpen(true)} 
               className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors" 
@@ -311,7 +312,10 @@ export default function Home() {
           <div className="flex gap-2 flex-shrink-0">
             <button onClick={() => setAiMode("chat")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><Zap size={16} /> Fast Chat</button>
             <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><BookOpen size={16} /> Study Book</button>
+            
+            {/* TEMPORARILY DISABLED PRO MODEL - Uncomment the button below to reactivate
             <button onClick={() => setAiMode("pro")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'pro' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><BrainCircuit size={16} /> Pro Model</button>
+            */}
           </div>
           <div className="w-px h-8 bg-slate-300 flex-shrink-0 mx-1 hidden sm:block"></div>
           <button onClick={startNewChat} className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-bold shadow-md hover:bg-slate-700 transition-all">
@@ -357,40 +361,3 @@ export default function Home() {
                             <div key={i} className="flex flex-row items-center gap-3 sm:gap-4 w-full mt-2 mb-2">
                               <div className="p-3 sm:p-5 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm rounded-tl-none w-fit"><span className="text-xl sm:text-3xl text-slate-800 leading-loose">{trimmed}</span></div>
                               {matchingAudio && (
-                                <button onClick={() => replayTibetanAudio(matchingAudio)} className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-slate-300 hover:border-blue-500 hover:shadow-lg transition flex-shrink-0 bg-white shadow-sm" title="Play Tibetan Audio">
-                                  <img src="/yogi.png" alt="Yogi" className="w-full h-full object-cover" />
-                                </button>
-                              )}
-                            </div>
-                          );
-                        } else {
-                          return <div key={i} className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-sm rounded-tl-none w-fit max-w-[90%] sm:max-w-[85%] text-sm sm:text-base"><p className="whitespace-pre-wrap">{trimmed}</p></div>;
-                        }
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {isLoading && !isPlaying && (
-            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is thinking...</span></div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe">
-        <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 max-w-3xl mx-auto relative">
-          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
-            {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
-            <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
-          </button>
-          <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} disabled={isLoading || isRecording || isPlaying} placeholder={isRecording ? "Listening..." : "Type in English or བོད་ཡིག..."} className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" />
-          <button type="submit" disabled={!inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
-        </form>
-      </div>
-    </main>
-  );
-}
