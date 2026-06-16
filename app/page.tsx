@@ -27,7 +27,6 @@ export default function Home() {
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
 
-  // Native Browser Speech Recognition Reference
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -92,7 +91,6 @@ export default function Home() {
     finally { setIsSubmittingFeedback(false); }
   };
 
-  // === REAL-TIME NATIVE SPEECH RECOGNITION (WHATSAPP STYLE) ===
   const startRecording = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
@@ -103,9 +101,8 @@ export default function Home() {
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true; // Show words as they are spoken
+    recognition.interimResults = true; 
 
-    // Keep whatever text is already in the box so we don't overwrite it
     const currentInput = inputText.trim() ? inputText.trim() + " " : "";
 
     recognition.onstart = () => {
@@ -122,7 +119,6 @@ export default function Home() {
           interim += event.results[i][0].transcript;
         }
       }
-      // Update the text box instantly!
       setInputText(currentInput + final + interim);
     };
 
@@ -246,10 +242,17 @@ export default function Home() {
           
           if (part.audio_base64) {
             setPlayingAudioBase64(part.audio_base64);
-            const audio = new Audio(`data:audio/mp3;base64,${part.audio_base64}`);
+            
+            // FIX: Set the correct MIME type dynamically based on the language
+            const audioType = part.lang === "tib" ? "wav" : "mp3";
+            const audio = new Audio(`data:audio/${audioType};base64,${part.audio_base64}`);
+            
             currentAudioRef.current = audio;
             audio.onended = playNext; 
-            audio.play().catch(() => { if (isPlayingRef.current) playNext(); });
+            audio.play().catch((err) => { 
+                console.error("Audio playback error:", err);
+                if (isPlayingRef.current) playNext(); 
+            });
           } else { playNext(); }
         };
         playNext(); 
@@ -280,7 +283,8 @@ export default function Home() {
     }
   };
 
-  const replayAudio = (base64Audio: string) => {
+  // FIX: Added 'isTibetan' parameter to ensure replay uses the correct MIME type
+  const replayAudio = (base64Audio: string, isTibetan: boolean) => {
     if (!base64Audio) return;
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
@@ -291,7 +295,9 @@ export default function Home() {
     setIsPlaying(true);
     isPlayingRef.current = true;
     
-    const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
+    // Set the correct MIME type dynamically
+    const audioType = isTibetan ? "wav" : "mp3";
+    const audio = new Audio(`data:audio/${audioType};base64,${base64Audio}`);
     currentAudioRef.current = audio;
     
     audio.onended = () => {
@@ -415,7 +421,8 @@ export default function Home() {
                           
                           <div className="relative">
                             <button 
-                              onClick={() => matchingAudio && replayAudio(matchingAudio)}
+                              // FIX: Passed 'isTibetan' boolean to replayAudio
+                              onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
                               disabled={!matchingAudio && !showSpinner}
                               className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? (isTibetan ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'ring-4 ring-yellow-500 scale-110 shadow-lg') : 'border border-slate-200 shadow-sm'} ${matchingAudio ? (isTibetan ? 'hover:border-red-700 cursor-pointer' : 'hover:border-yellow-500 cursor-pointer') : 'cursor-default'}`}
                               title={matchingAudio ? "Play Audio" : "Generating Audio..."}
