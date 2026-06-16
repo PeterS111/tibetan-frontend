@@ -22,7 +22,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false); // NEW STATE
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   
@@ -93,7 +93,6 @@ export default function Home() {
     finally { setIsSubmittingFeedback(false); }
   };
 
-  // === NEW AUDIO TRANSCRIBE FLOW ===
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -106,7 +105,6 @@ export default function Home() {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         stream.getTracks().forEach((track) => track.stop());
         
-        // Push the audio to the transcription endpoint
         setIsTranscribing(true);
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.webm");
@@ -118,7 +116,6 @@ export default function Home() {
           });
           const data = await res.json();
           if (data.text) {
-            // Place transcribed text into the typing box!
             setInputText((prev) => prev.trim() ? prev.trim() + " " + data.text : data.text);
           }
         } catch (error) {
@@ -325,7 +322,7 @@ export default function Home() {
           </div>
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-800 whitespace-nowrap">Tibetan Tutor</h1>
-            <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Language Guide</p>
+            <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Tara AI</p>
           </div>
           <div className="flex-1 flex justify-end gap-3 items-center">
             <button onClick={() => setIsFeedbackModalOpen(true)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors" title="Leave Feedback"><MessageSquarePlus size={20} /></button>
@@ -397,9 +394,9 @@ export default function Home() {
                             </button>
                           )}
 
-                          <div className={`p-3 sm:p-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'bg-blue-50 border border-blue-200' : 'bg-white border border-slate-200 text-slate-700'}`}>
+                          <div className={`px-3 sm:px-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'py-2 sm:py-3 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
                             {isTibetan ? (
-                              <span className="text-xl sm:text-3xl text-slate-800 leading-loose">{trimmed}</span>
+                              <span className="text-xl sm:text-3xl text-slate-800 leading-normal">{trimmed}</span>
                             ) : (
                               <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{trimmed}</p>
                             )}
@@ -429,17 +426,22 @@ export default function Home() {
 
       <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
         
-        {/* NEW ARROW "CONTINUE" BUTTON */}
+        {/* NEW: VIBRANT GREEN CONTINUE BUTTON */}
         <div className="w-full max-w-3xl mb-3 flex justify-center">
-          <button 
-            type="button" 
-            onClick={() => sendAutomatedMessage("Continue.")} 
-            disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
-            className="px-16 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 rounded-full shadow-sm transition-all disabled:opacity-50 flex items-center justify-center"
-            title="Continue"
-          >
-            <ArrowRight size={28} />
-          </button>
+          <div className="relative inline-flex group">
+            {userId && !isLoading && !isRecording && !isPlaying && !isTranscribing && (
+              <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-50 pointer-events-none"></span>
+            )}
+            <button 
+              type="button" 
+              onClick={() => sendAutomatedMessage("Continue.")} 
+              disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
+              className="relative z-10 px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
+              title="Continue"
+            >
+              <ArrowRight size={32} strokeWidth={3} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
