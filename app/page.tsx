@@ -360,7 +360,7 @@ export default function Home() {
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio)}
                               disabled={!matchingAudio}
-                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-green-400 scale-110 shadow-lg' : 'border border-slate-200 hover:border-green-400 shadow-sm'}`}
+                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'border border-slate-200 hover:border-red-700 shadow-sm'}`}
                               title="Play Tibetan Audio"
                             >
                               <img src="/yogi.png" alt="Yogi" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''}`} />
@@ -369,7 +369,7 @@ export default function Home() {
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio)}
                               disabled={!matchingAudio}
-                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-blue-400 scale-110 shadow-lg' : 'border border-slate-200 hover:border-blue-400 shadow-sm'}`}
+                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-yellow-500 scale-110 shadow-lg' : 'border border-slate-200 hover:border-yellow-500 shadow-sm'}`}
                               title="Play English Audio"
                             >
                               <img src="/dakini.png" alt="Tara" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''}`} />
