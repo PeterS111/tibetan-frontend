@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, PlayCircle } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
@@ -24,12 +24,16 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   
-  // NEW: Updated Mode States
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // NEW: Refs for the Interrupt Feature
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isPlayingRef = useRef(false);
 
   useEffect(() => {
     if (userId) {
@@ -91,12 +95,6 @@ export default function Home() {
     await processMessage(userMessage, null);
   };
 
-  // NEW: Helper to send hidden automated messages
-  const sendAutomatedMessage = async (text: string) => {
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
-    await processMessage(text, null);
-  };
-
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -118,8 +116,26 @@ export default function Home() {
     if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setIsRecording(false); }
   };
 
+  // NEW: Interrupt function that stops generation AND stops audio immediately!
+  const handleInterrupt = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    isPlayingRef.current = false;
+    setIsPlaying(false);
+    setIsLoading(false);
+  };
+
   const processMessage = async (text: string, audioBlob: Blob | null) => {
     setIsLoading(true);
+    abortControllerRef.current = new AbortController();
+
     const formData = new FormData();
     if (text) formData.append("text", text);
     if (audioBlob) formData.append("audio", audioBlob, "recording.webm");
@@ -137,7 +153,12 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch("https://tibetan-backend.onrender.com/api/chat", { method: "POST", body: formData });
+      const response = await fetch("https://tibetan-backend.onrender.com/api/chat", { 
+        method: "POST", 
+        body: formData,
+        signal: abortControllerRef.current.signal // Listen for the interrupt signal
+      });
+      
       const data = await response.json();
 
       if (audioBlob) {
@@ -158,28 +179,45 @@ export default function Home() {
 
       if (data.audio_sequence && data.audio_sequence.length > 0) {
         setIsPlaying(true);
+        isPlayingRef.current = true;
         let currentIndex = 0;
+        
         const playNext = () => {
-          if (currentIndex >= data.audio_sequence.length) { setIsPlaying(false); setIsLoading(false); return; }
+          if (!isPlayingRef.current) return; // Exit loop if user interrupted
+          if (currentIndex >= data.audio_sequence.length) { 
+            setIsPlaying(false); 
+            isPlayingRef.current = false;
+            setIsLoading(false); 
+            return; 
+          }
           const part = data.audio_sequence[currentIndex];
           currentIndex++;
           if (part.audio_base64) {
             const audio = new Audio(`data:audio/mp3;base64,${part.audio_base64}`);
-            audio.onended = playNext; audio.play();
+            currentAudioRef.current = audio;
+            audio.onended = playNext; 
+            audio.play().catch(() => { if (isPlayingRef.current) playNext(); });
           } else { playNext(); }
         };
         playNext(); 
       } else { setIsLoading(false); }
 
-    } catch (error) {
-      setMessages((prev) => [...prev, { role: "ai", content: "⚠️ Error communicating with AI server." }]);
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        setMessages((prev) => [...prev, { role: "ai", content: "🛑 Interrupted." }]);
+      } else {
+        setMessages((prev) => [...prev, { role: "ai", content: "⚠️ Error communicating with AI server." }]);
+      }
       setIsLoading(false);
     }
   };
 
   const replayTibetanAudio = (base64Audio: string) => {
     if (!base64Audio) return;
-    new Audio(`data:audio/mp3;base64,${base64Audio}`).play();
+    if (currentAudioRef.current) currentAudioRef.current.pause(); // Stop whatever is playing
+    const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
+    currentAudioRef.current = audio;
+    audio.play();
   };
 
   return (
@@ -244,7 +282,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* 3 AI MODES (Fast Chat, Study Book, Custom Text) */}
+        {/* 3 AI MODES */}
         <div className="flex justify-start sm:justify-center items-center gap-2 sm:gap-4 p-3 bg-slate-50 border-t border-slate-100 overflow-x-auto w-full flex-nowrap scroll-smooth">
           <div className="flex gap-2 flex-shrink-0">
             <button onClick={() => setAiMode("chat")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><Zap size={16} /> Quick Chat</button>
@@ -254,15 +292,6 @@ export default function Home() {
           <div className="w-px h-8 bg-slate-300 flex-shrink-0 mx-1 hidden sm:block"></div>
           <button onClick={startNewChat} className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-bold shadow-md hover:bg-slate-700 transition-all"><Plus size={16} /> New Chat</button>
         </div>
-        
-        {/* NEW: Explicit "Start the Text" Button */}
-        {(aiMode === "study" || aiMode === "custom") && (
-          <div className="flex justify-center p-2 bg-slate-100 border-t border-slate-200">
-             <button onClick={() => sendAutomatedMessage(aiMode === "study" ? "Please start the next text from the textbook." : "I am ready to enter my own text. Please guide me.")} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
-               <PlayCircle size={18} className="text-blue-500"/> {aiMode === "study" ? "Start Lesson from Book" : "Start Custom Analysis"}
-             </button>
-          </div>
-        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center">
@@ -324,12 +353,21 @@ export default function Home() {
 
       <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe">
         <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 max-w-3xl mx-auto relative">
+          
           <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
             {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
             <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
           </button>
+          
           <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} disabled={!userId || isLoading || isRecording || isPlaying} placeholder={!userId ? "🔒 Please log in to chat..." : isRecording ? "Listening..." : "Type in English or བོད་ཡིག..."} className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" />
+          
           <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
+          
+          {/* NEW: Interrupt Button */}
+          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
+            <StopCircle size={20} />
+          </button>
+
         </form>
       </div>
     </main>
