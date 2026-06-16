@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
-type Message = { role: "user" | "ai"; content: string; audioSequence?: AudioPart[]; };
+// Added ID and isLoadingAudio state
+type Message = { id?: string; role: "user" | "ai"; content: string; audioSequence?: AudioPart[]; isLoadingAudio?: boolean; };
 
 export default function Home() {
   const { userId } = useAuth();
@@ -23,8 +24,8 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Indicates waiting for TEXT
+  const [isPlaying, setIsPlaying] = useState(false); // Indicates AUDIO is playing
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
 
@@ -67,7 +68,7 @@ export default function Home() {
       const data = await res.json();
       if (data.messages) {
         setMessages(data.messages.map((m: any) => ({
-          role: m.role, content: m.content, audioSequence: m.audio_sequence
+          id: m.id, role: m.role, content: m.content, audioSequence: m.audio_sequence
         })));
       }
     } catch (e) { console.error(e); }
@@ -163,10 +164,14 @@ export default function Home() {
     setIsPlaying(false);
     setIsLoading(false);
     setPlayingAudioBase64(null);
+    
+    // Stop any avatars that are currently "loading audio"
+    setMessages((prev) => prev.map(msg => msg.isLoadingAudio ? { ...msg, isLoadingAudio: false } : msg));
   };
 
+  // === NEW DECOUPLED PROCESS MESSAGE LOGIC ===
   const processMessage = async (text: string) => {
-    setIsLoading(true);
+    setIsLoading(true); // Waiting for TEXT
     abortControllerRef.current = new AbortController();
 
     const formData = new FormData();
@@ -185,40 +190,52 @@ export default function Home() {
     }
 
     try {
+      // 1. Fetch Text Only (Lightning Fast)
       const response = await fetch("https://tibetan-backend.onrender.com/api/chat", { 
-        method: "POST", 
-        body: formData,
-        signal: abortControllerRef.current.signal 
+        method: "POST", body: formData, signal: abortControllerRef.current.signal 
       });
-      
       const data = await response.json();
 
-      setMessages((prev) => [...prev, { role: "ai", content: data.ai_text, audioSequence: data.audio_sequence }]);
+      setIsLoading(false); // Text arrived! Stop main loading spinner.
+      const tempMsgId = crypto.randomUUID();
+
+      // Show the message immediately on screen, but trigger the "Loading Audio" spinners on the avatars
+      setMessages((prev) => [...prev, { 
+        id: tempMsgId, role: "ai", content: data.ai_text, isLoadingAudio: true 
+      }]);
 
       if (userId && !conversationId) {
         fetch(`https://tibetan-backend.onrender.com/api/conversations?user_id=${userId}`)
-          .then(res => res.json())
-          .then(data => setPastConversations(data.conversations || []));
+          .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
       }
 
-      if (data.audio_sequence && data.audio_sequence.length > 0) {
+      // 2. Fetch the Audio Sequence Asynchronously
+      const ttsFormData = new FormData();
+      ttsFormData.append("text", data.ai_text);
+      if (data.message_id) ttsFormData.append("message_id", data.message_id);
+
+      const ttsResponse = await fetch("https://tibetan-backend.onrender.com/api/tts", {
+        method: "POST", body: ttsFormData, signal: abortControllerRef.current.signal
+      });
+      const ttsData = await ttsResponse.json();
+
+      // 3. Audio Arrived! Update the specific message and remove the spinners
+      setMessages((prev) => prev.map(msg => 
+        msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg
+      ));
+
+      // 4. Autoplay the Audio Sequence
+      if (ttsData.audio_sequence && ttsData.audio_sequence.length > 0) {
         setIsPlaying(true);
         isPlayingRef.current = true;
         let currentIndex = 0;
         
         const playNext = () => {
-          if (!isPlayingRef.current) {
-             setPlayingAudioBase64(null);
-             return; 
+          if (!isPlayingRef.current) { setPlayingAudioBase64(null); return; }
+          if (currentIndex >= ttsData.audio_sequence.length) { 
+            setIsPlaying(false); isPlayingRef.current = false; setPlayingAudioBase64(null); return; 
           }
-          if (currentIndex >= data.audio_sequence.length) { 
-            setIsPlaying(false); 
-            isPlayingRef.current = false;
-            setIsLoading(false); 
-            setPlayingAudioBase64(null);
-            return; 
-          }
-          const part = data.audio_sequence[currentIndex];
+          const part = ttsData.audio_sequence[currentIndex];
           currentIndex++;
           
           if (part.audio_base64) {
@@ -230,13 +247,28 @@ export default function Home() {
           } else { playNext(); }
         };
         playNext(); 
-      } else { setIsLoading(false); }
+      }
 
     } catch (error: any) {
       if (error.name === "AbortError") {
-        setMessages((prev) => [...prev, { role: "ai", content: "🛑 Interrupted." }]);
+        setMessages((prev) => {
+            const updated = [...prev];
+            const lastMsg = updated[updated.length - 1];
+            if (lastMsg && lastMsg.role === "ai" && lastMsg.isLoadingAudio) {
+                lastMsg.isLoadingAudio = false; // Turn off spinner if interrupted during TTS
+            } else if (!lastMsg || lastMsg.role === "user") {
+                updated.push({ role: "ai", content: "🛑 Interrupted." });
+            }
+            return updated;
+        });
       } else {
-        setMessages((prev) => [...prev, { role: "ai", content: "⚠️ Error communicating with AI server." }]);
+        setMessages((prev) => {
+            const lastMsg = prev[prev.length - 1];
+            if (lastMsg && lastMsg.role === "ai" && lastMsg.isLoadingAudio) {
+                return prev.map(m => m === lastMsg ? { ...m, isLoadingAudio: false } : m);
+            }
+            return [...prev, { role: "ai", content: "⚠️ Error communicating with AI server." }];
+        });
       }
       setIsLoading(false);
     }
@@ -370,29 +402,28 @@ export default function Home() {
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
                       const matchingAudio = msg.audioSequence?.find(a => a.text === trimmed)?.audio_base64;
                       const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
+                      const showSpinner = msg.isLoadingAudio && !matchingAudio;
 
                       return (
                         <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
                           
-                          {isTibetan ? (
+                          {/* AVATAR WITH LOADING SPINNER OVERLAY */}
+                          <div className="relative">
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio)}
-                              disabled={!matchingAudio}
-                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'border border-slate-200 hover:border-red-700 shadow-sm'}`}
-                              title="Play Tibetan Audio"
+                              disabled={!matchingAudio && !showSpinner}
+                              className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'border border-slate-200 shadow-sm'} ${matchingAudio ? (isTibetan ? 'hover:border-red-700 cursor-pointer' : 'hover:border-yellow-500 cursor-pointer') : 'cursor-default'}`}
+                              title={matchingAudio ? "Play Audio" : "Generating Audio..."}
                             >
-                              <img src="/yogi.png" alt="Yogi" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''}`} />
+                              <img src={isTibetan ? "/yogi.png" : "/dakini.png"} alt="Avatar" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''} ${showSpinner ? 'opacity-40 grayscale' : ''}`} />
                             </button>
-                          ) : (
-                            <button 
-                              onClick={() => matchingAudio && replayAudio(matchingAudio)}
-                              disabled={!matchingAudio}
-                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-yellow-500 scale-110 shadow-lg' : 'border border-slate-200 hover:border-yellow-500 shadow-sm'}`}
-                              title="Play English Audio"
-                            >
-                              <img src="/dakini.png" alt="Tara" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''}`} />
-                            </button>
-                          )}
+                            {/* The Spinner overlay */}
+                            {showSpinner && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <Loader2 className="w-5 h-5 animate-spin text-slate-700" />
+                              </div>
+                            )}
+                          </div>
 
                           <div className={`px-3 sm:px-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'py-2 sm:py-3 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
                             {isTibetan ? (
@@ -418,7 +449,7 @@ export default function Home() {
           ))}
 
           {isLoading && !isPlaying && (
-            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is thinking...</span></div>
+            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is typing...</span></div>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -426,10 +457,8 @@ export default function Home() {
 
       <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
         
-        {/* NEW: VIBRANT GREEN BUTTON WITH CUSTOM LONG ARROW & GENTLE PULSE */}
         <div className="w-full max-w-3xl mb-3 flex justify-center">
           <div className="relative inline-flex group">
-            {/* Gentle, glowing pulse instead of harsh ping */}
             {userId && !isLoading && !isRecording && !isPlaying && !isTranscribing && (
               <span className="absolute -inset-1.5 rounded-full bg-green-400 animate-pulse opacity-40 pointer-events-none blur-sm"></span>
             )}
@@ -447,7 +476,6 @@ export default function Home() {
               className="relative z-10 px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
               title={messages.length === 0 ? "Start" : "Continue"}
             >
-              {/* Custom SVG for a much longer arrow */}
               <svg 
                 width="60" 
                 height="28" 
