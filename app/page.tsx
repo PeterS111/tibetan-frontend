@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
@@ -22,6 +22,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false); // NEW STATE
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   
@@ -31,12 +32,10 @@ export default function Home() {
   const audioChunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Refs for the Interrupt Feature
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isPlayingRef = useRef(false);
 
-  // Track exactly which audio snippet is currently playing to trigger the animation!
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,7 +54,6 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // NEW: Wake up the Hugging Face TTS space in the background immediately on load!
   useEffect(() => {
     fetch("https://tibetan-backend.onrender.com/api/wakeup").catch(() => {});
   }, []);
@@ -95,20 +93,7 @@ export default function Home() {
     finally { setIsSubmittingFeedback(false); }
   };
 
-  const handleSendText = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim() || isLoading) return;
-    const userMessage = inputText.trim();
-    setInputText("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
-    await processMessage(userMessage, null);
-  };
-
-  const sendAutomatedMessage = async (text: string) => {
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
-    await processMessage(text, null);
-  };
-
+  // === NEW AUDIO TRANSCRIBE FLOW ===
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -116,18 +101,55 @@ export default function Home() {
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
       mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      
       mediaRecorder.onstop = async () => {
-        setMessages((prev) => [...prev, { role: "user", content: "🎙️ Processing Voice..." }]);
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         stream.getTracks().forEach((track) => track.stop());
-        await processMessage("", audioBlob);
+        
+        // Push the audio to the transcription endpoint
+        setIsTranscribing(true);
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.webm");
+        
+        try {
+          const res = await fetch("https://tibetan-backend.onrender.com/api/transcribe", {
+            method: "POST",
+            body: formData
+          });
+          const data = await res.json();
+          if (data.text) {
+            // Place transcribed text into the typing box!
+            setInputText((prev) => prev.trim() ? prev.trim() + " " + data.text : data.text);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Failed to transcribe audio.");
+        } finally {
+          setIsTranscribing(false);
+        }
       };
-      mediaRecorder.start(); setIsRecording(true);
+      
+      mediaRecorder.start(); 
+      setIsRecording(true);
     } catch (error) { alert("Microphone access denied."); }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setIsRecording(false); }
+  };
+
+  const handleSendText = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim() || isLoading) return;
+    const userMessage = inputText.trim();
+    setInputText("");
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    await processMessage(userMessage);
+  };
+
+  const sendAutomatedMessage = async (text: string) => {
+    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    await processMessage(text);
   };
 
   const handleInterrupt = () => {
@@ -143,16 +165,15 @@ export default function Home() {
     isPlayingRef.current = false;
     setIsPlaying(false);
     setIsLoading(false);
-    setPlayingAudioBase64(null); // Stop any running animation instantly
+    setPlayingAudioBase64(null);
   };
 
-  const processMessage = async (text: string, audioBlob: Blob | null) => {
+  const processMessage = async (text: string) => {
     setIsLoading(true);
     abortControllerRef.current = new AbortController();
 
     const formData = new FormData();
-    if (text) formData.append("text", text);
-    if (audioBlob) formData.append("audio", audioBlob, "recording.webm");
+    formData.append("text", text);
     
     const safeHistory = messages.map(m => ({ role: m.role, content: m.content }));
     formData.append("history", JSON.stringify(safeHistory));
@@ -174,14 +195,6 @@ export default function Home() {
       });
       
       const data = await response.json();
-
-      if (audioBlob) {
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: "user", content: data.user_text };
-          return updated;
-        });
-      }
 
       setMessages((prev) => [...prev, { role: "ai", content: data.ai_text, audioSequence: data.audio_sequence }]);
 
@@ -205,14 +218,14 @@ export default function Home() {
             setIsPlaying(false); 
             isPlayingRef.current = false;
             setIsLoading(false); 
-            setPlayingAudioBase64(null); // Clear animation when finished
+            setPlayingAudioBase64(null);
             return; 
           }
           const part = data.audio_sequence[currentIndex];
           currentIndex++;
           
           if (part.audio_base64) {
-            setPlayingAudioBase64(part.audio_base64); // Trigger the animation for THIS specific text
+            setPlayingAudioBase64(part.audio_base64);
             const audio = new Audio(`data:audio/mp3;base64,${part.audio_base64}`);
             currentAudioRef.current = audio;
             audio.onended = playNext; 
@@ -232,7 +245,6 @@ export default function Home() {
     }
   };
 
-  // Unified replay function. Triggers animation and plays the specific avatar's audio
   const replayAudio = (base64Audio: string) => {
     if (!base64Audio) return;
     if (currentAudioRef.current) {
@@ -240,7 +252,6 @@ export default function Home() {
       currentAudioRef.current.currentTime = 0;
     }
     
-    // Set states so the Interrupt button enables and functions correctly
     setPlayingAudioBase64(base64Audio); 
     setIsPlaying(true);
     isPlayingRef.current = true;
@@ -255,7 +266,6 @@ export default function Home() {
     };
     
     audio.play().catch(() => {
-      // Clean up states if browser blocks playback
       setPlayingAudioBase64(null);
       setIsPlaying(false);
       isPlayingRef.current = false;
@@ -265,7 +275,6 @@ export default function Home() {
   return (
     <main className="fixed inset-0 h-[100dvh] w-full flex flex-col bg-slate-50 text-slate-800 font-sans overflow-hidden">
       
-      {/* Feedback Modal Overlay */}
       {isFeedbackModalOpen && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
@@ -281,7 +290,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Sidebar Drawer */}
       {isSidebarOpen && (
         <div className="absolute inset-0 z-50 flex">
           <div className="w-72 max-w-[80vw] bg-white border-r border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-left duration-200">
@@ -305,7 +313,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Header and Controls */}
       <div className="flex flex-col bg-white border-b border-slate-200 shadow-sm z-10 shrink-0">
         <header className="flex items-center justify-between p-3 sm:p-4 w-full max-w-5xl mx-auto">
           <div className="flex-1 flex justify-start gap-4">
@@ -327,14 +334,12 @@ export default function Home() {
           </div>
         </header>
 
-        {/* 3 AI MODES */}
         <div className="flex justify-start sm:justify-center items-center gap-2 sm:gap-4 p-3 bg-slate-50 border-t border-slate-100 overflow-x-auto w-full flex-nowrap scroll-smooth">
           <button onClick={() => { setAiMode("chat"); startNewChat(); }} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><Zap size={16} /> Quick Chat</button>
           <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><BookOpen size={16} /> Study Book</button>
           <button onClick={() => setAiMode("custom")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'custom' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><PenTool size={16} /> Custom Text</button>
         </div>
         
-        {/* Only show Start Button for Study Book mode */}
         {(aiMode === "study") && (
           <div className="flex justify-center p-2 bg-slate-100 border-t border-slate-200">
              <button onClick={() => sendAutomatedMessage("Please start the next text from the textbook.")} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
@@ -358,25 +363,20 @@ export default function Home() {
             <div key={index} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-start w-full gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                 
-                {/* Left-Side Avatar Layout Logic */}
                 {msg.role === "user" ? (
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
-                  // We map through the AI parts and give EACH part its own avatar on the left
                   <div className="flex flex-col gap-4 w-full">
                     {msg.content.split(/([\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
                       const trimmed = part.trim();
                       if (!trimmed) return null;
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
                       const matchingAudio = msg.audioSequence?.find(a => a.text === trimmed)?.audio_base64;
-                      
-                      // Check if THIS specific bubble is currently speaking
                       const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
 
                       return (
                         <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
                           
-                          {/* 1. The Avatar (Clickable to Replay, Animates when speaking) */}
                           {isTibetan ? (
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio)}
@@ -397,7 +397,6 @@ export default function Home() {
                             </button>
                           )}
 
-                          {/* 2. The Text Bubble */}
                           <div className={`p-3 sm:p-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'bg-blue-50 border border-blue-200' : 'bg-white border border-slate-200 text-slate-700'}`}>
                             {isTibetan ? (
                               <span className="text-xl sm:text-3xl text-slate-800 leading-loose">{trimmed}</span>
@@ -411,7 +410,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* User Message Rendering */}
                 {msg.role === "user" && (
                   <div className={`w-full max-w-[85%] sm:max-w-[75%]`}>
                     <div className="p-3 sm:p-5 rounded-2xl shadow-sm text-sm sm:text-base leading-relaxed bg-blue-600 text-white rounded-br-none w-fit ml-auto"><p>{msg.content}</p></div>
@@ -429,19 +427,39 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe">
-        <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 max-w-3xl mx-auto relative">
+      <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
+        
+        {/* NEW ARROW "CONTINUE" BUTTON */}
+        <div className="w-full max-w-3xl mb-3 flex justify-center">
+          <button 
+            type="button" 
+            onClick={() => sendAutomatedMessage("Continue.")} 
+            disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
+            className="px-16 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 rounded-full shadow-sm transition-all disabled:opacity-50 flex items-center justify-center"
+            title="Continue"
+          >
+            <ArrowRight size={28} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
           
-          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
+          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying || isTranscribing} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
             {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
             <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
           </button>
           
-          <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} disabled={!userId || isLoading || isRecording || isPlaying} placeholder={!userId ? "🔒 Please log in to chat..." : isRecording ? "Listening..." : "Type in English or བོད་ཡིག..."} className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" />
+          <input 
+             type="text" 
+             value={inputText} 
+             onChange={(e) => setInputText(e.target.value)} 
+             disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
+             placeholder={!userId ? "🔒 Please log in to chat..." : isRecording ? "Listening..." : isTranscribing ? "Transcribing..." : "Type in English or བོད་ཡིག..."} 
+             className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" 
+          />
           
-          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
+          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying || isTranscribing} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
-          {/* Interrupt Button */}
           <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
             <StopCircle size={20} />
           </button>
