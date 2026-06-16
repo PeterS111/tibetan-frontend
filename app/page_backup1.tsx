@@ -22,13 +22,14 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isLoading, setIsLoading] = useState(false); 
   const [isPlaying, setIsPlaying] = useState(false); 
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
 
-  // Native Browser Speech Recognition Reference
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -92,61 +93,46 @@ export default function Home() {
     finally { setIsSubmittingFeedback(false); }
   };
 
-  // === REAL-TIME NATIVE SPEECH RECOGNITION (WHATSAPP STYLE) ===
-  const startRecording = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      alert("Your browser does not support real-time dictation. Please use Google Chrome, Safari, or Edge.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true; // Show words as they are spoken
-
-    // Keep whatever text is already in the box so we don't overwrite it
-    const currentInput = inputText.trim() ? inputText.trim() + " " : "";
-
-    recognition.onstart = () => {
-      setIsRecording(true);
-    };
-
-    recognition.onresult = (event: any) => {
-      let final = "";
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          final += event.results[i][0].transcript;
-        } else {
-          interim += event.results[i][0].transcript;
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        stream.getTracks().forEach((track) => track.stop());
+        
+        setIsTranscribing(true);
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.webm");
+        
+        try {
+          const res = await fetch("https://tibetan-backend.onrender.com/api/transcribe", {
+            method: "POST",
+            body: formData
+          });
+          const data = await res.json();
+          if (data.text) {
+            setInputText((prev) => prev.trim() ? prev.trim() + " " + data.text : data.text);
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Failed to transcribe audio.");
+        } finally {
+          setIsTranscribing(false);
         }
-      }
-      // Update the text box instantly!
-      setInputText(currentInput + final + interim);
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", event.error);
-      if (event.error === 'not-allowed') {
-        alert("Microphone access denied.");
-      }
-      setIsRecording(false);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
+      };
+      
+      mediaRecorder.start(); 
+      setIsRecording(true);
+    } catch (error) { alert("Microphone access denied."); }
   };
 
   const stopRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-    setIsRecording(false);
+    if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setIsRecording(false); }
   };
 
   const handleSendText = async (e: React.FormEvent) => {
@@ -413,6 +399,7 @@ export default function Home() {
                       return (
                         <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
                           
+                          {/* CORRECTED: Yogi pulses red, Tara pulses golden/yellow */}
                           <div className="relative">
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio)}
@@ -452,6 +439,7 @@ export default function Home() {
             </div>
           ))}
 
+          {/* CORRECTED: Tara is thinking... */}
           {isLoading && !isPlaying && (
             <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is thinking...</span></div>
           )}
@@ -463,7 +451,7 @@ export default function Home() {
         
         <div className="w-full max-w-3xl mb-3 flex justify-center">
           <div className="relative inline-flex group">
-            {userId && !isLoading && !isRecording && !isPlaying && (
+            {userId && !isLoading && !isRecording && !isPlaying && !isTranscribing && (
               <span className="absolute -inset-1.5 rounded-full bg-green-400 animate-pulse opacity-40 pointer-events-none blur-sm"></span>
             )}
             
@@ -476,7 +464,7 @@ export default function Home() {
                   sendAutomatedMessage("Continue.");
                 }
               }} 
-              disabled={!userId || isLoading || isRecording || isPlaying} 
+              disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
               className="relative z-10 px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
               title={messages.length === 0 ? "Start" : "Continue"}
             >
@@ -500,7 +488,7 @@ export default function Home() {
 
         <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
           
-          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
+          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying || isTranscribing} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
             {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
             <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
           </button>
@@ -509,12 +497,12 @@ export default function Home() {
              type="text" 
              value={inputText} 
              onChange={(e) => setInputText(e.target.value)} 
-             disabled={!userId || isLoading || isRecording || isPlaying} 
-             placeholder={!userId ? "🔒 Please log in to chat..." : isRecording ? "Listening..." : "Type in English or བོད་ཡིག..."} 
+             disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
+             placeholder={!userId ? "🔒 Please log in to chat..." : isRecording ? "Listening..." : isTranscribing ? "Transcribing..." : "Type in English or བོད་ཡིག..."} 
              className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" 
           />
           
-          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
+          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying || isTranscribing} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
           <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
             <StopCircle size={20} />
