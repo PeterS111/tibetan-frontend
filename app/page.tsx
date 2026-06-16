@@ -6,7 +6,6 @@ import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, Mess
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
-// Added ID and isLoadingAudio state
 type Message = { id?: string; role: "user" | "ai"; content: string; audioSequence?: AudioPart[]; isLoadingAudio?: boolean; };
 
 export default function Home() {
@@ -24,8 +23,8 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Indicates waiting for TEXT
-  const [isPlaying, setIsPlaying] = useState(false); // Indicates AUDIO is playing
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isPlaying, setIsPlaying] = useState(false); 
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
 
@@ -165,13 +164,11 @@ export default function Home() {
     setIsLoading(false);
     setPlayingAudioBase64(null);
     
-    // Stop any avatars that are currently "loading audio"
     setMessages((prev) => prev.map(msg => msg.isLoadingAudio ? { ...msg, isLoadingAudio: false } : msg));
   };
 
-  // === NEW DECOUPLED PROCESS MESSAGE LOGIC ===
   const processMessage = async (text: string) => {
-    setIsLoading(true); // Waiting for TEXT
+    setIsLoading(true); 
     abortControllerRef.current = new AbortController();
 
     const formData = new FormData();
@@ -190,16 +187,14 @@ export default function Home() {
     }
 
     try {
-      // 1. Fetch Text Only (Lightning Fast)
       const response = await fetch("https://tibetan-backend.onrender.com/api/chat", { 
         method: "POST", body: formData, signal: abortControllerRef.current.signal 
       });
       const data = await response.json();
 
-      setIsLoading(false); // Text arrived! Stop main loading spinner.
+      setIsLoading(false); 
       const tempMsgId = crypto.randomUUID();
 
-      // Show the message immediately on screen, but trigger the "Loading Audio" spinners on the avatars
       setMessages((prev) => [...prev, { 
         id: tempMsgId, role: "ai", content: data.ai_text, isLoadingAudio: true 
       }]);
@@ -209,7 +204,6 @@ export default function Home() {
           .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
       }
 
-      // 2. Fetch the Audio Sequence Asynchronously
       const ttsFormData = new FormData();
       ttsFormData.append("text", data.ai_text);
       if (data.message_id) ttsFormData.append("message_id", data.message_id);
@@ -219,12 +213,10 @@ export default function Home() {
       });
       const ttsData = await ttsResponse.json();
 
-      // 3. Audio Arrived! Update the specific message and remove the spinners
       setMessages((prev) => prev.map(msg => 
         msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg
       ));
 
-      // 4. Autoplay the Audio Sequence
       if (ttsData.audio_sequence && ttsData.audio_sequence.length > 0) {
         setIsPlaying(true);
         isPlayingRef.current = true;
@@ -255,7 +247,7 @@ export default function Home() {
             const updated = [...prev];
             const lastMsg = updated[updated.length - 1];
             if (lastMsg && lastMsg.role === "ai" && lastMsg.isLoadingAudio) {
-                lastMsg.isLoadingAudio = false; // Turn off spinner if interrupted during TTS
+                lastMsg.isLoadingAudio = false; 
             } else if (!lastMsg || lastMsg.role === "user") {
                 updated.push({ role: "ai", content: "🛑 Interrupted." });
             }
@@ -407,17 +399,16 @@ export default function Home() {
                       return (
                         <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
                           
-                          {/* AVATAR WITH LOADING SPINNER OVERLAY */}
+                          {/* CORRECTED: Yogi pulses red, Tara pulses golden/yellow */}
                           <div className="relative">
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio)}
                               disabled={!matchingAudio && !showSpinner}
-                              className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'border border-slate-200 shadow-sm'} ${matchingAudio ? (isTibetan ? 'hover:border-red-700 cursor-pointer' : 'hover:border-yellow-500 cursor-pointer') : 'cursor-default'}`}
+                              className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? (isTibetan ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'ring-4 ring-yellow-500 scale-110 shadow-lg') : 'border border-slate-200 shadow-sm'} ${matchingAudio ? (isTibetan ? 'hover:border-red-700 cursor-pointer' : 'hover:border-yellow-500 cursor-pointer') : 'cursor-default'}`}
                               title={matchingAudio ? "Play Audio" : "Generating Audio..."}
                             >
                               <img src={isTibetan ? "/yogi.png" : "/dakini.png"} alt="Avatar" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''} ${showSpinner ? 'opacity-40 grayscale' : ''}`} />
                             </button>
-                            {/* The Spinner overlay */}
                             {showSpinner && (
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <Loader2 className="w-5 h-5 animate-spin text-slate-700" />
@@ -448,8 +439,9 @@ export default function Home() {
             </div>
           ))}
 
+          {/* CORRECTED: Tara is thinking... */}
           {isLoading && !isPlaying && (
-            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is typing...</span></div>
+            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is thinking...</span></div>
           )}
           <div ref={messagesEndRef} />
         </div>
