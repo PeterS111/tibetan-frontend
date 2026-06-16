@@ -233,11 +233,27 @@ export default function Home() {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
     }
-    setPlayingAudioBase64(base64Audio); // Start animation
+    
+    // Set states so the Interrupt button enables and functions correctly
+    setPlayingAudioBase64(base64Audio); 
+    setIsPlaying(true);
+    isPlayingRef.current = true;
+    
     const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
     currentAudioRef.current = audio;
-    audio.onended = () => setPlayingAudioBase64(null); // End animation
-    audio.play();
+    
+    audio.onended = () => {
+      setPlayingAudioBase64(null);
+      setIsPlaying(false);
+      isPlayingRef.current = false;
+    };
+    
+    audio.play().catch(() => {
+      // Clean up states if browser blocks playback
+      setPlayingAudioBase64(null);
+      setIsPlaying(false);
+      isPlayingRef.current = false;
+    });
   };
 
   return (
@@ -304,13 +320,9 @@ export default function Home() {
 
         {/* 3 AI MODES */}
         <div className="flex justify-start sm:justify-center items-center gap-2 sm:gap-4 p-3 bg-slate-50 border-t border-slate-100 overflow-x-auto w-full flex-nowrap scroll-smooth">
-          <div className="flex gap-2 flex-shrink-0">
-            <button onClick={() => setAiMode("chat")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><Zap size={16} /> Quick Chat</button>
-            <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><BookOpen size={16} /> Study Book</button>
-            <button onClick={() => setAiMode("custom")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'custom' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><PenTool size={16} /> Custom Text</button>
-          </div>
-          <div className="w-px h-8 bg-slate-300 flex-shrink-0 mx-1 hidden sm:block"></div>
-          <button onClick={startNewChat} className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-bold shadow-md hover:bg-slate-700 transition-all"><Plus size={16} /> New Chat</button>
+          <button onClick={() => { setAiMode("chat"); startNewChat(); }} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><Zap size={16} /> Quick Chat</button>
+          <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><BookOpen size={16} /> Study Book</button>
+          <button onClick={() => setAiMode("custom")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'custom' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><PenTool size={16} /> Custom Text</button>
         </div>
         
         {/* Only show Start Button for Study Book mode */}
@@ -337,7 +349,7 @@ export default function Home() {
             <div key={index} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-start w-full gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                 
-                {/* NEW: Left-Side Avatar Layout Logic */}
+                {/* Left-Side Avatar Layout Logic */}
                 {msg.role === "user" ? (
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
