@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
@@ -426,20 +426,42 @@ export default function Home() {
 
       <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
         
-        {/* NEW: VIBRANT GREEN CONTINUE BUTTON */}
+        {/* NEW: VIBRANT GREEN BUTTON WITH CUSTOM LONG ARROW & GENTLE PULSE */}
         <div className="w-full max-w-3xl mb-3 flex justify-center">
           <div className="relative inline-flex group">
+            {/* Gentle, glowing pulse instead of harsh ping */}
             {userId && !isLoading && !isRecording && !isPlaying && !isTranscribing && (
-              <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-50 pointer-events-none"></span>
+              <span className="absolute -inset-1.5 rounded-full bg-green-400 animate-pulse opacity-40 pointer-events-none blur-sm"></span>
             )}
+            
             <button 
               type="button" 
-              onClick={() => sendAutomatedMessage("Continue.")} 
+              onClick={() => {
+                if (messages.length === 0) {
+                  sendAutomatedMessage("Let's start.");
+                } else {
+                  sendAutomatedMessage("Continue.");
+                }
+              }} 
               disabled={!userId || isLoading || isRecording || isPlaying || isTranscribing} 
               className="relative z-10 px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
-              title="Continue"
+              title={messages.length === 0 ? "Start" : "Continue"}
             >
-              <ArrowRight size={32} strokeWidth={3} className="transition-transform group-hover:translate-x-1" />
+              {/* Custom SVG for a much longer arrow */}
+              <svg 
+                width="60" 
+                height="28" 
+                viewBox="0 0 60 28" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="3" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="transition-transform group-hover:translate-x-2"
+              >
+                <line x1="2" y1="14" x2="56" y2="14" />
+                <polyline points="46 4 56 14 46 24" />
+              </svg>
             </button>
           </div>
         </div>
