@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
@@ -30,10 +30,13 @@ export default function Home() {
   const audioChunksRef = useRef<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // NEW: Refs for the Interrupt Feature
+  // Refs for the Interrupt Feature
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isPlayingRef = useRef(false);
+
+  // NEW: Track exactly which audio snippet is currently playing to trigger the animation!
+  const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -95,6 +98,11 @@ export default function Home() {
     await processMessage(userMessage, null);
   };
 
+  const sendAutomatedMessage = async (text: string) => {
+    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    await processMessage(text, null);
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -116,7 +124,6 @@ export default function Home() {
     if (mediaRecorderRef.current) { mediaRecorderRef.current.stop(); setIsRecording(false); }
   };
 
-  // NEW: Interrupt function that stops generation AND stops audio immediately!
   const handleInterrupt = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -130,6 +137,7 @@ export default function Home() {
     isPlayingRef.current = false;
     setIsPlaying(false);
     setIsLoading(false);
+    setPlayingAudioBase64(null); // Stop any running animation instantly
   };
 
   const processMessage = async (text: string, audioBlob: Blob | null) => {
@@ -156,7 +164,7 @@ export default function Home() {
       const response = await fetch("https://tibetan-backend.onrender.com/api/chat", { 
         method: "POST", 
         body: formData,
-        signal: abortControllerRef.current.signal // Listen for the interrupt signal
+        signal: abortControllerRef.current.signal 
       });
       
       const data = await response.json();
@@ -183,16 +191,22 @@ export default function Home() {
         let currentIndex = 0;
         
         const playNext = () => {
-          if (!isPlayingRef.current) return; // Exit loop if user interrupted
+          if (!isPlayingRef.current) {
+             setPlayingAudioBase64(null);
+             return; 
+          }
           if (currentIndex >= data.audio_sequence.length) { 
             setIsPlaying(false); 
             isPlayingRef.current = false;
             setIsLoading(false); 
+            setPlayingAudioBase64(null); // Clear animation when finished
             return; 
           }
           const part = data.audio_sequence[currentIndex];
           currentIndex++;
+          
           if (part.audio_base64) {
+            setPlayingAudioBase64(part.audio_base64); // Trigger the animation for THIS specific text
             const audio = new Audio(`data:audio/mp3;base64,${part.audio_base64}`);
             currentAudioRef.current = audio;
             audio.onended = playNext; 
@@ -212,11 +226,17 @@ export default function Home() {
     }
   };
 
-  const replayTibetanAudio = (base64Audio: string) => {
+  // NEW: Unified replay function. Triggers animation and plays the specific avatar's audio
+  const replayAudio = (base64Audio: string) => {
     if (!base64Audio) return;
-    if (currentAudioRef.current) currentAudioRef.current.pause(); // Stop whatever is playing
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+    }
+    setPlayingAudioBase64(base64Audio); // Start animation
     const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
     currentAudioRef.current = audio;
+    audio.onended = () => setPlayingAudioBase64(null); // End animation
     audio.play();
   };
 
@@ -292,6 +312,15 @@ export default function Home() {
           <div className="w-px h-8 bg-slate-300 flex-shrink-0 mx-1 hidden sm:block"></div>
           <button onClick={startNewChat} className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-sm font-bold shadow-md hover:bg-slate-700 transition-all"><Plus size={16} /> New Chat</button>
         </div>
+        
+        {/* Only show Start Button for Study Book mode */}
+        {(aiMode === "study") && (
+          <div className="flex justify-center p-2 bg-slate-100 border-t border-slate-200">
+             <button onClick={() => sendAutomatedMessage("Please start the next text from the textbook.")} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
+               <PlayCircle size={18} className="text-blue-500"/> Start Lesson from Book
+             </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center">
@@ -308,38 +337,66 @@ export default function Home() {
             <div key={index} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-start w-full gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                 
-                {msg.role === "ai" ? (
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 shadow-sm border border-slate-200 bg-white overflow-hidden"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover" /></div>
-                ) : (
+                {/* NEW: Left-Side Avatar Layout Logic */}
+                {msg.role === "user" ? (
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
+                ) : (
+                  // We map through the AI parts and give EACH part its own avatar on the left
+                  <div className="flex flex-col gap-4 w-full">
+                    {msg.content.split(/([\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
+                      const trimmed = part.trim();
+                      if (!trimmed) return null;
+                      const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
+                      const matchingAudio = msg.audioSequence?.find(a => a.text === trimmed)?.audio_base64;
+                      
+                      // Check if THIS specific bubble is currently speaking
+                      const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
+
+                      return (
+                        <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
+                          
+                          {/* 1. The Avatar (Clickable to Replay, Animates when speaking) */}
+                          {isTibetan ? (
+                            <button 
+                              onClick={() => matchingAudio && replayAudio(matchingAudio)}
+                              disabled={!matchingAudio}
+                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-green-400 scale-110 shadow-lg' : 'border border-slate-200 hover:border-green-400 shadow-sm'}`}
+                              title="Play Tibetan Audio"
+                            >
+                              <img src="/yogi.png" alt="Yogi" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''}`} />
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => matchingAudio && replayAudio(matchingAudio)}
+                              disabled={!matchingAudio}
+                              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? 'ring-4 ring-blue-400 scale-110 shadow-lg' : 'border border-slate-200 hover:border-blue-400 shadow-sm'}`}
+                              title="Play English Audio"
+                            >
+                              <img src="/dakini.png" alt="Tara" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''}`} />
+                            </button>
+                          )}
+
+                          {/* 2. The Text Bubble */}
+                          <div className={`p-3 sm:p-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'bg-blue-50 border border-blue-200' : 'bg-white border border-slate-200 text-slate-700'}`}>
+                            {isTibetan ? (
+                              <span className="text-xl sm:text-3xl text-slate-800 leading-loose">{trimmed}</span>
+                            ) : (
+                              <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{trimmed}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
 
-                <div className={`w-full ${msg.role === "user" ? "max-w-[85%] sm:max-w-[75%]" : ""}`}>
-                  {msg.role === "user" ? (
+                {/* User Message Rendering */}
+                {msg.role === "user" && (
+                  <div className={`w-full max-w-[85%] sm:max-w-[75%]`}>
                     <div className="p-3 sm:p-5 rounded-2xl shadow-sm text-sm sm:text-base leading-relaxed bg-blue-600 text-white rounded-br-none w-fit ml-auto"><p>{msg.content}</p></div>
-                  ) : (
-                    <div className="flex flex-col gap-3 w-full">
-                      {msg.content.split(/([\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
-                        const trimmed = part.trim();
-                        if (!trimmed) return null;
-                        const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
-                        if (isTibetan) {
-                          const matchingAudio = msg.audioSequence?.find(a => a.lang === "tib" && a.text === trimmed)?.audio_base64;
-                          return (
-                            <div key={i} className="flex flex-row items-center gap-3 sm:gap-4 w-full mt-2 mb-2">
-                              <div className="p-3 sm:p-5 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm rounded-tl-none w-fit"><span className="text-xl sm:text-3xl text-slate-800 leading-loose">{trimmed}</span></div>
-                              {matchingAudio && (
-                                <button onClick={() => replayTibetanAudio(matchingAudio)} className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-slate-300 hover:border-blue-500 hover:shadow-lg transition flex-shrink-0 bg-white shadow-sm" title="Play Tibetan Audio"><img src="/yogi.png" alt="Yogi" className="w-full h-full object-cover" /></button>
-                              )}
-                            </div>
-                          );
-                        } else {
-                          return <div key={i} className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 text-slate-700 shadow-sm rounded-tl-none w-fit max-w-[90%] sm:max-w-[85%] text-sm sm:text-base"><p className="whitespace-pre-wrap">{trimmed}</p></div>;
-                        }
-                      })}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
               </div>
             </div>
           ))}
@@ -363,7 +420,7 @@ export default function Home() {
           
           <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
-          {/* NEW: Interrupt Button */}
+          {/* Interrupt Button */}
           <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
             <StopCircle size={20} />
           </button>
