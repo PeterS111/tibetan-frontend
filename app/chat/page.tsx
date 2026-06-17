@@ -17,7 +17,6 @@ const TRANSLATIONS = {
     start: "Let's start.", continue: "Continue.",
     loginToChat: "🔒 Please log in to chat...", listening: "Listening...",
     typePlaceholder: "Type in English or བོད་ཡིག...",
-    letTaraLead: "Let Tara lead.", or: "or"
   },
   zh: {
     name: "中文", sttCode: "zh-CN",
@@ -27,7 +26,6 @@ const TRANSLATIONS = {
     start: "我们开始吧。", continue: "继续。",
     loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
     typePlaceholder: "输入中文或བོད་ཡིག...",
-    letTaraLead: "让 Tara 引导。", or: "或"
   },
   es: {
     name: "Español", sttCode: "es-ES",
@@ -37,7 +35,6 @@ const TRANSLATIONS = {
     start: "Empecemos.", continue: "Continuar.",
     loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
     typePlaceholder: "Escribe en español o བོད་ཡིག...",
-    letTaraLead: "Deja que Tara guíe.", or: "o"
   },
   fr: {
     name: "Français", sttCode: "fr-FR",
@@ -47,7 +44,6 @@ const TRANSLATIONS = {
     start: "Commençons.", continue: "Continuer.",
     loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
     typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
-    letTaraLead: "Laissez Tara guider.", or: "ou"
   },
   pt: {
     name: "Português", sttCode: "pt-BR",
@@ -57,7 +53,6 @@ const TRANSLATIONS = {
     start: "Vamos começar.", continue: "Continuar.",
     loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
     typePlaceholder: "Digite em português ou བོད་ཡིག...",
-    letTaraLead: "Deixe Tara guiar.", or: "ou"
   },
   de: {
     name: "Deutsch", sttCode: "de-DE",
@@ -67,7 +62,6 @@ const TRANSLATIONS = {
     start: "Lass uns anfangen.", continue: "Weiter.",
     loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
     typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
-    letTaraLead: "Lass Tara führen.", or: "oder"
   },
   pl: {
     name: "Polski", sttCode: "pl-PL",
@@ -77,7 +71,6 @@ const TRANSLATIONS = {
     start: "Zaczynajmy.", continue: "Kontynuuj.",
     loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
     typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
-    letTaraLead: "Pozwól Tarze prowadzić.", or: "albo"
   }
 };
 
@@ -219,14 +212,7 @@ export default function ChatPage() {
 
   const handleSendText = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Automatically stop recording if the user clicks send while speaking
-    if (isRecording) {
-      stopRecording();
-    }
-    
     if (!inputText.trim() || isLoading) return;
-    
     const userMessage = inputText.trim();
     setInputText("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
@@ -402,4 +388,247 @@ export default function ChatPage() {
         <div className="absolute inset-0 z-50 flex">
           <div className="w-72 max-w-[80vw] bg-white border-r border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-left duration-200">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-              <div classNa
+              <div className="flex items-center gap-2">
+                <img src="/dakini.png" alt="Tara" className="w-8 h-8 rounded-full border border-slate-200" />
+                <h2 className="font-bold text-slate-800">Learn Tibetan UK</h2>
+              </div>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded hover:bg-slate-200 text-slate-500 transition"><X size={20}/></button>
+            </div>
+
+            <div className="p-4 space-y-1 border-b border-slate-100 shrink-0">
+              <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Home size={18} /> Home</Link>
+              <button onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-blue-700 transition font-medium text-sm"><MessageSquare size={18} /> Tutor Chat</button>
+              <Link href="/about" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Info size={18} /> About</Link>
+              <Link href="/donate" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Heart size={18} /> Support Us</Link>
+              <Link href="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Mail size={18} /> Contact</Link>
+            </div>
+
+            <div className="flex-1 flex flex-col min-h-0">
+              <button onClick={() => setIsHistoryOpen(!isHistoryOpen)} className="w-full flex items-center justify-between p-4 text-slate-700 hover:bg-slate-50 transition shrink-0">
+                <span className="font-bold text-sm">Chat History</span>
+                {isHistoryOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+              </button>
+              
+              {isHistoryOpen && (
+                <div className="px-4 pb-4 space-y-2 flex-1 overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-200 custom-scrollbar">
+                  <button onClick={startNewChat} className="w-full bg-slate-800 text-white py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-700 shadow-sm transition mb-4"><Plus size={16}/> New Conversation</button>
+                  {pastConversations.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-4">No past conversations.</p>
+                  ) : (
+                    pastConversations.map(c => {
+                       const modeLabel = c.mode === 'study' ? 'Study Book' : c.mode === 'custom' ? 'Custom Text' : 'Quick Chat';
+                       const ModeIcon = c.mode === 'study' ? BookOpen : c.mode === 'custom' ? PenTool : Zap;
+                       const modeColor = c.mode === 'study' ? 'text-purple-600' : c.mode === 'custom' ? 'text-emerald-600' : 'text-blue-600';
+                       return (
+                         <button key={c.id} onClick={() => loadConversation(c.id, c.mode)} className={`w-full text-left p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
+                           <div className="text-sm font-bold text-slate-700 flex items-center gap-2"><ModeIcon size={14} className={modeColor} /> {modeLabel}</div>
+                           <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
+                         </button>
+                       );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 bg-slate-900/20 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>
+        </div>
+      )}
+
+      <div className="flex flex-col bg-white border-b border-slate-200 shadow-sm z-10 shrink-0">
+        <header className="flex items-center justify-between p-3 sm:p-4 w-full max-w-5xl mx-auto">
+          <div className="flex-1 flex justify-start gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-semibold text-sm transition"><Menu size={24} /> <span className="hidden sm:inline">Menu</span></button>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 whitespace-nowrap">Tibetan Tutor</h1>
+            <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Tara AI</p>
+          </div>
+          
+          <div className="flex-1 flex justify-end gap-3 items-center relative">
+            <div className="relative">
+              <button 
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full transition-colors font-semibold text-sm border ${isLangMenuOpen ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+                title="Change Base Language"
+              >
+                <Globe size={16} /> <span className="uppercase tracking-wide">{appLanguage}</span>
+              </button>
+
+              {isLangMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsLangMenuOpen(false)}></div>
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="p-2 space-y-1">
+                      {Object.entries(TRANSLATIONS).map(([code, config]) => (
+                        <button
+                          key={code}
+                          onClick={() => { setAppLanguage(code as LangCode); setIsLangMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition flex items-center justify-between ${appLanguage === code ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`}
+                        >
+                          {config.name} {appLanguage === code && <Zap size={14} />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button onClick={() => setIsFeedbackModalOpen(true)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors hidden sm:block" title="Leave Feedback"><MessageSquarePlus size={20} /></button>
+            <Show when="signed-out"><SignInButton mode="modal"><button className="text-sm font-semibold bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-colors shadow-sm">Log in</button></SignInButton></Show>
+            <Show when="signed-in"><UserButton /></Show>
+          </div>
+        </header>
+
+        <div className="flex justify-start sm:justify-center items-center gap-2 sm:gap-4 p-3 bg-slate-50 border-t border-slate-100 overflow-x-auto w-full flex-nowrap scroll-smooth">
+          <button onClick={() => { setAiMode("chat"); startNewChat(); }} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><Zap size={16} /> Quick Chat</button>
+          <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><BookOpen size={16} /> Study Book</button>
+          <button onClick={() => setAiMode("custom")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'custom' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}`}><PenTool size={16} /> Custom Text</button>
+        </div>
+        
+        {(aiMode === "study") && (
+          <div className="flex justify-center p-2 bg-slate-100 border-t border-slate-200">
+             <button onClick={() => sendAutomatedMessage(t.startLesson)} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
+               <PlayCircle size={18} className="text-blue-500"/> {t.startLesson}
+             </button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center">
+        <div className="w-full max-w-3xl space-y-8 pb-4">
+          
+          {messages.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 mt-10">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-slate-200 p-1 opacity-70"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
+              <p className="text-sm sm:text-base text-center max-w-md px-4 whitespace-pre-wrap">{t.selectMode}</p>
+            </div>
+          )}
+
+          {messages.map((msg, index) => (
+            <div key={index} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`flex items-start w-full gap-3 sm:gap-4 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                {msg.role === "user" ? (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
+                ) : (
+                  <div className="flex flex-col gap-4 w-full">
+                    {/* NEW ROBUST REGEX: Perfectly matches Tibetan Script and its immediate parenthesis! */}
+                    {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(]*\([^)]+\)|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
+                      const trimmed = part.trim();
+                      if (!trimmed) return null;
+                      const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
+                      const matchingAudio = msg.audioSequence?.find(a => a.text === trimmed)?.audio_base64;
+                      const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
+                      const showSpinner = msg.isLoadingAudio && !matchingAudio;
+
+                      // Separates the Tibetan script from its phonetics safely for UI
+                      let tibText = trimmed;
+                      let phonetics = "";
+                      if (isTibetan && trimmed.includes('(')) {
+                        const splitIdx = trimmed.lastIndexOf('(');
+                        tibText = trimmed.substring(0, splitIdx).trim();
+                        phonetics = trimmed.substring(splitIdx + 1).replace(')', '').trim().toUpperCase();
+                      }
+
+                      return (
+                        <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
+                          <div className="relative">
+                            <button 
+                              onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
+                              disabled={!matchingAudio && !showSpinner}
+                              className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? (isTibetan ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'ring-4 ring-yellow-500 scale-110 shadow-lg') : 'border border-slate-200 shadow-sm'} ${matchingAudio ? (isTibetan ? 'hover:border-red-700 cursor-pointer' : 'hover:border-yellow-500 cursor-pointer') : 'cursor-default'}`}
+                            >
+                              <img src={isTibetan ? "/yogi.png" : "/dakini.png"} alt="Avatar" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''} ${showSpinner ? 'opacity-40 grayscale' : ''}`} />
+                            </button>
+                            {showSpinner && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><Loader2 className="w-5 h-5 animate-spin text-slate-700" /></div>
+                            )}
+                          </div>
+                          <div className={`px-3 sm:px-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'py-2 sm:py-3 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
+                            {isTibetan ? (
+                              <div className="flex flex-col gap-1.5">
+                                <span className="text-xl sm:text-3xl text-slate-800 leading-normal">{tibText}</span>
+                                {phonetics && (
+                                  <span className="text-[11px] sm:text-xs text-blue-700/80 font-bold tracking-[0.15em] uppercase">
+                                    {phonetics}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{trimmed}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {msg.role === "user" && (
+                  <div className={`w-full max-w-[85%] sm:max-w-[75%]`}>
+                    <div className="p-3 sm:p-5 rounded-2xl shadow-sm text-sm sm:text-base leading-relaxed bg-blue-600 text-white rounded-br-none w-fit ml-auto"><p>{msg.content}</p></div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {isLoading && !isPlaying && (
+            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">{t.thinking}</span></div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
+        
+        <div className="w-full max-w-3xl mb-3 flex justify-center">
+          <div className="relative inline-flex group">
+            {userId && !isLoading && !isRecording && !isPlaying && (
+              <span className="absolute -inset-1.5 rounded-full bg-green-400 animate-pulse opacity-40 pointer-events-none blur-sm"></span>
+            )}
+            
+            <button 
+              type="button" 
+              onClick={() => {
+                if (messages.length === 0) sendAutomatedMessage(t.start);
+                else sendAutomatedMessage(t.continue);
+              }} 
+              disabled={!userId || isLoading || isRecording || isPlaying} 
+              className="relative z-10 px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
+            >
+              <svg width="60" height="28" viewBox="0 0 60 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-2">
+                <line x1="2" y1="14" x2="56" y2="14" />
+                <polyline points="46 4 56 14 46 24" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
+          
+          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
+            {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
+            <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
+          </button>
+          
+          <input 
+             type="text" 
+             value={inputText} 
+             onChange={(e) => setInputText(e.target.value)} 
+             disabled={!userId || isLoading || isRecording || isPlaying} 
+             placeholder={!userId ? t.loginToChat : isRecording ? t.listening : t.typePlaceholder} 
+             className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" 
+          />
+          
+          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
+          
+          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
+            <StopCircle size={20} />
+          </button>
+
+        </form>
+      </div>
+    </main>
+  );
+}
