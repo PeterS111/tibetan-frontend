@@ -17,6 +17,7 @@ const TRANSLATIONS = {
     start: "Let's start.", continue: "Continue.",
     loginToChat: "🔒 Please log in to chat...", listening: "Listening...",
     typePlaceholder: "Type in English or བོད་ཡིག...",
+    letTaraLead: "Let Tara lead.", or: "or"
   },
   zh: {
     name: "中文", sttCode: "zh-CN",
@@ -26,6 +27,7 @@ const TRANSLATIONS = {
     start: "我们开始吧。", continue: "继续。",
     loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
     typePlaceholder: "输入中文或བོད་ཡིག...",
+    letTaraLead: "让 Tara 引导。", or: "或"
   },
   es: {
     name: "Español", sttCode: "es-ES",
@@ -35,6 +37,7 @@ const TRANSLATIONS = {
     start: "Empecemos.", continue: "Continuar.",
     loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
     typePlaceholder: "Escribe en español o བོད་ཡིག...",
+    letTaraLead: "Deja que Tara guíe.", or: "o"
   },
   fr: {
     name: "Français", sttCode: "fr-FR",
@@ -44,6 +47,7 @@ const TRANSLATIONS = {
     start: "Commençons.", continue: "Continuer.",
     loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
     typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
+    letTaraLead: "Laissez Tara guider.", or: "ou"
   },
   pt: {
     name: "Português", sttCode: "pt-BR",
@@ -53,6 +57,7 @@ const TRANSLATIONS = {
     start: "Vamos começar.", continue: "Continuar.",
     loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
     typePlaceholder: "Digite em português ou བོད་ཡིག...",
+    letTaraLead: "Deixe Tara guiar.", or: "ou"
   },
   de: {
     name: "Deutsch", sttCode: "de-DE",
@@ -62,6 +67,7 @@ const TRANSLATIONS = {
     start: "Lass uns anfangen.", continue: "Weiter.",
     loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
     typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
+    letTaraLead: "Lass Tara führen.", or: "oder"
   },
   pl: {
     name: "Polski", sttCode: "pl-PL",
@@ -71,6 +77,7 @@ const TRANSLATIONS = {
     start: "Zaczynajmy.", continue: "Kontynuuj.",
     loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
     typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
+    letTaraLead: "Pozwól Tarze prowadzić.", or: "albo"
   }
 };
 
@@ -109,6 +116,8 @@ export default function ChatPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isPlayingRef = useRef(false);
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
   useEffect(() => {
@@ -130,6 +139,13 @@ export default function ChatPage() {
   useEffect(() => {
     fetch("https://tibetan-backend.onrender.com/api/wakeup").catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+    }
+  }, [inputText]);
 
   const loadConversation = async (id: string, convMode: "chat" | "study" | "custom" = "chat") => {
     setConversationId(id);
@@ -210,13 +226,29 @@ export default function ChatPage() {
     setIsRecording(false);
   };
 
-  const handleSendText = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeSubmission = async () => {
     if (!inputText.trim() || isLoading) return;
+    if (isRecording) stopRecording();
+    
     const userMessage = inputText.trim();
     setInputText("");
+    
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     await processMessage(userMessage);
+  };
+
+  const handleSendTextForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSubmission();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      executeSubmission();
+    }
   };
 
   const sendAutomatedMessage = async (text: string) => {
@@ -513,7 +545,6 @@ export default function ChatPage() {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
                   <div className="flex flex-col gap-4 w-full">
-                    {/* NEW ROBUST REGEX: Perfectly matches Tibetan Script and its immediate parenthesis! */}
                     {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(]*\([^)]+\)|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
                       const trimmed = part.trim();
                       if (!trimmed) return null;
@@ -522,7 +553,6 @@ export default function ChatPage() {
                       const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
                       const showSpinner = msg.isLoadingAudio && !matchingAudio;
 
-                      // Separates the Tibetan script from its phonetics safely for UI
                       let tibText = trimmed;
                       let phonetics = "";
                       if (isTibetan && trimmed.includes('(')) {
@@ -533,7 +563,7 @@ export default function ChatPage() {
 
                       return (
                         <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
-                          <div className="relative">
+                          <div className="relative mt-1">
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
                               disabled={!matchingAudio && !showSpinner}
@@ -545,12 +575,12 @@ export default function ChatPage() {
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><Loader2 className="w-5 h-5 animate-spin text-slate-700" /></div>
                             )}
                           </div>
-                          <div className={`px-3 sm:px-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'py-2 sm:py-3 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
+                          <div className={`px-4 sm:px-6 rounded-3xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[80%] ${isTibetan ? 'py-3 sm:py-4 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
                             {isTibetan ? (
-                              <div className="flex flex-col gap-1.5">
-                                <span className="text-xl sm:text-3xl text-slate-800 leading-normal">{tibText}</span>
+                              <div className="flex flex-col gap-2 items-start text-left">
+                                <span className="text-xl sm:text-3xl text-slate-800 leading-normal font-medium">{tibText}</span>
                                 {phonetics && (
-                                  <span className="text-[11px] sm:text-xs text-blue-700/80 font-bold tracking-[0.15em] uppercase">
+                                  <span className="text-[11px] sm:text-[13px] text-blue-700/80 font-bold tracking-[0.1em] uppercase">
                                     {phonetics}
                                   </span>
                                 )}
@@ -566,7 +596,7 @@ export default function ChatPage() {
                 )}
                 {msg.role === "user" && (
                   <div className={`w-full max-w-[85%] sm:max-w-[75%]`}>
-                    <div className="p-3 sm:p-5 rounded-2xl shadow-sm text-sm sm:text-base leading-relaxed bg-blue-600 text-white rounded-br-none w-fit ml-auto"><p>{msg.content}</p></div>
+                    <div className="p-3 sm:p-5 rounded-3xl shadow-sm text-sm sm:text-base leading-relaxed bg-blue-600 text-white rounded-br-none w-fit ml-auto whitespace-pre-wrap"><p>{msg.content}</p></div>
                   </div>
                 )}
               </div>
@@ -582,7 +612,12 @@ export default function ChatPage() {
 
       <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
         
-        <div className="w-full max-w-3xl mb-3 flex justify-center">
+        {/* ============================================================ */}
+        {/* 🔥 UPDATED: "Let Tara Lead" text now BOLD & DARKER (slate-500) */}
+        {/* ============================================================ */}
+        <div className="w-full max-w-3xl mb-3 flex justify-center items-center gap-3 sm:gap-4">
+          <span className="text-[13px] sm:text-sm font-bold text-slate-500 whitespace-nowrap">{t.letTaraLead}</span>
+          
           <div className="relative inline-flex group">
             {userId && !isLoading && !isRecording && !isPlaying && (
               <span className="absolute -inset-1.5 rounded-full bg-green-400 animate-pulse opacity-40 pointer-events-none blur-sm"></span>
@@ -595,35 +630,41 @@ export default function ChatPage() {
                 else sendAutomatedMessage(t.continue);
               }} 
               disabled={!userId || isLoading || isRecording || isPlaying} 
-              className="relative z-10 px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
+              className="relative z-10 px-10 sm:px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
-              <svg width="60" height="28" viewBox="0 0 60 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-2">
+              <svg width="50" height="24" viewBox="0 0 60 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-2 sm:w-[60px] sm:h-[28px]">
                 <line x1="2" y1="14" x2="56" y2="14" />
                 <polyline points="46 4 56 14 46 24" />
               </svg>
             </button>
           </div>
-        </div>
-
-        <form onSubmit={handleSendText} className="flex items-center gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
           
-          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
+          <span className="text-[13px] sm:text-sm font-bold text-slate-500 whitespace-nowrap">{t.or}</span>
+        </div>
+        {/* ============================================================ */}
+
+        <form onSubmit={handleSendTextForm} className="flex items-end gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
+          
+          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative mb-1 ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-slate-800 hover:bg-slate-700"} disabled:opacity-50`}>
             {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
             <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
           </button>
           
-          <input 
-             type="text" 
+          <textarea 
+             ref={textareaRef}
+             rows={1}
              value={inputText} 
              onChange={(e) => setInputText(e.target.value)} 
+             onKeyDown={handleKeyDown}
              disabled={!userId || isLoading || isRecording || isPlaying} 
              placeholder={!userId ? t.loginToChat : isRecording ? t.listening : t.typePlaceholder} 
-             className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" 
+             className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-3xl px-4 sm:px-5 py-2.5 sm:py-3.5 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60 resize-none overflow-y-auto custom-scrollbar" 
+             style={{ minHeight: '44px', maxHeight: '150px' }}
           />
           
-          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
+          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0 mb-1"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
-          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
+          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0 mb-1" title="Interrupt Tara">
             <StopCircle size={20} />
           </button>
 
