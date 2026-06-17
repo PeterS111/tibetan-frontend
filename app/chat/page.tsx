@@ -573,7 +573,7 @@ export default function ChatPage() {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
                   <div className="flex flex-col gap-4 w-full">
-                    {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(]*\([^)]+\)|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
+                    {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(（]*[(（][^)）]+[)）]|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
                       const trimmed = part.trim();
                       if (!trimmed) return null;
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
@@ -583,10 +583,11 @@ export default function ChatPage() {
 
                       let tibText = trimmed;
                       let phonetics = "";
-                      if (isTibetan && trimmed.includes('(')) {
-                        const splitIdx = trimmed.lastIndexOf('(');
+                      
+                      if (isTibetan && (trimmed.includes('(') || trimmed.includes('（'))) {
+                        const splitIdx = trimmed.lastIndexOf('(') !== -1 ? trimmed.lastIndexOf('(') : trimmed.lastIndexOf('（');
                         tibText = trimmed.substring(0, splitIdx).trim();
-                        phonetics = trimmed.substring(splitIdx + 1).replace(')', '').trim().toUpperCase();
+                        phonetics = trimmed.substring(splitIdx + 1).replace(/[)）]/g, '').trim().toUpperCase();
                       }
 
                       return (
