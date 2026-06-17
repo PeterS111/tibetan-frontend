@@ -8,9 +8,6 @@ import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/ne
 // ==========================================
 // MULTILINGUAL UI CONFIGURATION
 // ==========================================
-// ==========================================
-// MULTILINGUAL UI CONFIGURATION
-// ==========================================
 const TRANSLATIONS = {
   en: {
     name: "English", sttCode: "en-GB",
@@ -26,11 +23,11 @@ const TRANSLATIONS = {
     name: "中文", sttCode: "zh-CN",
     startLesson: "开始课本学习",
     selectMode: "在上面选择一个模式。\n输入一条消息或按住麦克风开始。",
-    thinking: "Tara 正在思考...",
+    thinking: "度母正在思考...",
     start: "我们开始吧。", continue: "继续。",
     loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
     typePlaceholder: "输入中文或བོད་ཡིག...",
-    letTaraLead: "让 Tara 引导 -> ", or: "或输入/说话："
+    letTaraLead: "让度母引导 -> ", or: "或输入/说话："
   },
   es: {
     name: "Español", sttCode: "es-ES",
