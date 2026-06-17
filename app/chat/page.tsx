@@ -8,6 +8,9 @@ import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/ne
 // ==========================================
 // MULTILINGUAL UI CONFIGURATION
 // ==========================================
+// ==========================================
+// MULTILINGUAL UI CONFIGURATION
+// ==========================================
 const TRANSLATIONS = {
   en: {
     name: "English", sttCode: "en-GB",
@@ -27,7 +30,7 @@ const TRANSLATIONS = {
     start: "我们开始吧。", continue: "继续。",
     loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
     typePlaceholder: "输入中文或བོད་ཡིག...",
-    letTaraLead: "让 Tara 引导。", or: "或"
+    letTaraLead: "让 Tara 引导 -> ", or: "或输入/说话："
   },
   es: {
     name: "Español", sttCode: "es-ES",
@@ -37,7 +40,7 @@ const TRANSLATIONS = {
     start: "Empecemos.", continue: "Continuar.",
     loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
     typePlaceholder: "Escribe en español o བོད་ཡིག...",
-    letTaraLead: "Deja que Tara guíe.", or: "o"
+    letTaraLead: "Deja que Tara guíe -> ", or: "o escribe/habla:"
   },
   fr: {
     name: "Français", sttCode: "fr-FR",
@@ -47,7 +50,7 @@ const TRANSLATIONS = {
     start: "Commençons.", continue: "Continuer.",
     loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
     typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
-    letTaraLead: "Laissez Tara guider.", or: "ou"
+    letTaraLead: "Laissez Tara guider -> ", or: "ou tapez/parlez :"
   },
   pt: {
     name: "Português", sttCode: "pt-BR",
@@ -57,7 +60,7 @@ const TRANSLATIONS = {
     start: "Vamos começar.", continue: "Continuar.",
     loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
     typePlaceholder: "Digite em português ou བོད་ཡིག...",
-    letTaraLead: "Deixe Tara guiar.", or: "ou"
+    letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:"
   },
   de: {
     name: "Deutsch", sttCode: "de-DE",
@@ -67,7 +70,7 @@ const TRANSLATIONS = {
     start: "Lass uns anfangen.", continue: "Weiter.",
     loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
     typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
-    letTaraLead: "Lass Tara führen.", or: "oder"
+    letTaraLead: "Lass Tara führen -> ", or: "oder tippe/sprich:"
   },
   pl: {
     name: "Polski", sttCode: "pl-PL",
@@ -77,7 +80,7 @@ const TRANSLATIONS = {
     start: "Zaczynajmy.", continue: "Kontynuuj.",
     loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
     typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
-    letTaraLead: "Pozwól Tarze prowadzić.", or: "albo"
+    letTaraLead: "Pozwól Tarze prowadzić -> ", or: "albo wpisz/powiedz:"
   }
 };
 
