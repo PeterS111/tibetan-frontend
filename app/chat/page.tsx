@@ -98,11 +98,9 @@ export default function ChatPage() {
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
   
-  // NEW: Advanced Language State + Dropdown State
   const [appLanguage, setAppLanguage] = useState<LangCode>("en");
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
-  // Helper dictionary access
   const t = TRANSLATIONS[appLanguage];
 
   const recognitionRef = useRef<any>(null);
@@ -515,7 +513,8 @@ export default function ChatPage() {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
                   <div className="flex flex-col gap-4 w-full">
-                    {msg.content.split(/([\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*(?:\s*\([^)]+\))?)/g).map((part, i) => {
+                    {/* NEW ROBUST REGEX: Perfectly matches Tibetan Script and its immediate parenthesis! */}
+                    {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(]*\([^)]+\)|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
                       const trimmed = part.trim();
                       if (!trimmed) return null;
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
@@ -527,9 +526,9 @@ export default function ChatPage() {
                       let tibText = trimmed;
                       let phonetics = "";
                       if (isTibetan && trimmed.includes('(')) {
-                        const splitIdx = trimmed.indexOf('(');
+                        const splitIdx = trimmed.lastIndexOf('(');
                         tibText = trimmed.substring(0, splitIdx).trim();
-                        phonetics = trimmed.substring(splitIdx + 1).replace(')', '').trim();
+                        phonetics = trimmed.substring(splitIdx + 1).replace(')', '').trim().toUpperCase();
                       }
 
                       return (
@@ -548,10 +547,10 @@ export default function ChatPage() {
                           </div>
                           <div className={`px-3 sm:px-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'py-2 sm:py-3 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
                             {isTibetan ? (
-                              <div className="flex flex-col gap-1">
+                              <div className="flex flex-col gap-1.5">
                                 <span className="text-xl sm:text-3xl text-slate-800 leading-normal">{tibText}</span>
                                 {phonetics && (
-                                  <span className="text-sm sm:text-base text-slate-600 font-medium tracking-wide italic">
+                                  <span className="text-[11px] sm:text-xs text-blue-700/80 font-bold tracking-[0.15em] uppercase">
                                     {phonetics}
                                   </span>
                                 )}
