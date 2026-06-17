@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight, Globe } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
@@ -27,6 +27,9 @@ export default function ChatPage() {
   const [isPlaying, setIsPlaying] = useState(false); 
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
+  
+  // NEW: Multilingual Language State (English or Chinese)
+  const [appLanguage, setAppLanguage] = useState<"en" | "zh">("en");
 
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -57,8 +60,9 @@ export default function ChatPage() {
     fetch("https://tibetan-backend.onrender.com/api/wakeup").catch(() => {});
   }, []);
 
-  const loadConversation = async (id: string) => {
+  const loadConversation = async (id: string, convMode: "chat" | "study" | "custom" = "chat") => {
     setConversationId(id);
+    setAiMode(convMode);
     setIsSidebarOpen(false);
     setMessages([]); 
     try {
@@ -103,6 +107,8 @@ export default function ChatPage() {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true; 
+    // If language is Chinese, hint the speech recognition engine
+    if (appLanguage === "zh") recognition.lang = 'zh-CN'; 
 
     const currentInput = inputText.trim() ? inputText.trim() + " " : "";
 
@@ -188,6 +194,9 @@ export default function ChatPage() {
     const safeHistory = messages.map(m => ({ role: m.role, content: m.content }));
     formData.append("history", JSON.stringify(safeHistory));
     formData.append("mode", aiMode);
+    
+    // Pass the selected language to the chat API
+    formData.append("language", appLanguage);
 
     let activeConvId = conversationId;
     if (userId) {
@@ -217,6 +226,8 @@ export default function ChatPage() {
 
       const ttsFormData = new FormData();
       ttsFormData.append("text", data.ai_text);
+      // Pass the selected language to the TTS API
+      ttsFormData.append("language", appLanguage);
       if (data.message_id) ttsFormData.append("message_id", data.message_id);
 
       const ttsResponse = await fetch("https://tibetan-backend.onrender.com/api/tts", {
@@ -380,12 +391,20 @@ export default function ChatPage() {
                   {pastConversations.length === 0 ? (
                     <p className="text-xs text-slate-400 text-center py-4">No past conversations.</p>
                   ) : (
-                    pastConversations.map(c => (
-                       <button key={c.id} onClick={() => loadConversation(c.id)} className={`w-full text-left p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
-                         <div className="text-sm font-bold text-slate-700">Session</div>
-                         <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
-                       </button>
-                    ))
+                    pastConversations.map(c => {
+                       const modeLabel = c.mode === 'study' ? 'Study Book' : c.mode === 'custom' ? 'Custom Text' : 'Quick Chat';
+                       const ModeIcon = c.mode === 'study' ? BookOpen : c.mode === 'custom' ? PenTool : Zap;
+                       const modeColor = c.mode === 'study' ? 'text-purple-600' : c.mode === 'custom' ? 'text-emerald-600' : 'text-blue-600';
+
+                       return (
+                         <button key={c.id} onClick={() => loadConversation(c.id, c.mode)} className={`w-full text-left p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
+                           <div className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                             <ModeIcon size={14} className={modeColor} /> {modeLabel}
+                           </div>
+                           <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
+                         </button>
+                       );
+                    })
                   )}
                 </div>
               )}
@@ -409,6 +428,17 @@ export default function ChatPage() {
             <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Tara AI</p>
           </div>
           <div className="flex-1 flex justify-end gap-3 items-center">
+            {/* NEW: Multilingual Toggle Button */}
+            <button 
+              onClick={() => setAppLanguage(prev => prev === "en" ? "zh" : "en")}
+              className="flex items-center justify-center gap-1.5 px-2 py-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors font-semibold text-sm border border-transparent hover:border-blue-100"
+              title="Toggle Base Language"
+            >
+              <Globe size={20} className={appLanguage === "zh" ? "text-blue-600" : ""} />
+              <span className={`hidden sm:inline ${appLanguage === "zh" ? "text-blue-600" : ""}`}>
+                {appLanguage === "en" ? "EN" : "中文"}
+              </span>
+            </button>
             <button onClick={() => setIsFeedbackModalOpen(true)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors" title="Leave Feedback"><MessageSquarePlus size={20} /></button>
             <Show when="signed-out"><SignInButton mode="modal"><button className="text-sm font-semibold bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition-colors shadow-sm">Log in</button></SignInButton></Show>
             <Show when="signed-in"><UserButton /></Show>
@@ -423,8 +453,8 @@ export default function ChatPage() {
         
         {(aiMode === "study") && (
           <div className="flex justify-center p-2 bg-slate-100 border-t border-slate-200">
-             <button onClick={() => sendAutomatedMessage("Please start the next text from the textbook.")} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
-               <PlayCircle size={18} className="text-blue-500"/> Start Lesson from Book
+             <button onClick={() => sendAutomatedMessage(appLanguage === "zh" ? "请从课本开始下一段课文。" : "Please start the next text from the textbook.")} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
+               <PlayCircle size={18} className="text-blue-500"/> {appLanguage === "zh" ? "开始课本学习" : "Start Lesson from Book"}
              </button>
           </div>
         )}
@@ -436,7 +466,9 @@ export default function ChatPage() {
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 mt-10">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-slate-200 p-1 opacity-70"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
-              <p className="text-sm sm:text-base text-center max-w-md px-4">Select a mode above.<br/> Type a message or press the microphone to start.</p>
+              <p className="text-sm sm:text-base text-center max-w-md px-4">
+                {appLanguage === "zh" ? "在上面选择一个模式。\n输入一条消息或按住麦克风开始。" : "Select a mode above.\n Type a message or press the microphone to start."}
+              </p>
             </div>
           )}
 
@@ -499,7 +531,7 @@ export default function ChatPage() {
           ))}
 
           {isLoading && !isPlaying && (
-            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is thinking...</span></div>
+            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">{appLanguage === "zh" ? "Tara 正在思考..." : "Tara is thinking..."}</span></div>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -517,9 +549,9 @@ export default function ChatPage() {
               type="button" 
               onClick={() => {
                 if (messages.length === 0) {
-                  sendAutomatedMessage("Let's start.");
+                  sendAutomatedMessage(appLanguage === "zh" ? "我们开始吧。" : "Let's start.");
                 } else {
-                  sendAutomatedMessage("Continue.");
+                  sendAutomatedMessage(appLanguage === "zh" ? "继续。" : "Continue.");
                 }
               }} 
               disabled={!userId || isLoading || isRecording || isPlaying} 
@@ -556,7 +588,7 @@ export default function ChatPage() {
              value={inputText} 
              onChange={(e) => setInputText(e.target.value)} 
              disabled={!userId || isLoading || isRecording || isPlaying} 
-             placeholder={!userId ? "🔒 Please log in to chat..." : isRecording ? "Listening..." : "Type in English or བོད་ཡིག..."} 
+             placeholder={!userId ? (appLanguage === "zh" ? "🔒 请登录以聊天..." : "🔒 Please log in to chat...") : isRecording ? (appLanguage === "zh" ? "正在聆听..." : "Listening...") : (appLanguage === "zh" ? "输入中文或བོད་ཡིག..." : "Type in English or བོད་ཡིག...")} 
              className="flex-1 min-w-0 bg-slate-100 border border-slate-200 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-[16px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all disabled:opacity-60" 
           />
           
