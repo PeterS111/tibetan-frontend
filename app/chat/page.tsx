@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 type AudioPart = { lang: string; text: string; audio_base64: string; };
 type Message = { id?: string; role: "user" | "ai"; content: string; audioSequence?: AudioPart[]; isLoadingAudio?: boolean; };
 
-export default function Home() {
+export default function ChatPage() {
   const { userId } = useAuth();
   const [conversationId, setConversationId] = useState<string | null>(null);
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [pastConversations, setPastConversations] = useState<any[]>([]);
 
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -243,7 +244,6 @@ export default function Home() {
           if (part.audio_base64) {
             setPlayingAudioBase64(part.audio_base64);
             
-            // FIX: Set the correct MIME type dynamically based on the language
             const audioType = part.lang === "tib" ? "wav" : "mp3";
             const audio = new Audio(`data:audio/${audioType};base64,${part.audio_base64}`);
             
@@ -283,7 +283,6 @@ export default function Home() {
     }
   };
 
-  // FIX: Added 'isTibetan' parameter to ensure replay uses the correct MIME type
   const replayAudio = (base64Audio: string, isTibetan: boolean) => {
     if (!base64Audio) return;
     if (currentAudioRef.current) {
@@ -295,7 +294,6 @@ export default function Home() {
     setIsPlaying(true);
     isPlayingRef.current = true;
     
-    // Set the correct MIME type dynamically
     const audioType = isTibetan ? "wav" : "mp3";
     const audio = new Audio(`data:audio/${audioType};base64,${base64Audio}`);
     currentAudioRef.current = audio;
@@ -334,22 +332,67 @@ export default function Home() {
       {isSidebarOpen && (
         <div className="absolute inset-0 z-50 flex">
           <div className="w-72 max-w-[80vw] bg-white border-r border-slate-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-left duration-200">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h2 className="font-bold text-slate-700">Chat History</h2>
-              <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded hover:bg-slate-200"><X size={20}/></button>
+            
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+              <div className="flex items-center gap-2">
+                <img src="/dakini.png" alt="Tara" className="w-8 h-8 rounded-full border border-slate-200" />
+                <h2 className="font-bold text-slate-800">Learn Tibetan UK</h2>
+              </div>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded hover:bg-slate-200 text-slate-500 transition"><X size={20}/></button>
             </div>
-            <div className="p-4 border-b border-slate-100">
-               <button onClick={startNewChat} className="w-full bg-slate-800 text-white py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-700 shadow-sm transition"><Plus size={18}/> New Conversation</button>
+
+            {/* Main Navigation Links */}
+            <div className="p-4 space-y-1 border-b border-slate-100 shrink-0">
+              <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm">
+                <Home size={18} /> Home
+              </Link>
+              <button onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-blue-700 transition font-medium text-sm">
+                <MessageSquare size={18} /> Tutor Chat
+              </button>
+              <Link href="/about" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm">
+                <Info size={18} /> About
+              </Link>
+              <Link href="/donate" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm">
+                <Heart size={18} /> Support Us
+              </Link>
+              <Link href="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm">
+                <Mail size={18} /> Contact
+              </Link>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {pastConversations.map(c => (
-                 <button key={c.id} onClick={() => loadConversation(c.id)} className={`w-full text-left p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
-                   <div className="text-sm font-bold text-slate-700">Session</div>
-                   <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
-                 </button>
-              ))}
+
+            {/* Chat History Accordion */}
+            <div className="flex-1 flex flex-col min-h-0">
+              <button 
+                onClick={() => setIsHistoryOpen(!isHistoryOpen)} 
+                className="w-full flex items-center justify-between p-4 text-slate-700 hover:bg-slate-50 transition shrink-0"
+              >
+                <span className="font-bold text-sm">Chat History</span>
+                {isHistoryOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+              </button>
+              
+              {isHistoryOpen && (
+                <div className="px-4 pb-4 space-y-2 flex-1 overflow-y-auto animate-in slide-in-from-top-2 fade-in duration-200 custom-scrollbar">
+                  <button onClick={startNewChat} className="w-full bg-slate-800 text-white py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-700 shadow-sm transition mb-4">
+                    <Plus size={16}/> New Conversation
+                  </button>
+                  
+                  {pastConversations.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center py-4">No past conversations.</p>
+                  ) : (
+                    pastConversations.map(c => (
+                       <button key={c.id} onClick={() => loadConversation(c.id)} className={`w-full text-left p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
+                         <div className="text-sm font-bold text-slate-700">Session</div>
+                         <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
+                       </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
+          
+          {/* Background Overlay */}
           <div className="flex-1 bg-slate-900/20 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>
         </div>
       )}
@@ -357,12 +400,9 @@ export default function Home() {
       <div className="flex flex-col bg-white border-b border-slate-200 shadow-sm z-10 shrink-0">
         <header className="flex items-center justify-between p-3 sm:p-4 w-full max-w-5xl mx-auto">
           <div className="flex-1 flex justify-start gap-4">
-            <Show when="signed-in">
-              <button onClick={() => setIsSidebarOpen(true)} className="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-semibold text-sm transition"><Menu size={20} /> <span className="hidden sm:inline">History</span></button>
-            </Show>
-            <Link href="/about" className="text-slate-600 hover:text-blue-600 font-semibold text-sm transition flex items-center">
-              About
-            </Link>
+            <button onClick={() => setIsSidebarOpen(true)} className="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-semibold text-sm transition">
+              <Menu size={24} /> <span className="hidden sm:inline">Menu</span>
+            </button>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-800 whitespace-nowrap">Tibetan Tutor</h1>
@@ -421,7 +461,6 @@ export default function Home() {
                           
                           <div className="relative">
                             <button 
-                              // FIX: Passed 'isTibetan' boolean to replayAudio
                               onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
                               disabled={!matchingAudio && !showSpinner}
                               className={`relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 ${isThisPlaying ? (isTibetan ? 'ring-4 ring-red-700 scale-110 shadow-lg' : 'ring-4 ring-yellow-500 scale-110 shadow-lg') : 'border border-slate-200 shadow-sm'} ${matchingAudio ? (isTibetan ? 'hover:border-red-700 cursor-pointer' : 'hover:border-yellow-500 cursor-pointer') : 'cursor-default'}`}
