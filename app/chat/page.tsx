@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight, Globe } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight, Globe, Trash2 } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
 // ==========================================
@@ -168,7 +168,7 @@ export default function ChatPage() {
     setMessages([]);
     setIsSidebarOpen(false);
   };
-  
+
   const hideConversation = async (id: string) => {
     // 1. Optimistically remove it from the UI instantly
     setPastConversations(prev => prev.filter(c => c.id !== id));
@@ -185,8 +185,6 @@ export default function ChatPage() {
       console.error("Failed to hide conversation", e);
     }
   };
-  
-  
 
   const submitFeedback = async () => {
     if (!feedbackText.trim()) return;
@@ -470,11 +468,22 @@ export default function ChatPage() {
                        const modeLabel = c.mode === 'study' ? 'Study Book' : c.mode === 'custom' ? 'Custom Text' : 'Quick Chat';
                        const ModeIcon = c.mode === 'study' ? BookOpen : c.mode === 'custom' ? PenTool : Zap;
                        const modeColor = c.mode === 'study' ? 'text-purple-600' : c.mode === 'custom' ? 'text-emerald-600' : 'text-blue-600';
+                       
                        return (
-                         <button key={c.id} onClick={() => loadConversation(c.id, c.mode)} className={`w-full text-left p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
-                           <div className="text-sm font-bold text-slate-700 flex items-center gap-2"><ModeIcon size={14} className={modeColor} /> {modeLabel}</div>
-                           <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
-                         </button>
+                         <div key={c.id} className={`group relative w-full flex items-center justify-between p-3 rounded-xl border transition-all ${conversationId === c.id ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50'}`}>
+                           <button onClick={() => loadConversation(c.id, c.mode)} className="flex-1 text-left">
+                             <div className="text-sm font-bold text-slate-700 flex items-center gap-2"><ModeIcon size={14} className={modeColor} /> {modeLabel}</div>
+                             <div className="text-xs text-slate-500 mt-1">{new Date(c.created_at).toLocaleString()}</div>
+                           </button>
+                           
+                           <button 
+                             onClick={() => hideConversation(c.id)}
+                             title="Delete Chat"
+                             className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all focus:opacity-100"
+                           >
+                             <Trash2 size={18} />
+                           </button>
+                         </div>
                        );
                     })
                   )}
@@ -631,9 +640,6 @@ export default function ChatPage() {
 
       <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 relative z-20 pb-safe flex flex-col items-center">
         
-        {/* ============================================================ */}
-        {/* 🔥 UPDATED: "Let Tara Lead" text now BOLD & DARKER (slate-500) */}
-        {/* ============================================================ */}
         <div className="w-full max-w-3xl mb-3 flex justify-center items-center gap-3 sm:gap-4">
           <span className="text-[13px] sm:text-sm font-bold text-slate-500 whitespace-nowrap">{t.letTaraLead}</span>
           
@@ -660,7 +666,6 @@ export default function ChatPage() {
           
           <span className="text-[13px] sm:text-sm font-bold text-slate-500 whitespace-nowrap">{t.or}</span>
         </div>
-        {/* ============================================================ */}
 
         <form onSubmit={handleSendTextForm} className="flex items-end gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
           
