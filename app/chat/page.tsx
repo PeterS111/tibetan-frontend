@@ -168,6 +168,25 @@ export default function ChatPage() {
     setMessages([]);
     setIsSidebarOpen(false);
   };
+  
+  const hideConversation = async (id: string) => {
+    // 1. Optimistically remove it from the UI instantly
+    setPastConversations(prev => prev.filter(c => c.id !== id));
+    
+    // 2. If they deleted the chat they are currently viewing, clear the screen
+    if (conversationId === id) {
+      startNewChat();
+    }
+
+    // 3. Tell the backend to mark it as soft-deleted
+    try {
+      await fetch(`https://tibetan-backend.onrender.com/api/conversations/${id}/hide`, { method: "POST" });
+    } catch (e) {
+      console.error("Failed to hide conversation", e);
+    }
+  };
+  
+  
 
   const submitFeedback = async () => {
     if (!feedbackText.trim()) return;
