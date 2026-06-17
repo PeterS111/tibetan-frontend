@@ -179,8 +179,6 @@ export default function ChatPage() {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true; 
-    
-    // UPGRADE: Dynamically set the dictation locale based on selected language!
     recognition.lang = t.sttCode; 
 
     const currentInput = inputText.trim() ? inputText.trim() + " " : "";
@@ -255,7 +253,7 @@ export default function ChatPage() {
     const safeHistory = messages.map(m => ({ role: m.role, content: m.content }));
     formData.append("history", JSON.stringify(safeHistory));
     formData.append("mode", aiMode);
-    formData.append("language", appLanguage); // Passes active language to backend
+    formData.append("language", appLanguage); 
 
     let activeConvId = conversationId;
     if (userId) {
@@ -285,7 +283,7 @@ export default function ChatPage() {
 
       const ttsFormData = new FormData();
       ttsFormData.append("text", data.ai_text);
-      ttsFormData.append("language", appLanguage); // Pass active language to TTS engine
+      ttsFormData.append("language", appLanguage); 
       if (data.message_id) ttsFormData.append("message_id", data.message_id);
 
       const ttsResponse = await fetch("https://tibetan-backend.onrender.com/api/tts", {
@@ -449,10 +447,7 @@ export default function ChatPage() {
             <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Tara AI</p>
           </div>
           
-          {/* HEADER RIGHT SIDE: Dropdown & Auth */}
           <div className="flex-1 flex justify-end gap-3 items-center relative">
-            
-            {/* NEW: Multilingual Dropdown Menu */}
             <div className="relative">
               <button 
                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
@@ -520,13 +515,22 @@ export default function ChatPage() {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
                   <div className="flex flex-col gap-4 w-full">
-                    {msg.content.split(/([\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
+                    {msg.content.split(/([\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*(?:\s*\([^)]+\))?)/g).map((part, i) => {
                       const trimmed = part.trim();
                       if (!trimmed) return null;
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
                       const matchingAudio = msg.audioSequence?.find(a => a.text === trimmed)?.audio_base64;
                       const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
                       const showSpinner = msg.isLoadingAudio && !matchingAudio;
+
+                      // Separates the Tibetan script from its phonetics safely for UI
+                      let tibText = trimmed;
+                      let phonetics = "";
+                      if (isTibetan && trimmed.includes('(')) {
+                        const splitIdx = trimmed.indexOf('(');
+                        tibText = trimmed.substring(0, splitIdx).trim();
+                        phonetics = trimmed.substring(splitIdx + 1).replace(')', '').trim();
+                      }
 
                       return (
                         <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
@@ -543,7 +547,18 @@ export default function ChatPage() {
                             )}
                           </div>
                           <div className={`px-3 sm:px-5 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[75%] ${isTibetan ? 'py-2 sm:py-3 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
-                            {isTibetan ? <span className="text-xl sm:text-3xl text-slate-800 leading-normal">{trimmed}</span> : <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{trimmed}</p>}
+                            {isTibetan ? (
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xl sm:text-3xl text-slate-800 leading-normal">{tibText}</span>
+                                {phonetics && (
+                                  <span className="text-sm sm:text-base text-slate-600 font-medium tracking-wide italic">
+                                    {phonetics}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{trimmed}</p>
+                            )}
                           </div>
                         </div>
                       );
