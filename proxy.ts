@@ -1,6 +1,17 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/about(.*)"]);
+// We added "/", "/support", "/pricing", "/privacy", and "/terms" to public routes.
+// /chat is NOT here, meaning Clerk will automatically protect it!
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/about(.*)",
+  "/support(.*)",
+  "/pricing(.*)",
+  "/privacy(.*)",
+  "/terms(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)"
+]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
