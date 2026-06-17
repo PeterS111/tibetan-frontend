@@ -17,7 +17,7 @@ const TRANSLATIONS = {
     start: "Let's start.", continue: "Continue.",
     loginToChat: "🔒 Please log in to chat...", listening: "Listening...",
     typePlaceholder: "Type in English or བོད་ཡིག...",
-    letTaraLead: "Let Tara lead -> ", or: "or:"
+    letTaraLead: "Let Tara lead -> ", or: "or type/speak:"
   },
   zh: {
     name: "中文", sttCode: "zh-CN",
