@@ -492,11 +492,11 @@ export default function ChatPage() {
             </div>
 
             <div className="p-4 space-y-1 border-b border-slate-100 shrink-0">
-  <a href="/" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Home size={18} /> Home</a>
+  <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Home size={18} /> Home</Link>
   <button onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-blue-700 transition font-medium text-sm"><MessageSquare size={18} /> Tutor Chat</button>
-  <a href="/about" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Info size={18} /> About</a>
-  <a href="/donate" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Heart size={18} /> Support Us</a>
-  <a href="/support" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Mail size={18} /> Contact</a>
+  <Link href="/about" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Info size={18} /> About</Link>
+  <Link href="/donate" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Heart size={18} /> Support Us</Link>
+  <Link href="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Mail size={18} /> Contact</Link>
 </div>
 
             <div className="flex-1 flex flex-col min-h-0">
