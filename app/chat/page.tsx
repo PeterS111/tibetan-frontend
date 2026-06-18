@@ -213,22 +213,26 @@ export default function ChatPage() {
     }
   }, [userId]);
 
-  // === NEW: AUDIO-AWARE SCROLLING LOGIC ===
+  // === BULLETPROOF AUDIO-AWARE SCROLLING LOGIC ===
   
-  // 1. Scroll to the bottom when a new message arrives, OR when audio finishes playing
+  // Rule 1: Only scroll to the very bottom if Tara is NOT speaking.
   useEffect(() => {
-    if (!isPlaying) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages.length, isPlaying, isLoading]);
+    if (isPlaying) return; // Strictly forbid bottom-scrolling during playback
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading, isPlaying]);
 
-  // 2. Smoothly scroll to track the exact paragraph/phrase that is currently playing
+  // Rule 2: The Teleprompter (Follow the active voice bubble)
   useEffect(() => {
     if (isPlaying && playingAudioBase64) {
-      const activeEl = document.querySelector('[data-active-part="true"]');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      // 100ms delay guarantees the browser has updated the active HTML tag
+      const timer = setTimeout(() => {
+        const activeEl = document.querySelector('[data-active-part="true"]');
+        if (activeEl) {
+          // 'center' keeps the actively spoken text perfectly centered on the screen
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [playingAudioBase64, isPlaying]);
 
