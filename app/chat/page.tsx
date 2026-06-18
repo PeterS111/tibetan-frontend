@@ -15,7 +15,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Please log in to chat...", listening: "Listening...",
     typePlaceholder: "Type in English or བོད་ཡིག...",
     letTaraLead: "Let Tara lead -> ", or: "or type/speak:",
-    selectTopic: "Select a topic..."
+    selectTopic: "Select a topic...",
+    wakingUp: "Waking up Tibetan voice engine..."
   },
   zh: {
     name: "中文", sttCode: "zh-CN",
@@ -26,7 +27,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
     typePlaceholder: "输入中文或བོད་ཡིག...",
     letTaraLead: "让度母引导 -> ", or: "或输入/说话：",
-    selectTopic: "选择一个主题..."
+    selectTopic: "选择一个主题...",
+    wakingUp: "正在唤醒藏语音擎..."
   },
   es: {
     name: "Español", sttCode: "es-ES",
@@ -37,7 +39,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
     typePlaceholder: "Escribe en español o བོད་ཡིག...",
     letTaraLead: "Tara guía -> ", or: "o:",
-    selectTopic: "Selecciona un tema..."
+    selectTopic: "Selecciona un tema...",
+    wakingUp: "Despertando el motor de voz..."
   },
   fr: {
     name: "Français", sttCode: "fr-FR",
@@ -48,7 +51,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
     typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
     letTaraLead: "Tara guide -> ", or: "ou :",
-    selectTopic: "Sélectionnez un sujet..."
+    selectTopic: "Sélectionnez un sujet...",
+    wakingUp: "Réveil du moteur vocal..."
   },
   pt: {
     name: "Português", sttCode: "pt-BR",
@@ -59,7 +63,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
     typePlaceholder: "Digite em português ou བོད་ཡིག...",
     letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:",
-    selectTopic: "Selecione um tópico..."
+    selectTopic: "Selecione um tópico...",
+    wakingUp: "Despertando o motor de voz..."
   },
   de: {
     name: "Deutsch", sttCode: "de-DE",
@@ -70,7 +75,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
     typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
     letTaraLead: "Tara führt -> ", or: "oder:",
-    selectTopic: "Wähle ein Thema..."
+    selectTopic: "Wähle ein Thema...",
+    wakingUp: "Sprach-Engine wird aufgeweckt..."
   },
   pl: {
     name: "Polski", sttCode: "pl-PL",
@@ -81,7 +87,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
     typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
     letTaraLead: "Tara prowadzi -> ", or: "lub:",
-    selectTopic: "Wybierz temat..."
+    selectTopic: "Wybierz temat...",
+    wakingUp: "Uruchamianie silnika głosowego..."
   },
   it: {
     name: "Italiano", sttCode: "it-IT",
@@ -92,7 +99,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
     typePlaceholder: "Scrivi in italiano o བོད་ཡིག...",
     letTaraLead: "Guida Tara -> ", or: "oppure:",
-    selectTopic: "Seleziona un argomento..."
+    selectTopic: "Seleziona un argomento...",
+    wakingUp: "Avvio del motore vocale..."
   },
   ja: {
     name: "日本語", sttCode: "ja-JP",
@@ -103,7 +111,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 チャットするにはログイン...", listening: "聞いています...",
     typePlaceholder: "日本語または བོད་ཡིག で入力...",
     letTaraLead: "ターラに任せる -> ", or: "または入力/話す:",
-    selectTopic: "トピックを選択..."
+    selectTopic: "トピックを選択...",
+    wakingUp: "音声エンジンを起動中..."
   },
   ru: {
     name: "Русский", sttCode: "ru-RU",
@@ -114,7 +123,8 @@ const TRANSLATIONS = {
     loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
     typePlaceholder: "Пишите на русском или བོད་ཡིག...",
     letTaraLead: "Тара ведет -> ", or: "или:",
-    selectTopic: "Выберите тему..."
+    selectTopic: "Выберите тему...",
+    wakingUp: "Запуск голосового движка..."
   }
 };
 
@@ -152,6 +162,7 @@ export default function ChatPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false); 
   const [isPlaying, setIsPlaying] = useState(false); 
+  const [isTtsReady, setIsTtsReady] = useState(false);
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
   const [studyTopic, setStudyTopic] = useState<string>(SYLLABUS_TOPICS[0]);
@@ -171,6 +182,34 @@ export default function ChatPage() {
 
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
+  // === WAKE UP & POLL TTS READINESS ===
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const checkTtsStatus = async () => {
+      try {
+        const res = await fetch("https://tibetan-backend.onrender.com/api/status");
+        const data = await res.json();
+        if (data.ready) {
+          setIsTtsReady(true);
+          clearInterval(interval);
+        }
+      } catch (e) {
+        // Keep polling silently
+      }
+    };
+
+    // Trigger the wakeup sequence
+    fetch("https://tibetan-backend.onrender.com/api/wakeup")
+      .then(() => checkTtsStatus())
+      .catch(() => {});
+
+    // Poll every 3 seconds until true
+    interval = setInterval(checkTtsStatus, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (userId) {
       fetch(`https://tibetan-backend.onrender.com/api/conversations?user_id=${userId}`)
@@ -186,10 +225,6 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  useEffect(() => {
-    fetch("https://tibetan-backend.onrender.com/api/wakeup").catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -611,14 +646,23 @@ export default function ChatPage() {
                 <ChevronDown size={16} className="absolute right-3 text-stone-500 pointer-events-none" />
              </div>
              
-             <button onClick={() => sendAutomatedMessage(t.startLesson)} disabled={!userId || isLoading || isPlaying} className="flex items-center justify-center gap-2 text-sm font-bold text-white transition-colors bg-amber-600 px-5 py-2.5 rounded-xl shadow-md hover:bg-amber-700 disabled:opacity-50 w-full sm:w-auto">
+             <button onClick={() => sendAutomatedMessage(t.startLesson)} disabled={!userId || isLoading || isPlaying || !isTtsReady} className="flex items-center justify-center gap-2 text-sm font-bold text-white transition-colors bg-amber-600 px-5 py-2.5 rounded-xl shadow-md hover:bg-amber-700 disabled:opacity-50 w-full sm:w-auto">
                <PlayCircle size={18} className="text-white"/> {t.startLesson}
              </button>
           </div>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center">
+      <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center relative">
+        
+        {/* BEAUTIFUL WAKING UP BANNER OVERLAY */}
+        {!isTtsReady && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-100 text-amber-800 border border-amber-300 px-5 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-sm font-semibold animate-in fade-in slide-in-from-top-4 font-sans whitespace-nowrap">
+            <Loader2 size={18} className="animate-spin text-amber-600" /> 
+            {t.wakingUp}
+          </div>
+        )}
+
         <div className="w-full max-w-3xl space-y-8 pb-4">
           
           {messages.length === 0 && (
@@ -729,7 +773,7 @@ export default function ChatPage() {
           <span className="text-[13px] sm:text-sm font-bold text-stone-500 whitespace-nowrap">{t.letTaraLead}</span>
           
           <div className="relative inline-flex group">
-            {userId && !isLoading && !isRecording && !isPlaying && (
+            {userId && !isLoading && !isRecording && !isPlaying && isTtsReady && (
               <span className="absolute -inset-1.5 rounded-full bg-amber-400 animate-pulse opacity-40 pointer-events-none blur-sm"></span>
             )}
             
@@ -739,7 +783,7 @@ export default function ChatPage() {
                 if (messages.length === 0) sendAutomatedMessage(t.start);
                 else sendAutomatedMessage(t.continue);
               }} 
-              disabled={!userId || isLoading || isRecording || isPlaying} 
+              disabled={!userId || isLoading || isRecording || isPlaying || !isTtsReady} 
               className="relative z-10 px-6 sm:px-10 py-1.5 bg-amber-500 border-[3px] border-amber-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-amber-600 hover:scale-105 disabled:bg-stone-300 disabled:border-stone-400 disabled:text-stone-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
               <svg width="40" height="24" viewBox="0 0 60 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-2 sm:w-[50px] sm:h-[28px]">
@@ -754,7 +798,7 @@ export default function ChatPage() {
 
         <form onSubmit={handleSendTextForm} className="flex items-end gap-2 sm:gap-3 w-full max-w-3xl mx-auto relative">
           
-          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative mb-1 ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-stone-800 hover:bg-stone-700"} disabled:opacity-50`}>
+          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying || !isTtsReady} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-colors flex-shrink-0 relative mb-1 ${isRecording ? "bg-red-500 hover:bg-red-600" : "bg-stone-800 hover:bg-stone-700"} disabled:opacity-50`}>
             {isRecording && <span className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-50 pointer-events-none"></span>}
             <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center z-10">{isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={18} className="text-white" />}</div>
           </button>
@@ -765,13 +809,13 @@ export default function ChatPage() {
              value={inputText} 
              onChange={(e) => setInputText(e.target.value)} 
              onKeyDown={handleKeyDown}
-             disabled={!userId || isLoading || isRecording || isPlaying} 
-             placeholder={!userId ? t.loginToChat : isRecording ? t.listening : t.typePlaceholder} 
+             disabled={!userId || isLoading || isRecording || isPlaying || !isTtsReady} 
+             placeholder={!isTtsReady ? t.wakingUp : (!userId ? t.loginToChat : (isRecording ? t.listening : t.typePlaceholder))} 
              className="flex-1 min-w-0 bg-stone-100 border border-stone-200 rounded-3xl px-4 sm:px-5 py-2.5 sm:py-3.5 text-[16px] text-stone-700 placeholder-stone-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all disabled:opacity-60 resize-none overflow-y-auto custom-scrollbar" 
              style={{ minHeight: '44px', maxHeight: '150px' }}
           />
           
-          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-amber-600 text-white rounded-full hover:bg-amber-700 disabled:opacity-50 transition-colors flex-shrink-0 mb-1"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
+          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isPlaying || !isTtsReady} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-amber-600 text-white rounded-full hover:bg-amber-700 disabled:opacity-50 transition-colors flex-shrink-0 mb-1"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
           <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0 mb-1" title="Interrupt Tara">
             <StopCircle size={20} />
