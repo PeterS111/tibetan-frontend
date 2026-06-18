@@ -1,7 +1,13 @@
-import {ClerkProvider} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Lora, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+// Introducing an elegant Serif font to match the LopLao aesthetic
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +32,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // Apply the Lora serif font globally alongside the others
+      className={`${lora.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* We set the default font to the new Serif font, and background to a warm stone color */}
+      <body className="min-h-full flex flex-col font-serif bg-stone-50 text-stone-900">
         <ClerkProvider>
           {children}
         </ClerkProvider>
