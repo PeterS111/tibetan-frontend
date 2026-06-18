@@ -2,12 +2,9 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight, Globe, Trash2 } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, Menu, X, Plus, MessageSquarePlus, StopCircle, PlayCircle, ArrowRight, Home, Info, Heart, Mail, MessageSquare, ChevronDown, ChevronRight, Globe, Trash2, List } from "lucide-react";
 import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/nextjs';
 
-// ==========================================
-// MULTILINGUAL UI CONFIGURATION
-// ==========================================
 const TRANSLATIONS = {
   en: {
     name: "English", sttCode: "en-GB",
@@ -17,7 +14,8 @@ const TRANSLATIONS = {
     start: "Let's start.", continue: "Continue.",
     loginToChat: "🔒 Please log in to chat...", listening: "Listening...",
     typePlaceholder: "Type in English or བོད་ཡིག...",
-    letTaraLead: "Let Tara lead -> ", or: "or type/speak:"
+    letTaraLead: "Let Tara lead -> ", or: "or type/speak:",
+    selectTopic: "Select a topic..."
   },
   zh: {
     name: "中文", sttCode: "zh-CN",
@@ -27,7 +25,8 @@ const TRANSLATIONS = {
     start: "我们开始吧。", continue: "继续。",
     loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
     typePlaceholder: "输入中文或བོད་ཡིག...",
-    letTaraLead: "让度母引导 -> ", or: "或输入/说话："
+    letTaraLead: "让度母引导 -> ", or: "或输入/说话：",
+    selectTopic: "选择一个主题..."
   },
   es: {
     name: "Español", sttCode: "es-ES",
@@ -37,7 +36,8 @@ const TRANSLATIONS = {
     start: "Empecemos.", continue: "Continuar.",
     loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
     typePlaceholder: "Escribe en español o བོད་ཡིག...",
-    letTaraLead: "Deja que Tara guíe -> ", or: "o escribe/habla:"
+    letTaraLead: "Tara guía -> ", or: "o:",
+    selectTopic: "Selecciona un tema..."
   },
   fr: {
     name: "Français", sttCode: "fr-FR",
@@ -47,7 +47,8 @@ const TRANSLATIONS = {
     start: "Commençons.", continue: "Continuer.",
     loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
     typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
-    letTaraLead: "Laissez Tara guider -> ", or: "ou tapez/parlez :"
+    letTaraLead: "Tara guía -> ", or: "o:",
+    selectTopic: "Sélectionnez un sujet..."
   },
   pt: {
     name: "Português", sttCode: "pt-BR",
@@ -57,7 +58,8 @@ const TRANSLATIONS = {
     start: "Vamos começar.", continue: "Continuar.",
     loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
     typePlaceholder: "Digite em português ou བོད་ཡིག...",
-    letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:"
+    letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:",
+    selectTopic: "Selecione um tópico..."
   },
   de: {
     name: "Deutsch", sttCode: "de-DE",
@@ -67,7 +69,8 @@ const TRANSLATIONS = {
     start: "Lass uns anfangen.", continue: "Weiter.",
     loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
     typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
-    letTaraLead: "Lass Tara führen -> ", or: "oder tippe/sprich:"
+    letTaraLead: "Tara führt -> ", or: "oder:",
+    selectTopic: "Wähle ein Thema..."
   },
   pl: {
     name: "Polski", sttCode: "pl-PL",
@@ -77,9 +80,56 @@ const TRANSLATIONS = {
     start: "Zaczynajmy.", continue: "Kontynuuj.",
     loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
     typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
-    letTaraLead: "Pozwól Tarze prowadzić -> ", or: "albo wpisz/powiedz:"
+    letTaraLead: "Tara prowadzi -> ", or: "lub:",
+    selectTopic: "Wybierz temat..."
+  },
+  it: {
+    name: "Italiano", sttCode: "it-IT",
+    startLesson: "Inizia la lezione",
+    selectMode: "Seleziona una modalità qui sopra.\nScrivi un messaggio o premi il microfono per iniziare.",
+    thinking: "Tara sta pensando...",
+    start: "Cominciamo.", continue: "Continua.",
+    loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
+    typePlaceholder: "Scrivi in italiano o བོད་ཡིག...",
+    letTaraLead: "Guida Tara -> ", or: "oppure:",
+    selectTopic: "Seleziona un argomento..."
+  },
+  ja: {
+    name: "日本語", sttCode: "ja-JP",
+    startLesson: "本のレッスンを始める",
+    selectMode: "上のモードを選択してください。\nメッセージを入力するか、マイクを押して開始します。",
+    thinking: "ターラが考えています...",
+    start: "始めましょう。", continue: "続ける。",
+    loginToChat: "🔒 チャットするにはログイン...", listening: "聞いています...",
+    typePlaceholder: "日本語または བོད་ཡིག で入力...",
+    letTaraLead: "ターラに任せる -> ", or: "または入力/話す:",
+    selectTopic: "トピックを選択..."
+  },
+  ru: {
+    name: "Русский", sttCode: "ru-RU",
+    startLesson: "Начать урок из книги",
+    selectMode: "Выберите режим выше.\nНапишите сообщение или нажмите на микрофон, чтобы начать.",
+    thinking: "Тара думает...",
+    start: "Давайте начнем.", continue: "Продолжить.",
+    loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
+    typePlaceholder: "Пишите на русском или བོད་ཡིག...",
+    letTaraLead: "Тара ведет -> ", or: "или:",
+    selectTopic: "Выберите тему..."
   }
 };
+
+const SYLLABUS_TOPICS = [
+  "Module 1: The World of Tibetan Letters & Greetings",
+  "Module 2: The Logic of Existence & Particles",
+  "Module 3: Relations, Proximity & Politeness",
+  "Module 4: Questions, Articles & Word Order",
+  "Module 5: Action, Intention & The Agent",
+  "Module 6: Actions in the Past",
+  "Module 7: The Present Moment & Visible Results",
+  "Module 8: The Future, Nature, & Volunteering",
+  "Module 9: Requests & Imperatives",
+  "Module 10: Time, Dates & Exceptions"
+];
 
 type LangCode = keyof typeof TRANSLATIONS;
 type AudioPart = { lang: string; text: string; audio_base64: string; };
@@ -104,6 +154,7 @@ export default function ChatPage() {
   const [isPlaying, setIsPlaying] = useState(false); 
   
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">("chat");
+  const [studyTopic, setStudyTopic] = useState<string>(SYLLABUS_TOPICS[0]);
   
   const [appLanguage, setAppLanguage] = useState<LangCode>("en");
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -170,20 +221,11 @@ export default function ChatPage() {
   };
 
   const hideConversation = async (id: string) => {
-    // 1. Optimistically remove it from the UI instantly
     setPastConversations(prev => prev.filter(c => c.id !== id));
-    
-    // 2. If they deleted the chat they are currently viewing, clear the screen
-    if (conversationId === id) {
-      startNewChat();
-    }
-
-    // 3. Tell the backend to mark it as soft-deleted
+    if (conversationId === id) startNewChat();
     try {
       await fetch(`https://tibetan-backend.onrender.com/api/conversations/${id}/hide`, { method: "POST" });
-    } catch (e) {
-      console.error("Failed to hide conversation", e);
-    }
+    } catch (e) { console.error("Failed to hide conversation", e); }
   };
 
   const submitFeedback = async () => {
@@ -269,8 +311,12 @@ export default function ChatPage() {
   };
 
   const sendAutomatedMessage = async (text: string) => {
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
-    await processMessage(text);
+    let msgText = text;
+    if (aiMode === "study" && text === t.startLesson) {
+        msgText = `${t.startLesson}: ${studyTopic}`;
+    }
+    setMessages((prev) => [...prev, { role: "user", content: msgText }]);
+    await processMessage(msgText);
   };
 
   const handleInterrupt = () => {
@@ -301,6 +347,7 @@ export default function ChatPage() {
     formData.append("history", JSON.stringify(safeHistory));
     formData.append("mode", aiMode);
     formData.append("language", appLanguage); 
+    if (aiMode === "study") formData.append("topic", studyTopic);
 
     let activeConvId = conversationId;
     if (userId) {
@@ -445,12 +492,12 @@ export default function ChatPage() {
             </div>
 
             <div className="p-4 space-y-1 border-b border-slate-100 shrink-0">
-              <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Home size={18} /> Home</Link>
-              <button onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-blue-700 transition font-medium text-sm"><MessageSquare size={18} /> Tutor Chat</button>
-              <Link href="/about" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Info size={18} /> About</Link>
-              <Link href="/donate" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Heart size={18} /> Support Us</Link>
-              <Link href="/support" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Mail size={18} /> Contact</Link>
-            </div>
+  <a href="/" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Home size={18} /> Home</a>
+  <button onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-50 text-blue-700 transition font-medium text-sm"><MessageSquare size={18} /> Tutor Chat</button>
+  <a href="/about" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Info size={18} /> About</a>
+  <a href="/donate" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Heart size={18} /> Support Us</a>
+  <a href="/support" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition font-medium text-sm"><Mail size={18} /> Contact</a>
+</div>
 
             <div className="flex-1 flex flex-col min-h-0">
               <button onClick={() => setIsHistoryOpen(!isHistoryOpen)} className="w-full flex items-center justify-between p-4 text-slate-700 hover:bg-slate-50 transition shrink-0">
@@ -548,9 +595,24 @@ export default function ChatPage() {
         </div>
         
         {(aiMode === "study") && (
-          <div className="flex justify-center p-2 bg-slate-100 border-t border-slate-200">
-             <button onClick={() => sendAutomatedMessage(t.startLesson)} disabled={!userId || isLoading || isPlaying} className="flex items-center gap-2 text-sm font-bold text-slate-700 hover:text-blue-600 transition-colors bg-white px-4 py-1.5 rounded-full border border-slate-300 shadow-sm disabled:opacity-50">
-               <PlayCircle size={18} className="text-blue-500"/> {t.startLesson}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 p-3 bg-slate-100 border-t border-slate-200 w-full animate-in slide-in-from-top-2">
+             <div className="relative w-full max-w-sm flex items-center">
+                <List size={18} className="absolute left-3 text-slate-500 pointer-events-none" />
+                <select 
+                   value={studyTopic}
+                   onChange={(e) => setStudyTopic(e.target.value)}
+                   className="w-full appearance-none bg-white border border-slate-300 text-slate-700 font-medium text-sm rounded-xl pl-9 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 shadow-sm cursor-pointer"
+                >
+                   <option value="" disabled>{t.selectTopic}</option>
+                   {SYLLABUS_TOPICS.map((topic, i) => (
+                      <option key={i} value={topic}>{topic}</option>
+                   ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 text-slate-500 pointer-events-none" />
+             </div>
+             
+             <button onClick={() => sendAutomatedMessage(t.startLesson)} disabled={!userId || isLoading || isPlaying} className="flex items-center justify-center gap-2 text-sm font-bold text-white transition-colors bg-purple-600 px-5 py-2.5 rounded-xl shadow-md hover:bg-purple-700 disabled:opacity-50 w-full sm:w-auto">
+               <PlayCircle size={18} className="text-white"/> {t.startLesson}
              </button>
           </div>
         )}
@@ -573,21 +635,35 @@ export default function ChatPage() {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 bg-slate-200 border border-slate-300 flex items-center justify-center"><span className="text-slate-500 font-bold text-base sm:text-lg">U</span></div>
                 ) : (
                   <div className="flex flex-col gap-4 w-full">
-                    {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(（]*[(（][^)）]+[)）]|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
+                    {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(（]*[(（][^)）]+[)）](?:\s*\{[^}]+\})?|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
                       const trimmed = part.trim();
-                      if (!trimmed) return null;
+                      
+                      // Filter out empty parts OR stray punctuation marks
+                      if (!trimmed || /^[\.\?\!\,\;]+$/.test(trimmed)) return null;
+
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
-                      const matchingAudio = msg.audioSequence?.find(a => a.text === trimmed)?.audio_base64;
+                      const matchingAudio = msg.audioSequence?.find(a => a.text === part.trim())?.audio_base64;
                       const isThisPlaying = playingAudioBase64 === matchingAudio && matchingAudio != null;
                       const showSpinner = msg.isLoadingAudio && !matchingAudio;
 
                       let tibText = trimmed;
                       let phonetics = "";
+                      let translation = "";
                       
-                      if (isTibetan && (trimmed.includes('(') || trimmed.includes('（'))) {
-                        const splitIdx = trimmed.lastIndexOf('(') !== -1 ? trimmed.lastIndexOf('(') : trimmed.lastIndexOf('（');
-                        tibText = trimmed.substring(0, splitIdx).trim();
-                        phonetics = trimmed.substring(splitIdx + 1).replace(/[)）]/g, '').trim().toUpperCase();
+                      if (isTibetan) {
+                        // 1. Extract Exact Translation inside { }
+                        const transMatch = trimmed.match(/\{([^}]+)\}/);
+                        if (transMatch) {
+                          translation = transMatch[1].trim();
+                          tibText = trimmed.replace(transMatch[0], '').trim();
+                        }
+
+                        // 2. Extract Phonetics inside () or （）
+                        if (tibText.includes('(') || tibText.includes('（')) {
+                          const splitIdx = tibText.lastIndexOf('(') !== -1 ? tibText.lastIndexOf('(') : tibText.lastIndexOf('（');
+                          phonetics = tibText.substring(splitIdx + 1).replace(/[)）]/g, '').trim().toUpperCase();
+                          tibText = tibText.substring(0, splitIdx).trim();
+                        }
                       }
 
                       return (
@@ -604,13 +680,21 @@ export default function ChatPage() {
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><Loader2 className="w-5 h-5 animate-spin text-slate-700" /></div>
                             )}
                           </div>
+                          
                           <div className={`px-4 sm:px-6 rounded-3xl shadow-sm rounded-tl-none w-fit max-w-[85%] sm:max-w-[80%] ${isTibetan ? 'py-3 sm:py-4 bg-blue-50 border border-blue-200' : 'py-3 sm:py-5 bg-white border border-slate-200 text-slate-700'}`}>
                             {isTibetan ? (
-                              <div className="flex flex-col gap-2 items-start text-left">
+                              <div className="flex flex-col gap-2 items-start text-left w-full">
                                 <span className="text-xl sm:text-3xl text-slate-800 leading-normal font-medium">{tibText}</span>
+                                
                                 {phonetics && (
                                   <span className="text-[11px] sm:text-[13px] text-blue-700/80 font-bold tracking-[0.1em] uppercase">
                                     {phonetics}
+                                  </span>
+                                )}
+                                
+                                {translation && (
+                                  <span className="text-[13px] sm:text-sm text-slate-600 font-medium italic mt-1 border-t border-blue-200/50 pt-2 w-full">
+                                    {translation}
                                   </span>
                                 )}
                               </div>
@@ -656,9 +740,9 @@ export default function ChatPage() {
                 else sendAutomatedMessage(t.continue);
               }} 
               disabled={!userId || isLoading || isRecording || isPlaying} 
-              className="relative z-10 px-10 sm:px-16 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
+              className="relative z-10 px-6 sm:px-10 py-1.5 bg-green-500 border-[3px] border-green-600 text-white rounded-full shadow-md transition-all flex items-center justify-center hover:bg-green-600 hover:scale-105 disabled:bg-slate-300 disabled:border-slate-400 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
-              <svg width="50" height="24" viewBox="0 0 60 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-2 sm:w-[60px] sm:h-[28px]">
+              <svg width="40" height="24" viewBox="0 0 60 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-2 sm:w-[50px] sm:h-[28px]">
                 <line x1="2" y1="14" x2="56" y2="14" />
                 <polyline points="46 4 56 14 46 24" />
               </svg>
