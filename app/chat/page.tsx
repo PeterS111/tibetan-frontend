@@ -182,10 +182,8 @@ export default function ChatPage() {
 
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
-  // === WAKE UP & POLL TTS READINESS ===
   useEffect(() => {
     let interval: NodeJS.Timeout;
-
     const checkTtsStatus = async () => {
       try {
         const res = await fetch("https://tibetan-backend.onrender.com/api/status");
@@ -198,15 +196,8 @@ export default function ChatPage() {
         // Keep polling silently
       }
     };
-
-    // Trigger the wakeup sequence
-    fetch("https://tibetan-backend.onrender.com/api/wakeup")
-      .then(() => checkTtsStatus())
-      .catch(() => {});
-
-    // Poll every 3 seconds until true
+    fetch("https://tibetan-backend.onrender.com/api/wakeup").then(() => checkTtsStatus()).catch(() => {});
     interval = setInterval(checkTtsStatus, 3000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -222,9 +213,24 @@ export default function ChatPage() {
     }
   }, [userId]);
 
+  // === NEW: AUDIO-AWARE SCROLLING LOGIC ===
+  
+  // 1. Scroll to the bottom when a new message arrives, OR when audio finishes playing
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!isPlaying) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages.length, isPlaying, isLoading]);
+
+  // 2. Smoothly scroll to track the exact paragraph/phrase that is currently playing
+  useEffect(() => {
+    if (isPlaying && playingAudioBase64) {
+      const activeEl = document.querySelector('[data-active-part="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [playingAudioBase64, isPlaying]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -547,7 +553,7 @@ export default function ChatPage() {
                     <p className="text-xs text-stone-400 text-center py-4">No past conversations.</p>
                   ) : (
                     pastConversations.map(c => {
-                       const modeLabel = c.mode === 'study' ? 'Study Book' : c.mode === 'custom' ? 'Custom Text' : 'Quick Chat';
+                       const modeLabel = c.mode === 'study' ? 'Textbook' : c.mode === 'custom' ? 'Custom Text' : 'Chat';
                        const ModeIcon = c.mode === 'study' ? BookOpen : c.mode === 'custom' ? PenTool : Zap;
                        const modeColor = c.mode === 'study' ? 'text-amber-600' : c.mode === 'custom' ? 'text-stone-600' : 'text-amber-500';
                        
@@ -624,9 +630,13 @@ export default function ChatPage() {
         </header>
 
         <div className="flex justify-start sm:justify-center items-center gap-2 sm:gap-4 p-3 bg-stone-50 border-t border-stone-100 overflow-x-auto w-full flex-nowrap scroll-smooth">
-          <button onClick={() => { setAiMode("chat"); startNewChat(); }} className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'}`}><Zap size={16} /> Quick Chat</button>
-          <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'}`}><BookOpen size={16} /> Study Book</button>
+          <button onClick={() => { setAiMode("chat"); startNewChat(); }} className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'chat' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'}`}><Zap size={16} /> Chat</button>
+          <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'study' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'}`}><BookOpen size={16} /> Textbook</button>
           <button onClick={() => setAiMode("custom")} className={`flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${aiMode === 'custom' ? 'bg-amber-500 text-white shadow-md' : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'}`}><PenTool size={16} /> Custom Text</button>
+          
+          <div className="w-px h-6 bg-stone-300 mx-1 hidden sm:block"></div>
+          
+          <button onClick={startNewChat} className="flex-shrink-0 flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap bg-rose-500 text-white shadow-md hover:bg-rose-600"><Trash2 size={16} /> Clear</button>
         </div>
         
         {(aiMode === "study") && (
@@ -655,7 +665,6 @@ export default function ChatPage() {
 
       <div className="flex-1 overflow-y-auto p-4 scroll-smooth flex justify-center relative">
         
-        {/* BEAUTIFUL WAKING UP BANNER OVERLAY */}
         {!isTtsReady && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-100 text-amber-800 border border-amber-300 px-5 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-sm font-semibold animate-in fade-in slide-in-from-top-4 font-sans whitespace-nowrap">
             <Loader2 size={18} className="animate-spin text-amber-600" /> 
@@ -682,7 +691,6 @@ export default function ChatPage() {
                     {msg.content.split(/([\u0F00-\u0FFF]+[^a-zA-Z0-9(（]*[(（][^)）]+[)）](?:\s*\{[^}]+\})?|[\u0F00-\u0FFF]+(?:[\s\u0F00-\u0FFF]*[\u0F00-\u0FFF]+)*)/g).map((part, i) => {
                       const trimmed = part.trim();
                       
-                      // Filter out empty parts OR stray punctuation marks
                       if (!trimmed || /^[\.\?\!\,\;]+$/.test(trimmed)) return null;
 
                       const isTibetan = /[\u0F00-\u0FFF]/.test(trimmed);
@@ -695,14 +703,12 @@ export default function ChatPage() {
                       let translation = "";
                       
                       if (isTibetan) {
-                        // 1. Extract Exact Translation inside { }
                         const transMatch = trimmed.match(/\{([^}]+)\}/);
                         if (transMatch) {
                           translation = transMatch[1].trim();
                           tibText = trimmed.replace(transMatch[0], '').trim();
                         }
 
-                        // 2. Extract Phonetics inside () or （）
                         if (tibText.includes('(') || tibText.includes('（')) {
                           const splitIdx = tibText.lastIndexOf('(') !== -1 ? tibText.lastIndexOf('(') : tibText.lastIndexOf('（');
                           phonetics = tibText.substring(splitIdx + 1).replace(/[)）]/g, '').trim().toUpperCase();
@@ -711,7 +717,7 @@ export default function ChatPage() {
                       }
 
                       return (
-                        <div key={i} className="flex flex-row items-start gap-3 sm:gap-4 w-full">
+                        <div key={i} data-active-part={isThisPlaying} className="flex flex-row items-start gap-3 sm:gap-4 w-full scroll-mt-24">
                           <div className="relative mt-1">
                             <button 
                               onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
