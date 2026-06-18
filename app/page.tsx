@@ -36,7 +36,7 @@ const TRANSLATIONS = {
     start: "Empecemos.", continue: "Continuar.",
     loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
     typePlaceholder: "Escribe en español o བོད་ཡིག...",
-    letTaraLead: "Deja que Tara guíe -> ", or: "o escribe/habla:",
+    letTaraLead: "Tara guía -> ", or: "o:",
     selectTopic: "Selecciona un tema..."
   },
   fr: {
@@ -47,7 +47,7 @@ const TRANSLATIONS = {
     start: "Commençons.", continue: "Continuer.",
     loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
     typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
-    letTaraLead: "Laissez Tara guider -> ", or: "ou tapez/parlez :",
+    letTaraLead: "Tara guía -> ", or: "o:",
     selectTopic: "Sélectionnez un sujet..."
   },
   pt: {
@@ -69,7 +69,7 @@ const TRANSLATIONS = {
     start: "Lass uns anfangen.", continue: "Weiter.",
     loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
     typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
-    letTaraLead: "Lass Tara führen -> ", or: "oder tippe/sprich:",
+    letTaraLead: "Tara führt -> ", or: "oder:",
     selectTopic: "Wähle ein Thema..."
   },
   pl: {
@@ -80,7 +80,7 @@ const TRANSLATIONS = {
     start: "Zaczynajmy.", continue: "Kontynuuj.",
     loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
     typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
-    letTaraLead: "Pozwól Tarze prowadzić -> ", or: "albo wpisz/powiedz:",
+    letTaraLead: "Tara prowadzi -> ", or: "lub:",
     selectTopic: "Wybierz temat..."
   },
   it: {
@@ -91,7 +91,7 @@ const TRANSLATIONS = {
     start: "Cominciamo.", continue: "Continua.",
     loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
     typePlaceholder: "Scrivi in italiano o བོད་ཡིག...",
-    letTaraLead: "Lascia guidare Tara -> ", or: "o scrivi/parla:",
+    letTaraLead: "Guida Tara -> ", or: "oppure:",
     selectTopic: "Seleziona un argomento..."
   },
   ja: {
@@ -113,7 +113,7 @@ const TRANSLATIONS = {
     start: "Давайте начнем.", continue: "Продолжить.",
     loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
     typePlaceholder: "Пишите на русском или བོད་ཡིག...",
-    letTaraLead: "Пусть Тара ведет -> ", or: "или напишите/скажите:",
+    letTaraLead: "Тара ведет -> ", or: "или:",
     selectTopic: "Выберите тему..."
   }
 };
