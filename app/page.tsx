@@ -52,6 +52,14 @@ export default function LandingPage() {
         {/* HERO CONTENT */}
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 py-20">
           <div className="max-w-4xl mx-auto space-y-6 animate-in slide-in-from-bottom-6 fade-in duration-700">
+            
+            {/* --- NEW TESTING PHASE BADGE --- */}
+            <div className="flex justify-center mb-4">
+              <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-4 py-1 rounded-full text-xs font-bold tracking-[0.15em] uppercase backdrop-blur-sm shadow-sm">
+                Early Testing Phase
+              </span>
+            </div>
+
             <p className="text-amber-400 font-medium tracking-[0.2em] uppercase text-sm md:text-base">
               Promoting and Advancing Tibetan Language
             </p>
@@ -61,8 +69,9 @@ export default function LandingPage() {
               <span className="text-amber-500">Voice AI Tutor</span>
             </h1>
             
+            {/* --- UPDATED SUBTITLE --- */}
             <p className="text-lg md:text-xl text-stone-300 max-w-2xl mx-auto leading-relaxed font-light">
-              Zero-latency voice conversations. Real-time grammar analysis. Official textbook curriculum. Experience the future of language learning.
+              Natural voice conversations. Real-time grammar analysis. Official textbook curriculum. Help us test and shape the future of language learning.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-10">
