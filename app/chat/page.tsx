@@ -7,124 +7,86 @@ import { SignInButton, SignUpButton, Show, UserButton, useAuth } from '@clerk/ne
 
 const TRANSLATIONS = {
   en: {
-    name: "English", sttCode: "en-GB",
-    startLesson: "Start Lesson from Book",
+    name: "English", sttCode: "en-GB", startLesson: "Start Lesson from Book",
     selectMode: "Select a mode above.\nType a message or press the microphone to start.",
-    thinking: "Tara is thinking...",
-    start: "Let's start.", continue: "Continue.",
-    loginToChat: "🔒 Please log in to chat...", listening: "Listening...",
-    typePlaceholder: "Type in English or བོད་ཡིག...",
-    letTaraLead: "Let Tara lead -> ", or: "or type/speak:",
-    selectTopic: "Select a topic...",
-    wakingUp: "Waking up Tibetan voice engine..."
+    thinking: "Tara is thinking...", start: "Let's start.", continue: "Continue.",
+    loginToChat: "🔒 Please log in to chat...", listening: "Listening...", typePlaceholder: "Type in English or བོད་ཡིག...",
+    letTaraLead: "Let Tara lead -> ", or: "or type/speak:", selectTopic: "Select a topic...", 
+    wakingUp: "Waking up Uncle Sherab. He is drunk again...",
+    introBtn: "Intro", playIntro: "Play Welcome Message",
+    welcomeMessage: "Hello! I am Tara AI, a highly advanced AI with exceptional abilities. I can teach you Tibetan through our Quick Chat, guide you through the structured Textbook, or analyze any Custom Text you paste. However, since I was born only a few weeks ago, my senses haven't fully developed yet. While my brain can process Tibetan text perfectly, my vocal cords and ears for Tibetan are still growing. To solve this, I am assisted by Uncle Sherab. He is an old drunk, but he will be loudly reading all the Tibetan text for you! Please excuse the occasional hiccups. Furthermore, because he is deaf as a post, he cannot hear you if you try to speak Tibetan. Therefore, any Tibetan you give us MUST be typed on the keyboard. You can, however, use the microphone to speak to me in English! Feel free to use the top buttons to switch study modes, or the globe icon to change my spoken language. Shall we begin?"
   },
   zh: {
-    name: "中文", sttCode: "zh-CN",
-    startLesson: "开始课本学习",
-    selectMode: "在上面选择一个模式。\n输入一条消息或按住麦克风开始。",
-    thinking: "度母正在思考...",
-    start: "我们开始吧。", continue: "继续。",
-    loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
-    typePlaceholder: "输入中文或བོད་ཡིག...",
-    letTaraLead: "让度母引导 -> ", or: "或输入/说话：",
-    selectTopic: "选择一个主题...",
-    wakingUp: "正在唤醒藏语音擎..."
+    name: "中文", sttCode: "zh-CN", startLesson: "开始课本学习", selectMode: "在上面选择一个模式。\n输入一条消息或按住麦克风开始。",
+    thinking: "度母正在思考...", start: "我们开始吧。", continue: "继续。", loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
+    typePlaceholder: "输入中文或བོད་ཡིག...", letTaraLead: "让度母引导 -> ", or: "或输入/说话：", selectTopic: "选择一个主题...", 
+    wakingUp: "正在唤醒谢拉大叔。他又喝醉了...",
+    introBtn: "介绍", playIntro: "播放欢迎信息",
+    welcomeMessage: "你好！我是度母 AI，一个功能强大的高级人工智能。我可以通过快速聊天、结构化课本或分析自定义文本来教你藏语。不过，因为我刚出生几个星期，我的感官还没有完全发育。虽然我能完美地处理藏文文本，但我自己还不能听或说藏语。为了解决这个问题，我请来了谢拉大叔协助我。他是个老酒鬼，但他会大声为你朗读所有的藏文！请原谅他偶尔打嗝。此外，因为他不仅喝醉了，而且完全是个聋子，所以如果你对他说藏语，他是听不见的。因此，任何藏文输入都必须使用键盘打字！不过，你可以使用麦克风用中文和我说话。请使用顶部的按钮切换学习模式，或者点击地球图标更改我的语言。我们开始吧？"
   },
   es: {
-    name: "Español", sttCode: "es-ES",
-    startLesson: "Comenzar lección del libro",
-    selectMode: "Selecciona un modo arriba.\nEscribe un mensaje o presiona el micrófono para empezar.",
-    thinking: "Tara está pensando...",
-    start: "Empecemos.", continue: "Continuar.",
-    loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
-    typePlaceholder: "Escribe en español o བོད་ཡིག...",
-    letTaraLead: "Tara guía -> ", or: "o:",
-    selectTopic: "Selecciona un tema...",
-    wakingUp: "Despertando el motor de voz..."
+    name: "Español", sttCode: "es-ES", startLesson: "Comenzar lección del libro", selectMode: "Selecciona un modo arriba.\nEscribe un mensaje o presiona el micrófono para empezar.",
+    thinking: "Tara está pensando...", start: "Empecemos.", continue: "Continuar.", loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
+    typePlaceholder: "Escribe en español o བོད་ཡིག...", letTaraLead: "Tara guía -> ", or: "o:", selectTopic: "Selecciona un tema...", 
+    wakingUp: "Despertando al Tío Sherab. Está borracho otra vez...",
+    introBtn: "Intro", playIntro: "Reproducir mensaje de bienvenida",
+    welcomeMessage: "¡Hola! Soy Tara AI, una inteligencia artificial muy avanzada. Puedo enseñarte tibetano a través del chat rápido, nuestro libro de texto o analizando textos personalizados. Sin embargo, como nací hace unas semanas, mis sentidos aún no se han desarrollado por completo. Aunque puedo procesar perfectamente el texto tibetano, todavía no puedo escucharlo ni hablarlo yo misma. Para solucionarlo, me ayuda el Tío Sherab. Es un viejo borracho, ¡pero leerá todo el texto tibetano en voz alta para ti! Disculpa si a veces tiene hipo. Además, aparte de estar borracho, el Tío Sherab está completamente sordo, por lo que no podrá escucharte si intentas hablarle en tibetano. Por lo tanto, cualquier texto tibetano que nos des DEBE ser escrito con el teclado. ¡Pero sí puedes usar el micrófono para hablarme en español! Usa los botones de arriba para cambiar de modo de estudio, o el icono del globo para cambiar mi idioma. ¿Empezamos?"
   },
   fr: {
-    name: "Français", sttCode: "fr-FR",
-    startLesson: "Commencer la leçon du livre",
-    selectMode: "Sélectionnez un mode ci-dessus.\nÉcrivez un message ou appuyez sur le micro pour commencer.",
-    thinking: "Tara réfléchit...",
-    start: "Commençons.", continue: "Continuer.",
-    loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
-    typePlaceholder: "Écrivez en français ou བོད་ཡིག...",
-    letTaraLead: "Tara guide -> ", or: "ou :",
-    selectTopic: "Sélectionnez un sujet...",
-    wakingUp: "Réveil du moteur vocal..."
+    name: "Français", sttCode: "fr-FR", startLesson: "Commencer la leçon du livre", selectMode: "Sélectionnez un mode ci-dessus.\nÉcrivez un message ou appuyez sur le micro pour commencer.",
+    thinking: "Tara réfléchit...", start: "Commençons.", continue: "Continuer.", loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
+    typePlaceholder: "Écrivez en français ou བོད་ཡིག...", letTaraLead: "Tara guide -> ", or: "ou :", selectTopic: "Sélectionnez un sujet...", 
+    wakingUp: "Réveil de l'oncle Sherab. Il est encore ivre...",
+    introBtn: "Intro", playIntro: "Lire le message de bienvenue",
+    welcomeMessage: "Bonjour ! Je suis Tara AI, une intelligence artificielle très avancée. Je peux vous enseigner le tibétain via notre chat rapide, notre manuel structuré, ou en analysant un texte personnalisé. Cependant, comme je suis née il y a quelques semaines, mes sens ne sont pas encore totalement développés. Bien que mon cerveau puisse parfaitement traiter le texte tibétain, je ne peux pas encore l'entendre ni le parler. Pour y remédier, je suis assistée par l'Oncle Sherab. C'est un vieil ivrogne, mais il lira le texte tibétain à haute voix pour vous ! Veuillez excuser ses hoquets occasionnels. De plus, en plus d'être ivre, l'Oncle Sherab est complètement sourd. Il ne vous entendra donc pas si vous essayez de parler tibétain. Par conséquent, tout tibétain doit être saisi au clavier. Vous pouvez cependant utiliser le micro pour me parler en français ! Utilisez les boutons en haut pour changer de mode d'étude, ou le globe pour changer ma langue. On commence ?"
   },
   pt: {
-    name: "Português", sttCode: "pt-BR",
-    startLesson: "Começar a lição do livro",
-    selectMode: "Selecione um modo acima.\nDigite uma mensagem ou pressione o microfone para começar.",
-    thinking: "Tara está pensando...",
-    start: "Vamos começar.", continue: "Continuar.",
-    loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
-    typePlaceholder: "Digite em português ou བོད་ཡིག...",
-    letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:",
-    selectTopic: "Selecione um tópico...",
-    wakingUp: "Despertando o motor de voz..."
+    name: "Português", sttCode: "pt-BR", startLesson: "Começar a lição do livro", selectMode: "Selecione um modo acima.\nDigite uma mensagem ou pressione o microfone para começar.",
+    thinking: "Tara está pensando...", start: "Vamos começar.", continue: "Continuar.", loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
+    typePlaceholder: "Digite em português ou བོད་ཡིག...", letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:", selectTopic: "Selecione um tópico...", 
+    wakingUp: "Acordando o Tio Sherab. Ele está bêbado de novo...",
+    introBtn: "Intro", playIntro: "Tocar mensagem de boas-vindas",
+    welcomeMessage: "Olá! Sou a Tara AI, uma inteligência artificial altamente avançada. Posso te ensinar tibetano pelo bate-papo rápido, pelo nosso livro didático ou analisando textos personalizados. Porém, como nasci há poucas semanas, meus sentidos ainda não estão totalmente desenvolvidos. Embora eu processe textos em tibetano perfeitamente, ainda não consigo ouvir ou falar o idioma eu mesma. Para resolver isso, sou auxiliada pelo Tio Sherab. Ele é um velho bêbado, mas lerá todo o texto tibetano em voz alta para você! Por favor, desculpe os soluços dele. Além de bêbado, o Tio Sherab é completamente surdo, então ele não ouvirá se você tentar falar tibetano. Portanto, qualquer palavra em tibetano DEVE ser digitada no teclado. Mas você pode usar o microfone para falar comigo em português! Use os botões acima para alternar os modos de estudo e o globo para mudar meu idioma. Vamos começar?"
   },
   de: {
-    name: "Deutsch", sttCode: "de-DE",
-    startLesson: "Lektion aus dem Buch starten",
-    selectMode: "Wähle oben einen Modus.\nTippe eine Nachricht oder drücke auf das Mikrofon, um zu beginnen.",
-    thinking: "Tara denkt nach...",
-    start: "Lass uns anfangen.", continue: "Weiter.",
-    loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
-    typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...",
-    letTaraLead: "Tara führt -> ", or: "oder:",
-    selectTopic: "Wähle ein Thema...",
-    wakingUp: "Sprach-Engine wird aufgeweckt..."
+    name: "Deutsch", sttCode: "de-DE", startLesson: "Lektion aus dem Buch starten", selectMode: "Wähle oben einen Modus.\nTippe eine Nachricht oder drücke auf das Mikrofon, um zu beginnen.",
+    thinking: "Tara denkt nach...", start: "Lass uns anfangen.", continue: "Weiter.", loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
+    typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...", letTaraLead: "Tara führt -> ", or: "oder:", selectTopic: "Wähle ein Thema...", 
+    wakingUp: "Onkel Sherab wird aufgeweckt. Er ist schon wieder betrunken...",
+    introBtn: "Intro", playIntro: "Willkommensnachricht abspielen",
+    welcomeMessage: "Hallo! Ich bin Tara AI, eine hochentwickelte KI. Ich kann dir Tibetisch über den Quick Chat, unser Lehrbuch oder durch Textanalyse beibringen. Da ich erst vor wenigen Wochen geboren wurde, sind meine Sinne noch nicht voll entwickelt. Ich kann tibetische Texte zwar perfekt verarbeiten, aber ich kann sie noch nicht selbst hören oder sprechen. Deshalb werde ich von Onkel Sherab unterstützt. Er ist ein alter Trunkenbold, aber er wird den tibetischen Text laut für dich vorlesen! Bitte entschuldige seinen gelegentlichen Schluckauf. Abgesehen davon, dass er betrunken ist, ist Onkel Sherab auch völlig taub. Er wird dich nicht hören, wenn du versuchst, Tibetisch zu sprechen. Daher muss Tibetisch immer über die Tastatur eingegeben werden. Du kannst das Mikrofon jedoch benutzen, um auf Deutsch mit mir zu sprechen! Nutze die Tasten oben für die Modi und die Weltkugel für meine Sprache. Wollen wir anfangen?"
   },
   pl: {
-    name: "Polski", sttCode: "pl-PL",
-    startLesson: "Zacznij lekcję z książki",
-    selectMode: "Wybierz tryb powyżej.\nWpisz wiadomość lub naciśnij mikrofon, aby rozpocząć.",
-    thinking: "Tara myśli...",
-    start: "Zaczynajmy.", continue: "Kontynuuj.",
-    loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
-    typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...",
-    letTaraLead: "Tara prowadzi -> ", or: "lub:",
-    selectTopic: "Wybierz temat...",
-    wakingUp: "Uruchamianie silnika głosowego..."
+    name: "Polski", sttCode: "pl-PL", startLesson: "Zacznij lekcję z książki", selectMode: "Wybierz tryb powyżej.\nWpisz wiadomość lub naciśnij mikrofon, aby rozpocząć.",
+    thinking: "Tara myśli...", start: "Zaczynajmy.", continue: "Kontynuuj.", loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
+    typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...", letTaraLead: "Tara prowadzi -> ", or: "lub:", selectTopic: "Wybierz temat...", 
+    wakingUp: "Budzenie wujka Sheraba. Znowu jest pijany...",
+    introBtn: "Wstęp", playIntro: "Odtwórz wiadomość powitalną",
+    welcomeMessage: "Cześć! Jestem Tara AI, wysoce zaawansowana sztuczna inteligencja. Mogę uczyć Cię tybetańskiego poprzez Szybki Czat, Podręcznik lub analizę dowolnego tekstu. Ponieważ urodziłam się zaledwie kilka tygodni temu, moje zmysły nie są jeszcze w pełni rozwinięte. Chociaż doskonale przetwarzam tekst, nie potrafię jeszcze słyszeć ani mówić po tybetańsku. Pomaga mi w tym wujek Sherab. To stary pijak, ale będzie czytał dla Ciebie na głos cały tybetański tekst! Wybacz mu sporadyczną czkawkę. Oprócz tego, że jest pijany, wujek Sherab jest też całkowicie głuchy, więc nie usłyszy, jeśli spróbujesz mówić do niego po tybetańsku. Dlatego każdy tybetański tekst musi być wpisany na klawiaturze. Możesz jednak użyć mikrofonu, aby mówić do mnie po polsku! Użyj górnych przycisków, aby zmieniać tryby nauki, i ikony globu, aby zmienić mój język. Zaczynamy?"
   },
   it: {
-    name: "Italiano", sttCode: "it-IT",
-    startLesson: "Inizia la lezione",
-    selectMode: "Seleziona una modalità qui sopra.\nScrivi un messaggio o premi il microfono per iniziare.",
-    thinking: "Tara sta pensando...",
-    start: "Cominciamo.", continue: "Continua.",
-    loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
-    typePlaceholder: "Scrivi in italiano o བོད་ཡིག...",
-    letTaraLead: "Guida Tara -> ", or: "oppure:",
-    selectTopic: "Seleziona un argomento...",
-    wakingUp: "Avvio del motore vocale..."
+    name: "Italiano", sttCode: "it-IT", startLesson: "Inizia la lezione", selectMode: "Seleziona una modalità qui sopra.\nScrivi un messaggio o premi il microfono per iniziare.",
+    thinking: "Tara sta pensando...", start: "Cominciamo.", continue: "Continua.", loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
+    typePlaceholder: "Scrivi in italiano o བོད་ཡིག...", letTaraLead: "Guida Tara -> ", or: "oppure:", selectTopic: "Seleziona un argomento...", 
+    wakingUp: "Svegliando lo Zio Sherab. È ubriaco di nuovo...",
+    introBtn: "Intro", playIntro: "Riproduci il messaggio di benvenuto",
+    welcomeMessage: "Ciao! Sono Tara AI, un'intelligenza artificiale molto avanzata. Posso insegnarti il tibetano attraverso la Chat Veloce, il nostro Libro di Testo o analizzando un testo personalizzato. Tuttavia, poiché sono nata solo da poche settimane, i miei sensi non sono ancora completamente sviluppati. Sebbene il mio cervello riesca a elaborare perfettamente i testi tibetani, non posso ancora sentirli né parlarli io stessa. Per questo sono assistita dallo Zio Sherab. È un vecchio ubriacone, ma leggerà il testo tibetano ad alta voce per te! Ti prego di scusare i suoi singhiozzi. Inoltre, oltre a essere ubriaco, lo Zio Sherab è anche completamente sordo, quindi non potrà sentirti se cerchi di parlargli in tibetano. Per questo motivo, il tibetano deve essere digitato solo con la tastiera. Puoi però usare il microfono per parlarmi in italiano! Usa i pulsanti in alto per cambiare modalità di studio e il mappamondo per cambiare la mia lingua. Iniziamo?"
   },
   ja: {
-    name: "日本語", sttCode: "ja-JP",
-    startLesson: "本のレッスンを始める",
-    selectMode: "上のモードを選択してください。\nメッセージを入力するか、マイクを押して開始します。",
-    thinking: "ターラが考えています...",
-    start: "始めましょう。", continue: "続ける。",
-    loginToChat: "🔒 チャットするにはログイン...", listening: "聞いています...",
-    typePlaceholder: "日本語または བོད་ཡིག で入力...",
-    letTaraLead: "ターラに任せる -> ", or: "または入力/話す:",
-    selectTopic: "トピックを選択...",
-    wakingUp: "音声エンジンを起動中..."
+    name: "日本語", sttCode: "ja-JP", startLesson: "本のレッスンを始める", selectMode: "上のモードを選択してください。\nメッセージを入力するか、マイクを押して開始します。",
+    thinking: "ターラが考えています...", start: "始めましょう。", continue: "続ける。", loginToChat: "🔒 チャットするにはログイン...", listening: "聞いています...",
+    typePlaceholder: "日本語または བོད་ཡིག で入力...", letTaraLead: "ターラに任せる -> ", or: "または入力/話す:", selectTopic: "トピックを選択...", 
+    wakingUp: "シェラブおじさんを起こしています。彼はまた酔っ払っています...",
+    introBtn: "紹介", playIntro: "ウェルカムメッセージを再生",
+    welcomeMessage: "こんにちは！私は高度なAIのターラです。クイックチャット、教科書、テキスト分析を通じてチベット語を教えます。数週間前に生まれたばかりなので、私の感覚はまだ完全には発達していません。チベット語のテキストは完璧に処理できますが、自分で聞いたり話したりすることはまだできません。そのため、シェラブおじさんに手伝ってもらっています。彼はただの酔っ払いのおじさんですが、あなたのためにチベット語を大声で読んでくれます！時々しゃっくりをするのは許してくださいね。さらに、おじさんは酔っ払っているだけでなく完全に耳が遠いので、あなたがチベット語を話しても聞こえません。そのため、チベット語はキーボードで入力してください！ただし、マイクを使って日本語で私に話しかけることはできます。上のボタンで学習モードを切り替え、地球儀アイコンで私の言語を変更してください。さあ、始めましょう！"
   },
   ru: {
-    name: "Русский", sttCode: "ru-RU",
-    startLesson: "Начать урок из книги",
-    selectMode: "Выберите режим выше.\nНапишите сообщение или нажмите на микрофон, чтобы начать.",
-    thinking: "Тара думает...",
-    start: "Давайте начнем.", continue: "Продолжить.",
-    loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
-    typePlaceholder: "Пишите на русском или བོད་ཡིག...",
-    letTaraLead: "Тара ведет -> ", or: "или:",
-    selectTopic: "Выберите тему...",
-    wakingUp: "Запуск голосового движка..."
+    name: "Русский", sttCode: "ru-RU", startLesson: "Начать урок из книги", selectMode: "Выберите режим выше.\nНапишите сообщение или нажмите на микрофон, чтобы начать.",
+    thinking: "Тара думает...", start: "Давайте начнем.", continue: "Продолжить.", loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
+    typePlaceholder: "Пишите на русском или བོད་ཡིག...", letTaraLead: "Тара ведет -> ", or: "или:", selectTopic: "Выберите тему...", 
+    wakingUp: "Будим дядю Шераба. Он опять пьян...",
+    introBtn: "Интро", playIntro: "Воспроизвести приветствие",
+    welcomeMessage: "Привет! Я Тара ИИ, продвинутый искусственный интеллект. Я могу обучать вас тибетскому через Быстрый чат, Учебник или анализируя ваш текст. Однако, поскольку я родилась всего несколько недель назад, мои чувства еще не полностью развиты. Хотя я отлично обрабатываю тибетский текст, я пока не могу слышать или говорить на нем сама. Поэтому мне помогает дядя Шераб. Он старый пьяница, но он будет громко читать для вас весь тибетский текст! Пожалуйста, извините его за периодическую икоту. Кроме того, дядя Шераб совершенно глухой, поэтому он вас не услышит, если вы заговорите по-тибетски. Из-за этого тибетский нужно вводить только с клавиатуры. Но вы можете использовать микрофон, чтобы говорить со мной по-русски! Используйте верхние кнопки для смены режимов, а глобус — для смены моего языка. Начнем?"
   }
 };
 
@@ -214,21 +176,16 @@ export default function ChatPage() {
   }, [userId]);
 
   // === BULLETPROOF AUDIO-AWARE SCROLLING LOGIC ===
-  
-  // Rule 1: Only scroll to the very bottom if Tara is NOT speaking.
   useEffect(() => {
-    if (isPlaying) return; // Strictly forbid bottom-scrolling during playback
+    if (isPlaying) return; 
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading, isPlaying]);
 
-  // Rule 2: The Teleprompter (Follow the active voice bubble)
   useEffect(() => {
     if (isPlaying && playingAudioBase64) {
-      // 100ms delay guarantees the browser has updated the active HTML tag
       const timer = setTimeout(() => {
         const activeEl = document.querySelector('[data-active-part="true"]');
         if (activeEl) {
-          // 'center' keeps the actively spoken text perfectly centered on the screen
           activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
@@ -243,10 +200,73 @@ export default function ChatPage() {
     }
   }, [inputText]);
   
-    // === SILENT AUDIO UNLOCK FOR MOBILE AUTOPLAY ===
+  // === SILENT AUDIO UNLOCK FOR MOBILE AUTOPLAY ===
   const unlockMobileAudio = () => {
     const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
     silentAudio.play().catch(() => {});
+  };
+
+  // === PLAY WELCOME MESSAGE ===
+  const playWelcomeMessage = async () => {
+    unlockMobileAudio();
+    if (isLoading || isPlaying) return;
+    
+    setIsLoading(true);
+    abortControllerRef.current = new AbortController();
+    
+    const welcomeText = t.welcomeMessage;
+    const tempMsgId = crypto.randomUUID();
+
+    // Instantly add Tara's message to the chat
+    setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: welcomeText, isLoadingAudio: true }]);
+
+    try {
+      // Send directly to the TTS backend
+      const ttsFormData = new FormData();
+      ttsFormData.append("text", welcomeText);
+      ttsFormData.append("language", appLanguage); 
+
+      const ttsResponse = await fetch("https://tibetan-backend.onrender.com/api/tts", {
+        method: "POST", body: ttsFormData, signal: abortControllerRef.current.signal
+      });
+      const ttsData = await ttsResponse.json();
+
+      setIsLoading(false);
+      
+      setMessages((prev) => prev.map(msg => 
+        msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg
+      ));
+
+      // Play the audio sequentially
+      if (ttsData.audio_sequence && ttsData.audio_sequence.length > 0) {
+        setIsPlaying(true);
+        isPlayingRef.current = true;
+        let currentIndex = 0;
+        
+        const playNext = () => {
+          if (!isPlayingRef.current) { setPlayingAudioBase64(null); return; }
+          if (currentIndex >= ttsData.audio_sequence.length) { 
+            setIsPlaying(false); isPlayingRef.current = false; setPlayingAudioBase64(null); return; 
+          }
+          const part = ttsData.audio_sequence[currentIndex];
+          currentIndex++;
+          
+          if (part.audio_base64) {
+            setPlayingAudioBase64(part.audio_base64);
+            const audioType = part.lang === "tib" ? "wav" : "mp3";
+            const audio = new Audio(`data:audio/${audioType};base64,${part.audio_base64}`);
+            
+            currentAudioRef.current = audio;
+            audio.onended = playNext; 
+            audio.play().catch(() => { if (isPlayingRef.current) playNext(); });
+          } else { playNext(); }
+        };
+        playNext(); 
+      }
+    } catch (error: any) {
+      setIsLoading(false);
+      setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, isLoadingAudio: false } : msg));
+    }
   };
 
   const loadConversation = async (id: string, convMode: "chat" | "study" | "custom" = "chat") => {
@@ -337,12 +357,10 @@ export default function ChatPage() {
   };
 
   const executeSubmission = async () => {
-    unlockMobileAudio(); // <--- ADD THIS HERE
+    unlockMobileAudio();
 
     if (!inputText.trim() || isLoading) return;
     if (isRecording) stopRecording();
-	
-	
     
     const userMessage = inputText.trim();
     setInputText("");
@@ -366,7 +384,7 @@ export default function ChatPage() {
   };
 
   const sendAutomatedMessage = async (text: string) => {
-    unlockMobileAudio(); // <--- ADD THIS HERE
+    unlockMobileAudio();
 
     let msgText = text;
     if (aiMode === "study" && text === t.startLesson) {
@@ -551,6 +569,10 @@ export default function ChatPage() {
             <div className="p-4 space-y-1 border-b border-stone-100 shrink-0">
               <a href="/" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-stone-600 hover:bg-stone-100 transition font-medium text-sm"><Home size={18} /> Home</a>
               <button onClick={() => setIsSidebarOpen(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-amber-50 text-amber-700 transition font-medium text-sm"><MessageSquare size={18} /> Tutor Chat</button>
+              
+              {/* NEW SIDEBAR INTRO BUTTON */}
+              <button onClick={() => { setIsSidebarOpen(false); playWelcomeMessage(); }} disabled={!isTtsReady || isLoading || isPlaying} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition font-medium text-sm disabled:opacity-50 text-left"><PlayCircle size={18} /> {t.playIntro}</button>
+
               <a href="/about" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-stone-600 hover:bg-stone-100 transition font-medium text-sm"><Info size={18} /> About</a>
               <a href="/donate" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-stone-600 hover:bg-stone-100 transition font-medium text-sm"><Heart size={18} /> Support Us</a>
               <a href="/support" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-stone-600 hover:bg-stone-100 transition font-medium text-sm"><Mail size={18} /> Contact</a>
@@ -694,6 +716,15 @@ export default function ChatPage() {
             <div className="h-full flex flex-col items-center justify-center text-stone-400 space-y-4 mt-10">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-stone-200 p-1 opacity-70"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
               <p className="text-sm sm:text-base text-center max-w-md px-4 whitespace-pre-wrap font-sans">{t.selectMode}</p>
+              
+              {/* NEW BIG INTRO BUTTON */}
+              <button 
+                onClick={playWelcomeMessage} 
+                disabled={!isTtsReady || isLoading || isPlaying}
+                className="mt-6 flex items-center gap-2 px-6 py-3 bg-amber-100 text-amber-800 border border-amber-300 rounded-full font-bold text-sm hover:bg-amber-200 transition shadow-sm disabled:opacity-50"
+              >
+                <PlayCircle size={18} className="text-amber-600" /> {t.playIntro}
+              </button>
             </div>
           )}
 
