@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, MessageSquarePlus, ArrowRight } from "lucide-react";
+import { MessageSquarePlus, ArrowRight } from "lucide-react";
 import { SignInButton, Show, UserButton } from '@clerk/nextjs';
 
 export default function SupportPage() {
@@ -49,35 +49,52 @@ export default function SupportPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 sm:p-12 max-w-4xl w-full">
           <h1 className="text-4xl font-bold text-stone-900 mb-4">Support & Contact</h1>
           <p className="text-lg text-stone-600 mb-12 font-sans max-w-2xl leading-relaxed">
-            Need assistance with your Tara AI account, encountered a bug, or have a feature request? We are here to help.
+            Need assistance with your Tara AI account, encountered a bug, or have a feature request? I am here to help.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Email Card */}
-            <div className="p-8 rounded-xl bg-[#fdfbf7] border border-stone-200 hover:border-amber-300 transition-colors group">
-              <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Mail size={24} />
+            
+            {/* --- PETER SMITH EMAIL CARD --- */}
+            <div className="p-8 rounded-xl bg-[#fdfbf7] border border-stone-200 hover:border-amber-300 transition-colors group flex flex-col">
+              
+              {/* Avatar and Name */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-300 shadow-sm bg-stone-200 group-hover:scale-105 transition-transform">
+                  <img src="/peter.jpg" alt="Peter Smith" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-stone-800 font-serif">Peter Smith</h2>
+                  <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-amber-600 font-sans mt-1">Lead Developer</p>
+                </div>
               </div>
-              <h2 className="text-xl font-bold text-stone-800 mb-2">Email Us</h2>
-              <a href="mailto:support@learntibetan.uk" className="text-amber-600 font-sans font-medium hover:underline block mb-4">
-                support@learntibetan.uk
-              </a>
-              <p className="text-stone-500 font-sans text-sm">We typically reply within 24 hours.</p>
+              
+              <div className="mt-auto">
+                <h3 className="font-bold text-stone-800 mb-1 font-sans">Email Me</h3>
+                <a href="mailto:p.sm1549c@gmail.com" className="text-amber-600 font-sans font-medium hover:underline block mb-5 break-all text-lg">
+                  p.sm1549c@gmail.com
+                </a>
+                <p className="text-stone-500 font-sans text-sm border-t border-amber-200/50 pt-4">
+                  I typically reply within 24 hours.
+                </p>
+              </div>
             </div>
 
-            {/* In-App Feedback Card */}
-            <div className="p-8 rounded-xl bg-white border border-stone-200 hover:border-amber-300 transition-colors group">
+            {/* --- IN-APP FEEDBACK CARD --- */}
+            <div className="p-8 rounded-xl bg-white border border-stone-200 hover:border-amber-300 transition-colors group flex flex-col">
               <div className="w-12 h-12 bg-stone-100 text-stone-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <MessageSquarePlus size={24} />
               </div>
-              <h2 className="text-xl font-bold text-stone-800 mb-2">In-App Feedback</h2>
-              <p className="text-stone-800 font-sans font-medium mb-4">
+              <h2 className="text-xl font-bold text-stone-800 mb-2 font-serif">In-App Feedback</h2>
+              <p className="text-stone-800 font-sans font-medium mb-5">
                 Use the Feedback Icon
               </p>
-              <p className="text-stone-500 font-sans text-sm leading-relaxed">
-                Click the message bubble inside the chat app to report bugs directly.
-              </p>
+              <div className="mt-auto">
+                <p className="text-stone-500 font-sans text-sm leading-relaxed border-t border-stone-100 pt-4">
+                  Click the message bubble inside the chat app to report bugs directly.
+                </p>
+              </div>
             </div>
+            
           </div>
         </div>
       </main>
