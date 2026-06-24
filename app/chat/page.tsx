@@ -242,6 +242,12 @@ export default function ChatPage() {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
     }
   }, [inputText]);
+  
+    // === SILENT AUDIO UNLOCK FOR MOBILE AUTOPLAY ===
+  const unlockMobileAudio = () => {
+    const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+    silentAudio.play().catch(() => {});
+  };
 
   const loadConversation = async (id: string, convMode: "chat" | "study" | "custom" = "chat") => {
     setConversationId(id);
@@ -331,8 +337,12 @@ export default function ChatPage() {
   };
 
   const executeSubmission = async () => {
+    unlockMobileAudio(); // <--- ADD THIS HERE
+
     if (!inputText.trim() || isLoading) return;
     if (isRecording) stopRecording();
+	
+	
     
     const userMessage = inputText.trim();
     setInputText("");
@@ -356,6 +366,8 @@ export default function ChatPage() {
   };
 
   const sendAutomatedMessage = async (text: string) => {
+    unlockMobileAudio(); // <--- ADD THIS HERE
+
     let msgText = text;
     if (aiMode === "study" && text === t.startLesson) {
         msgText = `${t.startLesson}: ${studyTopic}`;
