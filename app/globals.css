@@ -28,3 +28,16 @@ body {
   /* Default to our elegant serif font */
   font-family: var(--font-serif), Georgia, serif; 
 }
+
+/* Hide Google Login on Mobile devices to prevent In-App Browser OAuth blocking */
+@media (max-width: 640px) {
+  /* Target Clerk's specific Google button class */
+  .cl-socialButtonsBlockButton__google {
+    display: none !important;
+  }
+  
+  /* Fallback selector in case of Clerk updates */
+  button[data-provider="google"] {
+    display: none !important;
+  }
+}
