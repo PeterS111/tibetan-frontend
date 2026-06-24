@@ -714,7 +714,7 @@ export default function ChatPage() {
           
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-stone-400 space-y-4 mt-10">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-stone-200 p-1 opacity-70"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
+              <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-full border-2 border-stone-200 p-1.5 shadow-md opacity-95"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
               <p className="text-sm sm:text-base text-center max-w-md px-4 whitespace-pre-wrap font-sans">{t.selectMode}</p>
               
               {/* NEW BIG INTRO BUTTON */}
