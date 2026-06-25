@@ -55,7 +55,7 @@ export default function SupportPage() {
           <div className="grid md:grid-cols-2 gap-6">
             
             {/* --- PETER SMITH EMAIL CARD --- */}
-            <div className="p-8 rounded-xl bg-[#fdfbf7] border border-stone-200 hover:border-amber-300 transition-colors group flex flex-col">
+            <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-amber-300 shadow-sm bg-stone-200 group-hover:scale-105 transition-transform">
               
               {/* Avatar and Name */}
               <div className="flex items-center gap-4 mb-6">
