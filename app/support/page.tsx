@@ -55,11 +55,12 @@ export default function SupportPage() {
           <div className="grid md:grid-cols-2 gap-6">
             
             {/* --- PETER SMITH EMAIL CARD --- */}
-            <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-amber-300 shadow-sm bg-stone-200 group-hover:scale-105 transition-transform">
+            <div className="p-8 rounded-xl bg-[#fdfbf7] border border-stone-200 hover:border-amber-300 transition-colors group flex flex-col">
               
               {/* Avatar and Name */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-300 shadow-sm bg-stone-200 group-hover:scale-105 transition-transform">
+                {/* Fixed line below: outer div restored, rounded-xl applied only to this image wrapper */}
+                <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-amber-300 shadow-sm bg-stone-200 group-hover:scale-105 transition-transform">
                   <img src="/peter.jpg" alt="Peter Smith" className="w-full h-full object-cover" />
                 </div>
                 <div>
@@ -81,7 +82,7 @@ export default function SupportPage() {
 
             {/* --- IN-APP FEEDBACK CARD --- */}
             <div className="p-8 rounded-xl bg-white border border-stone-200 hover:border-amber-300 transition-colors group flex flex-col">
-              <div className="w-12 h-12 bg-stone-100 text-stone-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-stone-100 text-stone-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <MessageSquarePlus size={24} />
               </div>
               <h2 className="text-xl font-bold text-stone-800 mb-2 font-serif">In-App Feedback</h2>
