@@ -64,6 +64,30 @@ function ChatInterface() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
+  // --- STUDY TIME TRACKER ---
+  // Every 60 seconds the user stays on this page, add 1 minute to their database profile
+  useEffect(() => {
+    if (!userId) return;
+    
+    const interval = setInterval(() => {
+      const formData = new FormData();
+      formData.append("user_id", userId);
+      formData.append("minutes", "1");
+      
+      fetch("https://tibetan-backend.onrender.com/api/track-time", {
+        method: "POST",
+        body: formData
+      }).catch(() => {}); // silently fail if offline so it doesn't bother the user
+      
+    }, 60000); // 60000 ms = 1 minute
+
+    return () => clearInterval(interval); // Cleanup timer if they leave the page
+  }, [userId]);
+  
+  
+  
+  
+  
   // Poll for TTS Readiness
   useEffect(() => {
     let interval: NodeJS.Timeout;
