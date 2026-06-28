@@ -2,10 +2,35 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { Lock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Lock, Loader2 } from "lucide-react";
 
 export default function DashboardHub() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  const [profile, setProfile] = useState<any>(null);
+  const [modules, setModules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetch(`https://tibetan-backend.onrender.com/api/progress?user_id=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setProfile(data.profile);
+          setModules(data.modules || []);
+          setLoading(false);
+        }).catch(() => setLoading(false));
+    } else if (isLoaded && !user) {
+      setLoading(false);
+    }
+  }, [user, isLoaded]);
+
+  if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
+
+  const activeModule = modules.find(m => m.status === "active") || modules[0];
+  const completedCount = modules.filter(m => m.status === "completed").length;
+  const progressPercent = modules.length > 0 ? Math.round((completedCount / modules.length) * 100) : 0;
+  const hoursSpent = profile?.time_spent_mins ? (profile.time_spent_mins / 60).toFixed(1) : "0.0";
 
   return (
     <div className="max-w-5xl mx-auto p-8 pb-24 space-y-12 animate-in fade-in duration-500">
@@ -23,15 +48,15 @@ export default function DashboardHub() {
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4 md:w-fit">
         <div className="p-5 bg-white border border-[#e8e4d9] rounded-2xl shadow-sm text-center">
-          <div className="text-2xl font-bold text-amber-600 mb-1">12</div>
+          <div className="text-2xl font-bold text-amber-600 mb-1">{profile?.streak || 0}</div>
           <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Day Streak</div>
         </div>
         <div className="p-5 bg-white border border-[#e8e4d9] rounded-2xl shadow-sm text-center">
-          <div className="text-2xl font-bold text-stone-800 mb-1">3.5h</div>
-          <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">This Week</div>
+          <div className="text-2xl font-bold text-stone-800 mb-1">{hoursSpent}h</div>
+          <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Time Spent</div>
         </div>
         <div className="p-5 bg-white border border-[#e8e4d9] rounded-2xl shadow-sm text-center">
-          <div className="text-2xl font-bold text-stone-800 mb-1">284</div>
+          <div className="text-2xl font-bold text-stone-800 mb-1">{profile?.words_known || 0}</div>
           <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Words Known</div>
         </div>
       </div>
@@ -57,11 +82,11 @@ export default function DashboardHub() {
             
             <div className="mt-auto">
               <div className="flex justify-between text-xs font-bold text-stone-500 mb-2">
-                <span>64% complete</span>
-                <span>8 units</span>
+                <span>{progressPercent}% complete</span>
+                <span>{modules.length} units</span>
               </div>
               <div className="w-full bg-stone-100 h-1.5 rounded-full mb-4">
-                <div className="bg-amber-500 w-[64%] h-full rounded-full"></div>
+                <div className="bg-amber-500 h-full rounded-full" style={{ width: `${progressPercent}%` }}></div>
               </div>
               <Link href="/dashboard/lessons" className="w-full block text-center py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold text-sm rounded-xl transition-colors">
                 Continue &rarr;

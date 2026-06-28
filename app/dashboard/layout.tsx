@@ -12,10 +12,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const { user } = useUser();
 
-  const navItems = [
+const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Lessons", href: "/dashboard/lessons", icon: BookOpen },
-    { name: "AI Chats", href: "/chat", icon: MessageSquare }, // Points to our existing chat for now
+    { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare }, // <-- UPDATED THIS LINE
     { name: "Exercises", href: "/dashboard/exercises", icon: CheckSquare },
   ];
 
