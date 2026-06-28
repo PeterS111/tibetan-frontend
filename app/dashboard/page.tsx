@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { BookOpen, MessageSquare, CheckSquare, FileText, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 export default function DashboardHub() {
   const { user } = useUser();
