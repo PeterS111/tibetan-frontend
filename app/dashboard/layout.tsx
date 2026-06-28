@@ -38,7 +38,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div>
             <h1 className="font-bold text-stone-800 leading-tight">Learn Tibetan</h1>
-            <p className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">Scholar's Edition</p>
+            {/* THE FIX IS ON THE LINE BELOW */}
+            <p className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">Scholar&apos;s Edition</p>
           </div>
         </div>
 
