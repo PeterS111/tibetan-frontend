@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* User Profile Widget */}
         <div className="p-4 m-4 mt-0 bg-white border border-[#e8e4d9] rounded-2xl flex items-center gap-3 shadow-sm">
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-stone-800 truncate">{user?.firstName || "Student"}</p>
             <div className="flex items-center gap-1 text-xs text-amber-600 font-bold">
