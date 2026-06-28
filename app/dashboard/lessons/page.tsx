@@ -1,0 +1,202 @@
+"use client";
+
+import Link from "next/link";
+import { Check, Lock, Clock, BookOpen, Play } from "lucide-react";
+
+export default function MyLessonsPage() {
+  const curriculum = [
+    {
+      id: "01",
+      title: "The World of Tibetan Letters & Greetings",
+      description: "30 consonants, 4 vowels, Wylie transliteration, and basic time-of-day greetings.",
+      time: "3H",
+      lessons: "8 LESSONS",
+      status: "completed",
+    },
+    {
+      id: "02",
+      title: "The Logic of Existence & Particles",
+      description: "Essential vs. Existential 'To Be', Testimonial vs. Inferential knowledge, and school vocabulary.",
+      time: "2.5H",
+      lessons: "6 LESSONS",
+      status: "completed",
+    },
+    {
+      id: "03",
+      title: "Relations, Proximity & Politeness",
+      description: "Demonstrative pronouns, possessive connectives, and the strict rules of honorifics (ཞེ་ས).",
+      time: "3H",
+      lessons: "7 LESSONS",
+      status: "active",
+      progress: 40,
+    },
+    {
+      id: "04",
+      title: "Questions, Articles & Word Order",
+      description: "Subject-Object-Verb order, definite/indefinite articles, and asking main questions.",
+      time: "2H",
+      lessons: "5 LESSONS",
+      status: "locked",
+    },
+    {
+      id: "05",
+      title: "Action, Intention & The Agent",
+      description: "Volitional vs. Non-Volitional verbs, the Ergative Case (བྱེད་སྒྲ་), and tea-chat conversations.",
+      time: "3.5H",
+      lessons: "9 LESSONS",
+      status: "locked",
+    },
+    {
+      id: "06",
+      title: "Actions in the Past",
+      description: "Simple Past Tense auxiliaries, negations, and discussing holidays and free-time activities.",
+      time: "2.5H",
+      lessons: "6 LESSONS",
+      status: "locked",
+    },
+    {
+      id: "07",
+      title: "The Present Moment & Visible Results",
+      description: "Present continuous verbs and expressing visible results. Weather and climate vocabulary.",
+      time: "2H",
+      lessons: "6 LESSONS",
+      status: "locked",
+    },
+    {
+      id: "08",
+      title: "The Future, Nature, & Volunteering",
+      description: "Future auxiliaries, insisting/volunteering, and ordering food at a restaurant.",
+      time: "3H",
+      lessons: "7 LESSONS",
+      status: "locked",
+    },
+    {
+      id: "09",
+      title: "Requests & Imperatives",
+      description: "The Imperative mood, making polite requests, shopping, bargaining, and currencies.",
+      time: "2H",
+      lessons: "5 LESSONS",
+      status: "locked",
+    },
+    {
+      id: "10",
+      title: "Time, Dates & Exceptions",
+      description: "Numbers, fractions, the verb 'to become', telling time, and the Tibetan calendar.",
+      time: "3H",
+      lessons: "8 LESSONS",
+      status: "locked",
+    },
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto p-8 pb-24 animate-in fade-in duration-500">
+      
+      {/* Page Header */}
+      <div className="mb-10">
+        <h2 className="text-[11px] font-bold text-amber-600 uppercase tracking-[0.2em] mb-3">Syllabus</h2>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#e8e4d9] pb-6">
+          <h1 className="text-3xl md:text-4xl font-bold font-serif text-stone-900">
+            The Beginner curriculum
+          </h1>
+          <div className="text-sm font-medium text-stone-500 mb-1">
+            10 modules · Complete Syllabus
+          </div>
+        </div>
+      </div>
+
+      {/* Curriculum List */}
+      <div className="space-y-4">
+        {curriculum.map((module) => {
+          
+          // COMPLETED STATE
+          if (module.status === "completed") {
+            return (
+              <div key={module.id} className="flex flex-col md:flex-row bg-white border border-[#e8e4d9] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow gap-6">
+                <div className="flex-shrink-0 w-16 h-16 bg-emerald-50 text-emerald-600 font-serif text-2xl font-bold flex items-center justify-center rounded-xl">
+                  {module.id}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-xl font-bold text-stone-800">{module.title}</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
+                      Completed
+                    </span>
+                  </div>
+                  <p className="text-stone-500 text-sm mb-3">{module.description}</p>
+                  <div className="flex items-center gap-4 text-xs font-bold text-stone-400">
+                    <span className="flex items-center gap-1"><Clock size={14} /> {module.time}</span>
+                    <span className="flex items-center gap-1"><BookOpen size={14} /> {module.lessons}</span>
+                  </div>
+                </div>
+                <div className="flex items-center mt-4 md:mt-0">
+                  <button className="px-5 py-2 border border-stone-200 text-stone-600 font-bold text-sm rounded-xl hover:bg-stone-50 transition flex items-center gap-2">
+                    <Check size={16} /> Review
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          // ACTIVE STATE
+          if (module.status === "active") {
+            return (
+              <div key={module.id} className="flex flex-col md:flex-row bg-white border-2 border-amber-400 rounded-2xl p-6 shadow-md gap-6 relative overflow-hidden">
+                <div className="absolute left-0 top-0 w-1 h-full bg-amber-400"></div>
+                <div className="flex-shrink-0 w-16 h-16 bg-amber-50 text-amber-600 font-serif text-2xl font-bold flex items-center justify-center rounded-xl">
+                  {module.id}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-xl font-bold text-stone-900">{module.title}</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                      In Progress
+                    </span>
+                  </div>
+                  <p className="text-stone-600 text-sm mb-4">{module.description}</p>
+                  
+                  {/* Progress Bar */}
+                  <div className="flex items-center gap-4 w-full max-w-md">
+                    <div className="flex items-center gap-4 text-xs font-bold text-stone-400 shrink-0">
+                      <span className="flex items-center gap-1"><Clock size={14} /> {module.time}</span>
+                      <span className="flex items-center gap-1"><BookOpen size={14} /> {module.lessons}</span>
+                    </div>
+                    <div className="flex-1 flex items-center gap-3">
+                      <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${module.progress}%` }}></div>
+                      </div>
+                      <span className="text-xs font-bold text-amber-600 shrink-0">{module.progress}% DONE</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center mt-4 md:mt-0">
+                  <Link href="/chat" className="px-6 py-2.5 bg-amber-500 text-stone-900 font-bold text-sm rounded-xl hover:bg-amber-400 transition flex items-center gap-2 shadow-sm">
+                    <Play size={16} className="fill-stone-900" /> Continue
+                  </Link>
+                </div>
+              </div>
+            );
+          }
+
+          // LOCKED STATE
+          return (
+            <div key={module.id} className="flex flex-col md:flex-row bg-[#fdfbf7] border border-[#e8e4d9] rounded-2xl p-6 opacity-60 gap-6">
+              <div className="flex-shrink-0 w-16 h-16 bg-stone-100 text-stone-400 font-serif text-2xl font-bold flex items-center justify-center rounded-xl">
+                <Lock size={20} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-stone-500 mb-1">{module.title}</h3>
+                <p className="text-stone-400 text-sm mb-3">{module.description}</p>
+              </div>
+              <div className="flex items-center justify-end mt-4 md:mt-0 min-w-[120px]">
+                <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+                  Unlocks Next
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+    </div>
+  );
+}
