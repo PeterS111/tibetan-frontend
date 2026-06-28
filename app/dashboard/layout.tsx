@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { 
   LayoutDashboard, BookOpen, MessageSquare, 
   CheckSquare, FileText, TrendingUp, Settings, Flame 
@@ -10,12 +11,27 @@ import {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+  
+  const [profile, setProfile] = useState<any>(null);
+  const [modules, setModules] = useState<any[]>([]);
 
-const navItems = [
+  // Fetch real data from your database!
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetch(`https://tibetan-backend.onrender.com/api/progress?user_id=${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setProfile(data.profile);
+          setModules(data.modules || []);
+        }).catch(() => {});
+    }
+  }, [user, isLoaded]);
+
+  const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Lessons", href: "/dashboard/lessons", icon: BookOpen },
-    { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare }, // <-- UPDATED THIS LINE
+    { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare },
     { name: "Exercises", href: "/dashboard/exercises", icon: CheckSquare },
   ];
 
@@ -24,6 +40,11 @@ const navItems = [
     { name: "Progress", href: "/dashboard/progress", icon: TrendingUp },
     { name: "Profile & Settings", href: "/dashboard/profile", icon: Settings },
   ];
+
+  // Calculate real progress dynamically
+  const completedCount = modules.filter(m => m.status === "completed").length;
+  const progressPercent = modules.length > 0 ? Math.round((completedCount / modules.length) * 100) : 0;
+  const streak = profile?.streak || 0;
 
   return (
     <div className="min-h-screen flex bg-[#fdfbf7] text-stone-800 font-sans">
@@ -38,13 +59,12 @@ const navItems = [
           </div>
           <div>
             <h1 className="font-bold text-stone-800 leading-tight">Learn Tibetan</h1>
-            {/* THE FIX IS ON THE LINE BELOW */}
             <p className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">Scholar&apos;s Edition</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="px-4 py-2 flex-1 overflow-y-auto">
+        <div className="px-4 py-2 flex-1 overflow-y-auto custom-scrollbar">
           <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">
             Beginner · Level I
           </div>
@@ -79,28 +99,28 @@ const navItems = [
           </nav>
         </div>
 
-        {/* Tier Progress Widget */}
+        {/* Real Tier Progress Widget */}
         <div className="p-6 border-t border-[#e8e4d9]">
           <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-3 uppercase">Tier Progress</div>
           <div className="flex items-end gap-2 mb-2">
-            <span className="text-2xl font-bold text-stone-800 leading-none">64<span className="text-base">%</span></span>
-            <span className="text-xs text-stone-500 font-medium mb-0.5">of 8 units</span>
+            <span className="text-2xl font-bold text-stone-800 leading-none">{progressPercent}<span className="text-base">%</span></span>
+            <span className="text-xs text-stone-500 font-medium mb-0.5">of {modules.length || 10} units</span>
           </div>
           <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-amber-500 w-[64%] h-full rounded-full"></div>
+            <div className="bg-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
           </div>
           <p className="text-[11px] font-medium text-stone-500 mt-3 pt-3 border-t border-stone-100">
             – All proficiency tiers
           </p>
         </div>
 
-        {/* User Profile Widget */}
+        {/* Real User Profile Widget */}
         <div className="p-4 m-4 mt-0 bg-white border border-[#e8e4d9] rounded-2xl flex items-center gap-3 shadow-sm">
           <UserButton />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-stone-800 truncate">{user?.firstName || "Student"}</p>
             <div className="flex items-center gap-1 text-xs text-amber-600 font-bold">
-              <Flame size={12} className="fill-amber-500" /> 12 Day Streak
+              <Flame size={12} className={streak > 0 ? "fill-amber-500" : "text-stone-300"} /> {streak} Day Streak
             </div>
           </div>
         </div>
@@ -108,23 +128,18 @@ const navItems = [
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
-        
-        {/* Top Header */}
         <header className="h-16 border-b border-[#e8e4d9] bg-[#fdfbf7]/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-20 shrink-0">
           <div className="flex items-center gap-2 text-sm font-medium text-stone-500">
             <span className="uppercase tracking-widest text-[11px] font-bold text-amber-600">Level I · CEFR A1</span>
             <span className="text-stone-300">/</span>
             <span className="text-stone-800 font-serif">Beginner Hub</span>
           </div>
-          
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-widest">
               Weekly Goal <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm"></div>
             </div>
           </div>
         </header>
-
-        {/* Scrollable Page Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {children}
         </div>
