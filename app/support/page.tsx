@@ -12,7 +12,7 @@ export default function SupportPage() {
       <header className="px-6 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50 font-sans">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full overflow-hidden border border-stone-300 shadow-sm">
-            <img src="/dakini.png" alt="Tara AI" className="w-full h-full object-cover" />
+            <img src="/dakini.png" alt="Dolma AI" className="w-full h-full object-cover" />
           </div>
           <Link href="/" className="font-bold text-xl tracking-tight text-stone-800 font-serif">Learn Tibetan UK</Link>
         </div>
@@ -49,7 +49,7 @@ export default function SupportPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 sm:p-12 max-w-4xl w-full">
           <h1 className="text-4xl font-bold text-stone-900 mb-4">Support & Contact</h1>
           <p className="text-lg text-stone-600 mb-12 font-sans max-w-2xl leading-relaxed">
-            Need assistance with your Tara AI account, encountered a bug, or have a feature request? I am here to help.
+            Need assistance with your Dolma AI account, encountered a bug, or have a feature request? I am here to help.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -105,7 +105,7 @@ export default function SupportPage() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 opacity-80">
             <img src="/dakini.png" alt="Logo" className="w-6 h-6 rounded-full border border-stone-300" />
-            <span className="font-bold text-stone-700 text-sm font-serif">Tara AI</span>
+            <span className="font-bold text-stone-700 text-sm font-serif">Dolma AI</span>
           </div>
           <div className="flex gap-6 text-sm font-medium text-stone-500">
             <Link href="/privacy" className="hover:text-amber-600 transition">Privacy Policy</Link>

@@ -21,7 +21,7 @@ export default function LandingPage() {
         <header className="relative z-10 px-6 py-6 flex items-center justify-between w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500 shadow-lg">
-              <img src="/dakini.png" alt="Tara AI" className="w-full h-full object-cover" />
+              <img src="/dakini.png" alt="Dolma AI" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-2xl tracking-wide text-white">Learn Tibetan UK</span>
           </div>
@@ -101,7 +101,7 @@ export default function LandingPage() {
           <div className="p-10 bg-white rounded-xl shadow-sm border border-stone-200 flex flex-col items-center text-center hover:shadow-md transition-shadow">
             <div className="text-amber-600 mb-6"><Mic size={40} strokeWidth={1.5} /></div>
             <h3 className="text-2xl font-bold text-stone-800 mb-4">Real-Time Voice</h3>
-            <p className="text-stone-600 leading-relaxed">Speak naturally. Tara understands and replies with high-quality native audio instantly, dropping English translation where needed.</p>
+            <p className="text-stone-600 leading-relaxed">Speak naturally. Dolma understands and replies with high-quality native audio instantly, dropping English translation where needed.</p>
           </div>
           
           <div className="p-10 bg-white rounded-xl shadow-sm border border-stone-200 flex flex-col items-center text-center hover:shadow-md transition-shadow">
@@ -113,7 +113,7 @@ export default function LandingPage() {
           <div className="p-10 bg-white rounded-xl shadow-sm border border-stone-200 flex flex-col items-center text-center hover:shadow-md transition-shadow">
             <div className="text-amber-600 mb-6"><BrainCircuit size={40} strokeWidth={1.5} /></div>
             <h3 className="text-2xl font-bold text-stone-800 mb-4">Custom Analysis</h3>
-            <p className="text-stone-600 leading-relaxed">Paste any Tibetan text. Tara acts as a master grammarian, breaking down syllables, particles, structure, and meaning.</p>
+            <p className="text-stone-600 leading-relaxed">Paste any Tibetan text. Dolma acts as a master grammarian, breaking down syllables, particles, structure, and meaning.</p>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
             <img src="/dakini.png" alt="Logo" className="w-8 h-8 rounded-full border border-stone-300 shadow-sm" />
-            <span className="font-bold text-stone-800 text-lg tracking-wide">Tara AI</span>
+            <span className="font-bold text-stone-800 text-lg tracking-wide">Dolma AI</span>
           </div>
           <div className="flex gap-8 text-base font-medium text-stone-600">
             <Link href="/privacy" className="hover:text-amber-600 transition">Privacy Policy</Link>

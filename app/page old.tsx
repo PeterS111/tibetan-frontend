@@ -366,7 +366,7 @@ export default function Home() {
           </div>
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-800 whitespace-nowrap">Tibetan Tutor</h1>
-            <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Tara AI</p>
+            <p className="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Dolma AI</p>
           </div>
           <div className="flex-1 flex justify-end gap-3 items-center">
             <button onClick={() => setIsFeedbackModalOpen(true)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors" title="Leave Feedback"><MessageSquarePlus size={20} /></button>
@@ -395,7 +395,7 @@ export default function Home() {
           
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4 mt-10">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-slate-200 p-1 opacity-70"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border border-slate-200 p-1 opacity-70"><img src="/dakini.png" alt="Dolma" className="w-full h-full object-cover rounded-full" /></div>
               <p className="text-sm sm:text-base text-center max-w-md px-4">Select a mode above.<br/> Type a message or press the microphone to start.</p>
             </div>
           )}
@@ -460,7 +460,7 @@ export default function Home() {
           ))}
 
           {isLoading && !isPlaying && (
-            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Tara is thinking...</span></div>
+            <div className="flex items-center gap-3 text-slate-500 p-2 ml-14 sm:ml-16"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm font-medium">Dolma is thinking...</span></div>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -523,7 +523,7 @@ export default function Home() {
           
           <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isRecording || isPlaying} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
-          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Tara">
+          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0" title="Interrupt Dolma">
             <StopCircle size={20} />
           </button>
 

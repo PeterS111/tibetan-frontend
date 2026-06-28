@@ -14,10 +14,10 @@ export default function TermsPage() {
           <p className="text-sm text-slate-500 mb-8">Last Updated: June 2026</p>
           
           <h3 className="text-xl font-bold mt-6 mb-3">1. Acceptance of Terms</h3>
-          <p className="mb-4">By accessing or using Learn Tibetan UK (Tara AI), you agree to be bound by these Terms. If you do not agree, please do not use the service.</p>
+          <p className="mb-4">By accessing or using Learn Tibetan UK (Dolma AI), you agree to be bound by these Terms. If you do not agree, please do not use the service.</p>
           
           <h3 className="text-xl font-bold mt-6 mb-3">2. AI-Generated Content</h3>
-          <p className="mb-4">Tara AI utilizes generative artificial intelligence. While we strive for high accuracy in grammar, translation, and pronunciation, the AI can make mistakes. You acknowledge that AI output should be used as a study aid and not an infallible source.</p>
+          <p className="mb-4">Dolma AI utilizes generative artificial intelligence. While we strive for high accuracy in grammar, translation, and pronunciation, the AI can make mistakes. You acknowledge that AI output should be used as a study aid and not an infallible source.</p>
           
           <h3 className="text-xl font-bold mt-6 mb-3">3. User Conduct</h3>
           <p className="mb-4">You agree not to use the platform to generate harmful, illegal, or abusive content. We reserve the right to suspend accounts that abuse the platform or attempt to bypass rate limits.</p>

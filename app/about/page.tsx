@@ -11,7 +11,7 @@ export default function AboutPage() {
       <header className="px-6 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50 font-sans">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full overflow-hidden border border-stone-300 shadow-sm">
-            <img src="/dakini.png" alt="Tara AI" className="w-full h-full object-cover" />
+            <img src="/dakini.png" alt="Dolma AI" className="w-full h-full object-cover" />
           </div>
           <Link href="/" className="font-bold text-xl tracking-tight text-stone-800 font-serif">Learn Tibetan UK</Link>
         </div>
@@ -56,9 +56,9 @@ export default function AboutPage() {
             <p>
               In an increasingly digital world, minority and endangered languages often struggle to find representation in modern educational technology. Our mission is to bridge this gap by bringing state-of-the-art Artificial Intelligence to the realm of Tibetan language acquisition.
             </p>
-            <h3 className="text-2xl font-bold text-stone-900 mt-8 mb-4">Tara AI: The First of Its Kind</h3>
+            <h3 className="text-2xl font-bold text-stone-900 mt-8 mb-4">Dolma AI: The First of Its Kind</h3>
             <p>
-              Tara is an advanced, multilingual AI Voice Tutor trained on official textbook curricula. By utilizing zero-latency voice models and cutting-edge grammatical analysis, Tara allows students from across the globe to practice conversational Tibetan as if they were speaking with a native instructor.
+              Dolma is an advanced, multilingual AI Voice Tutor trained on official textbook curricula. By utilizing zero-latency voice models and cutting-edge grammatical analysis, Dolma allows students from across the globe to practice conversational Tibetan as if they were speaking with a native instructor.
             </p>
             <p>
               Whether you are an academic researcher, a practitioner of Tibetan Buddhism, or someone exploring their heritage, this platform is built to support your journey.
@@ -72,7 +72,7 @@ export default function AboutPage() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 opacity-80">
             <img src="/dakini.png" alt="Logo" className="w-6 h-6 rounded-full border border-stone-300" />
-            <span className="font-bold text-stone-700 text-sm font-serif">Tara AI</span>
+            <span className="font-bold text-stone-700 text-sm font-serif">Dolma AI</span>
           </div>
           <div className="flex gap-6 text-sm font-medium text-stone-500">
             <Link href="/privacy" className="hover:text-amber-600 transition">Privacy Policy</Link>

@@ -11,7 +11,7 @@ export default function DonatePage() {
       <header className="px-6 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50 font-sans">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full overflow-hidden border border-stone-300 shadow-sm">
-            <img src="/dakini.png" alt="Tara AI" className="w-full h-full object-cover" />
+            <img src="/dakini.png" alt="Dolma AI" className="w-full h-full object-cover" />
           </div>
           <Link href="/" className="font-bold text-xl tracking-tight text-stone-800 font-serif">Learn Tibetan UK</Link>
         </div>
@@ -46,7 +46,7 @@ export default function DonatePage() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-stone-900">Support Our Mission</h1>
           <p className="text-lg text-stone-600 max-w-2xl mx-auto font-sans leading-relaxed">
-            Running ultra-fast AI Voice models and global servers is expensive. If you find value in Tara AI, please consider supporting the project to keep it accessible for everyone.
+            Running ultra-fast AI Voice models and global servers is expensive. If you find value in Dolma AI, please consider supporting the project to keep it accessible for everyone.
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 pt-12 text-left">
@@ -84,7 +84,7 @@ export default function DonatePage() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 opacity-80">
             <img src="/dakini.png" alt="Logo" className="w-6 h-6 rounded-full border border-stone-300" />
-            <span className="font-bold text-stone-700 text-sm font-serif">Tara AI</span>
+            <span className="font-bold text-stone-700 text-sm font-serif">Dolma AI</span>
           </div>
           <div className="flex gap-6 text-sm font-medium text-stone-500">
             <Link href="/privacy" className="hover:text-amber-600 transition">Privacy Policy</Link>

@@ -9,92 +9,92 @@ const TRANSLATIONS = {
   en: {
     name: "English", sttCode: "en-GB", startLesson: "Start Lesson from Book",
     selectMode: "Select a mode above.\nType a message or press the microphone to start.",
-    thinking: "Tara is thinking...", start: "Let's start.", continue: "Continue.",
+    thinking: "Dolma is thinking...", start: "Let's start.", continue: "Continue.",
     loginToChat: "🔒 Please log in to chat...", listening: "Listening...", typePlaceholder: "Type in English or བོད་ཡིག...",
-    letTaraLead: "Let Tara lead -> ", or: "or type/speak:", selectTopic: "Select a topic...", 
+    letDolmaLead: "Let Dolma lead -> ", or: "or type/speak:", selectTopic: "Select a topic...", 
     wakingUp: "Waking up Uncle Sherab. He is drunk again...",
     introBtn: "Intro", playIntro: "Play Welcome Message",
-    welcomeMessage: "Hello! I am Tara AI, a highly advanced AI with exceptional abilities. I can teach you Tibetan through our Quick Chat, guide you through the structured Textbook, or analyze any Custom Text you paste. However, since I was born only a few weeks ago, my senses haven't fully developed yet. While my brain can process Tibetan text perfectly, my vocal cords and ears for Tibetan are still growing. To solve this, I am assisted by Uncle Sherab. He is an old drunk, but he will be loudly reading all the Tibetan text for you! Please excuse the occasional hiccups. Furthermore, because he is deaf as a post, he cannot hear you if you try to speak Tibetan. Therefore, any Tibetan you give us MUST be typed on the keyboard. You can, however, use the microphone to speak to me in English! Feel free to use the top buttons to switch study modes, or the globe icon to change my spoken language. Shall we begin?"
+    welcomeMessage: "Hello! I am Dolma AI, a highly advanced AI with exceptional abilities. I can teach you Tibetan through our Quick Chat, guide you through the structured Textbook, or analyze any Custom Text you paste. However, since I was born only a few weeks ago, my senses haven't fully developed yet. While my brain can process Tibetan text perfectly, my vocal cords and ears for Tibetan are still growing. To solve this, I am assisted by Uncle Sherab. He is an old drunk, but he will be loudly reading all the Tibetan text for you! Please excuse the occasional hiccups. Furthermore, because he is deaf as a post, he cannot hear you if you try to speak Tibetan. Therefore, any Tibetan you give us MUST be typed on the keyboard. You can, however, use the microphone to speak to me in English! Feel free to use the top buttons to switch study modes, or the globe icon to change my spoken language. Shall we begin?"
   },
   zh: {
     name: "中文", sttCode: "zh-CN", startLesson: "开始课本学习", selectMode: "在上面选择一个模式。\n输入一条消息或按住麦克风开始。",
-    thinking: "度母正在思考...", start: "我们开始吧。", continue: "继续。", loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
-    typePlaceholder: "输入中文或བོད་ཡིག...", letTaraLead: "让度母引导 -> ", or: "或输入/说话：", selectTopic: "选择一个主题...", 
+    thinking: "卓玛正在思考...", start: "我们开始吧。", continue: "继续。", loginToChat: "🔒 请登录以聊天...", listening: "正在聆听...",
+    typePlaceholder: "输入中文或བོད་ཡིག...", letDolmaLead: "让卓玛引导 -> ", or: "或输入/说话：", selectTopic: "选择一个主题...", 
     wakingUp: "正在唤醒谢拉大叔。他又喝醉了...",
     introBtn: "介绍", playIntro: "播放欢迎信息",
-    welcomeMessage: "你好！我是度母 AI，一个功能强大的高级人工智能。我可以通过快速聊天、结构化课本或分析自定义文本来教你藏语。不过，因为我刚出生几个星期，我的感官还没有完全发育。虽然我能完美地处理藏文文本，但我自己还不能听或说藏语。为了解决这个问题，我请来了谢拉大叔协助我。他是个老酒鬼，但他会大声为你朗读所有的藏文！请原谅他偶尔打嗝。此外，因为他不仅喝醉了，而且完全是个聋子，所以如果你对他说藏语，他是听不见的。因此，任何藏文输入都必须使用键盘打字！不过，你可以使用麦克风用中文和我说话。请使用顶部的按钮切换学习模式，或者点击地球图标更改我的语言。我们开始吧？"
+    welcomeMessage: "你好！我是卓玛 AI，一个功能强大的高级人工智能。我可以通过快速聊天、结构化课本或分析自定义文本来教你藏语。不过，因为我刚出生几个星期，我的感官还没有完全发育。虽然我能完美地处理藏文文本，但我自己还不能听或说藏语。为了解决这个问题，我请来了谢拉大叔协助我。他是个老酒鬼，但他会大声为你朗读所有的藏文！请原谅他偶尔打嗝。此外，因为他不仅喝醉了，而且完全是个聋子，所以如果你对他说藏语，他是听不见的。因此，任何藏文输入都必须使用键盘打字！不过，你可以使用麦克风用中文和我说话。请使用顶部的按钮切换学习模式，或者点击地球图标更改我的语言。我们开始吧？"
   },
   es: {
     name: "Español", sttCode: "es-ES", startLesson: "Comenzar lección del libro", selectMode: "Selecciona un modo arriba.\nEscribe un mensaje o presiona el micrófono para empezar.",
-    thinking: "Tara está pensando...", start: "Empecemos.", continue: "Continuar.", loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
-    typePlaceholder: "Escribe en español o བོད་ཡིག...", letTaraLead: "Tara guía -> ", or: "o:", selectTopic: "Selecciona un tema...", 
+    thinking: "Dolma está pensando...", start: "Empecemos.", continue: "Continuar.", loginToChat: "🔒 Inicia sesión para chatear...", listening: "Escuchando...",
+    typePlaceholder: "Escribe en español o བོད་ཡིག...", letDolmaLead: "Dolma guía -> ", or: "o:", selectTopic: "Selecciona un tema...", 
     wakingUp: "Despertando al Tío Sherab. Está borracho otra vez...",
     introBtn: "Intro", playIntro: "Reproducir mensaje de bienvenida",
-    welcomeMessage: "¡Hola! Soy Tara AI, una inteligencia artificial muy avanzada. Puedo enseñarte tibetano a través del chat rápido, nuestro libro de texto o analizando textos personalizados. Sin embargo, como nací hace unas semanas, mis sentidos aún no se han desarrollado por completo. Aunque puedo procesar perfectamente el texto tibetano, todavía no puedo escucharlo ni hablarlo yo misma. Para solucionarlo, me ayuda el Tío Sherab. Es un viejo borracho, ¡pero leerá todo el texto tibetano en voz alta para ti! Disculpa si a veces tiene hipo. Además, aparte de estar borracho, el Tío Sherab está completamente sordo, por lo que no podrá escucharte si intentas hablarle en tibetano. Por lo tanto, cualquier texto tibetano que nos des DEBE ser escrito con el teclado. ¡Pero sí puedes usar el micrófono para hablarme en español! Usa los botones de arriba para cambiar de modo de estudio, o el icono del globo para cambiar mi idioma. ¿Empezamos?"
+    welcomeMessage: "¡Hola! Soy Dolma AI, una inteligencia artificial muy avanzada. Puedo enseñarte tibetano a través del chat rápido, nuestro libro de texto o analizando textos personalizados. Sin embargo, como nací hace unas semanas, mis sentidos aún no se han desarrollado por completo. Aunque puedo procesar perfectamente el texto tibetano, todavía no puedo escucharlo ni hablarlo yo misma. Para solucionarlo, me ayuda el Tío Sherab. Es un viejo borracho, ¡pero leerá todo el texto tibetano en voz alta para ti! Disculpa si a veces tiene hipo. Además, aparte de estar borracho, el Tío Sherab está completamente sordo, por lo que no podrá escucharte si intentas hablarle en tibetano. Por lo tanto, cualquier texto tibetano que nos des DEBE ser escrito con el teclado. ¡Pero sí puedes usar el micrófono para hablarme en español! Usa los botones de arriba para cambiar de modo de estudio, o el icono del globo para cambiar mi idioma. ¿Empezamos?"
   },
   fr: {
     name: "Français", sttCode: "fr-FR", startLesson: "Commencer la leçon du livre", selectMode: "Sélectionnez un mode ci-dessus.\nÉcrivez un message ou appuyez sur le micro pour commencer.",
-    thinking: "Tara réfléchit...", start: "Commençons.", continue: "Continuer.", loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
-    typePlaceholder: "Écrivez en français ou བོད་ཡིག...", letTaraLead: "Tara guide -> ", or: "ou :", selectTopic: "Sélectionnez un sujet...", 
+    thinking: "Dolma réfléchit...", start: "Commençons.", continue: "Continuer.", loginToChat: "🔒 Connectez-vous pour discuter...", listening: "Écoute...",
+    typePlaceholder: "Écrivez en français ou བོད་ཡིག...", letDolmaLead: "Dolma guide -> ", or: "ou :", selectTopic: "Sélectionnez un sujet...", 
     wakingUp: "Réveil de l'oncle Sherab. Il est encore ivre...",
     introBtn: "Intro", playIntro: "Lire le message de bienvenue",
-    welcomeMessage: "Bonjour ! Je suis Tara AI, une intelligence artificielle très avancée. Je peux vous enseigner le tibétain via notre chat rapide, notre manuel structuré, ou en analysant un texte personnalisé. Cependant, comme je suis née il y a quelques semaines, mes sens ne sont pas encore totalement développés. Bien que mon cerveau puisse parfaitement traiter le texte tibétain, je ne peux pas encore l'entendre ni le parler. Pour y remédier, je suis assistée par l'Oncle Sherab. C'est un vieil ivrogne, mais il lira le texte tibétain à haute voix pour vous ! Veuillez excuser ses hoquets occasionnels. De plus, en plus d'être ivre, l'Oncle Sherab est complètement sourd. Il ne vous entendra donc pas si vous essayez de parler tibétain. Par conséquent, tout tibétain doit être saisi au clavier. Vous pouvez cependant utiliser le micro pour me parler en français ! Utilisez les boutons en haut pour changer de mode d'étude, ou le globe pour changer ma langue. On commence ?"
+    welcomeMessage: "Bonjour ! Je suis Dolma AI, une intelligence artificielle très avancée. Je peux vous enseigner le tibétain via notre chat rapide, notre manuel structuré, ou en analysant un texte personnalisé. Cependant, comme je suis née il y a quelques semaines, mes sens ne sont pas encore totalement développés. Bien que mon cerveau puisse parfaitement traiter le texte tibétain, je ne peux pas encore l'entendre ni le parler. Pour y remédier, je suis assistée par l'Oncle Sherab. C'est un vieil ivrogne, mais il lira le texte tibétain à haute voix pour vous ! Veuillez excuser ses hoquets occasionnels. De plus, en plus d'être ivre, l'Oncle Sherab est complètement sourd. Il ne vous entendra donc pas si vous essayez de parler tibétain. Par conséquent, tout tibétain doit être saisi au clavier. Vous pouvez cependant utiliser le micro pour me parler en français ! Utilisez les boutons en haut pour changer de mode d'étude, ou le globe pour changer ma langue. On commence ?"
   },
   pt: {
     name: "Português", sttCode: "pt-BR", startLesson: "Começar a lição do livro", selectMode: "Selecione um modo acima.\nDigite uma mensagem ou pressione o microfone para começar.",
-    thinking: "Tara está pensando...", start: "Vamos começar.", continue: "Continuar.", loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
-    typePlaceholder: "Digite em português ou བོད་ཡིག...", letTaraLead: "Deixe Tara guiar -> ", or: "ou digite/fale:", selectTopic: "Selecione um tópico...", 
+    thinking: "Dolma está pensando...", start: "Vamos começar.", continue: "Continuar.", loginToChat: "🔒 Faça login para conversar...", listening: "Ouvindo...",
+    typePlaceholder: "Digite em português ou བོད་ཡིག...", letDolmaLead: "Deixe Dolma guiar -> ", or: "ou digite/fale:", selectTopic: "Selecione um tópico...", 
     wakingUp: "Acordando o Tio Sherab. Ele está bêbado de novo...",
     introBtn: "Intro", playIntro: "Tocar mensagem de boas-vindas",
-    welcomeMessage: "Olá! Sou a Tara AI, uma inteligência artificial altamente avançada. Posso te ensinar tibetano pelo bate-papo rápido, pelo nosso livro didático ou analisando textos personalizados. Porém, como nasci há poucas semanas, meus sentidos ainda não estão totalmente desenvolvidos. Embora eu processe textos em tibetano perfeitamente, ainda não consigo ouvir ou falar o idioma eu mesma. Para resolver isso, sou auxiliada pelo Tio Sherab. Ele é um velho bêbado, mas lerá todo o texto tibetano em voz alta para você! Por favor, desculpe os soluços dele. Além de bêbado, o Tio Sherab é completamente surdo, então ele não ouvirá se você tentar falar tibetano. Portanto, qualquer palavra em tibetano DEVE ser digitada no teclado. Mas você pode usar o microfone para falar comigo em português! Use os botões acima para alternar os modos de estudo e o globo para mudar meu idioma. Vamos começar?"
+    welcomeMessage: "Olá! Sou a Dolma AI, uma inteligência artificial altamente avançada. Posso te ensinar tibetano pelo bate-papo rápido, pelo nosso livro didático ou analisando textos personalizados. Porém, como nasci há poucas semanas, meus sentidos ainda não estão totalmente desenvolvidos. Embora eu processe textos em tibetano perfeitamente, ainda não consigo ouvir ou falar o idioma eu mesma. Para resolver isso, sou auxiliada pelo Tio Sherab. Ele é um velho bêbado, mas lerá todo o texto tibetano em voz alta para você! Por favor, desculpe os soluços dele. Além de bêbado, o Tio Sherab é completamente surdo, então ele não ouvirá se você tentar falar tibetano. Portanto, qualquer palavra em tibetano DEVE ser digitada no teclado. Mas você pode usar o microfone para falar comigo em português! Use os botões acima para alternar os modos de estudo e o globo para mudar meu idioma. Vamos começar?"
   },
   de: {
     name: "Deutsch", sttCode: "de-DE", startLesson: "Lektion aus dem Buch starten", selectMode: "Wähle oben einen Modus.\nTippe eine Nachricht oder drücke auf das Mikrofon, um zu beginnen.",
-    thinking: "Tara denkt nach...", start: "Lass uns anfangen.", continue: "Weiter.", loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
-    typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...", letTaraLead: "Tara führt -> ", or: "oder:", selectTopic: "Wähle ein Thema...", 
+    thinking: "Dolma denkt nach...", start: "Lass uns anfangen.", continue: "Weiter.", loginToChat: "🔒 Bitte anmelden, um zu chatten...", listening: "Zuhören...",
+    typePlaceholder: "Tippe auf Deutsch oder བོད་ཡིག...", letDolmaLead: "Dolma führt -> ", or: "oder:", selectTopic: "Wähle ein Thema...", 
     wakingUp: "Onkel Sherab wird aufgeweckt. Er ist schon wieder betrunken...",
     introBtn: "Intro", playIntro: "Willkommensnachricht abspielen",
-    welcomeMessage: "Hallo! Ich bin Tara AI, eine hochentwickelte KI. Ich kann dir Tibetisch über den Quick Chat, unser Lehrbuch oder durch Textanalyse beibringen. Da ich erst vor wenigen Wochen geboren wurde, sind meine Sinne noch nicht voll entwickelt. Ich kann tibetische Texte zwar perfekt verarbeiten, aber ich kann sie noch nicht selbst hören oder sprechen. Deshalb werde ich von Onkel Sherab unterstützt. Er ist ein alter Trunkenbold, aber er wird den tibetischen Text laut für dich vorlesen! Bitte entschuldige seinen gelegentlichen Schluckauf. Abgesehen davon, dass er betrunken ist, ist Onkel Sherab auch völlig taub. Er wird dich nicht hören, wenn du versuchst, Tibetisch zu sprechen. Daher muss Tibetisch immer über die Tastatur eingegeben werden. Du kannst das Mikrofon jedoch benutzen, um auf Deutsch mit mir zu sprechen! Nutze die Tasten oben für die Modi und die Weltkugel für meine Sprache. Wollen wir anfangen?"
+    welcomeMessage: "Hallo! Ich bin Dolma AI, eine hochentwickelte KI. Ich kann dir Tibetisch über den Quick Chat, unser Lehrbuch oder durch Textanalyse beibringen. Da ich erst vor wenigen Wochen geboren wurde, sind meine Sinne noch nicht voll entwickelt. Ich kann tibetische Texte zwar perfekt verarbeiten, aber ich kann sie noch nicht selbst hören oder sprechen. Deshalb werde ich von Onkel Sherab unterstützt. Er ist ein alter Trunkenbold, aber er wird den tibetischen Text laut für dich vorlesen! Bitte entschuldige seinen gelegentlichen Schluckauf. Abgesehen davon, dass er betrunken ist, ist Onkel Sherab auch völlig taub. Er wird dich nicht hören, wenn du versuchst, Tibetisch zu sprechen. Daher muss Tibetisch immer über die Tastatur eingegeben werden. Du kannst das Mikrofon jedoch benutzen, um auf Deutsch mit mir zu sprechen! Nutze die Tasten oben für die Modi und die Weltkugel für meine Sprache. Wollen wir anfangen?"
   },
   pl: {
     name: "Polski", sttCode: "pl-PL", startLesson: "Zacznij lekcję z książki", selectMode: "Wybierz tryb powyżej.\nWpisz wiadomość lub naciśnij mikrofon, aby rozpocząć.",
-    thinking: "Tara myśli...", start: "Zaczynajmy.", continue: "Kontynuuj.", loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
-    typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...", letTaraLead: "Tara prowadzi -> ", or: "lub:", selectTopic: "Wybierz temat...", 
+    thinking: "Dolma myśli...", start: "Zaczynajmy.", continue: "Kontynuuj.", loginToChat: "🔒 Zaloguj się, aby pisać...", listening: "Słucham...",
+    typePlaceholder: "Wpisz po polsku lub བོད་ཡིག...", letDolmaLead: "Dolma prowadzi -> ", or: "lub:", selectTopic: "Wybierz temat...", 
     wakingUp: "Budzenie wujka Sheraba. Znowu jest pijany...",
     introBtn: "Wstęp", playIntro: "Odtwórz wiadomość powitalną",
-    welcomeMessage: "Cześć! Jestem Tara AI, wysoce zaawansowana sztuczna inteligencja. Mogę uczyć Cię tybetańskiego poprzez Szybki Czat, Podręcznik lub analizę dowolnego tekstu. Ponieważ urodziłam się zaledwie kilka tygodni temu, moje zmysły nie są jeszcze w pełni rozwinięte. Chociaż doskonale przetwarzam tekst, nie potrafię jeszcze słyszeć ani mówić po tybetańsku. Pomaga mi w tym wujek Sherab. To stary pijak, ale będzie czytał dla Ciebie na głos cały tybetański tekst! Wybacz mu sporadyczną czkawkę. Oprócz tego, że jest pijany, wujek Sherab jest też całkowicie głuchy, więc nie usłyszy, jeśli spróbujesz mówić do niego po tybetańsku. Dlatego każdy tybetański tekst musi być wpisany na klawiaturze. Możesz jednak użyć mikrofonu, aby mówić do mnie po polsku! Użyj górnych przycisków, aby zmieniać tryby nauki, i ikony globu, aby zmienić mój język. Zaczynamy?"
+    welcomeMessage: "Cześć! Jestem Dolma AI, wysoce zaawansowana sztuczna inteligencja. Mogę uczyć Cię tybetańskiego poprzez Szybki Czat, Podręcznik lub analizę dowolnego tekstu. Ponieważ urodziłam się zaledwie kilka tygodni temu, moje zmysły nie są jeszcze w pełni rozwinięte. Chociaż doskonale przetwarzam tekst, nie potrafię jeszcze słyszeć ani mówić po tybetańsku. Pomaga mi w tym wujek Sherab. To stary pijak, ale będzie czytał dla Ciebie na głos cały tybetański tekst! Wybacz mu sporadyczną czkawkę. Oprócz tego, że jest pijany, wujek Sherab jest też całkowicie głuchy, więc nie usłyszy, jeśli spróbujesz mówić do niego po tybetańsku. Dlatego każdy tybetański tekst musi być wpisany na klawiaturze. Możesz jednak użyć mikrofonu, aby mówić do mnie po polsku! Użyj górnych przycisków, aby zmieniać tryby nauki, i ikony globu, aby zmienić mój język. Zaczynamy?"
   },
   it: {
     name: "Italiano", sttCode: "it-IT", startLesson: "Inizia la lezione", selectMode: "Seleziona una modalità qui sopra.\nScrivi un messaggio o premi il microfono per iniziare.",
-    thinking: "Tara sta pensando...", start: "Cominciamo.", continue: "Continua.", loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
-    typePlaceholder: "Scrivi in italiano o བོད་ཡིག...", letTaraLead: "Guida Tara -> ", or: "oppure:", selectTopic: "Seleziona un argomento...", 
+    thinking: "Dolma sta pensando...", start: "Cominciamo.", continue: "Continua.", loginToChat: "🔒 Accedi per chattare...", listening: "In ascolto...",
+    typePlaceholder: "Scrivi in italiano o བོད་ཡིག...", letDolmaLead: "Guida Dolma -> ", or: "oppure:", selectTopic: "Seleziona un argomento...", 
     wakingUp: "Svegliando lo Zio Sherab. È ubriaco di nuovo...",
     introBtn: "Intro", playIntro: "Riproduci il messaggio di benvenuto",
-    welcomeMessage: "Ciao! Sono Tara AI, un'intelligenza artificiale molto avanzata. Posso insegnarti il tibetano attraverso la Chat Veloce, il nostro Libro di Testo o analizzando un testo personalizzato. Tuttavia, poiché sono nata solo da poche settimane, i miei sensi non sono ancora completamente sviluppati. Sebbene il mio cervello riesca a elaborare perfettamente i testi tibetani, non posso ancora sentirli né parlarli io stessa. Per questo sono assistita dallo Zio Sherab. È un vecchio ubriacone, ma leggerà il testo tibetano ad alta voce per te! Ti prego di scusare i suoi singhiozzi. Inoltre, oltre a essere ubriaco, lo Zio Sherab è anche completamente sordo, quindi non potrà sentirti se cerchi di parlargli in tibetano. Per questo motivo, il tibetano deve essere digitato solo con la tastiera. Puoi però usare il microfono per parlarmi in italiano! Usa i pulsanti in alto per cambiare modalità di studio e il mappamondo per cambiare la mia lingua. Iniziamo?"
+    welcomeMessage: "Ciao! Sono Dolma AI, un'intelligenza artificiale molto avanzata. Posso insegnarti il tibetano attraverso la Chat Veloce, il nostro Libro di Testo o analizzando un testo personalizzato. Tuttavia, poiché sono nata solo da poche settimane, i miei sensi non sono ancora completamente sviluppati. Sebbene il mio cervello riesca a elaborare perfettamente i testi tibetani, non posso ancora sentirli né parlarli io stessa. Per questo sono assistita dallo Zio Sherab. È un vecchio ubriacone, ma leggerà il testo tibetano ad alta voce per te! Ti prego di scusare i suoi singhiozzi. Inoltre, oltre a essere ubriaco, lo Zio Sherab è anche completamente sordo, quindi non potrà sentirti se cerchi di parlargli in tibetano. Per questo motivo, il tibetano deve essere digitato solo con la tastiera. Puoi però usare il microfono per parlarmi in italiano! Usa i pulsanti in alto per cambiare modalità di studio e il mappamondo per cambiare la mia lingua. Iniziamo?"
   },
   ja: {
     name: "日本語", sttCode: "ja-JP", startLesson: "本のレッスンを始める", selectMode: "上のモードを選択してください。\nメッセージを入力するか、マイクを押して開始します。",
-    thinking: "ターラが考えています...", start: "始めましょう。", continue: "続ける。", loginToChat: "🔒 チャットするにはログイン...", listening: "聞いています...",
-    typePlaceholder: "日本語または བོད་ཡིག で入力...", letTaraLead: "ターラに任せる -> ", or: "または入力/話す:", selectTopic: "トピックを選択...", 
+    thinking: "ドルマが考えています...", start: "始めましょう。", continue: "続ける。", loginToChat: "🔒 チャットするにはログイン...", listening: "聞いています...",
+    typePlaceholder: "日本語または བོད་ཡིག で入力...", letDolmaLead: "ドルマに任せる -> ", or: "または入力/話す:", selectTopic: "トピックを選択...", 
     wakingUp: "シェラブおじさんを起こしています。彼はまた酔っ払っています...",
     introBtn: "紹介", playIntro: "ウェルカムメッセージを再生",
-    welcomeMessage: "こんにちは！私は高度なAIのターラです。クイックチャット、教科書、テキスト分析を通じてチベット語を教えます。数週間前に生まれたばかりなので、私の感覚はまだ完全には発達していません。チベット語のテキストは完璧に処理できますが、自分で聞いたり話したりすることはまだできません。そのため、シェラブおじさんに手伝ってもらっています。彼はただの酔っ払いのおじさんですが、あなたのためにチベット語を大声で読んでくれます！時々しゃっくりをするのは許してくださいね。さらに、おじさんは酔っ払っているだけでなく完全に耳が遠いので、あなたがチベット語を話しても聞こえません。そのため、チベット語はキーボードで入力してください！ただし、マイクを使って日本語で私に話しかけることはできます。上のボタンで学習モードを切り替え、地球儀アイコンで私の言語を変更してください。さあ、始めましょう！"
+    welcomeMessage: "こんにちは！私は高度なAIのドルマです。クイックチャット、教科書、テキスト分析を通じてチベット語を教えます。数週間前に生まれたばかりなので、私の感覚はまだ完全には発達していません。チベット語のテキストは完璧に処理できますが、自分で聞いたり話したりすることはまだできません。そのため、シェラブおじさんに手伝ってもらっています。彼はただの酔っ払いのおじさんですが、あなたのためにチベット語を大声で読んでくれます！時々しゃっくりをするのは許してくださいね。さらに、おじさんは酔っ払っているだけでなく完全に耳が遠いので、あなたがチベット語を話しても聞こえません。そのため、チベット語はキーボードで入力してください！ただし、マイクを使って日本語で私に話しかけることはできます。上のボタンで学習モードを切り替え、地球儀アイコンで私の言語を変更してください。さあ、始めましょう！"
   },
   ru: {
     name: "Русский", sttCode: "ru-RU", startLesson: "Начать урок из книги", selectMode: "Выберите режим выше.\nНапишите сообщение или нажмите на микрофон, чтобы начать.",
-    thinking: "Тара думает...", start: "Давайте начнем.", continue: "Продолжить.", loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
-    typePlaceholder: "Пишите на русском или བོད་ཡིག...", letTaraLead: "Тара ведет -> ", or: "или:", selectTopic: "Выберите тему...", 
+    thinking: "Долма думает...", start: "Давайте начнем.", continue: "Продолжить.", loginToChat: "🔒 Войдите, чтобы общаться...", listening: "Слушаю...",
+    typePlaceholder: "Пишите на русском или བོད་ཡིག...", letDolmaLead: "Долма ведет -> ", or: "или:", selectTopic: "Выберите тему...", 
     wakingUp: "Будим дядю Шераба. Он опять пьян...",
     introBtn: "Интро", playIntro: "Воспроизвести приветствие",
-    welcomeMessage: "Привет! Я Тара ИИ, продвинутый искусственный интеллект. Я могу обучать вас тибетскому через Быстрый чат, Учебник или анализируя ваш текст. Однако, поскольку я родилась всего несколько недель назад, мои чувства еще не полностью развиты. Хотя я отлично обрабатываю тибетский текст, я пока не могу слышать или говорить на нем сама. Поэтому мне помогает дядя Шераб. Он старый пьяница, но он будет громко читать для вас весь тибетский текст! Пожалуйста, извините его за периодическую икоту. Кроме того, дядя Шераб совершенно глухой, поэтому он вас не услышит, если вы заговорите по-тибетски. Из-за этого тибетский нужно вводить только с клавиатуры. Но вы можете использовать микрофон, чтобы говорить со мной по-русски! Используйте верхние кнопки для смены режимов, а глобус — для смены моего языка. Начнем?"
+    welcomeMessage: "Привет! Я Долма ИИ, продвинутый искусственный интеллект. Я могу обучать вас тибетскому через Быстрый чат, Учебник или анализируя ваш текст. Однако, поскольку я родилась всего несколько недель назад, мои чувства еще не полностью развиты. Хотя я отлично обрабатываю тибетский текст, я пока не могу слышать или говорить на нем сама. Поэтому мне помогает дядя Шераб. Он старый пьяница, но он будет громко читать для вас весь тибетский текст! Пожалуйста, извините его за периодическую икоту. Кроме того, дядя Шераб совершенно глухой, поэтому он вас не услышит, если вы заговорите по-тибетски. Из-за этого тибетский нужно вводить только с клавиатуры. Но вы можете использовать микрофон, чтобы говорить со мной по-русски! Используйте верхние кнопки для смены режимов, а глобус — для смены моего языка. Начнем?"
   },
   ne: {
     name: "नेपाली", sttCode: "ne-NP", startLesson: "किताबबाट पाठ सुरु गर्नुहोस्", selectMode: "माथिबाट एउटा मोड चयन गर्नुहोस्।\nसुरु गर्न सन्देश टाइप गर्नुहोस् वा माइक्रोफोन थिच्नुहोस्।",
-    thinking: "तारा सोच्दै छिन्...", start: "सुरु गरौं।", continue: "जारी राख्नुहोस्।", loginToChat: "🔒 च्याट गर्न कृपया लगइन गर्नुहोस्...", listening: "सुन्दै...",
-    typePlaceholder: "नेपाली वा བོད་ཡིག मा टाइप गर्नुहोस्...", letTaraLead: "तारालाई अघि बढ्न दिनुहोस् -> ", or: "वा टाइप/बोल्नुहोस्:", selectTopic: "एउटा विषय चयन गर्नुहोस्...", 
+    thinking: "डोल्मा सोच्दै छिन्...", start: "सुरु गरौं।", continue: "जारी राख्नुहोस्।", loginToChat: "🔒 च्याट गर्न कृपया लगइन गर्नुहोस्...", listening: "सुन्दै...",
+    typePlaceholder: "नेपाली वा བོད་ཡིག मा टाइप गर्नुहोस्...", letDolmaLead: "डोल्मालाई अघि बढ्न दिनुहोस् -> ", or: "वा टाइप/बोल्नुहोस्:", selectTopic: "एउटा विषय चयन गर्नुहोस्...", 
     wakingUp: "काका शेराबलाई उठाउँदै। उहाँ फेरि रक्सीको नशामा हुनुहुन्छ...",
     introBtn: "परिचय", playIntro: "स्वागत सन्देश सुन्नुहोस्",
-    welcomeMessage: "नमस्ते! म तारा एआई हुँ, एक धेरै उन्नत कृत्रिम बुद्धिमत्ता। म तपाईंलाई हाम्रो द्रुत च्याट, संरचित पाठ्यपुस्तक, वा तपाईंले पेस्ट गर्नुभएको कुनै पनि अनुकूलन पाठको विश्लेषण गरेर तिब्बती भाषा सिकाउन सक्छु। तर, मेरो जन्म केही हप्ता अघि मात्र भएकोले, मेरा इन्द्रियहरू अझै पूर्ण रूपमा विकसित भएका छैनन्। मेरो मस्तिष्कले तिब्बती पाठलाई पूर्ण रूपमा प्रशोधन गर्न सक्ने भए तापनि, म अझै आफैं तिब्बती भाषा सुन्न वा बोल्न सक्दिनँ। यसलाई समाधान गर्न, मलाई काका शेराबले सहयोग गर्नुहुन्छ। उहाँ एक वृद्ध पियक्कड हुनुहुन्छ, तर उहाँले तपाईंको लागि सबै तिब्बती पाठ ठूलो स्वरमा पढ्नुहुनेछ! कृपया उहाँको कहिलेकाहीं आउने बाडुलीलाई बेवास्ता गरिदिनुहोस्। यसबाहेक, उहाँ पूर्ण रूपमा बहिरो पनि हुनुहुन्छ, त्यसैले यदि तपाईंले तिब्बती भाषा बोल्ने प्रयास गर्नुभयो भने उहाँले सुन्न सक्नुहुन्न। तसर्थ, तपाईंले हामीलाई दिनुहुने कुनै पनि तिब्बती पाठ किबोर्डमा टाइप गर्नुपर्छ। यद्यपि, तपाईं मसँग नेपालीमा कुरा गर्न माइक्रोफोन प्रयोग गर्न सक्नुहुन्छ! अध्ययन मोडहरू स्विच गर्न माथिका बटनहरू प्रयोग गर्नुहोस्, वा मेरो भाषा परिवर्तन गर्न ग्लोब आइकन प्रयोग गर्नुहोस्। के हामी सुरु गरौं?"
+    welcomeMessage: "नमस्ते! म डोल्मा एआई हुँ, एक धेरै उन्नत कृत्रिम बुद्धिमत्ता। म तपाईंलाई हाम्रो द्रुत च्याट, संरचित पाठ्यपुस्तक, वा तपाईंले पेस्ट गर्नुभएको कुनै पनि अनुकूलन पाठको विश्लेषण गरेर तिब्बती भाषा सिकाउन सक्छु। तर, मेरो जन्म केही हप्ता अघि मात्र भएकोले, मेरा इन्द्रियहरू अझै पूर्ण रूपमा विकसित भएका छैनन्। मेरो मस्तिष्कले तिब्बती पाठलाई पूर्ण रूपमा प्रशोधन गर्न सक्ने भए तापनि, म अझै आफैं तिब्बती भाषा सुन्न वा बोल्न सक्दिनँ। यसलाई समाधान गर्न, मलाई काका शेराबले सहयोग गर्नुहुन्छ। उहाँ एक वृद्ध पियक्कड हुनुहुन्छ, तर उहाँले तपाईंको लागि सबै तिब्बती पाठ ठूलो स्वरमा पढ्नुहुनेछ! कृपया उहाँको कहिलेकाहीं आउने बाडुलीलाई बेवास्ता गरिदिनुहोस्। यसबाहेक, उहाँ पूर्ण रूपमा बहिरो पनि हुनुहुन्छ, त्यसैले यदि तपाईंले तिब्बती भाषा बोल्ने प्रयास गर्नुभयो भने उहाँले सुन्न सक्नुहुन्न। तसर्थ, तपाईंले हामीलाई दिनुहुने कुनै पनि तिब्बती पाठ किबोर्डमा टाइप गर्नुपर्छ। यद्यपि, तपाईं मसँग नेपालीमा कुरा गर्न माइक्रोफोन प्रयोग गर्न सक्नुहुन्छ! अध्ययन मोडहरू स्विच गर्न माथिका बटनहरू प्रयोग गर्नुहोस्, वा मेरो भाषा परिवर्तन गर्न ग्लोब आइकन प्रयोग गर्नुहोस्। के हामी सुरु गरौं?"
   }
 };
 
@@ -225,7 +225,7 @@ export default function ChatPage() {
     const welcomeText = t.welcomeMessage;
     const tempMsgId = crypto.randomUUID();
 
-    // Instantly add Tara's message to the chat
+    // Instantly add Dolma's message to the chat
     setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: welcomeText, isLoadingAudio: true }]);
 
     try {
@@ -568,7 +568,7 @@ export default function ChatPage() {
           <div className="w-72 max-w-[80vw] bg-white border-r border-stone-200 shadow-2xl flex flex-col h-full animate-in slide-in-from-left duration-200">
             <div className="p-4 border-b border-stone-100 flex justify-between items-center bg-stone-50 shrink-0">
               <div className="flex items-center gap-2">
-                <img src="/dakini.png" alt="Tara" className="w-8 h-8 rounded-full border border-stone-200" />
+                <img src="/dakini.png" alt="Dolma" className="w-8 h-8 rounded-full border border-stone-200" />
                 <h2 className="font-bold text-stone-800 font-serif">Learn Tibetan UK</h2>
               </div>
               <button onClick={() => setIsSidebarOpen(false)} className="p-1 rounded hover:bg-stone-200 text-stone-500 transition"><X size={20}/></button>
@@ -636,7 +636,7 @@ export default function ChatPage() {
           </div>
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <h1 className="text-xl sm:text-2xl font-bold text-stone-800 whitespace-nowrap font-serif">Tibetan Tutor</h1>
-            <p className="text-[10px] sm:text-xs font-medium text-stone-500 uppercase tracking-widest mt-1">Tara AI</p>
+            <p className="text-[10px] sm:text-xs font-medium text-stone-500 uppercase tracking-widest mt-1">Dolma AI</p>
           </div>
           
           <div className="flex-1 flex justify-end gap-3 items-center relative">
@@ -722,7 +722,7 @@ export default function ChatPage() {
           
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-stone-400 space-y-4 mt-10">
-              <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-full border-2 border-stone-200 p-1.5 shadow-md opacity-95"><img src="/dakini.png" alt="Tara" className="w-full h-full object-cover rounded-full" /></div>
+              <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-full border-2 border-stone-200 p-1.5 shadow-md opacity-95"><img src="/dakini.png" alt="Dolma" className="w-full h-full object-cover rounded-full" /></div>
               <p className="text-sm sm:text-base text-center max-w-md px-4 whitespace-pre-wrap font-sans">{t.selectMode}</p>
               
               {/* NEW BIG INTRO BUTTON */}
@@ -831,7 +831,7 @@ export default function ChatPage() {
       <div className="p-3 sm:p-4 bg-white border-t border-stone-200 shrink-0 relative z-20 pb-safe flex flex-col items-center font-sans">
         
         <div className="w-full max-w-3xl mb-3 flex justify-center items-center gap-3 sm:gap-4">
-          <span className="text-[13px] sm:text-sm font-bold text-stone-500 whitespace-nowrap">{t.letTaraLead}</span>
+          <span className="text-[13px] sm:text-sm font-bold text-stone-500 whitespace-nowrap">{t.letDolmaLead}</span>
           
           <div className="relative inline-flex group">
             {userId && !isLoading && !isRecording && !isPlaying && isTtsReady && (
@@ -878,7 +878,7 @@ export default function ChatPage() {
           
           <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isPlaying || !isTtsReady} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-amber-600 text-white rounded-full hover:bg-amber-700 disabled:opacity-50 transition-colors flex-shrink-0 mb-1"><Send size={18} className="ml-0.5 sm:ml-1" /></button>
           
-          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0 mb-1" title="Interrupt Tara">
+          <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200 disabled:opacity-50 transition-colors flex-shrink-0 mb-1" title="Interrupt Dolma">
             <StopCircle size={20} />
           </button>
 
