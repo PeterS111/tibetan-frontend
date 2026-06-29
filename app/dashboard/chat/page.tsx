@@ -8,7 +8,6 @@ import { useAuth } from '@clerk/nextjs';
 const TRANSLATIONS = {
   en: { name: "English", sttCode: "en-GB", startLesson: "Start Lesson from Book", selectMode: "Select a mode above.\nType a message or press the microphone to start.", thinking: "Dolma is thinking...", start: "Let's start.", continue: "Continue.", listening: "Listening...", typePlaceholder: "Type in English or བོད་ཡིག...", letTaraLead: "Let Dolma lead -> ", or: "or type/speak:", selectTopic: "Select a topic...", wakingUp: "Waking up Uncle Sherab. He is drunk again...", playIntro: "Play Welcome Message", welcomeMessage: "Hello! I am Dolma AI..." },
   zh: { name: "中文", sttCode: "zh-CN", startLesson: "开始课本学习", selectMode: "在上面选择一个模式。\n输入一条消息或按住麦克风开始。", thinking: "卓玛正在思考...", start: "我们开始吧。", continue: "继续。", listening: "正在聆听...", typePlaceholder: "输入中文或བོད་ཡིག...", letTaraLead: "让卓玛引导 -> ", or: "或输入/说话：", selectTopic: "选择一个主题...", wakingUp: "正在唤醒谢拉大叔...", playIntro: "播放欢迎信息", welcomeMessage: "你好！我是卓玛 AI..." },
-  // Adding placeholders for other languages to keep the code concise but functional
   es: { name: "Español", sttCode: "es-ES", startLesson: "Comenzar lección", selectMode: "Selecciona un modo.", thinking: "Dolma está pensando...", start: "Empecemos.", continue: "Continuar.", listening: "Escuchando...", typePlaceholder: "Escribe...", letTaraLead: "Dolma guía -> ", or: "o:", selectTopic: "Selecciona...", wakingUp: "Despertando...", playIntro: "Intro", welcomeMessage: "¡Hola!" },
   fr: { name: "Français", sttCode: "fr-FR", startLesson: "Commencer la leçon", selectMode: "Sélectionnez un mode.", thinking: "Dolma réfléchit...", start: "Commençons.", continue: "Continuer.", listening: "Écoute...", typePlaceholder: "Écrivez...", letTaraLead: "Dolma guide -> ", or: "ou :", selectTopic: "Sélectionnez...", wakingUp: "Réveil...", playIntro: "Intro", welcomeMessage: "Bonjour !" },
   de: { name: "Deutsch", sttCode: "de-DE", startLesson: "Lektion starten", selectMode: "Wähle einen Modus.", thinking: "Dolma denkt nach...", start: "Lass uns anfangen.", continue: "Weiter.", listening: "Zuhören...", typePlaceholder: "Tippe...", letTaraLead: "Dolma führt -> ", or: "oder:", selectTopic: "Wähle...", wakingUp: "Aufwachen...", playIntro: "Intro", welcomeMessage: "Hallo!" },
@@ -29,10 +28,9 @@ type AudioPart = { lang: string; text: string; audio_base64: string; };
 type Message = { id?: string; role: "user" | "ai"; content: string; audioSequence?: AudioPart[]; isLoadingAudio?: boolean; };
 
 function ChatInterface() {
-  const { userId } = useAuth();
+  const { userId, getToken } = useAuth();
   const searchParams = useSearchParams();
   
-  // Read URL parameters from the Dashboard
   const urlMode = searchParams.get("mode") as "chat" | "study" | "custom" | null;
   const urlTopic = searchParams.get("topic");
 
@@ -44,7 +42,6 @@ function ChatInterface() {
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isTtsReady, setIsTtsReady] = useState(false);
   
-  // Automatically set mode and topic based on URL
   const [aiMode, setAiMode] = useState<"chat" | "study" | "custom">(urlMode || "chat");
   const [studyTopic, setStudyTopic] = useState<string>(urlTopic || SYLLABUS_TOPICS[0]);
   
@@ -64,54 +61,55 @@ function ChatInterface() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
-  // --- STUDY TIME TRACKER ---
-  // Every 60 seconds the user stays on this page, add 1 minute to their database profile
+  // --- SECURE STUDY TIME TRACKER ---
   useEffect(() => {
     if (!userId) return;
     
-    const interval = setInterval(() => {
-      const formData = new FormData();
-      formData.append("user_id", userId);
-      formData.append("minutes", "1");
-      
-      fetch("https://tibetan-backend.onrender.com/api/track-time", {
-        method: "POST",
-        body: formData
-      }).catch(() => {}); // silently fail if offline so it doesn't bother the user
-      
-    }, 60000); // 60000 ms = 1 minute
+    const interval = setInterval(async () => {
+      try {
+        const token = await getToken();
+        const formData = new FormData();
+        formData.append("user_id", userId);
+        formData.append("minutes", "1");
+        
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/track-time`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        }).catch(() => {});
+      } catch (e) {}
+    }, 60000); 
 
-    return () => clearInterval(interval); // Cleanup timer if they leave the page
-  }, [userId]);
+    return () => clearInterval(interval); 
+  }, [userId, getToken]);
   
-  
-  
-  
-  
-  // Poll for TTS Readiness
+  // Poll for TTS Readiness (Public route, no token needed)
   useEffect(() => {
     let interval: NodeJS.Timeout;
     const checkTtsStatus = async () => {
       try {
-        const res = await fetch("https://tibetan-backend.onrender.com/api/status");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/status`);
         const data = await res.json();
         if (data.ready) { setIsTtsReady(true); clearInterval(interval); }
       } catch (e) {}
     };
-    fetch("https://tibetan-backend.onrender.com/api/wakeup").then(() => checkTtsStatus()).catch(() => {});
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wakeup`).then(() => checkTtsStatus()).catch(() => {});
     interval = setInterval(checkTtsStatus, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch History
+  // SECURE Fetch History
   useEffect(() => {
     if (userId) {
-      fetch(`https://tibetan-backend.onrender.com/api/conversations?user_id=${userId}`)
-        .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+      getToken().then(token => {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+      });
     }
-  }, [userId]);
+  }, [userId, getToken]);
 
-  // Update mode if URL changes
   useEffect(() => {
     if (urlMode) setAiMode(urlMode);
     if (urlTopic) setStudyTopic(urlTopic);
@@ -137,7 +135,10 @@ function ChatInterface() {
   const loadConversation = async (id: string, convMode: "chat" | "study" | "custom" = "chat") => {
     setConversationId(id); setAiMode(convMode); setIsHistoryOpen(false); setMessages([]); 
     try {
-      const res = await fetch(`https://tibetan-backend.onrender.com/api/history?conversation_id=${id}`);
+      const token = await getToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history?conversation_id=${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const data = await res.json();
       if (data.messages) setMessages(data.messages.map((m: any) => ({ id: m.id, role: m.role, content: m.content, audioSequence: m.audio_sequence })));
     } catch (e) { console.error(e); }
@@ -196,6 +197,7 @@ function ChatInterface() {
 
   const processMessage = async (text: string) => {
     setIsLoading(true); abortControllerRef.current = new AbortController();
+    const token = await getToken();
     const formData = new FormData();
     formData.append("text", text);
     formData.append("history", JSON.stringify(messages.map(m => ({ role: m.role, content: m.content }))));
@@ -212,15 +214,21 @@ function ChatInterface() {
     }
 
     try {
-      const response = await fetch("https://tibetan-backend.onrender.com/api/chat", { method: "POST", body: formData, signal: abortControllerRef.current.signal });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, { 
+        method: "POST", 
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData, 
+        signal: abortControllerRef.current.signal 
+      });
       const data = await response.json();
       setIsLoading(false); 
       const tempMsgId = crypto.randomUUID();
       setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: data.ai_text, isLoadingAudio: true }]);
 
       if (userId && !conversationId) {
-        fetch(`https://tibetan-backend.onrender.com/api/conversations?user_id=${userId}`)
-          .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(res => res.json()).then(data => setPastConversations(data.conversations || []));
       }
 
       const ttsFormData = new FormData();
@@ -228,7 +236,12 @@ function ChatInterface() {
       ttsFormData.append("language", appLanguage); 
       if (data.message_id) ttsFormData.append("message_id", data.message_id);
 
-      const ttsResponse = await fetch("https://tibetan-backend.onrender.com/api/tts", { method: "POST", body: ttsFormData, signal: abortControllerRef.current.signal });
+      const ttsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { 
+        method: "POST", 
+        headers: { Authorization: `Bearer ${token}` },
+        body: ttsFormData, 
+        signal: abortControllerRef.current.signal 
+      });
       const ttsData = await ttsResponse.json();
 
       setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg));
