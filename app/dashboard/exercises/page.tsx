@@ -3,13 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { Check, X, Trophy, ArrowRight, BrainCircuit, RefreshCcw, Loader2 } from "lucide-react";
+import { Check, X, Trophy, ArrowRight, BrainCircuit, RefreshCcw, Loader2, List } from "lucide-react";
 
 type QuizQuestion = {
   question: string;
   options: string[];
   correctIndex: number;
 };
+
+const MODULE_OPTIONS = [
+  "Module 1", "Module 2", "Module 3", "Module 4", "Module 5", 
+  "Module 6", "Module 7", "Module 8", "Module 9", "Module 10"
+];
 
 export default function ExercisesPage() {
   const { getToken, userId } = useAuth();
@@ -23,15 +28,16 @@ export default function ExercisesPage() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // NEW: State for the currently selected module
+  const [selectedModule, setSelectedModule] = useState("Module 1");
 
-  // DYNAMICALLY FETCH AI QUIZ ON MOUNT
-  const fetchQuiz = async () => {
+  const fetchQuiz = async (moduleTopic: string) => {
     setIsLoading(true);
     try {
       const token = await getToken();
       const formData = new FormData();
-      // Future upgrade: let the user select which module to be tested on!
-      formData.append("topic", "Module 1"); 
+      formData.append("topic", moduleTopic); 
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/generate-quiz`, {
          method: "POST",
@@ -49,8 +55,21 @@ export default function ExercisesPage() {
   };
 
   useEffect(() => {
-    if (userId) fetchQuiz();
+    if (userId) fetchQuiz(selectedModule);
   }, [userId]);
+
+  const handleModuleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newModule = e.target.value;
+    setSelectedModule(newModule);
+    
+    // Reset all quiz state and fetch the new quiz
+    setCurrentStep(0);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+    setScore(0);
+    setIsFinished(false);
+    fetchQuiz(newModule);
+  };
 
   const handleSelect = (index: number) => {
     if (isAnswered) return;
@@ -84,7 +103,6 @@ export default function ExercisesPage() {
       const token = await getToken();
       const formData = new FormData();
       formData.append("user_id", userId);
-      // We grant 2 "Words Known" points for every correct answer!
       formData.append("new_words", (score * 2).toString()); 
       
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
@@ -92,9 +110,7 @@ export default function ExercisesPage() {
         headers: { Authorization: `Bearer ${token}` },
         body: formData
       });
-    } catch (e) {
-      console.error("Failed to save score", e);
-    }
+    } catch (e) {}
     setIsSaving(false);
   };
 
@@ -104,15 +120,15 @@ export default function ExercisesPage() {
     setIsAnswered(false);
     setScore(0);
     setIsFinished(false);
-    fetchQuiz(); // Generate a brand new quiz!
+    fetchQuiz(selectedModule);
   };
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] text-stone-500 animate-pulse">
         <Loader2 size={48} className="animate-spin text-amber-500 mb-4" />
-        <h2 className="text-xl font-bold font-serif text-stone-800">Generating AI Quiz...</h2>
-        <p className="text-sm">Dolma is writing unique questions for you.</p>
+        <h2 className="text-xl font-bold font-serif text-stone-800">Reading {selectedModule}...</h2>
+        <p className="text-sm">Dolma is writing a unique quiz for you.</p>
       </div>
     );
   }
@@ -122,7 +138,7 @@ export default function ExercisesPage() {
       <div className="flex flex-col items-center justify-center h-[70vh] text-center p-8">
         <h2 className="text-2xl font-bold font-serif text-stone-800 mb-2">Quiz Generation Failed</h2>
         <p className="text-stone-500">Could not connect to the AI engine. Please try again.</p>
-        <button onClick={fetchQuiz} className="mt-6 px-6 py-2 bg-amber-500 rounded-lg text-white font-bold">Retry</button>
+        <button onClick={() => fetchQuiz(selectedModule)} className="mt-6 px-6 py-2 bg-amber-500 rounded-lg text-white font-bold">Retry</button>
       </div>
     );
   }
@@ -137,7 +153,7 @@ export default function ExercisesPage() {
         </div>
         <h1 className="text-4xl font-bold font-serif text-stone-900 mb-4">Training Complete!</h1>
         <p className="text-lg text-stone-600 mb-8 max-w-md">
-          Excellent work, {user?.firstName}. You answered {score} out of {quizData.length} questions correctly. 
+          Excellent work, {user?.firstName}. You answered {score} out of {quizData.length} questions correctly on {selectedModule}. 
         </p>
         
         <div className="bg-white border border-[#e8e4d9] rounded-2xl p-6 w-full max-w-sm mb-8 shadow-sm">
@@ -166,20 +182,35 @@ export default function ExercisesPage() {
     <div className="max-w-3xl mx-auto p-4 sm:p-8 pb-24 animate-in fade-in duration-500">
       
       {/* HEADER & PROGRESS */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="p-2 bg-amber-100 text-amber-700 rounded-lg">
             <BrainCircuit size={24} />
           </div>
           <div>
-            <h2 className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">Dynamic Vocabulary Drill</h2>
+            <h2 className="text-[11px] font-bold text-stone-400 uppercase tracking-widest">Vocabulary Drill</h2>
             <div className="font-bold text-stone-800">Module Review</div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-xs font-bold text-amber-600 mb-1">{currentStep + 1} of {quizData.length}</div>
-          <div className="w-32 h-2 bg-stone-200 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
+        
+        <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+          {/* THE NEW MODULE SELECTOR */}
+          <div className="relative">
+            <List size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+            <select 
+              value={selectedModule} 
+              onChange={handleModuleChange}
+              className="appearance-none bg-white border border-stone-200 text-stone-700 font-bold text-sm rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer"
+            >
+              {MODULE_OPTIONS.map((mod, i) => <option key={i} value={mod}>{mod}</option>)}
+            </select>
+          </div>
+
+          <div className="text-right">
+            <div className="text-xs font-bold text-amber-600 mb-1">{currentStep + 1} of {quizData.length}</div>
+            <div className="w-24 h-2 bg-stone-200 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
+            </div>
           </div>
         </div>
       </div>
@@ -238,7 +269,6 @@ export default function ExercisesPage() {
           )}
         </button>
       </div>
-
     </div>
   );
 }
