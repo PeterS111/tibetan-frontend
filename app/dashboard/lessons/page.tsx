@@ -60,10 +60,6 @@ export default function MyLessonsPage() {
                     <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">Completed</span>
                   </div>
                   <p className="text-stone-500 text-sm mb-3">{module.description}</p>
-                  <div className="flex items-center gap-4 text-xs font-bold text-stone-400">
-                    <span className="flex items-center gap-1"><Clock size={14} /> {module.time_est}</span>
-                    <span className="flex items-center gap-1"><BookOpen size={14} /> {module.lesson_count}</span>
-                  </div>
                 </div>
                 <div className="flex items-center mt-4 md:mt-0">
                   <Link href={chatUrl} className="px-5 py-2 border border-stone-200 text-stone-600 font-bold text-sm rounded-xl hover:bg-stone-50 transition flex items-center gap-2">
@@ -90,10 +86,6 @@ export default function MyLessonsPage() {
                   <p className="text-stone-600 text-sm mb-4">{module.description}</p>
                   
                   <div className="flex items-center gap-4 w-full max-w-md">
-                    <div className="flex items-center gap-4 text-xs font-bold text-stone-400 shrink-0">
-                      <span className="flex items-center gap-1"><Clock size={14} /> {module.time_est}</span>
-                      <span className="flex items-center gap-1"><BookOpen size={14} /> {module.lesson_count}</span>
-                    </div>
                     <div className="flex-1 flex items-center gap-3">
                       <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
                         <div className="h-full bg-amber-500 rounded-full" style={{ width: `${module.progress}%` }}></div>
