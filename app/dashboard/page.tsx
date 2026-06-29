@@ -1,29 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { Lock, Loader2 } from "lucide-react";
 
 export default function DashboardHub() {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [modules, setModules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoaded && user) {
-      fetch(`https://tibetan-backend.onrender.com/api/progress?user_id=${user.id}`)
-        .then(res => res.json())
-        .then(data => {
+    const fetchData = async () => {
+      if (isLoaded && user) {
+        try {
+          const token = await getToken();
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
           setProfile(data.profile);
           setModules(data.modules || []);
           setLoading(false);
-        }).catch(() => setLoading(false));
-    } else if (isLoaded && !user) {
-      setLoading(false);
-    }
-  }, [user, isLoaded]);
+        } catch(e) { setLoading(false); }
+      } else if (isLoaded && !user) {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user, isLoaded, getToken]);
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
 

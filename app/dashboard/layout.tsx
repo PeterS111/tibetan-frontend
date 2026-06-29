@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { 
   LayoutDashboard, BookOpen, MessageSquare, 
@@ -12,21 +12,28 @@ import {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   
   const [profile, setProfile] = useState<any>(null);
   const [modules, setModules] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (isLoaded && user) {
-      fetch(`https://tibetan-backend.onrender.com/api/progress?user_id=${user.id}`)
-        .then(res => res.json())
-        .then(data => {
+    const fetchData = async () => {
+      if (isLoaded && user) {
+        try {
+          const token = await getToken();
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
           setProfile(data.profile);
           setModules(data.modules || []);
-        }).catch(() => {});
-    }
-  }, [user, isLoaded]);
+        } catch(e) {}
+      }
+    };
+    fetchData();
+  }, [user, isLoaded, getToken]);
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
