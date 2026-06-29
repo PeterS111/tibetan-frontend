@@ -54,12 +54,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         
         {/* Logo Area */}
         <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-amber-700 flex items-center justify-center text-white font-serif font-bold text-lg">
-            A
-          </div>
           <div>
-            <h1 className="font-bold text-stone-800 leading-tight">Learn Tibetan</h1>
-            <p className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">Scholar&apos;s Edition</p>
+            <h1 className="font-bold text-stone-800 leading-tight text-lg">Learn Tibetan UK</h1>
           </div>
         </div>
 
@@ -130,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <header className="h-16 border-b border-[#e8e4d9] bg-[#fdfbf7]/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-20 shrink-0">
           <div className="flex items-center gap-2 text-sm font-medium text-stone-500">
-            <span className="uppercase tracking-widest text-[11px] font-bold text-amber-600">Level I · CEFR A1</span>
+            <span className="uppercase tracking-widest text-[11px] font-bold text-amber-600">Level I</span>
             <span className="text-stone-300">/</span>
             <span className="text-stone-800 font-serif">Beginner Hub</span>
           </div>

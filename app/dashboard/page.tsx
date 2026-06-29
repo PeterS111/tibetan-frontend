@@ -75,7 +75,6 @@ export default function DashboardHub() {
             <div className="absolute top-0 left-0 w-full h-1 bg-amber-400"></div>
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Level I</span>
-              <span className="text-[10px] font-bold text-stone-400 italic">A1</span>
             </div>
             <h3 className="text-xl font-bold text-stone-900 mb-3 font-serif">Beginner</h3>
             <p className="text-sm text-stone-600 leading-relaxed mb-6">Establish the root of your practice. Script, phonology, and essential greetings.</p>
@@ -96,15 +95,14 @@ export default function DashboardHub() {
 
           {/* Locked Tiers */}
           {[
-            { level: "Level II", cefr: "A2", title: "Pre-Intermediate", desc: "Build conversational fluency. Past and future tenses through storytelling." },
-            { level: "Level III", cefr: "B1", title: "Intermediate", desc: "Honorifics, register, and reading short prose from contemporary writers." },
-            { level: "Level IV", cefr: "B2", title: "Upper-Intermediate", desc: "Classical grammar fundamentals; navigating philosophical texts." },
-            { level: "Level V", cefr: "C1-C2", title: "Advanced", desc: "Independent reading of canonical texts, poetry, and fluent discourse." }
+            { level: "Level II", title: "Pre-Intermediate", desc: "Build conversational fluency. Past and future tenses through storytelling." },
+            { level: "Level III", title: "Intermediate", desc: "Honorifics, register, and reading short prose from contemporary writers." },
+            { level: "Level IV", title: "Upper-Intermediate", desc: "Classical grammar fundamentals; navigating philosophical texts." },
+            { level: "Level V", title: "Advanced", desc: "Independent reading of canonical texts, poetry, and fluent discourse." }
           ].map((tier, i) => (
             <div key={i} className="p-6 bg-[#f8f6f0] border border-[#e8e4d9] rounded-2xl flex flex-col h-full opacity-70">
               <div className="flex justify-between items-start mb-4">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">{tier.level}</span>
-                <span className="text-[10px] font-bold text-stone-400 italic">{tier.cefr}</span>
               </div>
               <h3 className="text-xl font-bold text-stone-700 mb-3 font-serif">{tier.title}</h3>
               <p className="text-sm text-stone-500 leading-relaxed mb-6">{tier.desc}</p>
