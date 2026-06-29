@@ -6,7 +6,7 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { 
   LayoutDashboard, BookOpen, MessageSquare, 
-  CheckSquare, FileText, TrendingUp, Settings, Flame 
+  CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,8 +15,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   const [profile, setProfile] = useState<any>(null);
   const [modules, setModules] = useState<any[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Fetch real data from your database!
   useEffect(() => {
     if (isLoaded && user) {
       fetch(`https://tibetan-backend.onrender.com/api/progress?user_id=${user.id}`)
@@ -41,7 +41,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Profile & Settings", href: "/dashboard/profile", icon: Settings },
   ];
 
-  // Calculate real progress dynamically
   const completedCount = modules.filter(m => m.status === "completed").length;
   const progressPercent = modules.length > 0 ? Math.round((completedCount / modules.length) * 100) : 0;
   const streak = profile?.streak || 0;
@@ -49,22 +48,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex bg-[#fdfbf7] text-stone-800 font-sans">
       
-      {/* SIDEBAR */}
-      <aside className="w-64 border-r border-[#e8e4d9] bg-[#fdfbf7] flex flex-col hidden md:flex shrink-0">
-        
-        {/* Logo Area */}
+      {/* DESKTOP SIDEBAR */}
+      <aside className="w-64 border-r border-[#e8e4d9] bg-[#fdfbf7] hidden md:flex flex-col shrink-0">
         <div className="p-6 flex items-center gap-3">
           <div>
             <h1 className="font-bold text-stone-800 leading-tight text-lg">Learn Tibetan UK</h1>
           </div>
         </div>
 
-        {/* Navigation */}
         <div className="px-4 py-2 flex-1 overflow-y-auto custom-scrollbar">
-          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">
-            Beginner · Level I
-          </div>
-          
+          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">Beginner · Level I</div>
           <nav className="space-y-1 mb-8">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -78,10 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </nav>
 
-          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">
-            More
-          </div>
-
+          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">More</div>
           <nav className="space-y-1">
             {moreItems.map((item) => {
               const isActive = pathname === item.href;
@@ -95,7 +85,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
 
-        {/* Real Tier Progress Widget */}
         <div className="p-6 border-t border-[#e8e4d9]">
           <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-3 uppercase">Tier Progress</div>
           <div className="flex items-end gap-2 mb-2">
@@ -105,12 +94,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
             <div className="bg-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
           </div>
-          <p className="text-[11px] font-medium text-stone-500 mt-3 pt-3 border-t border-stone-100">
-            – All proficiency tiers
-          </p>
         </div>
 
-        {/* Real User Profile Widget */}
         <div className="p-4 m-4 mt-0 bg-white border border-[#e8e4d9] rounded-2xl flex items-center gap-3 shadow-sm">
           <UserButton />
           <div className="flex-1 min-w-0">
@@ -122,12 +107,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
+      {/* MOBILE MENU OVERLAY */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="relative w-64 bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-left-8 duration-300 border-r border-[#e8e4d9]">
+            <div className="p-4 flex items-center justify-between border-b border-[#e8e4d9]">
+              <div className="font-bold text-stone-800 text-lg">Learn Tibetan UK</div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-500 hover:bg-stone-200 rounded-lg transition-colors"><X size={20}/></button>
+            </div>
+            <div className="px-4 py-6 flex-1 overflow-y-auto">
+              <nav className="space-y-1 mb-8">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${isActive ? "bg-amber-50 text-amber-800" : "text-stone-600 hover:bg-stone-100"}`}>
+                      <item.icon size={18} className={isActive ? "text-amber-600" : "text-stone-400"} />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">More</div>
+              <nav className="space-y-1 mb-8">
+                {moreItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${isActive ? "bg-amber-50 text-amber-800" : "text-stone-600 hover:bg-stone-100"}`}>
+                      <item.icon size={18} className={isActive ? "text-amber-600" : "text-stone-400"} />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
-        <header className="h-16 border-b border-[#e8e4d9] bg-[#fdfbf7]/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-20 shrink-0">
-          <div className="flex items-center gap-2 text-sm font-medium text-stone-500">
-            <span className="uppercase tracking-widest text-[11px] font-bold text-amber-600">Level I</span>
-            <span className="text-stone-300">/</span>
+        <header className="h-16 border-b border-[#e8e4d9] bg-[#fdfbf7]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shrink-0">
+          <div className="flex items-center gap-3 text-sm font-medium text-stone-500">
+            {/* Mobile Hamburger Button */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-1.5 -ml-1.5 text-stone-600 hover:bg-stone-200 rounded-md transition-colors">
+              <Menu size={20} />
+            </button>
+            <span className="uppercase tracking-widest text-[11px] font-bold text-amber-600 hidden sm:inline-block">Level I</span>
+            <span className="text-stone-300 hidden sm:inline-block">/</span>
             <span className="text-stone-800 font-serif">Beginner Hub</span>
           </div>
           <div className="flex items-center gap-4">
