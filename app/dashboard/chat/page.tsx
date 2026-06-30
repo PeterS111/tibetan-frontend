@@ -222,7 +222,8 @@ function ChatInterface() {
   };
 
   const processMessage = async (text: string) => {
-    setIsLoading(true); abortControllerRef.current = new AbortController();
+    setIsLoading(true); 
+    abortControllerRef.current = new AbortController();
     const token = await getToken();
     const formData = new FormData();
     formData.append("text", text);
@@ -239,27 +240,83 @@ function ChatInterface() {
       formData.append("conversation_id", activeConvId);
     }
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData, signal: abortControllerRef.current.signal });
-      const data = await response.json();
-      setIsLoading(false); 
-      const tempMsgId = crypto.randomUUID();
-      setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: data.ai_text, isLoadingAudio: true }]);
+    // Create a blank AI message in the UI instantly
+    const tempMsgId = crypto.randomUUID();
+    setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: "", isLoadingAudio: false }]);
 
-      if (userId && !conversationId) {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, { 
+        method: "POST", 
+        headers: { Authorization: `Bearer ${token}` }, 
+        body: formData, 
+        signal: abortControllerRef.current.signal 
+      });
+
+      if (!response.ok) throw new Error("Network error");
+
+      // Stop the "Dolma is thinking" spinner because the stream has started!
+      setIsLoading(false); 
+
+      // Stream Reader Setup
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let aiText = "";
+      let finalMessageId = null;
+
+      if (reader) {
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n\n");
+          buffer = lines.pop() || ""; // Keep incomplete lines in the buffer
+          
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.substring(6));
+                
+                if (data.type === "chunk") {
+                  aiText += data.text;
+                  // Update the UI character-by-character!
+                  setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, content: aiText } : msg));
+                } else if (data.type === "done") {
+                  finalMessageId = data.message_id;
+                  aiText = data.full_text || aiText;
+                }
+              } catch (e) {}
+            }
+          }
+        }
       }
 
-      const ttsFormData = new FormData();
-      ttsFormData.append("text", data.ai_text);
-      ttsFormData.append("language", appLanguage); 
-      if (data.message_id) ttsFormData.append("message_id", data.message_id);
+      // The stream is finished! Now we show the TTS spinner and fetch the audio
+      setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, content: aiText, isLoadingAudio: true } : msg));
 
-      const ttsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: ttsFormData, signal: abortControllerRef.current.signal });
+      if (userId && !conversationId) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+      }
+
+      // Trigger the Audio Generation
+      const ttsFormData = new FormData();
+      ttsFormData.append("text", aiText);
+      ttsFormData.append("language", appLanguage); 
+      if (finalMessageId) ttsFormData.append("message_id", finalMessageId);
+
+      const ttsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { 
+        method: "POST", 
+        headers: { Authorization: `Bearer ${token}` }, 
+        body: ttsFormData, 
+        signal: abortControllerRef.current.signal 
+      });
       const ttsData = await ttsResponse.json();
 
       setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg));
 
+      // Play the Audio
       if (ttsData.audio_sequence && ttsData.audio_sequence.length > 0) {
         setIsPlaying(true); isPlayingRef.current = true; let currentIndex = 0;
         const playNext = () => {
@@ -286,7 +343,7 @@ function ChatInterface() {
             return updated;
         });
       } else {
-        setMessages((prev) => [...prev, { role: "ai", content: "⚠️ Error communicating with AI server." }]);
+        setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, content: "⚠️ Error communicating with AI server.", isLoadingAudio: false } : msg));
       }
       setIsLoading(false);
     }
