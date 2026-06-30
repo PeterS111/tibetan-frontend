@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { FileText, Download, BookOpen, Volume2, Loader2, Library } from "lucide-react";
+import { FileText, Download, BookOpen, Volume2, Loader2, Library, AlertTriangle } from "lucide-react";
 
 type Material = {
   title: string;
@@ -16,6 +16,7 @@ export default function MaterialsPage() {
   const { getToken, userId, isLoaded } = useAuth();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -26,11 +27,14 @@ export default function MaterialsPage() {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          if (data.materials) {
+          
+          if (data.error) {
+            setErrorMsg(data.error);
+          } else if (data.materials) {
             setMaterials(data.materials);
           }
-        } catch (e) {
-          console.error("Failed to fetch materials", e);
+        } catch (e: any) {
+          setErrorMsg(e.message || "Network connection failed.");
         }
         setIsLoading(false);
       }
@@ -52,6 +56,14 @@ export default function MaterialsPage() {
         <div className="flex flex-col items-center justify-center h-[40vh] text-stone-500">
           <Loader2 size={40} className="animate-spin text-amber-500 mb-4" />
           <p className="font-bold font-serif text-lg">Loading library...</p>
+        </div>
+      ) : errorMsg ? (
+        <div className="flex flex-col items-center justify-center h-[40vh] bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center">
+          <AlertTriangle size={40} className="text-rose-500 mb-4" />
+          <h2 className="text-xl font-bold font-serif text-rose-800 mb-2">Failed to load materials</h2>
+          <p className="text-rose-600 text-sm max-w-md font-mono bg-rose-100 p-3 rounded-lg border border-rose-200">
+            {errorMsg}
+          </p>
         </div>
       ) : materials.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[40vh] bg-white border border-[#e8e4d9] rounded-2xl border-dashed">
@@ -77,7 +89,6 @@ export default function MaterialsPage() {
               <p className="text-sm text-stone-500 mb-6 flex-1 font-medium">{res.desc}</p>
               
               <div className="flex items-center justify-between pt-4 border-t border-[#e8e4d9]">
-                {/* Download Link */}
                 <a href={res.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors bg-amber-50 hover:bg-amber-100 px-4 py-2 rounded-lg">
                   <Download size={16} /> Download
                 </a>
