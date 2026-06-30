@@ -12,7 +12,7 @@ const TRANSLATIONS = {
   fr: { name: "Français", sttCode: "fr-FR", startLesson: "Commencer la leçon", selectMode: "Sélectionnez un mode.", thinking: "Dolma réfléchit...", start: "Commençons.", continue: "Continuer.", listening: "Écoute...", typePlaceholder: "Écrivez...", letTaraLead: "Dolma guide -> ", or: "ou :", selectTopic: "Sélectionnez...", wakingUp: "Réveil...", playIntro: "Intro", welcomeMessage: "Bonjour !" },
   de: { name: "Deutsch", sttCode: "de-DE", startLesson: "Lektion starten", selectMode: "Wähle einen Modus.", thinking: "Dolma denkt nach...", start: "Lass uns anfangen.", continue: "Weiter.", listening: "Zuhören...", typePlaceholder: "Tippe...", letTaraLead: "Dolma führt -> ", or: "oder:", selectTopic: "Wähle...", wakingUp: "Aufwachen...", playIntro: "Intro", welcomeMessage: "Hallo!" },
   ru: { name: "Русский", sttCode: "ru-RU", startLesson: "Начать урок", selectMode: "Выберите режим.", thinking: "Долма думает...", start: "Начнем.", continue: "Продолжить.", listening: "Слушаю...", typePlaceholder: "Пишите...", letTaraLead: "Долма ведет -> ", or: "или:", selectTopic: "Выберите...", wakingUp: "Будим...", playIntro: "Интро", welcomeMessage: "Привет!" },
-  ne: { name: "नेपाली", sttCode: "ne-NP", startLesson: "पाठ सुरु गर्नुहोस्", selectMode: "मोड चयन गर्नुहोस्।", thinking: "डोल्मा सोच्दै छिन्...", start: "सुरु गरौं।", continue: "जारी राख्नुहोस्।", listening: "सुन्दै...", typePlaceholder: "टाइप गर्नुहोस्...", letTaraLead: "डोल्मालाई अघि बढ्न दिनुहोस् -> ", or: "वा:", selectTopic: "विषय चयन...", wakingUp: "उठाउँदै...", playIntro: "परिचय", welcomeMessage: "नमस्ते!" },
+  ne: { name: "नेपाली", sttCode: "ne-NP", startLesson: "पाठ सुरु गर्नुहोस्", selectMode: "मोड चयन गर्नुहोस्।", thinking: "डोल्मा सोच्दै छिन्...", start: "सुरु गरौं।", continue: "जारी राख्नुहोस्।", listening: "सुन्दै...", typePlaceholder: "टाइप गर्नुहोस्...", letTaraLead: "डोल्मालाई अघि बढ्न উন্নয়ন गर्नुहोस् -> ", or: "वा:", selectTopic: "विषय चयन...", wakingUp: "उठाउँदै...", playIntro: "परिचय", welcomeMessage: "नमस्ते!" },
   ja: { name: "日本語", sttCode: "ja-JP", startLesson: "レッスンを開始", selectMode: "上のモードを選択してください。\nメッセージを入力するか、マイクを押して開始します。", thinking: "ドルマが考えています...", start: "始めましょう。", continue: "続ける。", listening: "聞いています...", typePlaceholder: "入力してください...", letTaraLead: "ドルマに任せる -> ", or: "または:", selectTopic: "トピックを選択...", wakingUp: "シェラブおじさんを起こしています...", playIntro: "紹介を再生", welcomeMessage: "こんにちは！" },
   pt: { name: "Português", sttCode: "pt-BR", startLesson: "Começar a lição", selectMode: "Selecione um modo acima.", thinking: "Dolma está pensando...", start: "Vamos começar.", continue: "Continuar.", listening: "Ouvindo...", typePlaceholder: "Digite...", letTaraLead: "Deixe Dolma guiar -> ", or: "ou:", selectTopic: "Selecione...", wakingUp: "Acordando...", playIntro: "Intro", welcomeMessage: "Olá!" },
   pl: { name: "Polski", sttCode: "pl-PL", startLesson: "Rozpocznij lekcję", selectMode: "Wybierz tryb powyżej.", thinking: "Dolma myśli...", start: "Zaczynajmy.", continue: "Kontynuuj.", listening: "Słucham...", typePlaceholder: "Wpisz...", letTaraLead: "Niech Dolma prowadzi -> ", or: "lub:", selectTopic: "Wybierz...", wakingUp: "Budzenie...", playIntro: "Intro", welcomeMessage: "Cześć!" },
@@ -42,7 +42,7 @@ function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false); // NEW STATE
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isLoading, setIsLoading] = useState(false); 
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isTtsReady, setIsTtsReady] = useState(false);
@@ -58,10 +58,8 @@ function ChatInterface() {
 
   const t = TRANSLATIONS[appLanguage];
 
-  // NEW MEDIA RECORDER REFS
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -99,15 +97,39 @@ function ChatInterface() {
     return () => clearInterval(interval);
   }, []);
 
-  // History Fetch
+  // History Fetch & Auto-Load Logic
   useEffect(() => {
+    let isMounted = true;
     if (userId) {
-      getToken().then(token => {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, { headers: { Authorization: `Bearer ${token}` } })
-          .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+      getToken().then(async token => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, { headers: { Authorization: `Bearer ${token}` } });
+          const data = await res.json();
+          const convs = data.conversations || [];
+          if (isMounted) setPastConversations(convs);
+
+          // If we came from the Lessons page, find the exact history for this module
+          if (urlMode === "study" && urlTopic && isMounted) {
+            const latestMatch = convs.find((c: any) => c.mode === "study" && c.topic === urlTopic);
+            if (latestMatch) {
+              setConversationId(latestMatch.id);
+              setAiMode("study");
+              // Fetch the messages for this conversation
+              const histRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history?conversation_id=${latestMatch.id}`, { headers: { Authorization: `Bearer ${token}` } });
+              const histData = await histRes.json();
+              if (histData.messages && isMounted) {
+                setMessages(histData.messages.map((m: any) => ({ id: m.id, role: m.role, content: m.content, audioSequence: m.audio_sequence })));
+              }
+            } else {
+               setConversationId(null);
+               setMessages([]); // No history for this lesson yet, start fresh
+            }
+          }
+        } catch(e) { console.error(e) }
       });
     }
-  }, [userId, getToken]);
+    return () => { isMounted = false; };
+  }, [userId, getToken, urlMode, urlTopic]);
 
   useEffect(() => {
     if (urlMode) setAiMode(urlMode);
@@ -143,6 +165,19 @@ function ChatInterface() {
 
   const startNewChat = () => { setConversationId(null); setMessages([]); setIsHistoryOpen(false); };
 
+  const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTopic = e.target.value;
+    setStudyTopic(newTopic);
+    
+    // Check if we have history for this newly selected topic
+    const latestMatch = pastConversations.find((c: any) => c.mode === "study" && c.topic === newTopic);
+    if (latestMatch) {
+       await loadConversation(latestMatch.id, "study");
+    } else {
+       startNewChat();
+    }
+  };
+
   // ==========================================
   // CROSS-PLATFORM AUDIO RECORDING (IOS SAFE)
   // ==========================================
@@ -160,7 +195,6 @@ function ChatInterface() {
       mediaRecorder.onstop = async () => {
         setIsTranscribing(true);
         const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
-        // Stop the microphone stream
         stream.getTracks().forEach(track => track.stop());
 
         try {
@@ -244,7 +278,6 @@ function ChatInterface() {
       formData.append("conversation_id", activeConvId);
     }
 
-    // Create a blank AI message in the UI instantly
     const tempMsgId = crypto.randomUUID();
     setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: "", isLoadingAudio: false }]);
 
@@ -258,10 +291,8 @@ function ChatInterface() {
 
       if (!response.ok) throw new Error("Network error");
 
-      // Stop the "Dolma is thinking" spinner because the stream has started!
       setIsLoading(false); 
 
-      // Stream Reader Setup
       const reader = response.body?.getReader();
       const decoder = new TextDecoder("utf-8");
       let aiText = "";
@@ -275,7 +306,7 @@ function ChatInterface() {
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n\n");
-          buffer = lines.pop() || ""; // Keep incomplete lines in the buffer
+          buffer = lines.pop() || "";
           
           for (const line of lines) {
             if (line.startsWith("data: ")) {
@@ -284,7 +315,6 @@ function ChatInterface() {
                 
                 if (data.type === "chunk") {
                   aiText += data.text;
-                  // Update the UI character-by-character!
                   setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, content: aiText } : msg));
                 } else if (data.type === "done") {
                   finalMessageId = data.message_id;
@@ -296,7 +326,6 @@ function ChatInterface() {
         }
       }
 
-      // The stream is finished! Now we show the TTS spinner and fetch the audio
       setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, content: aiText, isLoadingAudio: true } : msg));
 
       if (userId && !conversationId) {
@@ -304,7 +333,6 @@ function ChatInterface() {
           .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
       }
 
-      // Trigger the Audio Generation
       const ttsFormData = new FormData();
       ttsFormData.append("text", aiText);
       ttsFormData.append("language", appLanguage); 
@@ -320,7 +348,6 @@ function ChatInterface() {
 
       setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg));
 
-      // Play the Audio
       if (ttsData.audio_sequence && ttsData.audio_sequence.length > 0) {
         setIsPlaying(true); isPlayingRef.current = true; let currentIndex = 0;
         const playNext = () => {
@@ -397,7 +424,7 @@ function ChatInterface() {
         <div className="flex flex-col sm:flex-row justify-center items-center gap-3 p-3 bg-amber-50 border-b border-amber-100 shrink-0">
            <div className="relative w-full max-w-sm flex items-center">
               <List size={18} className="absolute left-3 text-amber-600 pointer-events-none" />
-              <select value={studyTopic} onChange={(e) => setStudyTopic(e.target.value)} className="w-full appearance-none bg-white border border-amber-200 text-stone-800 font-bold text-sm rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer">
+              <select value={studyTopic} onChange={handleTopicChange} className="w-full appearance-none bg-white border border-amber-200 text-stone-800 font-bold text-sm rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer">
                  {SYLLABUS_TOPICS.map((topic, i) => <option key={i} value={topic}>{topic}</option>)}
               </select>
            </div>

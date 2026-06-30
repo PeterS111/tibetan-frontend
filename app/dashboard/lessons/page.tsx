@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { Check, Lock, Play, Loader2 } from "lucide-react";
+import { Check, Play, Loader2 } from "lucide-react"; // Removed Lock icon
 
 export default function MyLessonsPage() {
   const { user, isLoaded } = useUser();
@@ -77,51 +77,37 @@ export default function MyLessonsPage() {
             );
           }
 
-          // ACTIVE STATE
-          if (module.status === "active") {
-            return (
-              <div key={module.id} className="flex flex-col md:flex-row bg-white border-2 border-amber-400 rounded-2xl p-6 shadow-md gap-6 relative overflow-hidden">
-                <div className="absolute left-0 top-0 w-1 h-full bg-amber-400"></div>
-                <div className="flex-shrink-0 w-16 h-16 bg-amber-50 text-amber-600 font-serif text-2xl font-bold flex items-center justify-center rounded-xl">
-                  {module.module_id}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-xl font-bold text-stone-900">{module.title}</h3>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded">In Progress</span>
-                  </div>
-                  <p className="text-stone-600 text-sm mb-4">{module.description}</p>
-                  
-                  <div className="flex items-center gap-4 w-full max-w-md">
-                    <div className="flex-1 flex items-center gap-3">
-                      <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${module.progress}%` }}></div>
-                      </div>
-                      <span className="text-xs font-bold text-amber-600 shrink-0">{module.progress}% DONE</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center mt-4 md:mt-0">
-                  <Link href={chatUrl} className="px-6 py-2.5 bg-amber-500 text-stone-900 font-bold text-sm rounded-xl hover:bg-amber-400 transition flex items-center gap-2 shadow-sm">
-                    <Play size={16} className="fill-stone-900" /> Continue
-                  </Link>
-                </div>
-              </div>
-            );
-          }
-
-          // LOCKED STATE
+          // ACTIVE & UNLOCKED STATE (All non-completed modules)
           return (
-            <div key={module.id} className="flex flex-col md:flex-row bg-[#fdfbf7] border border-[#e8e4d9] rounded-2xl p-6 opacity-60 gap-6">
-              <div className="flex-shrink-0 w-16 h-16 bg-stone-100 text-stone-400 font-serif text-2xl font-bold flex items-center justify-center rounded-xl">
-                <Lock size={20} />
+            <div key={module.id} className={`flex flex-col md:flex-row bg-white border-2 ${module.progress > 0 ? 'border-amber-400 shadow-md' : 'border-[#e8e4d9] hover:border-amber-400 shadow-sm'} rounded-2xl p-6 gap-6 relative overflow-hidden transition-colors`}>
+              {module.progress > 0 && <div className="absolute left-0 top-0 w-1 h-full bg-amber-400"></div>}
+              <div className={`flex-shrink-0 w-16 h-16 ${module.progress > 0 ? 'bg-amber-50 text-amber-600' : 'bg-stone-50 text-stone-500'} font-serif text-2xl font-bold flex items-center justify-center rounded-xl`}>
+                {module.module_id}
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-stone-500 mb-1">{module.title}</h3>
-                <p className="text-stone-400 text-sm mb-3">{module.description}</p>
+                <div className="flex items-center gap-3 mb-1">
+                  <h3 className="text-xl font-bold text-stone-900">{module.title}</h3>
+                  {module.progress > 0 ? (
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded">In Progress</span>
+                  ) : (
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500 bg-stone-100 px-2 py-0.5 rounded">Ready to Start</span>
+                  )}
+                </div>
+                <p className="text-stone-600 text-sm mb-4">{module.description}</p>
+                
+                <div className="flex items-center gap-4 w-full max-w-md">
+                  <div className="flex-1 flex items-center gap-3">
+                    <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-500 rounded-full" style={{ width: `${module.progress}%` }}></div>
+                    </div>
+                    <span className="text-xs font-bold text-amber-600 shrink-0">{module.progress}% DONE</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-end mt-4 md:mt-0 min-w-[120px]">
-                <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">Unlocks Next</span>
+              <div className="flex items-center mt-4 md:mt-0">
+                <Link href={chatUrl} className="px-6 py-2.5 bg-amber-500 text-stone-900 font-bold text-sm rounded-xl hover:bg-amber-400 transition flex items-center gap-2 shadow-sm">
+                  <Play size={16} className="fill-stone-900" /> {module.progress > 0 ? 'Continue' : 'Start Module'}
+                </Link>
               </div>
             </div>
           );
