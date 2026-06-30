@@ -38,6 +38,7 @@ function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false); // NEW STATE
   const [isLoading, setIsLoading] = useState(false); 
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isTtsReady, setIsTtsReady] = useState(false);
@@ -53,7 +54,10 @@ function ChatInterface() {
 
   const t = TRANSLATIONS[appLanguage];
 
-  const recognitionRef = useRef<any>(null);
+  // NEW MEDIA RECORDER REFS
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -61,29 +65,22 @@ function ChatInterface() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [playingAudioBase64, setPlayingAudioBase64] = useState<string | null>(null);
 
-  // --- SECURE STUDY TIME TRACKER ---
+  // Time Tracker
   useEffect(() => {
     if (!userId) return;
-    
     const interval = setInterval(async () => {
       try {
         const token = await getToken();
         const formData = new FormData();
         formData.append("user_id", userId);
         formData.append("minutes", "1");
-        
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/track-time`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData
-        }).catch(() => {});
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/track-time`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }).catch(() => {});
       } catch (e) {}
     }, 60000); 
-
     return () => clearInterval(interval); 
   }, [userId, getToken]);
   
-  // Poll for TTS Readiness (Public route, no token needed)
+  // TTS Status
   useEffect(() => {
     let interval: NodeJS.Timeout;
     const checkTtsStatus = async () => {
@@ -98,13 +95,11 @@ function ChatInterface() {
     return () => clearInterval(interval);
   }, []);
 
-  // SECURE Fetch History
+  // History Fetch
   useEffect(() => {
     if (userId) {
       getToken().then(token => {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, { headers: { Authorization: `Bearer ${token}` } })
           .then(res => res.json()).then(data => setPastConversations(data.conversations || []));
       });
     }
@@ -136,9 +131,7 @@ function ChatInterface() {
     setConversationId(id); setAiMode(convMode); setIsHistoryOpen(false); setMessages([]); 
     try {
       const token = await getToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history?conversation_id=${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history?conversation_id=${id}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.messages) setMessages(data.messages.map((m: any) => ({ id: m.id, role: m.role, content: m.content, audioSequence: m.audio_sequence })));
     } catch (e) { console.error(e); }
@@ -146,28 +139,61 @@ function ChatInterface() {
 
   const startNewChat = () => { setConversationId(null); setMessages([]); setIsHistoryOpen(false); };
 
-  const startRecording = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return alert("Your browser does not support real-time dictation.");
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true; recognition.interimResults = true; recognition.lang = t.sttCode; 
-    const currentInput = inputText.trim() ? inputText.trim() + " " : "";
-    recognition.onstart = () => setIsRecording(true);
-    recognition.onresult = (event: any) => {
-      let final = "", interim = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) final += event.results[i][0].transcript;
-        else interim += event.results[i][0].transcript;
-      }
-      setInputText(currentInput + final + interim);
-    };
-    recognition.onerror = () => setIsRecording(false);
-    recognition.onend = () => setIsRecording(false);
-    recognitionRef.current = recognition;
-    recognition.start();
+  // ==========================================
+  // CROSS-PLATFORM AUDIO RECORDING (IOS SAFE)
+  // ==========================================
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        setIsTranscribing(true);
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+        // Stop the microphone stream
+        stream.getTracks().forEach(track => track.stop());
+
+        try {
+          const token = await getToken();
+          const formData = new FormData();
+          formData.append("audio", audioBlob);
+          formData.append("language", appLanguage);
+
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transcribe`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.text) {
+            setInputText(prev => (prev.trim() + " " + data.text).trim());
+          }
+        } catch(e) {
+          console.error("Transcription failed", e);
+        }
+        setIsTranscribing(false);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      alert("Microphone access is required to use dictation. Please allow permissions in your browser settings.");
+    }
   };
 
-  const stopRecording = () => { if (recognitionRef.current) recognitionRef.current.stop(); setIsRecording(false); };
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+  };
+  // ==========================================
 
   const executeSubmission = async () => {
     unlockMobileAudio();
@@ -214,21 +240,14 @@ function ChatInterface() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, { 
-        method: "POST", 
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData, 
-        signal: abortControllerRef.current.signal 
-      });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData, signal: abortControllerRef.current.signal });
       const data = await response.json();
       setIsLoading(false); 
       const tempMsgId = crypto.randomUUID();
       setMessages((prev) => [...prev, { id: tempMsgId, role: "ai", content: data.ai_text, isLoadingAudio: true }]);
 
       if (userId && !conversationId) {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).then(res => res.json()).then(data => setPastConversations(data.conversations || []));
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.json()).then(data => setPastConversations(data.conversations || []));
       }
 
       const ttsFormData = new FormData();
@@ -236,12 +255,7 @@ function ChatInterface() {
       ttsFormData.append("language", appLanguage); 
       if (data.message_id) ttsFormData.append("message_id", data.message_id);
 
-      const ttsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { 
-        method: "POST", 
-        headers: { Authorization: `Bearer ${token}` },
-        body: ttsFormData, 
-        signal: abortControllerRef.current.signal 
-      });
+      const ttsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: ttsFormData, signal: abortControllerRef.current.signal });
       const ttsData = await ttsResponse.json();
 
       setMessages((prev) => prev.map(msg => msg.id === tempMsgId ? { ...msg, audioSequence: ttsData.audio_sequence, isLoadingAudio: false } : msg));
@@ -403,16 +417,16 @@ function ChatInterface() {
       <div className="p-4 bg-white border-t border-[#e8e4d9] shrink-0">
         <div className="w-full max-w-3xl mx-auto flex justify-center items-center gap-3 mb-3">
           <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">{t.letTaraLead}</span>
-          <button onClick={() => sendAutomatedMessage(messages.length === 0 ? t.start : t.continue)} disabled={!userId || isLoading || isRecording || isPlaying || !isTtsReady} className="px-8 py-1.5 bg-amber-500 text-white rounded-full font-bold shadow-sm hover:bg-amber-600 transition disabled:opacity-50">
+          <button onClick={() => sendAutomatedMessage(messages.length === 0 ? t.start : t.continue)} disabled={!userId || isLoading || isRecording || isTranscribing || isPlaying || !isTtsReady} className="px-8 py-1.5 bg-amber-500 text-white rounded-full font-bold shadow-sm hover:bg-amber-600 transition disabled:opacity-50">
             {t.continue}
           </button>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); executeSubmission(); }} className="flex items-end gap-2 w-full max-w-3xl mx-auto">
-          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isPlaying || !isTtsReady} className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors shrink-0 mb-1 ${isRecording ? "bg-red-500" : "bg-stone-100 hover:bg-stone-200"} disabled:opacity-50`}>
-            {isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={20} className="text-stone-600" />}
+          <button type="button" onClick={isRecording ? stopRecording : startRecording} disabled={!userId || isLoading || isTranscribing || isPlaying || !isTtsReady} className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors shrink-0 mb-1 ${isRecording ? "bg-red-500" : "bg-stone-100 hover:bg-stone-200"} disabled:opacity-50`}>
+            {isTranscribing ? <Loader2 size={18} className="animate-spin text-stone-400" /> : isRecording ? <Square size={18} className="fill-white text-white" /> : <Mic size={20} className="text-stone-600" />}
           </button>
-          <textarea value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); executeSubmission(); } }} disabled={!userId || isLoading || isPlaying || !isTtsReady} placeholder={!isTtsReady ? t.wakingUp : t.typePlaceholder} className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3.5 text-[16px] text-stone-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 resize-none custom-scrollbar" style={{ minHeight: '48px', maxHeight: '120px' }} />
-          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isPlaying || !isTtsReady} className="w-12 h-12 flex items-center justify-center bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 transition-colors shrink-0 mb-1"><Send size={18} /></button>
+          <textarea value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); executeSubmission(); } }} disabled={!userId || isLoading || isTranscribing || isPlaying || !isTtsReady} placeholder={!isTtsReady ? t.wakingUp : isTranscribing ? "Transcribing..." : t.typePlaceholder} className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3.5 text-[16px] text-stone-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 resize-none custom-scrollbar" style={{ minHeight: '48px', maxHeight: '120px' }} />
+          <button type="submit" disabled={!userId || !inputText.trim() || isLoading || isTranscribing || isPlaying || !isTtsReady} className="w-12 h-12 flex items-center justify-center bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 transition-colors shrink-0 mb-1"><Send size={18} /></button>
           <button type="button" onClick={handleInterrupt} disabled={!(isLoading || isPlaying)} className="w-12 h-12 flex items-center justify-center bg-rose-100 text-rose-600 rounded-xl hover:bg-rose-200 disabled:opacity-50 transition-colors shrink-0 mb-1"><StopCircle size={20} /></button>
         </form>
       </div>
