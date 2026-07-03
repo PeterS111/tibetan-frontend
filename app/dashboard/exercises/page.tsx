@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { Check, X, Trophy, ArrowRight, BrainCircuit, RefreshCcw, Loader2, List } from "lucide-react";
+import { Check, X, Trophy, ArrowRight, BrainCircuit, RefreshCcw, Loader2, List, Play } from "lucide-react";
 
 type QuizQuestion = {
   question: string;
@@ -22,7 +22,9 @@ export default function ExercisesPage() {
   const { user } = useUser();
   
   const [quizData, setQuizData] = useState<QuizQuestion[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -30,15 +32,25 @@ export default function ExercisesPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  // State for the currently selected module
+  // Default selection
   const [selectedModule, setSelectedModule] = useState("Module 1");
 
-  const fetchQuiz = async (moduleTopic: string, tokenOverride?: string | null) => {
+  const startQuiz = async (moduleToFetch: string) => {
+    setHasStarted(true);
     setIsLoading(true);
+    
+    // Reset state for new quiz
+    setCurrentStep(0);
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+    setScore(0);
+    setIsFinished(false);
+    setQuizData([]);
+    
     try {
-      const token = tokenOverride || await getToken();
+      const token = await getToken();
       const formData = new FormData();
-      formData.append("topic", moduleTopic); 
+      formData.append("topic", moduleToFetch); 
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/generate-quiz`, {
          method: "POST",
@@ -53,96 +65,6 @@ export default function ExercisesPage() {
       console.error("Failed to generate AI quiz", e);
     }
     setIsLoading(false);
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    const initData = async () => {
-      if (!userId) return;
-      try {
-        const token = await getToken();
-        let activeModStr = "Module 1"; 
-
-        // 1. SMART FETCH: Check the user's latest conversation to see what they were ACTUALLY studying
-        try {
-          const convRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          const convData = await convRes.json();
-          // Find the most recent conversation that was in 'study' mode
-          const latestStudy = (convData.conversations || []).find((c: any) => c.mode === "study" && c.topic);
-          
-          if (latestStudy) {
-            // Extract "Module X" from something like "Module 4: Questions, Articles..."
-            const match = latestStudy.topic.match(/Module\s+(\d+)/i);
-            if (match) {
-              activeModStr = `Module ${match[1]}`;
-            }
-          }
-        } catch(e) {
-          console.error("Failed to fetch recent conversations", e);
-        }
-
-        // 2. FALLBACK: If they haven't chatted yet, check their progress tree
-        if (activeModStr === "Module 1") {
-          try {
-            const progRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${userId}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            const progData = await progRes.json();
-            const mods = progData.modules || [];
-            
-            if (mods.length > 0) {
-              const activeMod = mods.find((m: any) => m.progress > 0 && m.status !== "completed") 
-                                || mods.find((m: any) => m.status === "active") 
-                                || mods.find((m: any) => m.status !== "completed");
-                                
-              if (activeMod) activeModStr = `Module ${parseInt(activeMod.module_id)}`;
-            }
-          } catch (e) {
-            console.error("Failed to fetch progress", e);
-          }
-        }
-        
-        // Safety check to ensure it matches the dropdown options
-        if (!MODULE_OPTIONS.includes(activeModStr)) {
-          activeModStr = "Module 1";
-        }
-
-        if (isMounted) {
-          setSelectedModule(activeModStr);
-          await fetchQuiz(activeModStr, token);
-        }
-      } catch(e) {
-        console.error("Init Error", e);
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    
-    initData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [userId]);
-
-  const handleModuleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newModule = e.target.value;
-    setSelectedModule(newModule);
-    
-    // Reset all quiz state and fetch the new quiz
-    setCurrentStep(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-    setScore(0);
-    setIsFinished(false);
-    fetchQuiz(newModule);
-  };
-
-  const handleSelect = (index: number) => {
-    if (isAnswered) return;
-    setSelectedAnswer(index);
   };
 
   const handleSubmit = async () => {
@@ -183,15 +105,42 @@ export default function ExercisesPage() {
     setIsSaving(false);
   };
 
-  const restartQuiz = () => {
-    setCurrentStep(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-    setScore(0);
-    setIsFinished(false);
-    fetchQuiz(selectedModule);
-  };
+  // --- 1. START SCREEN ---
+  if (!hasStarted) {
+    return (
+      <div className="max-w-2xl mx-auto p-4 sm:p-8 pt-20 animate-in fade-in duration-500 flex flex-col items-center text-center">
+        <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-amber-200">
+          <BrainCircuit size={40} />
+        </div>
+        <h1 className="text-3xl font-bold font-serif text-stone-900 mb-4">Module Exercises</h1>
+        <p className="text-stone-600 mb-8 max-w-md">
+          Select a module from the syllabus to generate a dynamic quiz. Dolma will test your grammar and vocabulary based on the textbook.
+        </p>
+        
+        <div className="bg-white p-6 rounded-2xl border border-[#e8e4d9] shadow-sm w-full max-w-sm flex flex-col gap-4">
+          <div className="relative">
+            <List size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+            <select 
+              value={selectedModule} 
+              onChange={(e) => setSelectedModule(e.target.value)}
+              className="w-full appearance-none bg-stone-50 border border-stone-200 text-stone-800 font-bold text-[16px] rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer"
+            >
+              {MODULE_OPTIONS.map((mod, i) => <option key={i} value={mod}>{mod}</option>)}
+            </select>
+          </div>
+          
+          <button 
+            onClick={() => startQuiz(selectedModule)}
+            className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+          >
+            <Play size={18} className="fill-stone-900" /> Start Quiz
+          </button>
+        </div>
+      </div>
+    );
+  }
 
+  // --- 2. LOADING SCREEN ---
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] text-stone-500 animate-pulse">
@@ -202,18 +151,20 @@ export default function ExercisesPage() {
     );
   }
 
+  // --- 3. ERROR SCREEN ---
   if (quizData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] text-center p-8">
         <h2 className="text-2xl font-bold font-serif text-stone-800 mb-2">Quiz Generation Failed</h2>
         <p className="text-stone-500">Could not connect to the AI engine. Please try again.</p>
-        <button onClick={() => fetchQuiz(selectedModule)} className="mt-6 px-6 py-2 bg-amber-500 rounded-lg text-white font-bold">Retry</button>
+        <button onClick={() => setHasStarted(false)} className="mt-6 px-6 py-2 bg-amber-500 rounded-lg text-white font-bold">Go Back</button>
       </div>
     );
   }
 
   const progressPercent = Math.round((currentStep / quizData.length) * 100);
 
+  // --- 4. FINISHED SCREEN ---
   if (isFinished) {
     return (
       <div className="max-w-2xl mx-auto p-8 pt-20 animate-in zoom-in-95 duration-500 flex flex-col items-center text-center">
@@ -234,8 +185,8 @@ export default function ExercisesPage() {
         </div>
 
         <div className="flex gap-4 w-full max-w-sm">
-          <button onClick={restartQuiz} disabled={isSaving} className="flex-1 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50">
-            <RefreshCcw size={18} /> Retry
+          <button onClick={() => setHasStarted(false)} disabled={isSaving} className="flex-1 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50">
+            <RefreshCcw size={18} /> New Quiz
           </button>
           <Link href="/dashboard" className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
             Dashboard <ArrowRight size={18} />
@@ -245,6 +196,7 @@ export default function ExercisesPage() {
     );
   }
 
+  // --- 5. ACTIVE QUIZ SCREEN ---
   const currentQ = quizData[currentStep];
 
   return (
@@ -263,12 +215,15 @@ export default function ExercisesPage() {
         </div>
         
         <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-          {/* THE NEW MODULE SELECTOR */}
+          {/* Active Module Selector */}
           <div className="relative">
             <List size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
             <select 
               value={selectedModule} 
-              onChange={handleModuleChange}
+              onChange={(e) => {
+                setSelectedModule(e.target.value);
+                startQuiz(e.target.value); // Re-fetch immediately if changed during a quiz
+              }}
               className="appearance-none bg-white border border-stone-200 text-stone-700 font-bold text-sm rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm cursor-pointer"
             >
               {MODULE_OPTIONS.map((mod, i) => <option key={i} value={mod}>{mod}</option>)}
@@ -312,7 +267,7 @@ export default function ExercisesPage() {
             return (
               <button 
                 key={i}
-                onClick={() => handleSelect(i)}
+                onClick={() => { if (!isAnswered) setSelectedAnswer(i); }}
                 disabled={isAnswered}
                 className={`w-full text-left p-4 sm:p-5 rounded-xl border-2 transition-all flex items-center justify-between font-medium text-lg ${stateClass} ${isAnswered ? 'cursor-default' : 'cursor-pointer'}`}
               >
