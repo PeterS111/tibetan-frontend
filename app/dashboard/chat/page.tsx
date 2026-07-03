@@ -27,6 +27,18 @@ const SYLLABUS_TOPICS = [
   "Module 9: Requests & Imperatives", "Module 10: Time, Dates & Exceptions"
 ];
 
+// The 30 consonants perfectly aligned for a 4-column grid (naturally separating by phonetic group)
+const TIBETAN_ALPHABET = [
+  { letter: "ཀ", phonetics: "KA" }, { letter: "ཁ", phonetics: "KHA" }, { letter: "ག", phonetics: "GA" }, { letter: "ང", phonetics: "NGA" },
+  { letter: "ཅ", phonetics: "CA" }, { letter: "ཆ", phonetics: "CHA" }, { letter: "ཇ", phonetics: "JA" }, { letter: "ཉ", phonetics: "NYA" },
+  { letter: "ཏ", phonetics: "TA" }, { letter: "ཐ", phonetics: "THA" }, { letter: "ད", phonetics: "DA" }, { letter: "ན", phonetics: "NA" },
+  { letter: "པ", phonetics: "PA" }, { letter: "ཕ", phonetics: "PHA" }, { letter: "བ", phonetics: "BA" }, { letter: "མ", phonetics: "MA" },
+  { letter: "ཙ", phonetics: "TSA" }, { letter: "ཚ", phonetics: "TSHA" }, { letter: "ཛ", phonetics: "DZA" }, { letter: "ཝ", phonetics: "WA" },
+  { letter: "ཞ", phonetics: "ZHA" }, { letter: "ཟ", phonetics: "ZA" }, { letter: "འ", phonetics: "'A" }, { letter: "ཡ", phonetics: "YA" },
+  { letter: "ར", phonetics: "RA" }, { letter: "ལ", phonetics: "LA" }, { letter: "ཤ", phonetics: "SHA" }, { letter: "ས", phonetics: "SA" },
+  { letter: "ཧ", phonetics: "HA" }, { letter: "ཨ", phonetics: "A" }
+];
+
 type LangCode = keyof typeof TRANSLATIONS;
 type AudioPart = { lang: string; text: string; audio_base64: string; };
 type Message = { id?: string; role: "user" | "ai"; content: string; audioSequence?: AudioPart[]; isLoadingAudio?: boolean; };
@@ -55,6 +67,10 @@ function ChatInterface() {
   
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [pastConversations, setPastConversations] = useState<any[]>([]);
+
+  // NEW: Alphabet Modal States
+  const [isAlphabetOpen, setIsAlphabetOpen] = useState(false);
+  const [playingLetter, setPlayingLetter] = useState<string | null>(null);
 
   const t = TRANSLATIONS[appLanguage];
 
@@ -392,12 +408,54 @@ function ChatInterface() {
     audio.play().catch(() => { setPlayingAudioBase64(null); setIsPlaying(false); isPlayingRef.current = false; });
   };
 
+  // NEW: Play specific Alphabet Letter Audio directly from the backend
+  const playAlphabetLetter = async (letter: string) => {
+    if (playingLetter) return;
+    setPlayingLetter(letter);
+    try {
+      const token = await getToken();
+      const formData = new FormData();
+      formData.append("text", letter);
+      formData.append("language", "en"); // Base language doesn't matter for single Tibetan characters
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { 
+        method: "POST", 
+        headers: { Authorization: `Bearer ${token}` }, 
+        body: formData 
+      });
+      const data = await res.json();
+
+      if (data.audio_sequence && data.audio_sequence.length > 0) {
+        const part = data.audio_sequence[0];
+        if (part.audio_base64) {
+          const audio = new Audio(`data:audio/wav;base64,${part.audio_base64}`);
+          audio.onended = () => setPlayingLetter(null);
+          audio.play().catch(() => setPlayingLetter(null));
+          return; // Early return so we don't reset state before the audio finishes
+        }
+      }
+    } catch (e) { console.error("Alphabet audio failed", e); }
+    setPlayingLetter(null);
+  };
+
   return (
     <div className="h-full flex flex-col relative bg-white">
       
       {/* HEADER BAR */}
       <div className="flex flex-wrap justify-between items-center gap-4 p-4 bg-white border-b border-[#e8e4d9] shrink-0 z-10 shadow-sm">
         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          
+          {/* NEW: ALPHABET POP-UP BUTTON */}
+          <button 
+            onClick={() => setIsAlphabetOpen(true)} 
+            className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-stone-50 text-amber-600 hover:bg-stone-100 hover:border-amber-300 transition-all border border-[#e8e4d9] font-serif text-2xl font-bold shadow-sm"
+            title="Alphabet Chart"
+          >
+            ཀ
+          </button>
+          
+          <div className="w-px h-6 bg-stone-200 mx-1"></div> {/* Divider */}
+
           <button onClick={() => { setAiMode("chat"); startNewChat(); }} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${aiMode === 'chat' ? 'bg-amber-100 text-amber-800' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'}`}><Zap size={16} /> Chat</button>
           <button onClick={() => setAiMode("study")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${aiMode === 'study' ? 'bg-amber-100 text-amber-800' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'}`}><BookOpen size={16} /> Textbook</button>
           <button onClick={() => setAiMode("custom")} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${aiMode === 'custom' ? 'bg-amber-100 text-amber-800' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'}`}><PenTool size={16} /> Custom Text</button>
@@ -490,7 +548,7 @@ function ChatInterface() {
                                   {translation && <span className="text-sm text-stone-600 font-medium italic mt-1 border-t border-amber-200/50 pt-2">{translation}</span>}
                                 </div>
                                 
-                                {/* NEW: The specific Play Listen Button injected on the right side */}
+                                {/* The specific Play Listen Button injected on the right side */}
                                 <button 
                                   onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
                                   disabled={!matchingAudio && !showSpinner}
@@ -504,7 +562,7 @@ function ChatInterface() {
                               <div className="flex items-start justify-between gap-4">
                                 <p className="whitespace-pre-wrap text-[16px] leading-relaxed">{trimmed}</p>
                                 
-                                {/* NEW: A subtle play button added to English/Base conversational text as well */}
+                                {/* A subtle play button added to English/Base conversational text as well */}
                                 {matchingAudio && (
                                   <button 
                                     onClick={() => replayAudio(matchingAudio, isTibetan)}
@@ -569,6 +627,46 @@ function ChatInterface() {
           </div>
         </div>
       )}
+
+      {/* NEW: ALPHABET POP-UP MODAL */}
+      {isAlphabetOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsAlphabetOpen(false)}></div>
+          <div className="relative bg-[#fdfbf7] rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
+            
+            <div className="flex items-center justify-between mb-6 border-b border-[#e8e4d9] pb-4">
+              <div>
+                <h2 className="text-2xl font-bold font-serif text-stone-900">The 30 Consonants</h2>
+                <p className="text-sm text-stone-500">Tap any letter to hear its pronunciation.</p>
+              </div>
+              <button onClick={() => setIsAlphabetOpen(false)} className="text-stone-400 hover:bg-stone-200 p-2 rounded-lg transition"><X size={24}/></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
+              <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                {TIBETAN_ALPHABET.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => playAlphabetLetter(item.letter)}
+                    disabled={playingLetter !== null}
+                    className="flex flex-col items-center justify-center p-4 bg-white border border-[#e8e4d9] rounded-xl hover:border-amber-400 hover:shadow-md transition-all group relative"
+                  >
+                    <span className="text-3xl sm:text-4xl font-medium text-stone-800 mb-2 group-hover:text-amber-600 transition-colors">{item.letter}</span>
+                    <span className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">{item.phonetics}</span>
+                    
+                    {playingLetter === item.letter && (
+                      <div className="absolute inset-0 bg-white/80 rounded-xl flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
