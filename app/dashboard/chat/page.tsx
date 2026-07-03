@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, StopCircle, PlayCircle, Globe, Trash2, List, History, X, Plus } from "lucide-react";
+import { Mic, Square, Loader2, Send, Zap, BookOpen, PenTool, StopCircle, PlayCircle, Globe, Trash2, List, History, X, Plus, Play } from "lucide-react";
 import { useAuth } from '@clerk/nextjs';
 
 const TRANSLATIONS = {
@@ -12,7 +12,7 @@ const TRANSLATIONS = {
   fr: { name: "Français", sttCode: "fr-FR", startLesson: "Commencer la leçon", selectMode: "Sélectionnez un mode.", thinking: "Dolma réfléchit...", start: "Commençons.", continue: "Continuer.", listening: "Écoute...", typePlaceholder: "Écrivez...", letTaraLead: "Dolma guide -> ", or: "ou :", selectTopic: "Sélectionnez...", wakingUp: "Réveil...", playIntro: "Intro", welcomeMessage: "Bonjour !" },
   de: { name: "Deutsch", sttCode: "de-DE", startLesson: "Lektion starten", selectMode: "Wähle einen Modus.", thinking: "Dolma denkt nach...", start: "Lass uns anfangen.", continue: "Weiter.", listening: "Zuhören...", typePlaceholder: "Tippe...", letTaraLead: "Dolma führt -> ", or: "oder:", selectTopic: "Wähle...", wakingUp: "Aufwachen...", playIntro: "Intro", welcomeMessage: "Hallo!" },
   ru: { name: "Русский", sttCode: "ru-RU", startLesson: "Начать урок", selectMode: "Выберите режим.", thinking: "Долма думает...", start: "Начнем.", continue: "Продолжить.", listening: "Слушаю...", typePlaceholder: "Пишите...", letTaraLead: "Долма ведет -> ", or: "или:", selectTopic: "Выберите...", wakingUp: "Будим...", playIntro: "Интро", welcomeMessage: "Привет!" },
-  ne: { name: "नेपाली", sttCode: "ne-NP", startLesson: "पाठ सुरु गर्नुहोस्", selectMode: "मोड चयन गर्नुहोस्।", thinking: "डोल्मा सोच्दै छिन्...", start: "सुरु गरौं।", continue: "जारी राख्नुहोस्।", listening: "सुन्दै...", typePlaceholder: "टाइप गर्नुहोस्...", letTaraLead: "डोल्मालाई अघि बढ्न উন্নয়ন गर्नुहोस् -> ", or: "वा:", selectTopic: "विषय चयन...", wakingUp: "उठाउँदै...", playIntro: "परिचय", welcomeMessage: "नमस्ते!" },
+  ne: { name: "नेपाली", sttCode: "ne-NP", startLesson: "पाठ सुरु गर्नुहोस्", selectMode: "मोड चयन गर्नुहोस्।", thinking: "डोल्मा सोच्दै छिन्...", start: "सुरु गरौं।", continue: "जारी राख्नुहोस्।", listening: "सुन्दै...", typePlaceholder: "टाइप गर्नुहोस्...", letTaraLead: "डोल्मालाई अघि बढ्न दिनुहोस् -> ", or: "वा:", selectTopic: "विषय चयन...", wakingUp: "उठाउँदै...", playIntro: "परिचय", welcomeMessage: "नमस्ते!" },
   ja: { name: "日本語", sttCode: "ja-JP", startLesson: "レッスンを開始", selectMode: "上のモードを選択してください。\nメッセージを入力するか、マイクを押して開始します。", thinking: "ドルマが考えています...", start: "始めましょう。", continue: "続ける。", listening: "聞いています...", typePlaceholder: "入力してください...", letTaraLead: "ドルマに任せる -> ", or: "または:", selectTopic: "トピックを選択...", wakingUp: "シェラブおじさんを起こしています...", playIntro: "紹介を再生", welcomeMessage: "こんにちは！" },
   pt: { name: "Português", sttCode: "pt-BR", startLesson: "Começar a lição", selectMode: "Selecione um modo acima.", thinking: "Dolma está pensando...", start: "Vamos começar.", continue: "Continuar.", listening: "Ouvindo...", typePlaceholder: "Digite...", letTaraLead: "Deixe Dolma guiar -> ", or: "ou:", selectTopic: "Selecione...", wakingUp: "Acordando...", playIntro: "Intro", welcomeMessage: "Olá!" },
   pl: { name: "Polski", sttCode: "pl-PL", startLesson: "Rozpocznij lekcję", selectMode: "Wybierz tryb powyżej.", thinking: "Dolma myśli...", start: "Zaczynajmy.", continue: "Kontynuuj.", listening: "Słucham...", typePlaceholder: "Wpisz...", letTaraLead: "Niech Dolma prowadzi -> ", or: "lub:", selectTopic: "Wybierz...", wakingUp: "Budzenie...", playIntro: "Intro", welcomeMessage: "Cześć!" },
@@ -473,20 +473,52 @@ function ChatInterface() {
                       }
                       return (
                         <div key={i} data-active-part={isThisPlaying} className="flex flex-row items-start gap-3 w-full scroll-mt-24">
+                          
+                          {/* The original Avatar Button (Kept intact) */}
                           <button onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)} disabled={!matchingAudio && !showSpinner} className={`relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 transition-all duration-300 mt-1 ${isThisPlaying ? 'ring-4 ring-amber-500 scale-110 shadow-lg' : 'border border-[#e8e4d9] shadow-sm'} ${matchingAudio ? 'cursor-pointer' : 'cursor-default'}`}>
                             <img src={isTibetan ? "/yogi.png" : "/dakini.png"} alt="Avatar" className={`w-full h-full object-cover ${isThisPlaying ? 'animate-pulse' : ''} ${showSpinner ? 'opacity-40 grayscale' : ''}`} />
                             {showSpinner && <div className="absolute inset-0 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-stone-700" /></div>}
                           </button>
                           
+                          {/* The Text Bubble containing both the text AND the new Listen Button */}
                           <div className={`px-5 py-4 rounded-2xl shadow-sm rounded-tl-none w-fit max-w-[85%] border ${isTibetan ? 'bg-[#f8f6f0] border-[#e8e4d9]' : 'bg-white border-stone-200 text-stone-800'}`}>
                             {isTibetan ? (
-                              <div className="flex flex-col gap-2">
-                                <span className="text-2xl sm:text-3xl font-medium">{tibText}</span>
-                                {phonetics && <span className="text-[12px] text-stone-500 font-bold tracking-widest uppercase">{phonetics}</span>}
-                                {translation && <span className="text-sm text-stone-600 font-medium italic mt-1 border-t border-amber-200/50 pt-2">{translation}</span>}
+                              <div className="flex flex-row items-center justify-between gap-6 sm:gap-8">
+                                <div className="flex flex-col gap-2">
+                                  <span className="text-2xl sm:text-3xl font-medium">{tibText}</span>
+                                  {phonetics && <span className="text-[12px] text-stone-500 font-bold tracking-widest uppercase">{phonetics}</span>}
+                                  {translation && <span className="text-sm text-stone-600 font-medium italic mt-1 border-t border-amber-200/50 pt-2">{translation}</span>}
+                                </div>
+                                
+                                {/* NEW: The specific Play Listen Button injected on the right side */}
+                                <button 
+                                  onClick={() => matchingAudio && replayAudio(matchingAudio, isTibetan)}
+                                  disabled={!matchingAudio && !showSpinner}
+                                  className={`flex items-center gap-1.5 px-3 py-2 bg-white border border-[#e8e4d9] rounded-lg shadow-sm text-sm font-bold text-stone-700 shrink-0 transition-all ${matchingAudio ? 'hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 cursor-pointer' : 'opacity-50 cursor-default'}`}
+                                >
+                                  {showSpinner ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} className="fill-currentColor" />} Listen
+                                </button>
+                                
                               </div>
-                            ) : <p className="whitespace-pre-wrap text-[16px] leading-relaxed">{trimmed}</p>}
+                            ) : (
+                              <div className="flex items-start justify-between gap-4">
+                                <p className="whitespace-pre-wrap text-[16px] leading-relaxed">{trimmed}</p>
+                                
+                                {/* NEW: A subtle play button added to English/Base conversational text as well */}
+                                {matchingAudio && (
+                                  <button 
+                                    onClick={() => replayAudio(matchingAudio, isTibetan)}
+                                    className="mt-1 shrink-0 text-stone-400 hover:text-amber-500 transition-colors"
+                                    title="Listen"
+                                  >
+                                    <Play size={16} className="fill-currentColor" />
+                                  </button>
+                                )}
+                                
+                              </div>
+                            )}
                           </div>
+                          
                         </div>
                       );
                     })}
