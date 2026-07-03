@@ -6,7 +6,7 @@ import { UserButton, useUser, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { 
   LayoutDashboard, BookOpen, MessageSquare, 
-  CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X
+  CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X, Calendar 
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -40,6 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "My Lessons", href: "/dashboard/lessons", icon: BookOpen },
     { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare },
     { name: "Exercises", href: "/dashboard/exercises", icon: CheckSquare },
+    { name: "Tutors", href: "/dashboard/tutors", icon: Calendar },
   ];
 
   const moreItems = [
