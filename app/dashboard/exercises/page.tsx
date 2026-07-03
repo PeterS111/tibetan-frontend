@@ -56,35 +56,75 @@ export default function ExercisesPage() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
     const initData = async () => {
       if (!userId) return;
       try {
         const token = await getToken();
-        // Fetch user progress to intelligently default to their active module
-        const progRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const progData = await progRes.json();
-        const mods = progData.modules || [];
-        
         let activeModStr = "Module 1"; 
-        if (mods.length > 0) {
-          // Find highest unlocked/in-progress module
-          const activeMod = mods.find((m: any) => m.progress > 0 && m.status !== "completed") 
-                            || mods.find((m: any) => m.status === "active") 
-                            || mods[0];
-          activeModStr = `Module ${parseInt(activeMod.module_id)}`;
+
+        // 1. SMART FETCH: Check the user's latest conversation to see what they were ACTUALLY studying
+        try {
+          const convRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/conversations?user_id=${userId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const convData = await convRes.json();
+          // Find the most recent conversation that was in 'study' mode
+          const latestStudy = (convData.conversations || []).find((c: any) => c.mode === "study" && c.topic);
+          
+          if (latestStudy) {
+            // Extract "Module X" from something like "Module 4: Questions, Articles..."
+            const match = latestStudy.topic.match(/Module\s+(\d+)/i);
+            if (match) {
+              activeModStr = `Module ${match[1]}`;
+            }
+          }
+        } catch(e) {
+          console.error("Failed to fetch recent conversations", e);
+        }
+
+        // 2. FALLBACK: If they haven't chatted yet, check their progress tree
+        if (activeModStr === "Module 1") {
+          try {
+            const progRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${userId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const progData = await progRes.json();
+            const mods = progData.modules || [];
+            
+            if (mods.length > 0) {
+              const activeMod = mods.find((m: any) => m.progress > 0 && m.status !== "completed") 
+                                || mods.find((m: any) => m.status === "active") 
+                                || mods.find((m: any) => m.status !== "completed");
+                                
+              if (activeMod) activeModStr = `Module ${parseInt(activeMod.module_id)}`;
+            }
+          } catch (e) {
+            console.error("Failed to fetch progress", e);
+          }
         }
         
-        setSelectedModule(activeModStr);
-        await fetchQuiz(activeModStr, token);
+        // Safety check to ensure it matches the dropdown options
+        if (!MODULE_OPTIONS.includes(activeModStr)) {
+          activeModStr = "Module 1";
+        }
+
+        if (isMounted) {
+          setSelectedModule(activeModStr);
+          await fetchQuiz(activeModStr, token);
+        }
       } catch(e) {
         console.error("Init Error", e);
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
     
     initData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [userId]);
 
   const handleModuleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
