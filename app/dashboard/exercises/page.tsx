@@ -9,6 +9,7 @@ type QuizQuestion = {
   question: string;
   options: string[];
   correctIndex: number;
+  explanation: string;
 };
 
 const MODULE_OPTIONS = [
@@ -29,13 +30,13 @@ export default function ExercisesPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  // NEW: State for the currently selected module
+  // State for the currently selected module
   const [selectedModule, setSelectedModule] = useState("Module 1");
 
-  const fetchQuiz = async (moduleTopic: string) => {
+  const fetchQuiz = async (moduleTopic: string, tokenOverride?: string | null) => {
     setIsLoading(true);
     try {
-      const token = await getToken();
+      const token = tokenOverride || await getToken();
       const formData = new FormData();
       formData.append("topic", moduleTopic); 
 
@@ -55,7 +56,35 @@ export default function ExercisesPage() {
   };
 
   useEffect(() => {
-    if (userId) fetchQuiz(selectedModule);
+    const initData = async () => {
+      if (!userId) return;
+      try {
+        const token = await getToken();
+        // Fetch user progress to intelligently default to their active module
+        const progRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const progData = await progRes.json();
+        const mods = progData.modules || [];
+        
+        let activeModStr = "Module 1"; 
+        if (mods.length > 0) {
+          // Find highest unlocked/in-progress module
+          const activeMod = mods.find((m: any) => m.progress > 0 && m.status !== "completed") 
+                            || mods.find((m: any) => m.status === "active") 
+                            || mods[0];
+          activeModStr = `Module ${parseInt(activeMod.module_id)}`;
+        }
+        
+        setSelectedModule(activeModStr);
+        await fetchQuiz(activeModStr, token);
+      } catch(e) {
+        console.error("Init Error", e);
+        setIsLoading(false);
+      }
+    };
+    
+    initData();
   }, [userId]);
 
   const handleModuleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -253,6 +282,16 @@ export default function ExercisesPage() {
             );
           })}
         </div>
+        
+        {/* EXPLANATION BLOCK */}
+        {isAnswered && (
+          <div className="mt-6 p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 animate-in slide-in-from-top-4">
+            <div className="flex items-center gap-2 font-bold mb-2">
+              <BrainCircuit size={18} className="text-amber-600" /> Dolma's Explanation:
+            </div>
+            <p className="text-sm font-medium leading-relaxed">{currentQ.explanation}</p>
+          </div>
+        )}
       </div>
 
       {/* ACTION BUTTON */}
