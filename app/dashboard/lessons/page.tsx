@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { Check, Play, Loader2 } from "lucide-react"; // Removed Lock icon
+import { Check, Play, Loader2 } from "lucide-react"; 
 
 export default function MyLessonsPage() {
   const { user, isLoaded } = useUser();
@@ -12,20 +12,43 @@ export default function MyLessonsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchData = async () => {
+      if (!isLoaded) return;
+      
+      if (isLoaded && !user) {
+         if (isMounted) setLoading(false);
+         return;
+      }
+
       if (isLoaded && user) {
         try {
           const token = await getToken();
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
+          
           const data = await res.json();
-          setModules(data.modules || []);
-          setLoading(false);
-        } catch(e) { setLoading(false); }
+          
+          if (isMounted) {
+            // FIX: Only update if modules actually exist in the response.
+            // This prevents the screen from blanking out on a transient 500 or 401 error.
+            if (data.modules && Array.isArray(data.modules)) {
+              setModules(data.modules);
+            }
+          }
+        } catch(e) {
+          console.error("Error fetching curriculum:", e);
+        } finally {
+          if (isMounted) setLoading(false);
+        }
       }
     };
+    
     fetchData();
+    
+    return () => { isMounted = false; };
   }, [user, isLoaded, getToken]);
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
