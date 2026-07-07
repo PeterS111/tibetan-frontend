@@ -19,20 +19,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
       if (isLoaded && user) {
         try {
           const token = await getToken();
+          if (!token) return; // FIX: Don't fire if privacy blockers are delaying the token
+          
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          setProfile(data.profile);
-          setModules(data.modules || []);
+          
+          if (isMounted) {
+            if (data.profile) setProfile(data.profile);
+            // FIX: Only update modules if the array actually exists. Do NOT wipe with || []
+            if (data.modules && Array.isArray(data.modules)) {
+              setModules(data.modules);
+            }
+          }
         } catch(e) {}
       }
     };
     fetchData();
+    return () => { isMounted = false; };
   }, [user, isLoaded, getToken]);
 
   const navItems = [

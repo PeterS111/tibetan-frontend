@@ -13,23 +13,38 @@ export default function DashboardHub() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
       if (isLoaded && user) {
         try {
           const token = await getToken();
+          if (!token) {
+            if (isMounted) setLoading(false);
+            return;
+          }
+          
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          setProfile(data.profile);
-          setModules(data.modules || []);
-          setLoading(false);
-        } catch(e) { setLoading(false); }
+          
+          if (isMounted) {
+            if (data.profile) setProfile(data.profile);
+            // FIX: Prevent wiping data if the backend returned an error
+            if (data.modules && Array.isArray(data.modules)) {
+              setModules(data.modules);
+            }
+            setLoading(false);
+          }
+        } catch(e) { 
+          if (isMounted) setLoading(false); 
+        }
       } else if (isLoaded && !user) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchData();
+    return () => { isMounted = false; };
   }, [user, isLoaded, getToken]);
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
