@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, useUser, useAuth } from "@clerk/nextjs";
+import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { 
   LayoutDashboard, BookOpen, MessageSquare, 
-  CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X, Calendar 
+  CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X, Calendar, LogOut 
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -90,6 +90,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               );
             })}
+
+            {/* EXPLICIT SIGN OUT BUTTON - DESKTOP */}
+            <div className="pt-2 mt-2 border-t border-stone-200/60">
+              <SignOutButton>
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-stone-600 hover:bg-rose-50 hover:text-rose-700 transition-colors group text-left">
+                  <LogOut size={18} className="text-stone-400 group-hover:text-rose-500 transition-colors" />
+                  Sign Out
+                </button>
+              </SignOutButton>
+            </div>
           </nav>
         </div>
 
@@ -147,6 +157,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </Link>
                   );
                 })}
+
+                {/* EXPLICIT SIGN OUT BUTTON - MOBILE MENU */}
+                <div className="pt-2 mt-2 border-t border-stone-200/60">
+                  <SignOutButton>
+                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-stone-600 hover:bg-rose-50 hover:text-rose-700 transition-colors group text-left">
+                      <LogOut size={18} className="text-stone-400 group-hover:text-rose-500 transition-colors" />
+                      Sign Out
+                    </button>
+                  </SignOutButton>
+                </div>
               </nav>
             </div>
           </div>
@@ -166,8 +186,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="text-stone-800 font-serif">Beginner Hub</span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-widest">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-widest">
               Weekly Goal <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm"></div>
+            </div>
+            
+            {/* MOBILE ONLY: Always visible profile & signout dropdown in the header */}
+            <div className="md:hidden flex items-center mt-1">
+              <UserButton />
             </div>
           </div>
         </header>
