@@ -240,4 +240,176 @@ export default function LandingPage() {
 
           {/* Right: UI Mockup (STATIC, NO ANIMATIONS) */}
           <div className="relative z-10 hidden md:block">
-            <div className="absolute -left-12 -bottom-6 bg-white rounded-2xl p-4 shadow-2xl z-20 border border-ston
+            <div className="absolute -left-12 -bottom-6 bg-white rounded-2xl p-4 shadow-2xl z-20 border border-stone-200 font-sans">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Weekly Streak</div>
+              <div className="text-3xl font-bold text-stone-800 flex items-baseline gap-1">12 <span className="text-sm font-medium text-stone-500">days</span></div>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-stone-200">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[#e8e4d9] pb-4 mb-6 font-sans">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#85443d] flex items-center justify-center text-white font-serif text-xl shadow-inner">ད</div>
+                  <div>
+                    <div className="font-bold text-stone-900 text-sm">Dolma</div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Listening
+                    </div>
+                  </div>
+                </div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-200">
+                  Lesson 4 · Vowels
+                </div>
+              </div>
+
+              {/* Chat Bubble 1 (Dolma) */}
+              <div className="mb-8">
+                <div className="bg-[#f8f5ee] border border-[#e8e4d9] rounded-2xl rounded-tl-none p-5 max-w-[85%]">
+                  <div className="text-3xl font-medium text-stone-800 mb-2">ཁྱེད་རང་སྐུ་གཟུགས་བདེ་པོ་ཡིན་པས།</div>
+                  <div className="text-sm text-stone-500 font-sans italic border-t border-stone-200/60 pt-2">
+                    "How are you today?" — try repeating this.
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat Bubble 2 (User) */}
+              <div className="flex justify-end mb-6 font-sans">
+                <div className="bg-amber-400 text-amber-900 rounded-2xl rounded-br-none px-5 py-3 shadow-sm font-medium text-[15px]">
+                  Khyerang kuzuk depo yin-pä?
+                </div>
+              </div>
+
+              {/* Feedback Alert */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 font-sans">
+                <div className="flex items-center gap-2 text-sm font-bold text-emerald-700 mb-1">
+                  <Check size={16} /> Beautiful pronunciation
+                </div>
+                <div className="text-xs text-emerald-600/80 leading-relaxed">
+                  Tiny tip: soften the final "pä" — it's an interrogative particle, not stressed.
+                </div>
+              </div>
+
+              {/* Audio Controls Mockup */}
+              <div className="flex items-center gap-4 text-stone-400 bg-stone-50 border border-stone-200 p-3 rounded-xl font-sans">
+                <button className="w-8 h-8 rounded-full bg-white border border-stone-200 flex items-center justify-center text-[#85443d] shadow-sm"><Play size={14} className="fill-current" /></button>
+                
+                {/* Fake Audio Waveform */}
+                <div className="flex-1 flex items-center gap-1 h-6">
+                   {[40, 70, 30, 90, 60, 40, 80, 50, 100, 30, 20, 60, 80, 40, 20].map((h, i) => (
+                     <div key={i} className={`w-1 rounded-full ${i < 6 ? 'bg-amber-400' : 'bg-stone-300'}`} style={{height: `${h}%`}}></div>
+                   ))}
+                </div>
+                
+                <span className="text-xs font-medium font-mono">0:04</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* 
+        ========================================
+        THREE FEATURES GRID
+        ========================================
+      */}
+      <div className="bg-[#fdfbf7] py-24 px-6 relative border-t border-[#e8e4d9]">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+          
+          <Link href="/dashboard/lessons" className="bg-white p-10 rounded-[1.5rem] border border-[#e8e4d9] shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:border-amber-300 transition-colors group block">
+            <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center mb-8 shadow-sm">
+              <Navigation size={22} className="text-stone-900 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-2xl font-medium text-stone-900 mb-4 group-hover:text-amber-600 transition-colors">Guided Syllabus</h3>
+            <p className="text-stone-500 font-sans leading-relaxed">
+              Access original textbook materials, grammar notes, and interactive exercises directly in your dashboard.
+            </p>
+          </Link>
+
+          <Link href="/dashboard/chat" className="bg-white p-10 rounded-[1.5rem] border border-[#e8e4d9] shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:border-amber-300 transition-colors group block">
+            <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center mb-8 shadow-sm">
+              <Mic size={22} className="text-stone-900 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-2xl font-medium text-stone-900 mb-4 group-hover:text-amber-600 transition-colors">Dolma AI Tutor</h3>
+            <p className="text-stone-500 font-sans leading-relaxed">
+              Practice what you learn immediately. Speak naturally and get real-time audio responses and corrections.
+            </p>
+          </Link>
+
+          <Link href="/dashboard/progress" className="bg-white p-10 rounded-[1.5rem] border border-[#e8e4d9] shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:border-amber-300 transition-colors group block">
+            <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center mb-8 shadow-sm">
+              <BookOpen size={22} className="text-stone-900 group-hover:scale-110 transition-transform" />
+            </div>
+            <h3 className="text-2xl font-medium text-stone-900 mb-4 group-hover:text-amber-600 transition-colors">Track Progress</h3>
+            <p className="text-stone-500 font-sans leading-relaxed">
+              Watch your vocabulary grow. Maintain your learning streak and master Tibetan grammar step-by-step.
+            </p>
+          </Link>
+
+        </div>
+      </div>
+
+      {/* 
+        ========================================
+        TESTIMONIAL SECTION
+        ========================================
+      */}
+      <div className="bg-[#fdfbf7] py-24 px-6 border-t border-[#e8e4d9]">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+          <div className="text-amber-400 mb-6 font-serif text-6xl leading-none">"</div>
+          <h2 className="text-3xl md:text-4xl font-serif italic text-stone-800 leading-relaxed max-w-3xl mb-10">
+            The structure I always wished for when learning Tibetan — and Dolma makes daily practice actually joyful.
+          </h2>
+          
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 shadow-sm"></div>
+            <div className="text-left font-sans">
+              <div className="font-bold text-stone-900">Sarah Jenkins</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Oxford University · Tibetan Studies</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 
+        ========================================
+        FOOTER (DARK WITH PRAYER FLAG BORDER)
+        ========================================
+      */}
+      <footer className="bg-[#1a1512] mt-auto relative font-sans">
+        
+        {/* The 5 Colors Top Border (Blue, Yellow, Red, White, Green) */}
+        <div className="flex w-full h-1.5 opacity-90">
+          <div className="flex-1 bg-[#1e3a8a]"></div>
+          <div className="flex-1 bg-[#d97706]"></div>
+          <div className="flex-1 bg-[#b91c1c]"></div>
+          <div className="flex-1 bg-stone-200"></div>
+          <div className="flex-1 bg-[#047857]"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto py-16 px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+          
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center text-stone-900 font-serif text-lg font-bold shadow-sm">
+              ད
+            </div>
+            <span className="font-serif font-medium text-lg text-stone-200">Dolma AI</span>
+          </div>
+
+          <div className="flex items-center gap-8 text-sm font-medium text-stone-400">
+            <Link href="/privacy" className="hover:text-amber-400 transition">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-amber-400 transition">Terms of Service</Link>
+          </div>
+
+          <div className="text-xs font-medium text-stone-500">
+            &copy; {new Date().getFullYear()} Learn Tibetan UK.
+          </div>
+          
+        </div>
+      </footer>
+
+    </div>
+  );
+}
