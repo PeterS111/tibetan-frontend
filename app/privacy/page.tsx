@@ -48,7 +48,7 @@ export default function PrivacyPage() {
             
             <section>
               <h3 className="text-2xl font-serif font-medium text-stone-900 mb-4">5. Contact</h3>
-              <p>For questions about this policy, or to request the deletion of your account and associated data, please contact us at <a href="mailto:support@learntibetan.uk" className="text-amber-600 hover:text-amber-700 font-bold transition-colors">support@learntibetan.uk</a>.</p>
+              <p>For questions about this policy, or to request the deletion of your account and associated data, please contact the Developer at <a href="mailto:p.sm1549c@gmail.com" className="text-amber-600 hover:text-amber-700 font-bold transition-colors">p.sm1549c@gmail.com</a>.</p>
             </section>
 
           </div>
