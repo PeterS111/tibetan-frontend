@@ -207,4 +207,335 @@ export default function LessonDetailPage() {
                 key={index}
                 onClick={() => playAudio(item.letter)}
                 disabled={playingItem !== null}
-                className={`relative flex flex-col items-center justify
+                className={`relative flex flex-col items-center justify-center p-8 border-b border-r border-stone-200 transition-colors group h-40 border-t-4 ${TONE_COLORS[item.tone as ToneClass]} ${playingItem === item.letter ? 'bg-stone-100' : 'bg-white hover:bg-stone-50'}`}
+              >
+                <div className="text-5xl font-serif text-stone-900 group-hover:scale-110 transition-transform mb-4">{item.letter}</div>
+                <div className="absolute bottom-4 left-4 text-left">
+                  <div className="text-[11px] font-bold tracking-widest text-stone-800 uppercase leading-none mb-1">{item.phonetic}</div>
+                  <div className="text-[10px] text-stone-400 tracking-widest leading-none">{item.wylie}</div>
+                </div>
+                {playingItem === item.letter && (
+                  <div className="absolute top-4 right-4"><Loader2 className="w-4 h-4 animate-spin text-stone-400" /></div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 02: UNDERSTANDING TONE */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02</div>
+            <h2 className="text-3xl font-serif text-stone-900">Understanding tone</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#0ea5e9]">
+              <div className="text-[10px] font-bold text-[#0ea5e9] bg-sky-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Unaspirated</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">6 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.</p>
+              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
+                {['ཀ', 'ཅ', 'ཏ', 'པ', 'ཙ', 'ཨ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char ? 'bg-sky-100 border-sky-400 text-sky-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#f59e0b]">
+              <div className="text-[10px] font-bold text-[#f59e0b] bg-amber-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Aspirated</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">8 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.</p>
+              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
+                {['ཁ', 'ཆ', 'ཐ', 'ཕ', 'ཚ', 'ཤ', 'ས', 'ཧ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char ? 'bg-amber-100 border-amber-400 text-amber-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#a855f7]">
+              <div className="text-[10px] font-bold text-[#a855f7] bg-purple-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Semi-aspirated</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">12 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.</p>
+              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
+                {['ག', 'ཇ', 'ད', 'བ', 'ཛ', 'ཝ', 'ཞ', 'ཟ', 'འ', 'ཡ', 'ར', 'ལ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char ? 'bg-purple-100 border-purple-400 text-purple-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#f43f5e]">
+              <div className="text-[10px] font-bold text-[#f43f5e] bg-rose-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Nasal</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">4 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air.</p>
+              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
+                {['ང', 'ཉ', 'ན', 'མ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char ? 'bg-rose-100 border-rose-400 text-rose-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 02B: ROOT SOUNDS */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02B</div>
+            <h2 className="text-3xl font-serif text-stone-900 mb-4">The three root sounds</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#0ea5e9]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Neutral Root · High Register</div>
+              <button onClick={() => playAudio('ཨ')} disabled={playingItem !== null} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'ཨ' ? 'bg-sky-50' : 'hover:bg-stone-50'}`}>
+                <span className="text-6xl font-serif text-stone-900">ཨ</span><span className="text-lg font-serif italic text-stone-500 mb-1">a</span>
+              </button>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The neutral vowel carrier — a clean 'a' with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice.
+              </p>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f59e0b]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Aspirated Root · Breath</div>
+              <button onClick={() => playAudio('ཧ')} disabled={playingItem !== null} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'ཧ' ? 'bg-amber-50' : 'hover:bg-stone-50'}`}>
+                <span className="text-6xl font-serif text-stone-900">ཧ</span><span className="text-lg font-serif italic text-stone-500 mb-1">ha</span>
+              </button>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The breath root — a light, aspirated 'h'. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air.
+              </p>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f43f5e]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Glottal Root · Voiced Flow</div>
+              <button onClick={() => playAudio('འ')} disabled={playingItem !== null} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'འ' ? 'bg-rose-50' : 'hover:bg-stone-50'}`}>
+                <span className="text-6xl font-serif text-stone-900">འ</span><span className="text-lg font-serif italic text-stone-500 mb-1">'a</span>
+              </button>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The glottal root — a soft, voiced 'a' that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཝ ཞ ཟ ཡ ར ལ), and the nasals (ང ཉ ན མ).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 03: GENDER CLASSIFICATION */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 03</div>
+            <h2 className="text-3xl font-serif text-stone-900 mb-4">Traditional gender classification</h2>
+          </div>
+
+          <div className="border border-stone-200 rounded-lg overflow-hidden bg-white shadow-sm">
+            <div className="grid grid-cols-12 bg-stone-50 border-b border-stone-200 p-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest hidden sm:grid">
+              <div className="col-span-3">Gender</div>
+              <div className="col-span-3">Tibetan</div>
+              <div className="col-span-6">Consonants</div>
+            </div>
+
+            {/* Row 1: Masculine */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#fff5f5] p-4 sm:items-center gap-4 sm:gap-0">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-red-500"></div> Masculine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">ཕོ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-red-700">
+                {['ཀ', 'ཅ', 'ཏ', 'པ', 'ཙ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char ? 'bg-red-100 border-red-400' : 'border-red-200 hover:border-red-300 hover:bg-red-50'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 2: Neuter */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#fffbeb] p-4 sm:items-center gap-4 sm:gap-0">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-amber-400"></div> Neuter</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">མ་ནིང་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-amber-700">
+                {['ཁ', 'ཆ', 'ཐ', 'ཕ', 'ཚ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char ? 'bg-amber-100 border-amber-400' : 'border-amber-200 hover:border-amber-300 hover:bg-amber-50'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Row 3: Feminine */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#f0fdfa] p-4 sm:items-center gap-4 sm:gap-0">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-teal-500"></div> Feminine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">མོ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-teal-700">
+                {['ག', 'ཇ', 'ད', 'བ', 'ཛ', 'ཝ', 'ཞ', 'ཟ', 'འ', 'ཡ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char ? 'bg-teal-100 border-teal-400' : 'border-teal-200 hover:border-teal-300 hover:bg-teal-50'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Row 4: Very Feminine */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#faf5ff] p-4 sm:items-center gap-4 sm:gap-0">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Very Feminine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">ཤིན་ཏུ་མོ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-purple-700">
+                {['ང', 'ཉ', 'ན', 'མ'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char ? 'bg-purple-100 border-purple-400' : 'border-purple-200 hover:border-purple-300 hover:bg-purple-50'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Row 5: Sub-Feminine */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 bg-[#eff6ff] p-4 sm:items-center gap-4 sm:gap-0">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Sub-Feminine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">མོ་གཤམ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-blue-700">
+                {['ར', 'ལ', 'ཤ', 'ས'].map(char => (
+                  <button key={char} onClick={() => playAudio(char)} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char ? 'bg-blue-100 border-blue-400' : 'border-blue-200 hover:border-blue-300 hover:bg-blue-50'}`}>{char}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 04: VOCABULARY */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 04</div>
+              <h2 className="text-3xl font-serif text-stone-900">Nouns formed from the 30 consonants</h2>
+            </div>
+            <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded text-[10px] font-bold uppercase tracking-widest">
+              Vocabulary · མིང་ཚིག་
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {VOCABULARY.map((word, i) => (
+              <div key={i} className={`bg-white border p-5 rounded-xl shadow-sm transition-colors flex flex-col justify-between h-40 relative group ${playingItem === word.tib ? 'border-amber-400 bg-amber-50/30' : 'border-stone-200 hover:border-amber-300'}`}>
+                <div className="text-2xl mb-2">{word.emoji}</div>
+                <div>
+                  <div className="text-2xl font-serif text-stone-900 mb-1 leading-none">{word.tib}</div>
+                  <div className="text-[10px] font-medium text-stone-400 italic mb-1">{word.wylie}</div>
+                  <div className="text-sm font-bold text-stone-700">{word.eng}</div>
+                </div>
+                <button 
+                  onClick={() => playAudio(word.tib)}
+                  disabled={playingItem !== null}
+                  className={`absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center border rounded-lg transition-colors ${playingItem === word.tib ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600'}`}
+                >
+                  {playingItem === word.tib ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} className="fill-current" />}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 05: PRACTICE & EXERCISES */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 05</div>
+            <h2 className="text-3xl font-serif text-stone-900">Practice & exercises</h2>
+          </div>
+
+          <div className="bg-[#fcfaf5] border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
+            
+            <div className="flex flex-wrap items-center justify-between border-b border-stone-200 bg-white">
+              <div className="flex overflow-x-auto custom-scrollbar">
+                {[
+                  { name: 'Flashcards', icon: Layers },
+                  { name: 'Trace', icon: PenTool },
+                  { name: 'Listen & Select', icon: Headphones },
+                  { name: 'Match', icon: Shuffle }
+                ].map((tab) => (
+                  <button 
+                    key={tab.name}
+                    onClick={() => setActivePracticeTab(tab.name)}
+                    className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activePracticeTab === tab.name ? 'border-amber-500 text-stone-900 bg-stone-50/50' : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}
+                  >
+                    <tab.icon size={16} /> {tab.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-b border-stone-200 flex items-center gap-2 text-sm font-bold text-stone-600">
+              <ToggleLeft size={20} className="text-stone-400" /> Memory Review
+            </div>
+
+            <div className="p-6 md:p-12 flex flex-col items-center">
+              
+              <div className="w-full max-w-2xl flex justify-between items-center mb-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                <div className="flex items-center gap-2">
+                  <span className="bg-stone-900 text-white px-2 py-1 rounded">CONSONANTS · 30</span>
+                  <span className="bg-white border border-stone-200 px-2 py-1 rounded hidden sm:inline-block">NOUNS · 18</span>
+                </div>
+                <span>Card {flashcardIdx + 1} of 30</span>
+              </div>
+
+              <div 
+                onClick={() => setIsCardFlipped(!isCardFlipped)}
+                className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group"
+              >
+                {!isCardFlipped ? (
+                  <div className="text-7xl md:text-9xl font-serif text-stone-900 group-hover:scale-105 transition-transform">
+                    {currentFlashcard.letter}
+                  </div>
+                ) : (
+                  <div className="text-center animate-in fade-in zoom-in-95 duration-200">
+                    <div className="text-4xl md:text-5xl font-bold text-stone-900 mb-2">{currentFlashcard.phonetic}</div>
+                    <div className="text-lg md:text-xl text-stone-400 tracking-widest">{currentFlashcard.wylie}</div>
+                  </div>
+                )}
+                <div className="absolute bottom-4 right-6 text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-stone-400 transition-colors">
+                  Tap card to flip
+                </div>
+              </div>
+
+              <div className="w-full max-w-2xl flex items-center justify-between mt-8">
+                <button onClick={handlePrevCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
+                  <ArrowLeft size={16} /> Previous
+                </button>
+
+                <button 
+                  onClick={() => playAudio(currentFlashcard.letter)}
+                  disabled={playingItem !== null}
+                  className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors"
+                >
+                  {playingItem === currentFlashcard.letter ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
+                  Play sound
+                </button>
+
+                <button onClick={handleNextCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
+                  Next <ArrowRight size={16} />
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* STICKY FOOTER (Mark Complete) */}
+      {/* ========================================================= */}
+      <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-[#fdfbf7] border-t border-stone-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          
+          <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
+            <ArrowLeft size={16} /> All lessons
+          </Link>
+
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors">
+            <CheckCircle2 size={18} /> Mark lesson complete
+          </button>
+
+          <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
+            Next: The Four Vowels <ArrowRight size={16} />
+          </Link>
+          
+        </div>
+      </div>
+
+    </div>
+  );
+}
