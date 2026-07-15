@@ -87,6 +87,11 @@ const GENDER_INFO: Record<string, { bg: string, text: string, dot: string }> = {
   'Root': { bg: 'bg-stone-50 border-stone-200', text: 'text-stone-600', dot: 'bg-stone-400' },
 };
 
+type MatchQuestion = {
+  target: typeof TIBETAN_ALPHABET[0];
+  options: typeof TIBETAN_ALPHABET[0][];
+};
+
 export default function LessonDetailPage() {
   const { getToken } = useAuth();
   
@@ -98,7 +103,7 @@ export default function LessonDetailPage() {
   const [selectedLetter, setSelectedLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
 
   // Practice Section State
-  const [activePracticeTab, setActivePracticeTab] = useState('Listen & Select');
+  const [activePracticeTab, setActivePracticeTab] = useState('Match'); // Set Match as default to test
   
   // Flashcards State
   const [flashcardIdx, setFlashcardIdx] = useState(0);
@@ -109,19 +114,9 @@ export default function LessonDetailPage() {
   const [lsCorrectLetter, setLsCorrectLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
   const [lsSelectedLetter, setLsSelectedLetter] = useState<string | null>(null);
 
-  const generateListenSelectRound = () => {
-    const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
-    const selected4 = shuffled.slice(0, 4);
-    setLsOptions(selected4);
-    setLsCorrectLetter(selected4[Math.floor(Math.random() * 4)]);
-    setLsSelectedLetter(null);
-  };
-
-  useEffect(() => {
-    if (activePracticeTab === 'Listen & Select' && lsOptions.length === 0) {
-      generateListenSelectRound();
-    }
-  }, [activePracticeTab]);
+  // Match State
+  const [matchQuestions, setMatchQuestions] = useState<MatchQuestion[]>([]);
+  const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({}); // { targetLetter: selectedOptionLetter }
 
   const playAudio = async (text: string) => {
     if (playingItem) return;
@@ -152,21 +147,55 @@ export default function LessonDetailPage() {
     setPlayingItem(null);
   };
 
+  // --- Listen & Select Logic ---
+  const generateListenSelectRound = () => {
+    const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
+    const selected4 = shuffled.slice(0, 4);
+    setLsOptions(selected4);
+    setLsCorrectLetter(selected4[Math.floor(Math.random() * 4)]);
+    setLsSelectedLetter(null);
+  };
+
+  useEffect(() => {
+    if (activePracticeTab === 'Listen & Select' && lsOptions.length === 0) generateListenSelectRound();
+  }, [activePracticeTab]);
+
+  // --- Match Logic ---
+  const generateMatchRound = () => {
+    const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
+    const targets = shuffled.slice(0, 6); // Generate 6 rows
+    
+    const newQuestions = targets.map(target => {
+      // Pick 2 random distractors
+      const distractors = TIBETAN_ALPHABET.filter(item => item.letter !== target.letter)
+                                          .sort(() => 0.5 - Math.random())
+                                          .slice(0, 2);
+      // Combine and shuffle options
+      const options = [target, ...distractors].sort(() => 0.5 - Math.random());
+      return { target, options };
+    });
+    
+    setMatchQuestions(newQuestions);
+    setMatchAnswers({});
+  };
+
+  useEffect(() => {
+    if (activePracticeTab === 'Match' && matchQuestions.length === 0) generateMatchRound();
+  }, [activePracticeTab]);
+
+  const handleMatchSelect = (targetLetter: string, selectedOptionLetter: string) => {
+    if (matchAnswers[targetLetter]) return; // Already answered
+    
+    // Play the audio for the button they clicked
+    playAudio(selectedOptionLetter);
+    
+    // Record the answer
+    setMatchAnswers(prev => ({ ...prev, [targetLetter]: selectedOptionLetter }));
+  };
+
   const filteredAlphabet = activeFilter === 'ALL' 
     ? TIBETAN_ALPHABET 
     : TIBETAN_ALPHABET.filter(item => item.tone === activeFilter);
-
-  const handleNextCard = () => {
-    setIsCardFlipped(false);
-    setFlashcardIdx((prev) => (prev + 1) % TIBETAN_ALPHABET.length);
-  };
-
-  const handlePrevCard = () => {
-    setIsCardFlipped(false);
-    setFlashcardIdx((prev) => (prev - 1 + TIBETAN_ALPHABET.length) % TIBETAN_ALPHABET.length);
-  };
-
-  const currentFlashcard = TIBETAN_ALPHABET[flashcardIdx];
 
   return (
     <div className="bg-[#fdfbf7] min-h-screen text-stone-800 font-sans pb-40 relative overflow-x-hidden">
@@ -333,6 +362,26 @@ export default function LessonDetailPage() {
                 The neutral vowel carrier — a clean 'a' with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice.
               </p>
             </div>
+            
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f59e0b]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Aspirated Root · Breath</div>
+              <button onClick={() => { playAudio('ཧ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཧ') || null); }} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'ཧ' || selectedLetter?.letter === 'ཧ' ? 'bg-amber-50' : 'hover:bg-stone-50'}`}>
+                <span className="text-6xl font-serif text-stone-900">ཧ</span><span className="text-lg font-serif italic text-stone-500 mb-1">ha</span>
+              </button>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The breath root — a light, aspirated 'h'. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air.
+              </p>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f43f5e]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Glottal Root · Voiced Flow</div>
+              <button onClick={() => { playAudio('འ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'འ') || null); }} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'འ' || selectedLetter?.letter === 'འ' ? 'bg-rose-50' : 'hover:bg-stone-50'}`}>
+                <span className="text-6xl font-serif text-stone-900">འ</span><span className="text-lg font-serif italic text-stone-500 mb-1">'a</span>
+              </button>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The glottal root — a soft, voiced 'a' that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཝ ཞ ཟ ཡ ར ལ), and the nasals (ང ཉ ན མ).
+              </p>
+            </div>
           </div>
         </div>
 
@@ -455,7 +504,7 @@ export default function LessonDetailPage() {
 
           <div className="bg-[#fcfaf5] border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
             
-            {/* UPDATED TABS */}
+            {/* TABS */}
             <div className="flex flex-wrap items-center justify-between border-b border-stone-200 bg-white">
               <div className="flex overflow-x-auto custom-scrollbar w-full">
                 {[
@@ -562,7 +611,6 @@ export default function LessonDetailPage() {
                       bgClass = "bg-emerald-50/50";
                       textClass = "text-emerald-600";
                     } else if (lsSelectedLetter) {
-                      // Dim unselected options after a guess
                       borderClass = "border-stone-100 opacity-50";
                       bgClass = "bg-stone-50 cursor-default";
                     }
@@ -573,17 +621,13 @@ export default function LessonDetailPage() {
                         onClick={() => {
                           if (!lsSelectedLetter) {
                             setLsSelectedLetter(opt.letter);
-                            if (opt.letter === lsCorrectLetter?.letter) {
-                               playAudio(opt.letter); // Replay correct sound as validation
-                            }
+                            if (opt.letter === lsCorrectLetter?.letter) playAudio(opt.letter);
                           }
                         }}
                         disabled={lsSelectedLetter !== null}
                         className={`relative aspect-square flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}
                       >
                          <span className={`text-6xl sm:text-7xl font-serif transition-colors ${textClass}`}>{opt.letter}</span>
-                         {/* NO PHONETICS RENDERED HERE PER REQUEST */}
-                         
                          {showCorrect && <div className="absolute top-4 right-4 text-emerald-500 animate-in zoom-in"><CheckCircle2 size={24}/></div>}
                          {showWrong && <div className="absolute top-4 right-4 text-rose-500 animate-in zoom-in"><XCircle size={24}/></div>}
                       </button>
@@ -591,11 +635,69 @@ export default function LessonDetailPage() {
                   })}
                 </div>
 
-                {/* Next Round Button appears after guessing */}
                 {lsSelectedLetter && (
                   <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
+                    <button onClick={generateListenSelectRound} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2">
+                      Next Round <ArrowRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB CONTENT: MATCH (NEW) */}
+            {activePracticeTab === 'Match' && (
+              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
+                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Match each Tibetan consonant with its pronunciation.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+                  {matchQuestions.map((q, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-white border border-stone-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                      
+                      {/* Left: Tibetan Letter */}
+                      <div className="text-4xl font-serif text-stone-900 ml-4">{q.target.letter}</div>
+                      
+                      {/* Right: Phonetic Options */}
+                      <div className="flex items-center gap-2 mr-2">
+                        {q.options.map(opt => {
+                          const isSelected = matchAnswers[q.target.letter] === opt.letter;
+                          const isCorrect = q.target.letter === opt.letter;
+                          
+                          let btnClass = "border-stone-200 text-stone-600 hover:bg-stone-50 cursor-pointer";
+                          if (isSelected && isCorrect) {
+                            btnClass = "border-emerald-500 bg-emerald-50 text-emerald-700 cursor-default";
+                          } else if (isSelected && !isCorrect) {
+                            btnClass = "border-rose-500 bg-rose-50 text-rose-700 cursor-default";
+                          } else if (matchAnswers[q.target.letter] && isCorrect) {
+                            btnClass = "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600 cursor-default";
+                          } else if (matchAnswers[q.target.letter]) {
+                            btnClass = "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default";
+                          }
+                          
+                          const isCurrentlyPlaying = playingItem === opt.letter && isSelected;
+
+                          return (
+                            <button 
+                              key={opt.letter}
+                              onClick={() => handleMatchSelect(q.target.letter, opt.letter)}
+                              disabled={!!matchAnswers[q.target.letter] || playingItem !== null}
+                              className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[3rem] ${btnClass}`}
+                            >
+                              {isCurrentlyPlaying ? <Loader2 size={12} className="animate-spin absolute" /> : opt.phonetic}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                  ))}
+                </div>
+
+                {/* Show "Next Round" if all questions are answered */}
+                {Object.keys(matchAnswers).length === matchQuestions.length && matchQuestions.length > 0 && (
+                  <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
                     <button 
-                      onClick={generateListenSelectRound} 
+                      onClick={generateMatchRound} 
                       className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2"
                     >
                       Next Round <ArrowRight size={18} />
@@ -605,8 +707,8 @@ export default function LessonDetailPage() {
               </div>
             )}
             
-            {/* OTHER TABS (Placeholders for now) */}
-            {(activePracticeTab === 'Trace' || activePracticeTab === 'Match' || activePracticeTab === 'Memory Review') && (
+            {/* OTHER TABS (Placeholders) */}
+            {(activePracticeTab === 'Trace' || activePracticeTab === 'Memory Review') && (
               <div className="p-12 text-center text-stone-400 font-medium">
                 {activePracticeTab} exercises are currently under development.
               </div>
