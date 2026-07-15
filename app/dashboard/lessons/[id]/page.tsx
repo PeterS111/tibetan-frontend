@@ -3,15 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
-import { ChevronRight, RefreshCcw, Play, Loader2 } from "lucide-react";
+import { ChevronRight, RefreshCcw, Play, Loader2, Info } from "lucide-react";
 
-// The tone classifications based strictly on the provided visual grid
 type ToneClass = 'HIGH_UNASPIRATED' | 'HIGH_ASPIRATED' | 'LOW_SEMI_ASPIRATED' | 'LOW_NASAL';
 
 const TIBETAN_ALPHABET = [
   { letter: "ཀ", phonetic: "KA", wylie: "[ka]", tone: "HIGH_UNASPIRATED" },
   { letter: "ཁ", phonetic: "KHA", wylie: "[kha]", tone: "HIGH_ASPIRATED" },
-  { letter: "ག", phonetic: "GA", wylie: "[kha]", tone: "LOW_SEMI_ASPIRATED" }, // Pronounced kha in Lhasa
+  { letter: "ག", phonetic: "GA", wylie: "[kha]", tone: "LOW_SEMI_ASPIRATED" }, 
   { letter: "ང", phonetic: "NGA", wylie: "[nga]", tone: "LOW_NASAL" },
   { letter: "ཅ", phonetic: "CA", wylie: "[ca]", tone: "HIGH_UNASPIRATED" },
   { letter: "ཆ", phonetic: "CHA", wylie: "[chha]", tone: "HIGH_ASPIRATED" },
@@ -41,26 +40,46 @@ const TIBETAN_ALPHABET = [
   { letter: "ཨ", phonetic: "A", wylie: "[a]", tone: "HIGH_UNASPIRATED" }
 ];
 
+const VOCABULARY = [
+  { tib: "ཁ་བ་", wylie: "kha-wa", eng: "snow", emoji: "❄️" },
+  { tib: "ང་", wylie: "nga", eng: "I / me", emoji: "🙋" },
+  { tib: "ཇ་མ་", wylie: "ja-ma", eng: "cook", emoji: "👨‍🍳" },
+  { tib: "ཉ་", wylie: "nya", eng: "fish", emoji: "🐟" },
+  { tib: "ཐ་མ་", wylie: "tha-ma", eng: "cigarette", emoji: "🚬" },
+  { tib: "ཨ་མ་", wylie: "a-ma", eng: "mother", emoji: "👩" },
+  { tib: "ན་ཚ་", wylie: "na-tsha", eng: "illness", emoji: "🏥" },
+  { tib: "ཤ་", wylie: "sha", eng: "meat", emoji: "🍖" },
+  { tib: "ཕ་མ་", wylie: "pha-ma", eng: "parents", emoji: "👨‍👩‍👧" },
+  { tib: "ཨ་ར་", wylie: "a-ra", eng: "beard", emoji: "🧔" },
+  { tib: "ཤ་བ་", wylie: "sha-wa", eng: "deer", emoji: "🦌" },
+  { tib: "ཁ་", wylie: "kha", eng: "mouth", emoji: "👄" },
+  { tib: "ར་", wylie: "ra", eng: "goat", emoji: "🐐" },
+  { tib: "ཇ་", wylie: "ja", eng: "tea", emoji: "🍵" },
+  { tib: "ཟ་མ་", wylie: "za-ma", eng: "food", emoji: "🍲" },
+  { tib: "ཉ་པ་", wylie: "nya-pa", eng: "fisherman", emoji: "🎣" },
+  { tib: "ཁ་ཚ་མ་", wylie: "kha-tsha-ma", eng: "chilli", emoji: "🌶️" },
+  { tib: "ཀ་བ་", wylie: "ka-wa", eng: "pillar", emoji: "🏛️" },
+];
+
 const TONE_COLORS = {
-  HIGH_UNASPIRATED: "border-sky-500",      // Blue
-  HIGH_ASPIRATED: "border-amber-500",      // Yellow/Orange
-  LOW_SEMI_ASPIRATED: "border-purple-500", // Purple
-  LOW_NASAL: "border-rose-500"             // Red
+  HIGH_UNASPIRATED: "border-t-[#0ea5e9]",      // Sky 500
+  HIGH_ASPIRATED: "border-t-[#f59e0b]",        // Amber 500
+  LOW_SEMI_ASPIRATED: "border-t-[#a855f7]",    // Purple 500
+  LOW_NASAL: "border-t-[#f43f5e]"              // Rose 500
 };
 
 export default function LessonDetailPage() {
   const { getToken } = useAuth();
   const [activeFilter, setActiveFilter] = useState<ToneClass | 'ALL'>('ALL');
-  const [playingLetter, setPlayingLetter] = useState<string | null>(null);
+  const [playingItem, setPlayingItem] = useState<string | null>(null);
 
-  // Play audio directly from the backend
-  const playAlphabetLetter = async (letter: string) => {
-    if (playingLetter) return;
-    setPlayingLetter(letter);
+  const playAudio = async (text: string) => {
+    if (playingItem) return;
+    setPlayingItem(text);
     try {
       const token = await getToken();
       const formData = new FormData();
-      formData.append("text", letter);
+      formData.append("text", text);
       formData.append("language", "en"); 
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { 
@@ -74,13 +93,13 @@ export default function LessonDetailPage() {
         const part = data.audio_sequence[0];
         if (part.audio_base64) {
           const audio = new Audio(`data:audio/wav;base64,${part.audio_base64}`);
-          audio.onended = () => setPlayingLetter(null);
-          audio.play().catch(() => setPlayingLetter(null));
+          audio.onended = () => setPlayingItem(null);
+          audio.play().catch(() => setPlayingItem(null));
           return;
         }
       }
     } catch (e) { console.error("Audio playback failed", e); }
-    setPlayingLetter(null);
+    setPlayingItem(null);
   };
 
   const filteredAlphabet = activeFilter === 'ALL' 
@@ -90,8 +109,9 @@ export default function LessonDetailPage() {
   return (
     <div className="bg-[#fdfbf7] min-h-screen text-stone-800 font-sans pb-32">
       
-      {/* BREADCRUMBS */}
       <div className="max-w-5xl mx-auto px-6 py-8">
+        
+        {/* BREADCRUMBS & HERO */}
         <div className="flex items-center gap-2 text-xs font-medium text-stone-500 mb-8 uppercase tracking-widest">
           <Link href="/dashboard/lessons" className="hover:text-stone-800 transition-colors">My Lessons</Link>
           <ChevronRight size={14} />
@@ -100,7 +120,6 @@ export default function LessonDetailPage() {
           <span className="text-stone-800 font-bold">The 30 Consonants</span>
         </div>
 
-        {/* HERO SECTION */}
         <div className="space-y-4 mb-12">
           <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em]">Lesson 01 · Foundations</div>
           <h1 className="text-4xl sm:text-5xl font-serif text-stone-900 leading-tight">The 30 Tibetan Consonants</h1>
@@ -110,18 +129,15 @@ export default function LessonDetailPage() {
           </p>
         </div>
 
-        {/* PROGRESS & STATS GRID */}
+        {/* PROGRESS GRID */}
         <div className="mb-16">
           <div className="flex justify-between items-end mb-3">
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500">Lesson Progress</span>
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-500">6 of 8 Sections</span>
           </div>
-          {/* Progress Bar */}
           <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden mb-8">
             <div className="h-full bg-amber-400 w-3/4 rounded-full"></div>
           </div>
-
-          {/* Stats Boxes */}
           <div className="grid grid-cols-3 border border-stone-200 rounded-lg bg-[#fdfbf7]">
             <div className="p-6 flex flex-col items-center justify-center border-r border-stone-200">
               <span className="text-3xl font-serif text-stone-800 mb-1">30</span>
@@ -140,8 +156,10 @@ export default function LessonDetailPage() {
 
         <div className="w-full h-px bg-stone-200 mb-16"></div>
 
-        {/* SECTION 1: THE ALPHABET GRID */}
-        <div>
+        {/* ========================================================= */}
+        {/* SECTION 01: THE ALPHABET GRID */}
+        {/* ========================================================= */}
+        <div className="mb-20">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 01</div>
@@ -152,75 +170,259 @@ export default function LessonDetailPage() {
             </button>
           </div>
 
-          {/* Filters */}
           <div className="flex flex-wrap items-center gap-2 mb-8 text-[10px] font-bold tracking-widest uppercase">
-            <button 
-              onClick={() => setActiveFilter('ALL')}
-              className={`px-4 py-2 rounded border transition-colors ${activeFilter === 'ALL' ? 'bg-stone-900 text-white border-stone-900' : 'bg-transparent text-stone-500 border-stone-200 hover:border-stone-400'}`}
-            >
-              All 30
-            </button>
-            <button 
-              onClick={() => setActiveFilter('HIGH_UNASPIRATED')}
-              className={`px-4 py-2 rounded border transition-colors ${activeFilter === 'HIGH_UNASPIRATED' ? 'bg-stone-100 text-stone-900 border-stone-300' : 'bg-transparent text-stone-500 border-stone-200 hover:border-stone-400'}`}
-            >
-              High · Unaspirated
-            </button>
-            <button 
-              onClick={() => setActiveFilter('HIGH_ASPIRATED')}
-              className={`px-4 py-2 rounded border transition-colors ${activeFilter === 'HIGH_ASPIRATED' ? 'bg-stone-100 text-stone-900 border-stone-300' : 'bg-transparent text-stone-500 border-stone-200 hover:border-stone-400'}`}
-            >
-              High · Aspirated
-            </button>
-            <button 
-              onClick={() => setActiveFilter('LOW_SEMI_ASPIRATED')}
-              className={`px-4 py-2 rounded border transition-colors ${activeFilter === 'LOW_SEMI_ASPIRATED' ? 'bg-stone-100 text-stone-900 border-stone-300' : 'bg-transparent text-stone-500 border-stone-200 hover:border-stone-400'}`}
-            >
-              Low · Semi-Aspirated
-            </button>
-            <button 
-              onClick={() => setActiveFilter('LOW_NASAL')}
-              className={`px-4 py-2 rounded border transition-colors ${activeFilter === 'LOW_NASAL' ? 'bg-stone-100 text-stone-900 border-stone-300' : 'bg-transparent text-stone-500 border-stone-200 hover:border-stone-400'}`}
-            >
-              Low · Nasal
-            </button>
+            <button onClick={() => setActiveFilter('ALL')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'ALL' ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>All 30</button>
+            <button onClick={() => setActiveFilter('HIGH_UNASPIRATED')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'HIGH_UNASPIRATED' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>High · Unaspirated</button>
+            <button onClick={() => setActiveFilter('HIGH_ASPIRATED')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'HIGH_ASPIRATED' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>High · Aspirated</button>
+            <button onClick={() => setActiveFilter('LOW_SEMI_ASPIRATED')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'LOW_SEMI_ASPIRATED' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>Low · Semi-Aspirated</button>
+            <button onClick={() => setActiveFilter('LOW_NASAL')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'LOW_NASAL' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>Low · Nasal</button>
           </div>
 
-          {/* Grid Layout (Exactly like screenshot) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border-t border-l border-stone-200 bg-white">
             {filteredAlphabet.map((item, index) => (
               <button
                 key={index}
-                onClick={() => playAlphabetLetter(item.letter)}
-                disabled={playingLetter !== null}
-                className={`relative flex flex-col items-center justify-center p-8 border-b border-r border-stone-200 bg-white hover:bg-stone-50 transition-colors group h-40 ${TONE_COLORS[item.tone as ToneClass]} border-t-4`}
+                onClick={() => playAudio(item.letter)}
+                disabled={playingItem !== null}
+                className={`relative flex flex-col items-center justify-center p-8 border-b border-r border-stone-200 bg-white hover:bg-stone-50 transition-colors group h-40 border-t-4 ${TONE_COLORS[item.tone as ToneClass]}`}
               >
                 <div className="text-5xl font-serif text-stone-900 group-hover:scale-110 transition-transform mb-4">{item.letter}</div>
                 <div className="absolute bottom-4 left-4 text-left">
                   <div className="text-[11px] font-bold tracking-widest text-stone-800 uppercase leading-none mb-1">{item.phonetic}</div>
                   <div className="text-[10px] text-stone-400 tracking-widest leading-none">{item.wylie}</div>
                 </div>
-
-                {/* Loading spinner for audio */}
-                {playingLetter === item.letter && (
-                  <div className="absolute top-4 right-4">
-                    <Loader2 className="w-4 h-4 animate-spin text-stone-400" />
-                  </div>
+                {playingItem === item.letter && (
+                  <div className="absolute top-4 right-4"><Loader2 className="w-4 h-4 animate-spin text-stone-400" /></div>
                 )}
               </button>
             ))}
           </div>
 
-          {/* Legend */}
           <div className="flex flex-wrap items-center gap-6 mt-6 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
             <span className="text-stone-500">Legend</span>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-sky-500"></div> High · Unaspirated</div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-amber-500"></div> High · Aspirated</div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-500"></div> Low · Semi-aspirated</div>
-            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-rose-500"></div> Low · Nasal</div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#0ea5e9]"></div> High · Unaspirated</div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#f59e0b]"></div> High · Aspirated</div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#a855f7]"></div> Low · Semi-aspirated</div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#f43f5e]"></div> Low · Nasal</div>
           </div>
-          
         </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 02: UNDERSTANDING TONE */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02</div>
+            <h2 className="text-3xl font-serif text-stone-900">Understanding tone</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#0ea5e9]">
+              <div className="text-[10px] font-bold text-[#0ea5e9] bg-sky-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Unaspirated</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">6 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.</p>
+              <div className="flex gap-2 text-xl font-serif text-stone-800">
+                <span className="px-2 py-1 border border-stone-200 rounded">ཀ</span><span className="px-2 py-1 border border-stone-200 rounded">ཅ</span><span className="px-2 py-1 border border-stone-200 rounded">ཏ</span><span className="px-2 py-1 border border-stone-200 rounded">པ</span><span className="px-2 py-1 border border-stone-200 rounded">ཙ</span><span className="px-2 py-1 border border-stone-200 rounded">ཨ</span>
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#f59e0b]">
+              <div className="text-[10px] font-bold text-[#f59e0b] bg-amber-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Aspirated</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">8 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.</p>
+              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
+                <span className="px-2 py-1 border border-stone-200 rounded">ཁ</span><span className="px-2 py-1 border border-stone-200 rounded">ཆ</span><span className="px-2 py-1 border border-stone-200 rounded">ཐ</span><span className="px-2 py-1 border border-stone-200 rounded">ཕ</span><span className="px-2 py-1 border border-stone-200 rounded">ཚ</span><span className="px-2 py-1 border border-stone-200 rounded">ཤ</span><span className="px-2 py-1 border border-stone-200 rounded">ས</span><span className="px-2 py-1 border border-stone-200 rounded">ཧ</span>
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#a855f7]">
+              <div className="text-[10px] font-bold text-[#a855f7] bg-purple-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Semi-aspirated</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">12 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.</p>
+              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
+                <span className="px-2 py-1 border border-stone-200 rounded">ག</span><span className="px-2 py-1 border border-stone-200 rounded">ཇ</span><span className="px-2 py-1 border border-stone-200 rounded">ད</span><span className="px-2 py-1 border border-stone-200 rounded">བ</span><span className="px-2 py-1 border border-stone-200 rounded">ཛ</span><span className="px-2 py-1 border border-stone-200 rounded">ཝ</span><span className="px-2 py-1 border border-stone-200 rounded">ཞ</span><span className="px-2 py-1 border border-stone-200 rounded">ཟ</span><span className="px-2 py-1 border border-stone-200 rounded">འ</span><span className="px-2 py-1 border border-stone-200 rounded">ཡ</span><span className="px-2 py-1 border border-stone-200 rounded">ར</span><span className="px-2 py-1 border border-stone-200 rounded">ལ</span>
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#f43f5e]">
+              <div className="text-[10px] font-bold text-[#f43f5e] bg-rose-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Nasal</div>
+              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">4 letters</h3>
+              <p className="text-sm text-stone-600 mb-4">The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air.</p>
+              <div className="flex gap-2 text-xl font-serif text-stone-800">
+                <span className="px-2 py-1 border border-stone-200 rounded">ང</span><span className="px-2 py-1 border border-stone-200 rounded">ཉ</span><span className="px-2 py-1 border border-stone-200 rounded">ན</span><span className="px-2 py-1 border border-stone-200 rounded">མ</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 bg-amber-50/50 border border-amber-200 p-6 rounded-lg flex items-start gap-4">
+            <Info className="text-amber-500 shrink-0 mt-0.5" size={20} />
+            <p className="text-sm text-stone-700 leading-relaxed">
+              The lines drawn above and below the transliteration in traditional Tibetan textbooks indicate <strong>high tone</strong> and <strong>low tone</strong> respectively. Pay close attention to your teacher's pronunciation, and repeat each consonant the same way it is spoken.
+            </p>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 02B: ROOT SOUNDS */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02B</div>
+            <h2 className="text-3xl font-serif text-stone-900 mb-4">The three root sounds</h2>
+            <p className="text-[15px] text-stone-600 leading-relaxed max-w-3xl">
+              Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> — seed syllables that anchor a whole tone family. Learn these three, and the rest of the alphabet becomes a family tree rather than a list.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#0ea5e9]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Neutral Root · High Register</div>
+              <div className="flex items-end gap-2 mb-6">
+                <span className="text-6xl font-serif text-stone-900">ཨ</span><span className="text-lg font-serif italic text-stone-500 mb-1">a</span>
+              </div>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The neutral vowel carrier — a clean 'a' with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice.
+              </p>
+              <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
+              <div className="text-xl font-serif text-stone-800 tracking-widest">ཀ ཅ ཏ པ ཙ ཨ</div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f59e0b]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Aspirated Root · Breath</div>
+              <div className="flex items-end gap-2 mb-6">
+                <span className="text-6xl font-serif text-stone-900">ཧ</span><span className="text-lg font-serif italic text-stone-500 mb-1">ha</span>
+              </div>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The breath root — a light, aspirated 'h'. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air.
+              </p>
+              <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
+              <div className="text-xl font-serif text-stone-800 tracking-widest">ཁ ཆ ཐ ཕ ཚ ཤ ས ཧ</div>
+            </div>
+
+            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f43f5e]">
+              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Glottal Root · Voiced Flow</div>
+              <div className="flex items-end gap-2 mb-6">
+                <span className="text-6xl font-serif text-stone-900">འ</span><span className="text-lg font-serif italic text-stone-500 mb-1">'a</span>
+              </div>
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+                The glottal root — a soft, voiced 'a' that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཝ ཞ ཟ ཡ ར ལ), and the nasals (ང ཉ ན མ).
+              </p>
+              <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
+              <div className="text-xl font-serif text-stone-800 tracking-widest">ག ང ཇ ཉ ད ན བ མ ཛ ཝ ཞ ཟ འ ཡ ར ལ</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 03: GENDER CLASSIFICATION */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 03</div>
+            <h2 className="text-3xl font-serif text-stone-900 mb-4">Traditional gender classification</h2>
+            <p className="text-[15px] text-stone-600 leading-relaxed max-w-3xl">
+              The thirty consonants are traditionally divided into five gender groups depending on how much effort is required for their pronunciation.
+            </p>
+          </div>
+
+          <div className="border border-stone-200 rounded-lg overflow-hidden bg-white shadow-sm">
+            
+            {/* Header Row */}
+            <div className="grid grid-cols-12 bg-stone-50 border-b border-stone-200 p-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">
+              <div className="col-span-3">Gender</div>
+              <div className="col-span-3">Tibetan</div>
+              <div className="col-span-6">Consonants</div>
+            </div>
+
+            {/* Row 1: Masculine */}
+            <div className="grid grid-cols-12 border-b border-stone-200 bg-[#fff5f5] p-4 items-center">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-red-500"></div> Masculine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">ཕོ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-red-700">
+                <span className="bg-white border border-red-200 px-3 py-1 rounded">ཀ</span><span className="bg-white border border-red-200 px-3 py-1 rounded">ཅ</span><span className="bg-white border border-red-200 px-3 py-1 rounded">ཏ</span><span className="bg-white border border-red-200 px-3 py-1 rounded">པ</span><span className="bg-white border border-red-200 px-3 py-1 rounded">ཙ</span>
+              </div>
+            </div>
+
+            {/* Row 2: Neuter */}
+            <div className="grid grid-cols-12 border-b border-stone-200 bg-[#fffbeb] p-4 items-center">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-amber-400"></div> Neuter</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">མ་ནིང་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-amber-700">
+                <span className="bg-white border border-amber-200 px-3 py-1 rounded">ཁ</span><span className="bg-white border border-amber-200 px-3 py-1 rounded">ཆ</span><span className="bg-white border border-amber-200 px-3 py-1 rounded">ཐ</span><span className="bg-white border border-amber-200 px-3 py-1 rounded">ཕ</span><span className="bg-white border border-amber-200 px-3 py-1 rounded">ཚ</span>
+              </div>
+            </div>
+
+            {/* Row 3: Feminine */}
+            <div className="grid grid-cols-12 border-b border-stone-200 bg-[#f0fdfa] p-4 items-center">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-teal-500"></div> Feminine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">མོ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-teal-700">
+                <span className="bg-white border border-teal-200 px-3 py-1 rounded">ག</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ཇ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ད</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">བ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ཛ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ཝ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ཞ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ཟ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">འ</span><span className="bg-white border border-teal-200 px-3 py-1 rounded">ཡ</span>
+              </div>
+            </div>
+
+            {/* Row 4: Very Feminine */}
+            <div className="grid grid-cols-12 border-b border-stone-200 bg-[#faf5ff] p-4 items-center">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Very Feminine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">ཤིན་ཏུ་མོ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-purple-700">
+                <span className="bg-white border border-purple-200 px-3 py-1 rounded">ང</span><span className="bg-white border border-purple-200 px-3 py-1 rounded">ཉ</span><span className="bg-white border border-purple-200 px-3 py-1 rounded">ན</span><span className="bg-white border border-purple-200 px-3 py-1 rounded">མ</span>
+              </div>
+            </div>
+
+            {/* Row 5: Sub-Feminine */}
+            <div className="grid grid-cols-12 bg-[#eff6ff] p-4 items-center">
+              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Sub-Feminine</div>
+              <div className="col-span-3 font-serif text-lg text-stone-800">མོ་གཤམ་</div>
+              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-blue-700">
+                <span className="bg-white border border-blue-200 px-3 py-1 rounded">ར</span><span className="bg-white border border-blue-200 px-3 py-1 rounded">ལ</span><span className="bg-white border border-blue-200 px-3 py-1 rounded">ཤ</span><span className="bg-white border border-blue-200 px-3 py-1 rounded">ས</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SECTION 04: VOCABULARY */}
+        {/* ========================================================= */}
+        <div className="mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 04</div>
+              <h2 className="text-3xl font-serif text-stone-900">Nouns formed from the 30 consonants</h2>
+            </div>
+            <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded text-[10px] font-bold uppercase tracking-widest">
+              Vocabulary · མིང་ཚིག་
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {VOCABULARY.map((word, i) => (
+              <div key={i} className="bg-white border border-stone-200 p-5 rounded-xl shadow-sm hover:border-amber-300 transition-colors flex flex-col justify-between h-40 relative group">
+                
+                {/* Emoji Icon */}
+                <div className="text-2xl mb-2">{word.emoji}</div>
+                
+                {/* Text Content */}
+                <div>
+                  <div className="text-2xl font-serif text-stone-900 mb-1 leading-none">{word.tib}</div>
+                  <div className="text-[10px] font-medium text-stone-400 italic mb-1">{word.wylie}</div>
+                  <div className="text-sm font-bold text-stone-700">{word.eng}</div>
+                </div>
+
+                {/* Play Button */}
+                <button 
+                  onClick={() => playAudio(word.tib)}
+                  disabled={playingItem !== null}
+                  className="absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-600 rounded-lg transition-colors"
+                >
+                  {playingItem === word.tib ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} className="fill-amber-600" />}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
