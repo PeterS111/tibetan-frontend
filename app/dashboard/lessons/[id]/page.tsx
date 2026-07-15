@@ -103,7 +103,7 @@ export default function LessonDetailPage() {
   const [selectedLetter, setSelectedLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
 
   // Practice Section State
-  const [activePracticeTab, setActivePracticeTab] = useState('Match'); // Set Match as default to test
+  const [activePracticeTab, setActivePracticeTab] = useState('Match'); 
   
   // Flashcards State
   const [flashcardIdx, setFlashcardIdx] = useState(0);
@@ -145,6 +145,30 @@ export default function LessonDetailPage() {
       }
     } catch (e) { console.error("Audio playback failed", e); }
     setPlayingItem(null);
+  };
+
+  // Generates a soft "boop" error sound natively using Web Audio API
+  const playErrorBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+      
+      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {
+      console.error("Audio beep failed", e);
+    }
   };
 
   // --- Flashcard Logic ---
@@ -196,7 +220,15 @@ export default function LessonDetailPage() {
 
   const handleMatchSelect = (targetLetter: string, selectedOptionLetter: string) => {
     if (matchAnswers[targetLetter]) return; 
-    playAudio(selectedOptionLetter);
+    
+    const isCorrect = targetLetter === selectedOptionLetter;
+    
+    if (isCorrect) {
+      playAudio(selectedOptionLetter);
+    } else {
+      playErrorBeep();
+    }
+    
     setMatchAnswers(prev => ({ ...prev, [targetLetter]: selectedOptionLetter }));
   };
 
@@ -511,6 +543,7 @@ export default function LessonDetailPage() {
 
           <div className="bg-[#fcfaf5] border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
             
+            {/* TABS */}
             <div className="flex flex-wrap items-center justify-between border-b border-stone-200 bg-white">
               <div className="flex overflow-x-auto custom-scrollbar w-full">
                 {[
@@ -627,7 +660,11 @@ export default function LessonDetailPage() {
                         onClick={() => {
                           if (!lsSelectedLetter) {
                             setLsSelectedLetter(opt.letter);
-                            if (opt.letter === lsCorrectLetter?.letter) playAudio(opt.letter);
+                            if (opt.letter === lsCorrectLetter?.letter) {
+                               playAudio(opt.letter); 
+                            } else {
+                               playErrorBeep();
+                            }
                           }
                         }}
                         disabled={lsSelectedLetter !== null}
@@ -680,7 +717,7 @@ export default function LessonDetailPage() {
                             btnClass = "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default";
                           }
                           
-                          const isCurrentlyPlaying = playingItem === opt.letter && isSelected;
+                          const isCurrentlyPlaying = playingItem === opt.letter && isSelected && isCorrect;
 
                           return (
                             <button 
