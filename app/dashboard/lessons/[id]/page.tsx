@@ -147,6 +147,19 @@ export default function LessonDetailPage() {
     setPlayingItem(null);
   };
 
+  // --- Flashcard Logic ---
+  const handleNextCard = () => {
+    setIsCardFlipped(false);
+    setFlashcardIdx((prev) => (prev + 1) % TIBETAN_ALPHABET.length);
+  };
+
+  const handlePrevCard = () => {
+    setIsCardFlipped(false);
+    setFlashcardIdx((prev) => (prev - 1 + TIBETAN_ALPHABET.length) % TIBETAN_ALPHABET.length);
+  };
+
+  const currentFlashcard = TIBETAN_ALPHABET[flashcardIdx];
+
   // --- Listen & Select Logic ---
   const generateListenSelectRound = () => {
     const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
@@ -163,14 +176,12 @@ export default function LessonDetailPage() {
   // --- Match Logic ---
   const generateMatchRound = () => {
     const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
-    const targets = shuffled.slice(0, 6); // Generate 6 rows
+    const targets = shuffled.slice(0, 6); 
     
     const newQuestions = targets.map(target => {
-      // Pick 2 random distractors
       const distractors = TIBETAN_ALPHABET.filter(item => item.letter !== target.letter)
                                           .sort(() => 0.5 - Math.random())
                                           .slice(0, 2);
-      // Combine and shuffle options
       const options = [target, ...distractors].sort(() => 0.5 - Math.random());
       return { target, options };
     });
@@ -184,12 +195,8 @@ export default function LessonDetailPage() {
   }, [activePracticeTab]);
 
   const handleMatchSelect = (targetLetter: string, selectedOptionLetter: string) => {
-    if (matchAnswers[targetLetter]) return; // Already answered
-    
-    // Play the audio for the button they clicked
+    if (matchAnswers[targetLetter]) return; 
     playAudio(selectedOptionLetter);
-    
-    // Record the answer
     setMatchAnswers(prev => ({ ...prev, [targetLetter]: selectedOptionLetter }));
   };
 
@@ -504,7 +511,6 @@ export default function LessonDetailPage() {
 
           <div className="bg-[#fcfaf5] border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
             
-            {/* TABS */}
             <div className="flex flex-wrap items-center justify-between border-b border-stone-200 bg-white">
               <div className="flex overflow-x-auto custom-scrollbar w-full">
                 {[
@@ -527,7 +533,7 @@ export default function LessonDetailPage() {
 
             {/* TAB CONTENT: FLASHCARDS */}
             {activePracticeTab === 'Flashcards' && (
-              <div className="p-6 md:p-12 flex flex-col items-center">
+              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
                 <div className="w-full max-w-2xl flex justify-between items-center mb-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
                   <div className="flex items-center gap-2">
                     <span className="bg-stone-900 text-white px-2 py-1 rounded">CONSONANTS · 30</span>
@@ -645,7 +651,7 @@ export default function LessonDetailPage() {
               </div>
             )}
 
-            {/* TAB CONTENT: MATCH (NEW) */}
+            {/* TAB CONTENT: MATCH */}
             {activePracticeTab === 'Match' && (
               <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
                 <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Match each Tibetan consonant with its pronunciation.</p>
