@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { 
   ChevronRight, RefreshCcw, Play, Loader2, Info, 
-  Layers, PenTool, Headphones, Shuffle, ToggleLeft, ArrowLeft, ArrowRight, CheckCircle2, X, PlusSquare 
+  Layers, PenTool, Headphones, Shuffle, ArrowLeft, ArrowRight, CheckCircle2, X, PlusSquare, Volume2, XCircle
 } from "lucide-react";
 
 type ToneClass = 'HIGH_UNASPIRATED' | 'HIGH_ASPIRATED' | 'LOW_SEMI_ASPIRATED' | 'LOW_NASAL';
@@ -71,7 +71,6 @@ const TONE_COLORS = {
   LOW_NASAL: "border-t-[#f43f5e]"
 };
 
-// Data for Drawer
 const TONE_INFO: Record<string, { label: string, desc: string, bg: string, text: string }> = {
   HIGH_UNASPIRATED: { label: "High · Unaspirated", desc: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.", bg: "bg-sky-50 border-sky-100", text: "text-sky-700" },
   HIGH_ASPIRATED: { label: "High · Aspirated", desc: "Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.", bg: "bg-amber-50 border-amber-100", text: "text-amber-700" },
@@ -91,15 +90,38 @@ const GENDER_INFO: Record<string, { bg: string, text: string, dot: string }> = {
 export default function LessonDetailPage() {
   const { getToken } = useAuth();
   
+  // Section 1 State
   const [activeFilter, setActiveFilter] = useState<ToneClass | 'ALL'>('ALL');
   const [playingItem, setPlayingItem] = useState<string | null>(null);
   
-  // NEW: State for Drawer
+  // Drawer State
   const [selectedLetter, setSelectedLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
 
+  // Practice Section State
+  const [activePracticeTab, setActivePracticeTab] = useState('Listen & Select');
+  
+  // Flashcards State
   const [flashcardIdx, setFlashcardIdx] = useState(0);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
-  const [activePracticeTab, setActivePracticeTab] = useState('Flashcards');
+
+  // Listen & Select State
+  const [lsOptions, setLsOptions] = useState<typeof TIBETAN_ALPHABET>([]);
+  const [lsCorrectLetter, setLsCorrectLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
+  const [lsSelectedLetter, setLsSelectedLetter] = useState<string | null>(null);
+
+  const generateListenSelectRound = () => {
+    const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
+    const selected4 = shuffled.slice(0, 4);
+    setLsOptions(selected4);
+    setLsCorrectLetter(selected4[Math.floor(Math.random() * 4)]);
+    setLsSelectedLetter(null);
+  };
+
+  useEffect(() => {
+    if (activePracticeTab === 'Listen & Select' && lsOptions.length === 0) {
+      generateListenSelectRound();
+    }
+  }, [activePracticeTab]);
 
   const playAudio = async (text: string) => {
     if (playingItem) return;
@@ -222,10 +244,7 @@ export default function LessonDetailPage() {
             {filteredAlphabet.map((item, index) => (
               <button
                 key={index}
-                onClick={() => {
-                  playAudio(item.letter);
-                  setSelectedLetter(item);
-                }}
+                onClick={() => { playAudio(item.letter); setSelectedLetter(item); }}
                 className={`relative flex flex-col items-center justify-center p-8 border-b border-r border-stone-200 transition-colors group h-40 border-t-4 ${TONE_COLORS[item.tone as ToneClass]} ${playingItem === item.letter || selectedLetter?.letter === item.letter ? 'bg-stone-100' : 'bg-white hover:bg-stone-50'}`}
               >
                 <div className="text-5xl font-serif text-stone-900 group-hover:scale-110 transition-transform mb-4">{item.letter}</div>
@@ -233,9 +252,7 @@ export default function LessonDetailPage() {
                   <div className="text-[11px] font-bold tracking-widest text-stone-800 uppercase leading-none mb-1">{item.phonetic}</div>
                   <div className="text-[10px] text-stone-400 tracking-widest leading-none">{item.wylie}</div>
                 </div>
-                {playingItem === item.letter && (
-                  <div className="absolute top-4 right-4"><Loader2 className="w-4 h-4 animate-spin text-stone-400" /></div>
-                )}
+                {playingItem === item.letter && <div className="absolute top-4 right-4"><Loader2 className="w-4 h-4 animate-spin text-stone-400" /></div>}
               </button>
             ))}
           </div>
@@ -316,7 +333,6 @@ export default function LessonDetailPage() {
                 The neutral vowel carrier — a clean 'a' with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice.
               </p>
             </div>
-            {/* Omitted the other two roots here for brevity, but same onClick logic applies */}
           </div>
         </div>
 
@@ -394,6 +410,41 @@ export default function LessonDetailPage() {
         </div>
 
         {/* ========================================================= */}
+        {/* SECTION 04: VOCABULARY */}
+        {/* ========================================================= */}
+        <div className="mb-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 04</div>
+              <h2 className="text-3xl font-serif text-stone-900">Nouns formed from the 30 consonants</h2>
+            </div>
+            <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded text-[10px] font-bold uppercase tracking-widest">
+              Vocabulary · མིང་ཚིག་
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {VOCABULARY.map((word, i) => (
+              <div key={i} className={`bg-white border p-5 rounded-xl shadow-sm transition-colors flex flex-col justify-between h-40 relative group ${playingItem === word.tib ? 'border-amber-400 bg-amber-50/30' : 'border-stone-200 hover:border-amber-300'}`}>
+                <div className="text-2xl mb-2">{word.emoji}</div>
+                <div>
+                  <div className="text-2xl font-serif text-stone-900 mb-1 leading-none">{word.tib}</div>
+                  <div className="text-[10px] font-medium text-stone-400 italic mb-1">{word.wylie}</div>
+                  <div className="text-sm font-bold text-stone-700">{word.eng}</div>
+                </div>
+                <button 
+                  onClick={() => playAudio(word.tib)}
+                  disabled={playingItem !== null}
+                  className={`absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center border rounded-lg transition-colors ${playingItem === word.tib ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600'}`}
+                >
+                  {playingItem === word.tib ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} className="fill-current" />}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ========================================================= */}
         {/* SECTION 05: PRACTICE & EXERCISES */}
         {/* ========================================================= */}
         <div className="mb-20">
@@ -403,13 +454,16 @@ export default function LessonDetailPage() {
           </div>
 
           <div className="bg-[#fcfaf5] border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
+            
+            {/* UPDATED TABS */}
             <div className="flex flex-wrap items-center justify-between border-b border-stone-200 bg-white">
-              <div className="flex overflow-x-auto custom-scrollbar">
+              <div className="flex overflow-x-auto custom-scrollbar w-full">
                 {[
                   { name: 'Flashcards', icon: Layers },
                   { name: 'Trace', icon: PenTool },
                   { name: 'Listen & Select', icon: Headphones },
-                  { name: 'Match', icon: Shuffle }
+                  { name: 'Match', icon: Shuffle },
+                  { name: 'Memory Review', icon: RefreshCcw }
                 ].map((tab) => (
                   <button 
                     key={tab.name}
@@ -422,70 +476,157 @@ export default function LessonDetailPage() {
               </div>
             </div>
 
-            <div className="p-6 md:p-12 flex flex-col items-center">
-              <div className="w-full max-w-2xl flex justify-between items-center mb-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                <div className="flex items-center gap-2">
-                  <span className="bg-stone-900 text-white px-2 py-1 rounded">CONSONANTS · 30</span>
-                </div>
-                <span>Card {flashcardIdx + 1} of 30</span>
-              </div>
-
-              <div 
-                onClick={() => setIsCardFlipped(!isCardFlipped)}
-                className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group"
-              >
-                {!isCardFlipped ? (
-                  <div className="text-7xl md:text-9xl font-serif text-stone-900 group-hover:scale-105 transition-transform">
-                    {currentFlashcard.letter}
+            {/* TAB CONTENT: FLASHCARDS */}
+            {activePracticeTab === 'Flashcards' && (
+              <div className="p-6 md:p-12 flex flex-col items-center">
+                <div className="w-full max-w-2xl flex justify-between items-center mb-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-stone-900 text-white px-2 py-1 rounded">CONSONANTS · 30</span>
                   </div>
-                ) : (
-                  <div className="text-center animate-in fade-in zoom-in-95 duration-200">
-                    <div className="text-4xl md:text-5xl font-bold text-stone-900 mb-2">{currentFlashcard.phonetic}</div>
-                    <div className="text-lg md:text-xl text-stone-400 tracking-widest">{currentFlashcard.wylie}</div>
+                  <span>Card {flashcardIdx + 1} of 30</span>
+                </div>
+
+                <div 
+                  onClick={() => setIsCardFlipped(!isCardFlipped)}
+                  className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group"
+                >
+                  {!isCardFlipped ? (
+                    <div className="text-7xl md:text-9xl font-serif text-stone-900 group-hover:scale-105 transition-transform">
+                      {currentFlashcard.letter}
+                    </div>
+                  ) : (
+                    <div className="text-center animate-in fade-in zoom-in-95 duration-200">
+                      <div className="text-4xl md:text-5xl font-bold text-stone-900 mb-2">{currentFlashcard.phonetic}</div>
+                      <div className="text-lg md:text-xl text-stone-400 tracking-widest">{currentFlashcard.wylie}</div>
+                    </div>
+                  )}
+                  <div className="absolute bottom-4 right-6 text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-stone-400 transition-colors">
+                    Tap card to flip
+                  </div>
+                </div>
+
+                <div className="w-full max-w-2xl flex items-center justify-between mt-8">
+                  <button onClick={handlePrevCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
+                    <ArrowLeft size={16} /> Previous
+                  </button>
+                  <button 
+                    onClick={() => playAudio(currentFlashcard.letter)}
+                    disabled={playingItem !== null}
+                    className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors"
+                  >
+                    {playingItem === currentFlashcard.letter ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
+                    Play sound
+                  </button>
+                  <button onClick={handleNextCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
+                    Next <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: LISTEN & SELECT */}
+            {activePracticeTab === 'Listen & Select' && (
+              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
+                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Listen to the sound and choose the correct consonant.</p>
+
+                <button
+                  onClick={() => lsCorrectLetter && playAudio(lsCorrectLetter.letter)}
+                  disabled={playingItem !== null}
+                  className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 mb-12 shadow-md transition-colors"
+                >
+                  {playingItem === lsCorrectLetter?.letter ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
+                  PLAY SOUND
+                </button>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
+                  {lsOptions.map((opt) => {
+                    const isSelected = lsSelectedLetter === opt.letter;
+                    const isCorrect = lsCorrectLetter?.letter === opt.letter;
+                    const showCorrect = isSelected && isCorrect;
+                    const showWrong = isSelected && !isCorrect;
+
+                    let borderClass = "border-stone-200 hover:border-amber-300";
+                    let bgClass = "bg-white hover:bg-stone-50 cursor-pointer";
+                    let textClass = "text-stone-900";
+
+                    if (showCorrect) {
+                      borderClass = "border-emerald-500 ring-2 ring-emerald-500/20";
+                      bgClass = "bg-emerald-50";
+                      textClass = "text-emerald-700";
+                    } else if (showWrong) {
+                      borderClass = "border-rose-500";
+                      bgClass = "bg-rose-50";
+                      textClass = "text-rose-700";
+                    } else if (lsSelectedLetter && isCorrect) {
+                      borderClass = "border-emerald-300 border-dashed";
+                      bgClass = "bg-emerald-50/50";
+                      textClass = "text-emerald-600";
+                    } else if (lsSelectedLetter) {
+                      // Dim unselected options after a guess
+                      borderClass = "border-stone-100 opacity-50";
+                      bgClass = "bg-stone-50 cursor-default";
+                    }
+
+                    return (
+                      <button
+                        key={opt.letter}
+                        onClick={() => {
+                          if (!lsSelectedLetter) {
+                            setLsSelectedLetter(opt.letter);
+                            if (opt.letter === lsCorrectLetter?.letter) {
+                               playAudio(opt.letter); // Replay correct sound as validation
+                            }
+                          }
+                        }}
+                        disabled={lsSelectedLetter !== null}
+                        className={`relative aspect-square flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}
+                      >
+                         <span className={`text-6xl sm:text-7xl font-serif transition-colors ${textClass}`}>{opt.letter}</span>
+                         {/* NO PHONETICS RENDERED HERE PER REQUEST */}
+                         
+                         {showCorrect && <div className="absolute top-4 right-4 text-emerald-500 animate-in zoom-in"><CheckCircle2 size={24}/></div>}
+                         {showWrong && <div className="absolute top-4 right-4 text-rose-500 animate-in zoom-in"><XCircle size={24}/></div>}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Next Round Button appears after guessing */}
+                {lsSelectedLetter && (
+                  <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
+                    <button 
+                      onClick={generateListenSelectRound} 
+                      className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+                    >
+                      Next Round <ArrowRight size={18} />
+                    </button>
                   </div>
                 )}
-                <div className="absolute bottom-4 right-6 text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-stone-400 transition-colors">
-                  Tap card to flip
-                </div>
               </div>
-
-              <div className="w-full max-w-2xl flex items-center justify-between mt-8">
-                <button onClick={handlePrevCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
-                  <ArrowLeft size={16} /> Previous
-                </button>
-                <button 
-                  onClick={() => playAudio(currentFlashcard.letter)}
-                  disabled={playingItem !== null}
-                  className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors"
-                >
-                  {playingItem === currentFlashcard.letter ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
-                  Play sound
-                </button>
-                <button onClick={handleNextCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
-                  Next <ArrowRight size={16} />
-                </button>
+            )}
+            
+            {/* OTHER TABS (Placeholders for now) */}
+            {(activePracticeTab === 'Trace' || activePracticeTab === 'Match' || activePracticeTab === 'Memory Review') && (
+              <div className="p-12 text-center text-stone-400 font-medium">
+                {activePracticeTab} exercises are currently under development.
               </div>
-            </div>
+            )}
+            
           </div>
         </div>
-
       </div>
 
       {/* ========================================================= */}
-      {/* SLIDE-OVER DRAWER (NEW) */}
+      {/* SLIDE-OVER DRAWER */}
       {/* ========================================================= */}
       {selectedLetter && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-stone-900/30 backdrop-blur-sm transition-opacity" 
             onClick={() => setSelectedLetter(null)}
           ></div>
           
-          {/* Panel */}
           <div className="relative w-full max-w-md bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-right-8 duration-300 border-l border-[#e8e4d9]">
-            
-            {/* Drawer Header */}
             <div className="px-6 py-4 border-b border-[#e8e4d9] flex items-center justify-between bg-white">
               <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">
                 Consonant · {selectedLetter.phonetic}
@@ -495,10 +636,7 @@ export default function LessonDetailPage() {
               </button>
             </div>
 
-            {/* Drawer Content */}
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-              
-              {/* Big Letter & Audio */}
               <div className="flex flex-col items-center justify-center mb-10">
                 <div className="text-[8rem] font-serif text-stone-900 leading-none mb-6">
                   {selectedLetter.letter}
@@ -516,7 +654,6 @@ export default function LessonDetailPage() {
                 </div>
               </div>
 
-              {/* Data Cards */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className={`p-4 rounded-xl border ${TONE_INFO[selectedLetter.tone].bg}`}>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Tone</div>
@@ -534,7 +671,6 @@ export default function LessonDetailPage() {
                 </div>
               </div>
 
-              {/* Pronunciation & Notes */}
               <div className="mb-8">
                 <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Pronunciation</div>
                 <p className="text-sm text-stone-700 leading-relaxed">
@@ -548,10 +684,8 @@ export default function LessonDetailPage() {
                   {selectedLetter.note}
                 </p>
               </div>
-
             </div>
 
-            {/* Drawer Footer Actions */}
             <div className="p-6 border-t border-stone-200 bg-white grid grid-cols-2 gap-3">
               <button 
                 onClick={() => playAudio(selectedLetter.letter)}
@@ -569,23 +703,19 @@ export default function LessonDetailPage() {
       )}
 
       {/* ========================================================= */}
-      {/* STICKY FOOTER (Mark Complete) */}
+      {/* STICKY FOOTER */}
       {/* ========================================================= */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-[#fdfbf7] border-t border-stone-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
-          
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
             <ArrowLeft size={16} /> All lessons
           </Link>
-
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors">
             <CheckCircle2 size={18} /> Mark lesson complete
           </button>
-
           <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
             Next: The Four Vowels <ArrowRight size={16} />
           </Link>
-          
         </div>
       </div>
 
