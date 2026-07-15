@@ -32,8 +32,6 @@ export default function MyLessonsPage() {
           const data = await res.json();
           
           if (isMounted) {
-            // FIX: Only update if modules actually exist in the response.
-            // This prevents the screen from blanking out on a transient 500 or 401 error.
             if (data.modules && Array.isArray(data.modules)) {
               setModules(data.modules);
             }
@@ -73,9 +71,8 @@ export default function MyLessonsPage() {
       <div className="space-y-4">
         {modules.map((module) => {
           
-          // Construct the auto-launch URL for the AI chat
-          const topicString = `Module ${parseInt(module.module_id)}: ${module.title}`;
-          const chatUrl = `/dashboard/chat?mode=study&topic=${encodeURIComponent(topicString)}`;
+          // NEW: Route to the interactive textbook lesson page instead of the AI Chat!
+          const lessonUrl = `/dashboard/lessons/${module.module_id}`;
 
           // COMPLETED STATE
           if (module.status === "completed") {
@@ -92,7 +89,7 @@ export default function MyLessonsPage() {
                   <p className="text-stone-500 text-sm mb-3">{module.description}</p>
                 </div>
                 <div className="flex items-center mt-4 md:mt-0">
-                  <Link href={chatUrl} className="px-5 py-2 border border-stone-200 text-stone-600 font-bold text-sm rounded-xl hover:bg-stone-50 transition flex items-center gap-2">
+                  <Link href={lessonUrl} className="px-5 py-2 border border-stone-200 text-stone-600 font-bold text-sm rounded-xl hover:bg-stone-50 transition flex items-center gap-2">
                     <Check size={16} /> Review
                   </Link>
                 </div>
@@ -128,7 +125,7 @@ export default function MyLessonsPage() {
                 </div>
               </div>
               <div className="flex items-center mt-4 md:mt-0">
-                <Link href={chatUrl} className="px-6 py-2.5 bg-amber-500 text-stone-900 font-bold text-sm rounded-xl hover:bg-amber-400 transition flex items-center gap-2 shadow-sm">
+                <Link href={lessonUrl} className="px-6 py-2.5 bg-amber-500 text-stone-900 font-bold text-sm rounded-xl hover:bg-amber-400 transition flex items-center gap-2 shadow-sm">
                   <Play size={16} className="fill-stone-900" /> {module.progress > 0 ? 'Continue' : 'Start Module'}
                 </Link>
               </div>
