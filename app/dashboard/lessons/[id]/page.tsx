@@ -147,7 +147,6 @@ export default function LessonDetailPage() {
     setPlayingItem(null);
   };
 
-  // Generates a soft "boop" error sound natively using Web Audio API
   const playErrorBeep = () => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -219,10 +218,18 @@ export default function LessonDetailPage() {
   }, [activePracticeTab]);
 
   const handleMatchSelect = (targetLetter: string, selectedOptionLetter: string) => {
-    if (matchAnswers[targetLetter]) return; 
-    
     const isCorrect = targetLetter === selectedOptionLetter;
     
+    // If they already answered this row...
+    if (matchAnswers[targetLetter]) {
+      // Allow them to click the CORRECT answer to hear the sound, but do not change the saved answer state
+      if (isCorrect) {
+        playAudio(selectedOptionLetter);
+      }
+      return; 
+    }
+    
+    // First time answering this row
     if (isCorrect) {
       playAudio(selectedOptionLetter);
     } else {
@@ -705,25 +712,32 @@ export default function LessonDetailPage() {
                         {q.options.map(opt => {
                           const isSelected = matchAnswers[q.target.letter] === opt.letter;
                           const isCorrect = q.target.letter === opt.letter;
+                          const isAnswered = !!matchAnswers[q.target.letter];
                           
                           let btnClass = "border-stone-200 text-stone-600 hover:bg-stone-50 cursor-pointer";
-                          if (isSelected && isCorrect) {
-                            btnClass = "border-emerald-500 bg-emerald-50 text-emerald-700 cursor-default";
-                          } else if (isSelected && !isCorrect) {
-                            btnClass = "border-rose-500 bg-rose-50 text-rose-700 cursor-default";
-                          } else if (matchAnswers[q.target.letter] && isCorrect) {
-                            btnClass = "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600 cursor-default";
-                          } else if (matchAnswers[q.target.letter]) {
-                            btnClass = "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default";
-                          }
                           
-                          const isCurrentlyPlaying = playingItem === opt.letter && isSelected && isCorrect;
+                          if (isAnswered) {
+                            if (isCorrect) {
+                              // Make the correct answer highly visible and CLICKABLE so they can hear it
+                              if (isSelected) {
+                                btnClass = "border-emerald-500 bg-emerald-50 text-emerald-700 cursor-pointer hover:bg-emerald-100 hover:border-emerald-500 shadow-sm";
+                              } else {
+                                btnClass = "border-emerald-400 border-dashed bg-emerald-50/50 text-emerald-600 cursor-pointer hover:bg-emerald-100 hover:border-solid hover:border-emerald-500";
+                              }
+                            } else if (isSelected) {
+                              btnClass = "border-rose-500 bg-rose-50 text-rose-700 cursor-default";
+                            } else {
+                              btnClass = "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default";
+                            }
+                          }
+
+                          const isCurrentlyPlaying = playingItem === opt.letter && isCorrect;
 
                           return (
                             <button 
                               key={opt.letter}
                               onClick={() => handleMatchSelect(q.target.letter, opt.letter)}
-                              disabled={!!matchAnswers[q.target.letter] || playingItem !== null}
+                              disabled={playingItem !== null || (isAnswered && !isCorrect)}
                               className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[3rem] ${btnClass}`}
                             >
                               {isCurrentlyPlaying ? <Loader2 size={12} className="animate-spin absolute" /> : opt.phonetic}
