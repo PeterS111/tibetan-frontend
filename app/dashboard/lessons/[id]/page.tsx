@@ -43,47 +43,28 @@ const TIBETAN_ALPHABET = [
   { letter: "ཨ", phonetic: "A", wylie: "[a]", tone: "HIGH_UNASPIRATED", gender: "Root", note: "The high-toned neutral vowel carrier." }
 ];
 
-// Custom, minimalist SVGs for our vocabulary
-const VocabIcons = {
-  Snow: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-sky-400"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/></svg>,
-  Me: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-600"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/></svg>,
-  Cook: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-amber-600"><path d="M6 13.87A4 4 0 017.41 6a5.11 5.11 0 0110.5 0A4 4 0 0118 13.87V22H6Z"/></svg>,
-  Fish: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-blue-500"><path d="M22 12c-4-4-10-4-14 0s-4 10 0 14c4 4 10 4 14 0 0-4-4-6-4-6l4-8z" transform="translate(-4 -8)"/><circle cx="17" cy="11" r="1"/></svg>,
-  Cigarette: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-400"><rect x="2" y="10" width="20" height="4" rx="1"/><path d="M18 10v4M6 6c0-2 2-2 2-4M10 8c0-3 3-3 3-6"/></svg>,
-  Mother: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-rose-500"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/><path d="M16 11s-1.5-2-4-2-4 2-4 2"/></svg>,
-  Illness: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-emerald-600"><path d="M14 4v10.54a4 4 0 11-4 0V4a2 2 0 014 0z"/><path d="M12 16v.01"/></svg>,
-  Meat: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-red-500"><path d="M18.5 4.5a4 4 0 00-5.5 0L6 11.5a4 4 0 105.5 5.5l7-7a4 4 0 000-5.5z"/><path d="M12 12l2.5-2.5"/></svg>,
-  Parents: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-indigo-500"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
-  Beard: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-700"><path d="M5 10c0 5.5 3.5 10 7 10s7-4.5 7-10M9 10c0 1.5 1.5 3 3 3s3-1.5 3-3"/></svg>,
-  Deer: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-amber-700"><path d="M12 10l-3 4-2-1-2 4h14l-2-4-2 1-3-4z"/><path d="M12 10V4M12 7h3M12 5h-2"/></svg>,
-  Mouth: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-rose-600"><path d="M2 12s5-4 10-4 10 4 10 4-5 6-10 6-10-6-10-6z"/><path d="M2 12s5 2 10 2 10-2 10-2"/></svg>,
-  Goat: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-500"><path d="M14 6l2-4M10 6L8 2M12 6a4 4 0 014 4v2l-2 4h-4l-2-4v-2a4 4 0 014-4zM12 16v3"/></svg>,
-  Tea: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-teal-600"><path d="M5 8h12v5a6 6 0 01-12 0V8z"/><path d="M17 10h2a2 2 0 010 4h-2M8 4v1M12 4v1M16 4v1"/></svg>,
-  Food: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-500"><circle cx="12" cy="12" r="7"/><path d="M12 9v6M9 12h6"/></svg>,
-  Fisherman: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-blue-600"><path d="M4 22L18 2"/><path d="M18 2l2 2-2 12-2-2"/></svg>,
-  Chilli: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-red-600"><path d="M18 4c0 4-2 8-6 10s-8 6-8 6 4-6 6-8 10-6 10-6-2-2-2-2zM18 4l2-2"/></svg>,
-  Pillar: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-amber-800"><path d="M6 2v20M18 2v20M4 4h16M4 20h16M10 2v20M14 2v20"/></svg>
-};
+
+
 
 const VOCABULARY = [
-  { tib: "ཁ་བ་", wylie: "kha-wa", eng: "snow", Icon: VocabIcons.Snow },
-  { tib: "ང་", wylie: "nga", eng: "I / me", Icon: VocabIcons.Me },
-  { tib: "ཇ་མ་", wylie: "ja-ma", eng: "cook", Icon: VocabIcons.Cook },
-  { tib: "ཉ་", wylie: "nya", eng: "fish", Icon: VocabIcons.Fish },
-  { tib: "ཐ་མ་", wylie: "tha-ma", eng: "cigarette", Icon: VocabIcons.Cigarette },
-  { tib: "ཨ་མ་", wylie: "a-ma", eng: "mother", Icon: VocabIcons.Mother },
-  { tib: "ན་ཚ་", wylie: "na-tsha", eng: "illness", Icon: VocabIcons.Illness },
-  { tib: "ཤ་", wylie: "sha", eng: "meat", Icon: VocabIcons.Meat },
-  { tib: "ཕ་མ་", wylie: "pha-ma", eng: "parents", Icon: VocabIcons.Parents },
-  { tib: "ཨ་ར་", wylie: "a-ra", eng: "beard", Icon: VocabIcons.Beard },
-  { tib: "ཤ་བ་", wylie: "sha-wa", eng: "deer", Icon: VocabIcons.Deer },
-  { tib: "ཁ་", wylie: "kha", eng: "mouth", Icon: VocabIcons.Mouth },
-  { tib: "ར་", wylie: "ra", eng: "goat", Icon: VocabIcons.Goat },
-  { tib: "ཇ་", wylie: "ja", eng: "tea", Icon: VocabIcons.Tea },
-  { tib: "ཟ་མ་", wylie: "za-ma", eng: "food", Icon: VocabIcons.Food },
-  { tib: "ཉ་པ་", wylie: "nya-pa", eng: "fisherman", Icon: VocabIcons.Fisherman },
-  { tib: "ཁ་ཚ་མ་", wylie: "kha-tsha-ma", eng: "chilli", Icon: VocabIcons.Chilli },
-  { tib: "ཀ་བ་", wylie: "ka-wa", eng: "pillar", Icon: VocabIcons.Pillar },
+  { tib: "ཁ་བ་", wylie: "kha-wa", eng: "snow", emoji: "❄️" },
+  { tib: "ང་", wylie: "nga", eng: "I / me", emoji: "🙋" },
+  { tib: "ཇ་མ་", wylie: "ja-ma", eng: "cook", emoji: "👨‍🍳" },
+  { tib: "ཉ་", wylie: "nya", eng: "fish", emoji: "🐟" },
+  { tib: "ཐ་མ་", wylie: "tha-ma", eng: "cigarette", emoji: "🚬" },
+  { tib: "ཨ་མ་", wylie: "a-ma", eng: "mother", emoji: "👩" },
+  { tib: "ན་ཚ་", wylie: "na-tsha", eng: "illness", emoji: "🏥" },
+  { tib: "ཤ་", wylie: "sha", eng: "meat", emoji: "🍖" },
+  { tib: "ཕ་མ་", wylie: "pha-ma", eng: "parents", emoji: "👨‍👩‍👧" },
+  { tib: "ཨ་ར་", wylie: "a-ra", eng: "beard", emoji: "🧔" },
+  { tib: "ཤ་བ་", wylie: "sha-wa", eng: "deer", emoji: "🦌" },
+  { tib: "ཁ་", wylie: "kha", eng: "mouth", emoji: "👄" },
+  { tib: "ར་", wylie: "ra", eng: "goat", emoji: "🐐" },
+  { tib: "ཇ་", wylie: "ja", eng: "tea", emoji: "🍵" },
+  { tib: "ཟ་མ་", wylie: "za-ma", eng: "food", emoji: "🍲" },
+  { tib: "ཉ་པ་", wylie: "nya-pa", eng: "fisherman", emoji: "🎣" },
+  { tib: "ཁ་ཚ་མ་", wylie: "kha-tsha-ma", eng: "chilli", emoji: "🌶️" },
+  { tib: "ཀ་བ་", wylie: "ka-wa", eng: "pillar", emoji: "🏛️" },
 ];
 
 // Unified array for exercises (48 items)
@@ -92,16 +73,16 @@ const COMBINED_PRACTICE_ITEMS = [
     id: `letter-${item.letter}`,
     text: item.letter,
     wylie: item.wylie,
-    hint: item.phonetic, 
-    Icon: null, 
+    hint: item.phonetic, // Hint is phonetics for letters
+    emoji: '',
     type: 'letter'
   })),
   ...VOCABULARY.map(item => ({
     id: `vocab-${item.tib}`,
     text: item.tib,
     wylie: item.wylie,
-    hint: item.eng, 
-    Icon: item.Icon, 
+    hint: item.eng, // Hint is English translation for vocab
+    emoji: item.emoji,
     type: 'vocab'
   }))
 ];
@@ -116,7 +97,7 @@ const TONE_COLORS = {
 const TONE_INFO: Record<string, { label: string, desc: string, bg: string, text: string }> = {
   HIGH_UNASPIRATED: { label: "High · Unaspirated", desc: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.", bg: "bg-sky-50 border-sky-100", text: "text-sky-700" },
   HIGH_ASPIRATED: { label: "High · Aspirated", desc: "Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.", bg: "bg-amber-50 border-amber-100", text: "text-amber-700" },
-  LOW_SEMI_ASPIRATED: { label: "Low · Semi-aspirated", desc: "Pronounced low in the voice con with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.", bg: "bg-purple-50 border-purple-100", text: "text-purple-700" },
+  LOW_SEMI_ASPIRATED: { label: "Low · Semi-aspirated", desc: "Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.", bg: "bg-purple-50 border-purple-100", text: "text-purple-700" },
   LOW_NASAL: { label: "Low · Nasal", desc: "Voice resonates through the nose, low in pitch, with no puff of air.", bg: "bg-rose-50 border-rose-100", text: "text-rose-700" }
 };
 
@@ -637,15 +618,7 @@ export default function LessonDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {VOCABULARY.map((word, i) => (
               <div key={i} className={`bg-white border p-5 rounded-xl shadow-sm transition-colors flex flex-col justify-between h-40 relative group ${playingItem === word.tib ? 'border-amber-400 bg-amber-50/30' : 'border-stone-200 hover:border-amber-300'}`}>
-                
-                {word.Icon ? (
-                  <div className="w-10 h-10 mb-3 opacity-90">
-                    <word.Icon />
-                  </div>
-                ) : (
-                  <div className="h-10 mb-3"></div>
-                )}
-                
+                <div className="text-2xl mb-2">{word.emoji}</div>
                 <div>
                   <div className="text-2xl font-serif text-stone-900 mb-1 leading-none">{word.tib}</div>
                   <div className="text-[10px] font-medium text-stone-400 italic mb-1">{word.wylie}</div>
@@ -714,14 +687,8 @@ export default function LessonDetailPage() {
                       {currentFlashcard.text}
                     </div>
                   ) : (
-                    <div className="text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
-                      
-                      {currentFlashcard.Icon && (
-                        <div className="w-16 h-16 mb-4 opacity-90 text-stone-700">
-                          <currentFlashcard.Icon />
-                        </div>
-                      )}
-                      
+                    <div className="text-center animate-in fade-in zoom-in-95 duration-200">
+                      {currentFlashcard.emoji && <div className="text-3xl mb-3">{currentFlashcard.emoji}</div>}
                       <div className="text-3xl md:text-4xl font-bold text-stone-900 mb-2">{currentFlashcard.hint}</div>
                       <div className="text-lg md:text-xl text-stone-400 tracking-widest">{currentFlashcard.wylie}</div>
                     </div>
@@ -961,7 +928,7 @@ export default function LessonDetailPage() {
                       <CheckCircle2 size={40} />
                     </div>
                     <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Deck Complete!</h3>
-                    <p className="text-stone-500 mb-8 max-w-md">You have successfully mastered all {COMBINED_PRACTICE_ITEMS.length} cards in this session.</p>
+                    <p className="text-stone-500 mb-8 max-w-md">You have successfully mastered all 48 cards in this session.</p>
                     <button 
                       onClick={resetReview}
                       className="px-8 py-3.5 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"
