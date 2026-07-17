@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { 
   ChevronRight, RefreshCcw, Play, Loader2, Info, 
-  Layers, PenTool, Headphones, Shuffle, ArrowLeft, ArrowRight, CheckCircle2, X, PlusSquare, Volume2, XCircle
+  Layers, PenTool, Headphones, Shuffle, ArrowLeft, ArrowRight, CheckCircle2, X, PlusSquare, Volume2, XCircle, BookOpen
 } from "lucide-react";
 
 type ToneClass = 'HIGH_UNASPIRATED' | 'HIGH_ASPIRATED' | 'LOW_SEMI_ASPIRATED' | 'LOW_NASAL';
@@ -74,7 +74,7 @@ const TONE_COLORS = {
 const TONE_INFO: Record<string, { label: string, desc: string, bg: string, text: string }> = {
   HIGH_UNASPIRATED: { label: "High · Unaspirated", desc: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.", bg: "bg-sky-50 border-sky-100", text: "text-sky-700" },
   HIGH_ASPIRATED: { label: "High · Aspirated", desc: "Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.", bg: "bg-amber-50 border-amber-100", text: "text-amber-700" },
-  LOW_SEMI_ASPIRATED: { label: "Low · Semi-aspirated", desc: "Pronounced low in the voice con a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.", bg: "bg-purple-50 border-purple-100", text: "text-purple-700" },
+  LOW_SEMI_ASPIRATED: { label: "Low · Semi-aspirated", desc: "Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.", bg: "bg-purple-50 border-purple-100", text: "text-purple-700" },
   LOW_NASAL: { label: "Low · Nasal", desc: "Voice resonates through the nose, low in pitch, with no puff of air.", bg: "bg-rose-50 border-rose-100", text: "text-rose-700" }
 };
 
@@ -103,7 +103,7 @@ export default function LessonDetailPage() {
   const [selectedLetter, setSelectedLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
 
   // Practice Section State
-  const [activePracticeTab, setActivePracticeTab] = useState('Match'); 
+  const [activePracticeTab, setActivePracticeTab] = useState('Memory Review'); 
   
   // Flashcards State
   const [flashcardIdx, setFlashcardIdx] = useState(0);
@@ -117,6 +117,45 @@ export default function LessonDetailPage() {
   // Match State
   const [matchQuestions, setMatchQuestions] = useState<MatchQuestion[]>([]);
   const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({});
+
+  // Memory Review State
+  const [reviewDeck, setReviewDeck] = useState<typeof TIBETAN_ALPHABET>([]);
+  const [reviewedCount, setReviewedCount] = useState(0);
+  const [reviewRating, setReviewRating] = useState<'Hard' | 'Good' | 'Easy' | null>(null);
+
+  // Initialize Memory Review deck when the tab is clicked
+  useEffect(() => {
+    if (activePracticeTab === 'Memory Review' && reviewDeck.length === 0 && reviewedCount === 0) {
+      setReviewDeck([...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random()));
+    }
+  }, [activePracticeTab, reviewDeck.length, reviewedCount]);
+
+  const handleReviewNext = () => {
+    if (!reviewRating || reviewDeck.length === 0) return;
+
+    const currentCard = reviewDeck[0];
+    let newDeck = reviewDeck.slice(1);
+
+    if (reviewRating === 'Hard') {
+      // Re-insert near the front so they see it again very soon (within the next 2-3 cards)
+      const insertPos = Math.min(Math.floor(Math.random() * 3) + 1, newDeck.length);
+      newDeck.splice(insertPos, 0, currentCard);
+    } else if (reviewRating === 'Good') {
+      // Re-insert at the very end of the deck
+      newDeck.push(currentCard);
+    }
+    // If 'Easy', it is completely removed from the newDeck.
+
+    setReviewDeck(newDeck);
+    setReviewedCount(prev => prev + 1);
+    setReviewRating(null); // Reset rating for the next card
+  };
+
+  const resetReview = () => {
+    setReviewDeck([...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random()));
+    setReviewedCount(0);
+    setReviewRating(null);
+  };
 
   const playAudio = async (text: string) => {
     if (playingItem) return;
@@ -799,9 +838,94 @@ export default function LessonDetailPage() {
                 )}
               </div>
             )}
+
+            {/* TAB CONTENT: MEMORY REVIEW */}
+            {activePracticeTab === 'Memory Review' && (
+              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
+                {reviewDeck.length > 0 ? (
+                  <div className="w-full max-w-4xl">
+                    
+                    <div className="flex justify-between items-center mb-6 text-[10px] font-bold text-stone-500 uppercase tracking-widest border-b border-stone-200 pb-4">
+                      <span>Spaced repetition · rate your recall</span>
+                      <span>{reviewedCount} reviewed</span>
+                    </div>
+
+                    {/* Main Flashcard area - ONLY letter */}
+                    <div className="bg-white border border-stone-200 rounded-xl p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm">
+                      <div className="text-[10rem] font-serif text-stone-900 mb-8 leading-none">
+                        {reviewDeck[0].letter}
+                      </div>
+                      
+                      {/* Separate button just to hear the sound */}
+                      <button 
+                        onClick={() => playAudio(reviewDeck[0].letter)}
+                        disabled={playingItem !== null}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-lg transition-colors text-sm"
+                      >
+                        {playingItem === reviewDeck[0].letter ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                        Check Sound
+                      </button>
+                    </div>
+
+                    {/* Rating Buttons */}
+                    <div className="grid grid-cols-3 gap-4 mb-8">
+                      <button 
+                        onClick={() => setReviewRating('Hard')}
+                        className={`py-4 rounded-xl border font-bold text-sm transition-all ${reviewRating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800 ring-2 ring-rose-400/20' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}
+                      >
+                        Hard
+                      </button>
+                      <button 
+                        onClick={() => setReviewRating('Good')}
+                        className={`py-4 rounded-xl border font-bold text-sm transition-all ${reviewRating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800 ring-2 ring-amber-400/20' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}
+                      >
+                        Good
+                      </button>
+                      <button 
+                        onClick={() => setReviewRating('Easy')}
+                        className={`py-4 rounded-xl border font-bold text-sm transition-all ${reviewRating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800 ring-2 ring-emerald-400/20' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}
+                      >
+                        Easy
+                      </button>
+                    </div>
+
+                    {/* Footer Row */}
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
+                      <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2">
+                        <BookOpen size={14} /> Cards you mark Hard return soon; Easy cards drift further out.
+                      </p>
+                      
+                      <button 
+                        onClick={handleReviewNext}
+                        disabled={!reviewRating}
+                        className={`flex items-center gap-2 px-8 py-3.5 font-bold rounded-xl shadow-sm transition-colors ${reviewRating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
+                      >
+                        Next Card <ArrowRight size={18} />
+                      </button>
+                    </div>
+
+                  </div>
+                ) : (
+                  // Empty Deck State
+                  <div className="flex flex-col items-center justify-center text-center h-[400px] animate-in zoom-in-95">
+                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                      <CheckCircle2 size={40} />
+                    </div>
+                    <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Deck Complete!</h3>
+                    <p className="text-stone-500 mb-8 max-w-md">You have successfully mastered all 30 consonants in this session.</p>
+                    <button 
+                      onClick={resetReview}
+                      className="px-8 py-3.5 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"
+                    >
+                      <RefreshCcw size={18} /> Review Again
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* OTHER TABS (Placeholders) */}
-            {(activePracticeTab === 'Trace' || activePracticeTab === 'Memory Review') && (
+            {activePracticeTab === 'Trace' && (
               <div className="p-12 text-center text-stone-400 font-medium">
                 {activePracticeTab} exercises are currently under development.
               </div>
