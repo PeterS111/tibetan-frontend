@@ -12,9 +12,10 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)"
 ]);
 
-export default clerkMiddleware((auth, request) => {
+export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
-    auth().protect();
+    // In Clerk v7, auth is asynchronous!
+    await auth.protect();
   }
 });
 
