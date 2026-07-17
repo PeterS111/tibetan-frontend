@@ -116,7 +116,7 @@ export default function LessonDetailPage() {
 
   // Match State
   const [matchQuestions, setMatchQuestions] = useState<MatchQuestion[]>([]);
-  const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({}); // { targetLetter: selectedOptionLetter }
+  const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({});
 
   const playAudio = async (text: string) => {
     if (playingItem) return;
@@ -170,7 +170,6 @@ export default function LessonDetailPage() {
     }
   };
 
-  // --- Flashcard Logic ---
   const handleNextCard = () => {
     setIsCardFlipped(false);
     setFlashcardIdx((prev) => (prev + 1) % TIBETAN_ALPHABET.length);
@@ -183,7 +182,6 @@ export default function LessonDetailPage() {
 
   const currentFlashcard = TIBETAN_ALPHABET[flashcardIdx];
 
-  // --- Listen & Select Logic ---
   const generateListenSelectRound = () => {
     const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
     const selected4 = shuffled.slice(0, 4);
@@ -196,7 +194,6 @@ export default function LessonDetailPage() {
     if (activePracticeTab === 'Listen & Select' && lsOptions.length === 0) generateListenSelectRound();
   }, [activePracticeTab]);
 
-  // --- Match Logic ---
   const generateMatchRound = () => {
     const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
     const targets = shuffled.slice(0, 6); 
@@ -220,16 +217,11 @@ export default function LessonDetailPage() {
   const handleMatchSelect = (targetLetter: string, selectedOptionLetter: string) => {
     const isCorrect = targetLetter === selectedOptionLetter;
     
-    // If they already answered this row...
     if (matchAnswers[targetLetter]) {
-      // Allow them to click the CORRECT answer to hear the sound, but do not change the saved answer state
-      if (isCorrect) {
-        playAudio(selectedOptionLetter);
-      }
+      if (isCorrect) playAudio(selectedOptionLetter);
       return; 
     }
     
-    // First time answering this row
     if (isCorrect) {
       playAudio(selectedOptionLetter);
     } else {
@@ -331,6 +323,15 @@ export default function LessonDetailPage() {
               </button>
             ))}
           </div>
+
+          {/* LEGEND */}
+          <div className="mt-6 flex flex-wrap items-center gap-6 text-[10px] font-bold text-stone-500 uppercase tracking-widest">
+            <span className="text-stone-400">Legend</span>
+            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#0ea5e9]"></div> High · Unaspirated</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#f59e0b]"></div> High · Aspirated</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#a855f7]"></div> Low · Semi-aspirated</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#f43f5e]"></div> Low · Nasal</div>
+          </div>
         </div>
 
         {/* ========================================================= */}
@@ -342,50 +343,62 @@ export default function LessonDetailPage() {
             <h2 className="text-3xl font-serif text-stone-900">Understanding tone</h2>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#0ea5e9]">
-              <div className="text-[10px] font-bold text-[#0ea5e9] bg-sky-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Unaspirated</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            
+            {/* Card 1: High Unaspirated */}
+            <div className="bg-white border border-sky-300 p-6 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-sky-800 bg-sky-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Unaspirated</div>
               <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">6 letters</h3>
-              <p className="text-sm text-stone-600 mb-4">Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.</p>
+              <p className="text-sm text-stone-600 mb-6 flex-1">Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.</p>
               <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
                 {['ཀ', 'ཅ', 'ཏ', 'པ', 'ཙ', 'ཨ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-sky-100 border-sky-400 text-sky-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-sky-100 border-sky-400 text-sky-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#f59e0b]">
-              <div className="text-[10px] font-bold text-[#f59e0b] bg-amber-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Aspirated</div>
+            {/* Card 2: High Aspirated */}
+            <div className="bg-white border border-amber-300 p-6 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-amber-800 bg-amber-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Aspirated</div>
               <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">8 letters</h3>
-              <p className="text-sm text-stone-600 mb-4">Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.</p>
+              <p className="text-sm text-stone-600 mb-6 flex-1">Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.</p>
               <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
                 {['ཁ', 'ཆ', 'ཐ', 'ཕ', 'ཚ', 'ཤ', 'ས', 'ཧ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-amber-100 border-amber-400 text-amber-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-amber-100 border-amber-400 text-amber-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#a855f7]">
-              <div className="text-[10px] font-bold text-[#a855f7] bg-purple-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Semi-aspirated</div>
+            {/* Card 3: Low Semi-aspirated */}
+            <div className="bg-white border border-purple-300 p-6 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-purple-800 bg-purple-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Semi-aspirated</div>
               <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">12 letters</h3>
-              <p className="text-sm text-stone-600 mb-4">Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.</p>
+              <p className="text-sm text-stone-600 mb-6 flex-1">Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.</p>
               <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
                 {['ག', 'ཇ', 'ད', 'བ', 'ཛ', 'ཝ', 'ཞ', 'ཟ', 'འ', 'ཡ', 'ར', 'ལ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-purple-100 border-purple-400 text-purple-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-purple-100 border-purple-400 text-purple-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white border border-stone-200 p-6 rounded-lg border-l-4 border-l-[#f43f5e]">
-              <div className="text-[10px] font-bold text-[#f43f5e] bg-rose-50 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Nasal</div>
+            {/* Card 4: Low Nasal */}
+            <div className="bg-white border border-rose-300 p-6 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-rose-800 bg-rose-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Nasal</div>
               <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">4 letters</h3>
-              <p className="text-sm text-stone-600 mb-4">The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air.</p>
+              <p className="text-sm text-stone-600 mb-6 flex-1">The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air.</p>
               <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
                 {['ང', 'ཉ', 'ན', 'མ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`px-2 py-1 border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-rose-100 border-rose-400 text-rose-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
+                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-rose-100 border-rose-400 text-rose-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="bg-white border border-stone-200 p-4 rounded-lg flex items-start gap-3">
+             <Info className="text-amber-500 shrink-0 mt-0.5" size={18} />
+             <p className="text-sm text-stone-600">
+               The lines drawn above and below the transliteration in traditional Tibetan textbooks indicate <strong>high tone</strong> and <strong>low tone</strong> respectively. Pay close attention to your teacher's pronunciation, and repeat each consonant the same way it is spoken.
+             </p>
           </div>
         </div>
 
@@ -396,38 +409,58 @@ export default function LessonDetailPage() {
           <div className="mb-8">
             <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02B</div>
             <h2 className="text-3xl font-serif text-stone-900 mb-4">The three root sounds</h2>
+            <p className="text-sm text-stone-600 mb-8 max-w-4xl leading-relaxed">
+              Traditional Tibetan phonology traces every consonant back to one of three root sounds — seed syllables that anchor a whole tone family. Learn these three, and the rest of the alphabet becomes a family tree rather than a list.
+            </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#0ea5e9]">
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Neutral Root · High Register</div>
-              <button onClick={() => { playAudio('ཨ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཨ') || null); }} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'ཨ' || selectedLetter?.letter === 'ཨ' ? 'bg-sky-50' : 'hover:bg-stone-50'}`}>
-                <span className="text-6xl font-serif text-stone-900">ཨ</span><span className="text-lg font-serif italic text-stone-500 mb-1">a</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Card 1: Neutral Root */}
+            <div className="bg-white border border-sky-300 p-8 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-sky-800 bg-sky-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-6">Neutral Root · High Register</div>
+              <button onClick={() => { playAudio('ཨ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཨ') || null); }} className={`flex items-end gap-2 mb-6 w-fit transition-opacity hover:opacity-70 ${playingItem === 'ཨ' || selectedLetter?.letter === 'ཨ' ? 'opacity-50' : ''}`}>
+                <span className="text-6xl font-serif text-stone-900 leading-none">ཨ</span><span className="text-lg font-serif italic text-stone-500 mb-1">a</span>
               </button>
-              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed flex-1">
                 The neutral vowel carrier — a clean 'a' with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice.
               </p>
+              <div className="border-t border-stone-100 pt-4">
+                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
+                <div className="font-serif text-lg tracking-[0.2em] text-stone-800">ཨ ཀ ཅ ཏ པ ཙ</div>
+              </div>
             </div>
             
-            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f59e0b]">
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Aspirated Root · Breath</div>
-              <button onClick={() => { playAudio('ཧ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཧ') || null); }} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'ཧ' || selectedLetter?.letter === 'ཧ' ? 'bg-amber-50' : 'hover:bg-stone-50'}`}>
-                <span className="text-6xl font-serif text-stone-900">ཧ</span><span className="text-lg font-serif italic text-stone-500 mb-1">ha</span>
+            {/* Card 2: Aspirated Root */}
+            <div className="bg-white border border-amber-300 p-8 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-amber-800 bg-amber-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-6">Aspirated Root · Breath</div>
+              <button onClick={() => { playAudio('ཧ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཧ') || null); }} className={`flex items-end gap-2 mb-6 w-fit transition-opacity hover:opacity-70 ${playingItem === 'ཧ' || selectedLetter?.letter === 'ཧ' ? 'opacity-50' : ''}`}>
+                <span className="text-6xl font-serif text-stone-900 leading-none">ཧ</span><span className="text-lg font-serif italic text-stone-500 mb-1">ha</span>
               </button>
-              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed flex-1">
                 The breath root — a light, aspirated 'h'. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air.
               </p>
+              <div className="border-t border-stone-100 pt-4">
+                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
+                <div className="font-serif text-lg tracking-[0.2em] text-stone-800">ཧ ཁ ཆ ཐ ཕ ཚ ཤ ས</div>
+              </div>
             </div>
 
-            <div className="bg-white border border-stone-200 p-8 rounded-lg border-t-4 border-t-[#f43f5e]">
-              <div className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-6">Glottal Root · Voiced Flow</div>
-              <button onClick={() => { playAudio('འ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'འ') || null); }} className={`flex items-end gap-2 mb-6 transition-colors rounded-xl p-2 -ml-2 ${playingItem === 'འ' || selectedLetter?.letter === 'འ' ? 'bg-rose-50' : 'hover:bg-stone-50'}`}>
-                <span className="text-6xl font-serif text-stone-900">འ</span><span className="text-lg font-serif italic text-stone-500 mb-1">'a</span>
+            {/* Card 3: Glottal Root */}
+            <div className="bg-white border border-rose-300 p-8 flex flex-col rounded-lg">
+              <div className="text-[10px] font-bold text-rose-800 bg-rose-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-6">Glottal Root · Voiced Flow</div>
+              <button onClick={() => { playAudio('འ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'འ') || null); }} className={`flex items-end gap-2 mb-6 w-fit transition-opacity hover:opacity-70 ${playingItem === 'འ' || selectedLetter?.letter === 'འ' ? 'opacity-50' : ''}`}>
+                <span className="text-6xl font-serif text-stone-900 leading-none">འ</span><span className="text-lg font-serif italic text-stone-500 mb-1">'a</span>
               </button>
-              <p className="text-sm text-stone-600 mb-8 leading-relaxed max-w-2xl">
+              <p className="text-sm text-stone-600 mb-8 leading-relaxed flex-1">
                 The glottal root — a soft, voiced 'a' that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཝ ཞ ཟ ཡ ར ལ), and the nasals (ང ཉ ན མ).
               </p>
+              <div className="border-t border-stone-100 pt-4">
+                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
+                <div className="font-serif text-lg tracking-[0.2em] text-stone-800">འ ག ཇ ད བ ཛ ཝ ཞ ཟ ཡ ར ལ ང ཉ ན མ</div>
+              </div>
             </div>
+
           </div>
         </div>
 
@@ -718,7 +751,6 @@ export default function LessonDetailPage() {
                           
                           if (isAnswered) {
                             if (isCorrect) {
-                              // Make the correct answer highly visible and CLICKABLE so they can hear it
                               if (isSelected) {
                                 btnClass = "border-emerald-500 bg-emerald-50 text-emerald-700 cursor-pointer hover:bg-emerald-100 hover:border-emerald-500 shadow-sm";
                               } else {
