@@ -33,7 +33,7 @@ export default function ExercisesPage() {
   const [isSaving, setIsSaving] = useState(false);
   
   // Default selection
-  const [selectedModule, setSelectedModule] = useState(MODULE_OPTIONS[0]);)
+  const [selectedModule, setSelectedModule] = useState(MODULE_OPTIONS[0]);
 
   const startQuiz = async (moduleToFetch: string) => {
     setHasStarted(true);
