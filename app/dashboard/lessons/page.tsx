@@ -51,6 +51,10 @@ export default function MyLessonsPage() {
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
 
+  // STRICT FILTER: Only show lessons 1 and 2. 
+  // Hides the 8 uncreated modules from the database.
+  const visibleModules = modules.filter(m => Number(m.module_id) === 1 || Number(m.module_id) === 2);
+
   return (
     <div className="max-w-4xl mx-auto p-8 pb-24 animate-in fade-in duration-500">
       
@@ -62,16 +66,16 @@ export default function MyLessonsPage() {
             The Beginner curriculum
           </h1>
           <div className="text-sm font-medium text-stone-500 mb-1">
-            {modules.length} modules · Complete Syllabus
+            {visibleModules.length} modules · Active Syllabus
           </div>
         </div>
       </div>
 
       {/* Curriculum List */}
       <div className="space-y-4">
-        {modules.map((module) => {
+        {visibleModules.map((module) => {
           
-          // NEW: Route to the interactive textbook lesson page instead of the AI Chat!
+          // Next.js will automatically route to /lessons/1 or /lessons/2 folder
           const lessonUrl = `/dashboard/lessons/${module.module_id}`;
 
           // COMPLETED STATE

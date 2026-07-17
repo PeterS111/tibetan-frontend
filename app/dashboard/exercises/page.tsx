@@ -13,8 +13,8 @@ type QuizQuestion = {
 };
 
 const MODULE_OPTIONS = [
-  "Module 1", "Module 2", "Module 3", "Module 4", "Module 5", 
-  "Module 6", "Module 7", "Module 8", "Module 9", "Module 10"
+  "Module 1: The 30 Consonants", 
+  "Module 2: The Four Vowels"
 ];
 
 export default function ExercisesPage() {
@@ -33,7 +33,7 @@ export default function ExercisesPage() {
   const [isSaving, setIsSaving] = useState(false);
   
   // Default selection
-  const [selectedModule, setSelectedModule] = useState("Module 1");
+  const [selectedModule, setSelectedModule] = useState(MODULE_OPTIONS[0]);)
 
   const startQuiz = async (moduleToFetch: string) => {
     setHasStarted(true);

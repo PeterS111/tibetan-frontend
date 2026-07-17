@@ -20,11 +20,8 @@ const TRANSLATIONS = {
 };
 
 const SYLLABUS_TOPICS = [
-  "Module 1: The World of Tibetan Letters & Greetings", "Module 2: The Logic of Existence & Particles",
-  "Module 3: Relations, Proximity & Politeness", "Module 4: Questions, Articles & Word Order",
-  "Module 5: Action, Intention & The Agent", "Module 6: Actions in the Past",
-  "Module 7: The Present Moment & Visible Results", "Module 8: The Future, Nature, & Volunteering",
-  "Module 9: Requests & Imperatives", "Module 10: Time, Dates & Exceptions"
+  "Module 1: The 30 Consonants", 
+  "Module 2: The Four Vowels"
 ];
 
 // The 30 consonants perfectly aligned for a 4-column grid (naturally separating by phonetic group)
