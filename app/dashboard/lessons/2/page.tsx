@@ -6,7 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import {
   Volume2, X, ChevronRight, ChevronLeft, Check, Sparkles, Repeat, Ear, Shuffle, Layers,
   CheckCircle2, BookOpen, Info, PenLine, Eraser, Moon, Sun, Play, Pause, RotateCcw,
-  ArrowUp, ArrowDown, Loader2
+  ArrowUp, ArrowDown, Loader2, ArrowLeft, ArrowRight, XCircle
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
