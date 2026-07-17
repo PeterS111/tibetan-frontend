@@ -97,7 +97,7 @@ export default function VowelsLesson() {
   const [filter, setFilter] = useState<"all" | Position>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   const [playingItem, setPlayingItem] = useState<string | null>(null);
-  const [activePracticeTab, setActivePracticeTab] = useState<"flashcards" | "trace" | "listen" | "match" | "review">("flashcards");
+  const [activePracticeTab, setActivePracticeTab] = useState("Flashcards");
 
   const filtered = useMemo(() => (filter === "all" ? VOWELS : VOWELS.filter((v) => v.position === filter)), [filter]);
 
