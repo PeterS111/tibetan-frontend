@@ -156,6 +156,23 @@ export default function VowelsLesson() {
     setPlayingItem(null);
   };
 
+  const playErrorBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
+      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.15);
+    } catch (e) { console.error("Audio beep failed", e); }
+  };
+
   return (
     <div className="bg-[#fdfbf7] min-h-screen text-stone-800 font-sans pb-40 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto px-6 py-8">
@@ -458,8 +475,8 @@ export default function VowelsLesson() {
             <div className="p-6 md:p-12">
               {activePracticeTab === 'Flashcards' && <Flashcards speak={playAudio} playingItem={playingItem} />}
               {activePracticeTab === 'Trace' && <VowelTrace speak={playAudio} playingItem={playingItem} />}
-              {activePracticeTab === 'Listen & Select' && <ListenSelect speak={playAudio} playingItem={playingItem} />}
-              {activePracticeTab === 'Match' && <MatchExercise speak={playAudio} playingItem={playingItem} />}
+              {activePracticeTab === 'Listen & Select' && <ListenSelect speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
+              {activePracticeTab === 'Match' && <MatchExercise speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
               {activePracticeTab === 'Memory Review' && <MemoryReview speak={playAudio} playingItem={playingItem} />}
             </div>
           </div>
@@ -691,7 +708,7 @@ function VowelTrace({ speak, playingItem }: { speak: (t: string) => void, playin
 /* Listen & Select, Match, Memory Review Components                   */
 /* ------------------------------------------------------------------ */
 
-function ListenSelect({ speak, playingItem }: { speak: (t: string) => void, playingItem: string | null }) {
+function ListenSelect({ speak, playingItem, playErrorBeep }: { speak: (t: string) => void, playingItem: string | null, playErrorBeep: () => void }) {
   const [seed, setSeed] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const { answer, choices } = useMemo(() => {
@@ -723,7 +740,7 @@ function ListenSelect({ speak, playingItem }: { speak: (t: string) => void, play
           else if (picked) { borderClass = "border-stone-100 opacity-50"; bgClass = "bg-stone-50 cursor-default"; }
 
           return (
-            <button key={opt.id} onClick={() => { if (!picked) { setPicked(opt.text); speak(opt.text); } }} disabled={picked !== null} className={`relative aspect-square flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}>
+            <button key={opt.id} onClick={() => { if (!picked) { setPicked(opt.text); if (opt.text === answer.text) { speak(opt.text); } else { playErrorBeep(); } } }} disabled={picked !== null} className={`relative aspect-square flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}>
               <span className={`text-4xl sm:text-5xl lg:text-6xl font-serif text-center transition-colors ${textClass}`}>{opt.text}</span>
               {isSelected && isCorrect && <div className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in"><CheckCircle2 size={20}/></div>}
               {isSelected && !isCorrect && <div className="absolute top-3 right-3 text-rose-500 animate-in zoom-in"><XCircle size={20}/></div>}
@@ -740,7 +757,7 @@ function ListenSelect({ speak, playingItem }: { speak: (t: string) => void, play
   );
 }
 
-function MatchExercise({ speak, playingItem }: { speak: (t: string) => void, playingItem: string | null }) {
+function MatchExercise({ speak, playingItem, playErrorBeep }: { speak: (t: string) => void, playingItem: string | null, playErrorBeep: () => void }) {
   const [seed, setSeed] = useState(0);
   const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({});
   const questions = useMemo(() => {
@@ -769,7 +786,7 @@ function MatchExercise({ speak, playingItem }: { speak: (t: string) => void, pla
                   else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default" : "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default"; }
                 }
                 return (
-                  <button key={opt.id} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.text]: opt.text })); if(isCorrect) speak(opt.text); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[4rem] text-center ${btnClass}`}>
+                  <button key={opt.id} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.text]: opt.text })); if(isCorrect) speak(opt.text); else playErrorBeep(); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[4rem] text-center ${btnClass}`}>
                     {playingItem === opt.text && isCorrect ? <Loader2 size={12} className="animate-spin absolute" /> : opt.hint}
                   </button>
                 );
