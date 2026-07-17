@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import {
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
-/* Data & Configuration                                               */
+/* Data Types & Constants                                              */
 /* ------------------------------------------------------------------ */
 
 type VowelKey = "i" | "u" | "e" | "o";
@@ -31,18 +31,50 @@ interface Vowel {
 }
 
 const POSITION_META: Record<Position, { label: string; swatch: string; ring: string; text: string; hex: string }> = {
-  above: { label: "Written above the letter", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", hex: "#f59e0b" },
-  below: { label: "Written below the letter", swatch: "bg-sky-100", ring: "ring-sky-300", text: "text-sky-800", hex: "#0ea5e9" },
+  above: {
+    label: "Written above the letter",
+    swatch: "bg-amber-100",
+    ring: "ring-amber-300",
+    text: "text-amber-800",
+    hex: "#f59e0b",
+  },
+  below: {
+    label: "Written below the letter",
+    swatch: "bg-sky-100",
+    ring: "ring-sky-300",
+    text: "text-sky-800",
+    hex: "#0ea5e9",
+  },
 };
 
 const VOWELS: Vowel[] = [
-  { key: "i", tib: "ཨི", mark: "ི", translit: "I", markTib: "གི་གུ", markTranslit: "gi-gu", markGloss: "[khi khu]", position: "above", english: "As in “peer”, “real”, “ear”.", examples: ["མི", "རི", "ཤི"], note: "A small hook drawn above the root letter. Front, close vowel — spread the lips slightly as in English ‘ee’." },
-  { key: "u", tib: "ཨུ", mark: "ུ", translit: "U", markTib: "ཞབས་ཀྱུ", markTranslit: "shab-kyu", markGloss: "[shab kyu / tyu]", position: "below", english: "As in “bush”, “push”, “put”.", examples: ["སུ", "ཆུ", "ཕུ"], note: "A small curl drawn beneath the root letter. Back, close-rounded vowel — round the lips as in English ‘oo’ in ‘put’." },
-  { key: "e", tib: "ཨེ", mark: "ེ", translit: "E", markTib: "འགྲེང་བུ", markTranslit: "'dreng-bu", markGloss: "[ng’dreng po]", position: "above", english: "As in “pay”, “say”, “may”.", examples: ["མེ", "སེ", "ཏེ"], note: "A short slanted stroke drawn above the root letter. Front, mid vowel — brighter and higher than English ‘e’ in ‘bed’." },
-  { key: "o", tib: "ཨོ", mark: "ོ", translit: "O", markTib: "ན་རོ", markTranslit: "na-ro", markGloss: "[na ro]", position: "above", english: "As in “more”, “door”, “orange”.", examples: ["མོ", "ཇོ", "ཤོ"], note: "A small circle drawn above the root letter. Back, mid-rounded vowel — round the lips as in English ‘oh’." },
+  {
+    key: "i", tib: "ཨི", mark: "ི", translit: "I", markTib: "གི་གུ", markTranslit: "gi-gu",
+    markGloss: "[khi khu]", position: "above", english: "As in “peer”, “real”, “ear”.",
+    examples: ["མི", "རི", "ཤི"],
+    note: "A small hook drawn above the root letter. Front, close vowel — spread the lips slightly as in English ‘ee’.",
+  },
+  {
+    key: "u", tib: "ཨུ", mark: "ུ", translit: "U", markTib: "ཞབས་ཀྱུ", markTranslit: "shab-kyu",
+    markGloss: "[shab kyu / tyu]", position: "below", english: "As in “bush”, “push”, “put”.",
+    examples: ["སུ", "ཆུ", "ཕུ"],
+    note: "A small curl drawn beneath the root letter. Back, close-rounded vowel — round the lips as in English ‘oo’ in ‘put’.",
+  },
+  {
+    key: "e", tib: "ཨེ", mark: "ེ", translit: "E", markTib: "འགྲེང་བུ", markTranslit: "'dreng-bu",
+    markGloss: "[ng’dreng po]", position: "above", english: "As in “pay”, “say”, “may”.",
+    examples: ["མེ", "སེ", "ཏེ"],
+    note: "A short slanted stroke drawn above the root letter. Front, mid vowel — brighter and higher than English ‘e’ in ‘bed’.",
+  },
+  {
+    key: "o", tib: "ཨོ", mark: "ོ", translit: "O", markTib: "ན་རོ", markTranslit: "na-ro",
+    markGloss: "[na ro]", position: "above", english: "As in “more”, “door”, “orange”.",
+    examples: ["མོ", "ཇོ", "ཤོ"],
+    note: "A small circle drawn above the root letter. Back, mid-rounded vowel — round the lips as in English ‘oh’.",
+  },
 ];
 
-// Clean SVGs for Lesson 2 Vocabulary
+// Custom SVGs to replace Emojis
 const VocabIcons = {
   People: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-indigo-500"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
   Who: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-rose-500"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>,
@@ -416,7 +448,7 @@ export default function VowelsLesson() {
                   { name: 'Match', icon: Shuffle },
                   { name: 'Memory Review', icon: Repeat }
                 ].map((tab) => (
-                  <button key={tab.name} onClick={() => setActivePracticeTab(tab.name as any)} className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activePracticeTab === tab.name ? 'border-amber-500 text-stone-900 bg-stone-50/50' : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
+                  <button key={tab.name} onClick={() => setActivePracticeTab(tab.name)} className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activePracticeTab === tab.name ? 'border-amber-500 text-stone-900 bg-stone-50/50' : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}>
                     <tab.icon size={16} /> {tab.name}
                   </button>
                 ))}
@@ -448,7 +480,7 @@ export default function VowelsLesson() {
             <CheckCircle2 size={18} /> Mark lesson complete
           </button>
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
-            Next: Subjoined Letters <ChevronRight size={16} />
+            Back to Syllabus <BookOpen size={16} />
           </Link>
         </div>
       </div>
@@ -494,7 +526,7 @@ function DetailPanel({ v, onClose, onSpeak, playingItem }: { v: Vowel; onClose: 
           <div className="mb-6 border-t border-stone-200 pt-6"><div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Textbook Notes</div><p className="text-sm text-stone-600 bg-white p-4 border border-stone-200 rounded-lg italic">{v.note}</p></div>
           <div className="mb-6 border-t border-stone-200 pt-6">
             <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Try with other letters</div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {v.examples.map(ex => (
                 <button key={ex} onClick={() => onSpeak(ex)} className="border border-stone-200 bg-white px-3 py-1.5 rounded-lg flex gap-2 items-center hover:bg-amber-50 hover:border-amber-300">
                   <span className="font-serif text-2xl">{ex}</span> <Volume2 className="size-4 text-amber-500"/>
