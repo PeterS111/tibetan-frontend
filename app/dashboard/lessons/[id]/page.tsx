@@ -64,6 +64,26 @@ const VOCABULARY = [
   { tib: "ཀ་བ་", wylie: "ka-wa", eng: "pillar", emoji: "🏛️" },
 ];
 
+// Unified array for exercises (48 items)
+const COMBINED_PRACTICE_ITEMS = [
+  ...TIBETAN_ALPHABET.map(item => ({
+    id: `letter-${item.letter}`,
+    text: item.letter,
+    wylie: item.wylie,
+    hint: item.phonetic, // Hint is phonetics for letters
+    emoji: '',
+    type: 'letter'
+  })),
+  ...VOCABULARY.map(item => ({
+    id: `vocab-${item.tib}`,
+    text: item.tib,
+    wylie: item.wylie,
+    hint: item.eng, // Hint is English translation for vocab
+    emoji: item.emoji,
+    type: 'vocab'
+  }))
+];
+
 const TONE_COLORS = {
   HIGH_UNASPIRATED: "border-t-[#0ea5e9]",
   HIGH_ASPIRATED: "border-t-[#f59e0b]",
@@ -87,11 +107,6 @@ const GENDER_INFO: Record<string, { bg: string, text: string, dot: string }> = {
   'Root': { bg: 'bg-stone-50 border-stone-200', text: 'text-stone-600', dot: 'bg-stone-400' },
 };
 
-type MatchQuestion = {
-  target: typeof TIBETAN_ALPHABET[0];
-  options: typeof TIBETAN_ALPHABET[0][];
-};
-
 export default function LessonDetailPage() {
   const { getToken } = useAuth();
   
@@ -110,23 +125,27 @@ export default function LessonDetailPage() {
   const [isCardFlipped, setIsCardFlipped] = useState(false);
 
   // Listen & Select State
-  const [lsOptions, setLsOptions] = useState<typeof TIBETAN_ALPHABET>([]);
-  const [lsCorrectLetter, setLsCorrectLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
+  const [lsOptions, setLsOptions] = useState<typeof COMBINED_PRACTICE_ITEMS>([]);
+  const [lsCorrectLetter, setLsCorrectLetter] = useState<typeof COMBINED_PRACTICE_ITEMS[0] | null>(null);
   const [lsSelectedLetter, setLsSelectedLetter] = useState<string | null>(null);
 
   // Match State
+  type MatchQuestion = {
+    target: typeof COMBINED_PRACTICE_ITEMS[0];
+    options: typeof COMBINED_PRACTICE_ITEMS[0][];
+  };
   const [matchQuestions, setMatchQuestions] = useState<MatchQuestion[]>([]);
   const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({});
 
   // Memory Review State
-  const [reviewDeck, setReviewDeck] = useState<typeof TIBETAN_ALPHABET>([]);
+  const [reviewDeck, setReviewDeck] = useState<typeof COMBINED_PRACTICE_ITEMS>([]);
   const [reviewedCount, setReviewedCount] = useState(0);
   const [reviewRating, setReviewRating] = useState<'Hard' | 'Good' | 'Easy' | null>(null);
 
   // Initialize Memory Review deck when the tab is clicked
   useEffect(() => {
     if (activePracticeTab === 'Memory Review' && reviewDeck.length === 0 && reviewedCount === 0) {
-      setReviewDeck([...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random()));
+      setReviewDeck([...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random()));
     }
   }, [activePracticeTab, reviewDeck.length, reviewedCount]);
 
@@ -152,7 +171,7 @@ export default function LessonDetailPage() {
   };
 
   const resetReview = () => {
-    setReviewDeck([...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random()));
+    setReviewDeck([...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random()));
     setReviewedCount(0);
     setReviewRating(null);
   };
@@ -211,18 +230,18 @@ export default function LessonDetailPage() {
 
   const handleNextCard = () => {
     setIsCardFlipped(false);
-    setFlashcardIdx((prev) => (prev + 1) % TIBETAN_ALPHABET.length);
+    setFlashcardIdx((prev) => (prev + 1) % COMBINED_PRACTICE_ITEMS.length);
   };
 
   const handlePrevCard = () => {
     setIsCardFlipped(false);
-    setFlashcardIdx((prev) => (prev - 1 + TIBETAN_ALPHABET.length) % TIBETAN_ALPHABET.length);
+    setFlashcardIdx((prev) => (prev - 1 + COMBINED_PRACTICE_ITEMS.length) % COMBINED_PRACTICE_ITEMS.length);
   };
 
-  const currentFlashcard = TIBETAN_ALPHABET[flashcardIdx];
+  const currentFlashcard = COMBINED_PRACTICE_ITEMS[flashcardIdx];
 
   const generateListenSelectRound = () => {
-    const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
+    const shuffled = [...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random());
     const selected4 = shuffled.slice(0, 4);
     setLsOptions(selected4);
     setLsCorrectLetter(selected4[Math.floor(Math.random() * 4)]);
@@ -234,11 +253,11 @@ export default function LessonDetailPage() {
   }, [activePracticeTab]);
 
   const generateMatchRound = () => {
-    const shuffled = [...TIBETAN_ALPHABET].sort(() => 0.5 - Math.random());
+    const shuffled = [...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random());
     const targets = shuffled.slice(0, 6); 
     
     const newQuestions = targets.map(target => {
-      const distractors = TIBETAN_ALPHABET.filter(item => item.letter !== target.letter)
+      const distractors = COMBINED_PRACTICE_ITEMS.filter(item => item.id !== target.id)
                                           .sort(() => 0.5 - Math.random())
                                           .slice(0, 2);
       const options = [target, ...distractors].sort(() => 0.5 - Math.random());
@@ -253,21 +272,21 @@ export default function LessonDetailPage() {
     if (activePracticeTab === 'Match' && matchQuestions.length === 0) generateMatchRound();
   }, [activePracticeTab]);
 
-  const handleMatchSelect = (targetLetter: string, selectedOptionLetter: string) => {
-    const isCorrect = targetLetter === selectedOptionLetter;
+  const handleMatchSelect = (targetText: string, selectedOptionText: string) => {
+    const isCorrect = targetText === selectedOptionText;
     
-    if (matchAnswers[targetLetter]) {
-      if (isCorrect) playAudio(selectedOptionLetter);
+    if (matchAnswers[targetText]) {
+      if (isCorrect) playAudio(selectedOptionText);
       return; 
     }
     
     if (isCorrect) {
-      playAudio(selectedOptionLetter);
+      playAudio(selectedOptionText);
     } else {
       playErrorBeep();
     }
     
-    setMatchAnswers(prev => ({ ...prev, [targetLetter]: selectedOptionLetter }));
+    setMatchAnswers(prev => ({ ...prev, [targetText]: selectedOptionText }));
   };
 
   const filteredAlphabet = activeFilter === 'ALL' 
@@ -651,10 +670,9 @@ export default function LessonDetailPage() {
               <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
                 <div className="w-full max-w-2xl flex justify-between items-center mb-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
                   <div className="flex items-center gap-3">
-                    <span className="bg-stone-900 text-white px-2 py-1 rounded">CONSONANTS · 30</span>
-                    <span className="text-stone-400">NOUNS · 18</span>
+                    <span className="bg-stone-900 text-white px-2 py-1 rounded">ALL CARDS</span>
                   </div>
-                  <span>Card {flashcardIdx + 1} of 30</span>
+                  <span>Card {flashcardIdx + 1} of {COMBINED_PRACTICE_ITEMS.length}</span>
                 </div>
 
                 <div 
@@ -662,12 +680,13 @@ export default function LessonDetailPage() {
                   className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group"
                 >
                   {!isCardFlipped ? (
-                    <div className="text-7xl md:text-9xl font-serif text-stone-900 group-hover:scale-105 transition-transform">
-                      {currentFlashcard.letter}
+                    <div className="text-6xl md:text-8xl font-serif text-stone-900 group-hover:scale-105 transition-transform text-center px-4">
+                      {currentFlashcard.text}
                     </div>
                   ) : (
                     <div className="text-center animate-in fade-in zoom-in-95 duration-200">
-                      <div className="text-4xl md:text-5xl font-bold text-stone-900 mb-2">{currentFlashcard.phonetic}</div>
+                      {currentFlashcard.emoji && <div className="text-3xl mb-3">{currentFlashcard.emoji}</div>}
+                      <div className="text-3xl md:text-4xl font-bold text-stone-900 mb-2">{currentFlashcard.hint}</div>
                       <div className="text-lg md:text-xl text-stone-400 tracking-widest">{currentFlashcard.wylie}</div>
                     </div>
                   )}
@@ -681,11 +700,11 @@ export default function LessonDetailPage() {
                     <ArrowLeft size={16} /> Previous
                   </button>
                   <button 
-                    onClick={() => playAudio(currentFlashcard.letter)}
+                    onClick={() => playAudio(currentFlashcard.text)}
                     disabled={playingItem !== null}
                     className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors"
                   >
-                    {playingItem === currentFlashcard.letter ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
+                    {playingItem === currentFlashcard.text ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
                     Play sound
                   </button>
                   <button onClick={handleNextCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
@@ -698,21 +717,21 @@ export default function LessonDetailPage() {
             {/* TAB CONTENT: LISTEN & SELECT */}
             {activePracticeTab === 'Listen & Select' && (
               <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
-                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Listen to the sound and choose the correct consonant.</p>
+                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Listen to the sound and choose the correct option.</p>
 
                 <button
-                  onClick={() => lsCorrectLetter && playAudio(lsCorrectLetter.letter)}
+                  onClick={() => lsCorrectLetter && playAudio(lsCorrectLetter.text)}
                   disabled={playingItem !== null}
                   className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 mb-12 shadow-md transition-colors"
                 >
-                  {playingItem === lsCorrectLetter?.letter ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
+                  {playingItem === lsCorrectLetter?.text ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
                   PLAY SOUND
                 </button>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
                   {lsOptions.map((opt) => {
-                    const isSelected = lsSelectedLetter === opt.letter;
-                    const isCorrect = lsCorrectLetter?.letter === opt.letter;
+                    const isSelected = lsSelectedLetter === opt.text;
+                    const isCorrect = lsCorrectLetter?.text === opt.text;
                     const showCorrect = isSelected && isCorrect;
                     const showWrong = isSelected && !isCorrect;
 
@@ -739,23 +758,23 @@ export default function LessonDetailPage() {
 
                     return (
                       <button
-                        key={opt.letter}
+                        key={opt.id}
                         onClick={() => {
                           if (!lsSelectedLetter) {
-                            setLsSelectedLetter(opt.letter);
-                            if (opt.letter === lsCorrectLetter?.letter) {
-                               playAudio(opt.letter); 
+                            setLsSelectedLetter(opt.text);
+                            if (opt.text === lsCorrectLetter?.text) {
+                               playAudio(opt.text); 
                             } else {
                                playErrorBeep();
                             }
                           }
                         }}
                         disabled={lsSelectedLetter !== null}
-                        className={`relative aspect-square flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}
+                        className={`relative aspect-square flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}
                       >
-                         <span className={`text-6xl sm:text-7xl font-serif transition-colors ${textClass}`}>{opt.letter}</span>
-                         {showCorrect && <div className="absolute top-4 right-4 text-emerald-500 animate-in zoom-in"><CheckCircle2 size={24}/></div>}
-                         {showWrong && <div className="absolute top-4 right-4 text-rose-500 animate-in zoom-in"><XCircle size={24}/></div>}
+                         <span className={`text-4xl sm:text-5xl lg:text-6xl font-serif text-center transition-colors ${textClass}`}>{opt.text}</span>
+                         {showCorrect && <div className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in"><CheckCircle2 size={20}/></div>}
+                         {showWrong && <div className="absolute top-3 right-3 text-rose-500 animate-in zoom-in"><XCircle size={20}/></div>}
                       </button>
                     )
                   })}
@@ -774,21 +793,21 @@ export default function LessonDetailPage() {
             {/* TAB CONTENT: MATCH */}
             {activePracticeTab === 'Match' && (
               <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
-                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Match each Tibetan consonant with its pronunciation.</p>
+                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Match the Tibetan with its English or Phonetic meaning.</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
                   {matchQuestions.map((q, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-white border border-stone-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 rounded-lg shadow-sm hover:shadow-md transition-shadow gap-4 sm:gap-2">
                       
-                      {/* Left: Tibetan Letter */}
-                      <div className="text-4xl font-serif text-stone-900 ml-4">{q.target.letter}</div>
+                      {/* Left: Tibetan Text */}
+                      <div className="text-3xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left">{q.target.text}</div>
                       
-                      {/* Right: Phonetic Options */}
-                      <div className="flex items-center gap-2 mr-2">
+                      {/* Right: Hint Options */}
+                      <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto sm:mr-2">
                         {q.options.map(opt => {
-                          const isSelected = matchAnswers[q.target.letter] === opt.letter;
-                          const isCorrect = q.target.letter === opt.letter;
-                          const isAnswered = !!matchAnswers[q.target.letter];
+                          const isSelected = matchAnswers[q.target.text] === opt.text;
+                          const isCorrect = q.target.text === opt.text;
+                          const isAnswered = !!matchAnswers[q.target.text];
                           
                           let btnClass = "border-stone-200 text-stone-600 hover:bg-stone-50 cursor-pointer";
                           
@@ -806,16 +825,16 @@ export default function LessonDetailPage() {
                             }
                           }
 
-                          const isCurrentlyPlaying = playingItem === opt.letter && isCorrect;
+                          const isCurrentlyPlaying = playingItem === opt.text && isCorrect;
 
                           return (
                             <button 
-                              key={opt.letter}
-                              onClick={() => handleMatchSelect(q.target.letter, opt.letter)}
+                              key={opt.id}
+                              onClick={() => handleMatchSelect(q.target.text, opt.text)}
                               disabled={playingItem !== null || (isAnswered && !isCorrect)}
-                              className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[3rem] ${btnClass}`}
+                              className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[4rem] text-center ${btnClass}`}
                             >
-                              {isCurrentlyPlaying ? <Loader2 size={12} className="animate-spin absolute" /> : opt.phonetic}
+                              {isCurrentlyPlaying ? <Loader2 size={12} className="animate-spin absolute" /> : opt.hint}
                             </button>
                           );
                         })}
@@ -825,7 +844,6 @@ export default function LessonDetailPage() {
                   ))}
                 </div>
 
-                {/* Show "Next Round" if all questions are answered */}
                 {Object.keys(matchAnswers).length === matchQuestions.length && matchQuestions.length > 0 && (
                   <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
                     <button 
@@ -850,24 +868,21 @@ export default function LessonDetailPage() {
                       <span>{reviewedCount} reviewed</span>
                     </div>
 
-                    {/* Main Flashcard area - ONLY letter */}
-                    <div className="bg-white border border-stone-200 rounded-xl p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm">
-                      <div className="text-[10rem] font-serif text-stone-900 mb-8 leading-none">
-                        {reviewDeck[0].letter}
+                    <div className="bg-white border border-stone-200 rounded-xl p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm">
+                      <div className="text-6xl sm:text-7xl md:text-[8rem] font-serif text-stone-900 mb-8 leading-none text-center">
+                        {reviewDeck[0].text}
                       </div>
                       
-                      {/* Separate button just to hear the sound */}
                       <button 
-                        onClick={() => playAudio(reviewDeck[0].letter)}
+                        onClick={() => playAudio(reviewDeck[0].text)}
                         disabled={playingItem !== null}
                         className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-lg transition-colors text-sm"
                       >
-                        {playingItem === reviewDeck[0].letter ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                        {playingItem === reviewDeck[0].text ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
                         Check Sound
                       </button>
                     </div>
 
-                    {/* Rating Buttons */}
                     <div className="grid grid-cols-3 gap-4 mb-8">
                       <button 
                         onClick={() => setReviewRating('Hard')}
@@ -889,7 +904,6 @@ export default function LessonDetailPage() {
                       </button>
                     </div>
 
-                    {/* Footer Row */}
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
                       <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2">
                         <BookOpen size={14} /> Cards you mark Hard return soon; Easy cards drift further out.
@@ -906,13 +920,12 @@ export default function LessonDetailPage() {
 
                   </div>
                 ) : (
-                  // Empty Deck State
                   <div className="flex flex-col items-center justify-center text-center h-[400px] animate-in zoom-in-95">
                     <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
                       <CheckCircle2 size={40} />
                     </div>
                     <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Deck Complete!</h3>
-                    <p className="text-stone-500 mb-8 max-w-md">You have successfully mastered all 30 consonants in this session.</p>
+                    <p className="text-stone-500 mb-8 max-w-md">You have successfully mastered all 48 cards in this session.</p>
                     <button 
                       onClick={resetReview}
                       className="px-8 py-3.5 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"
