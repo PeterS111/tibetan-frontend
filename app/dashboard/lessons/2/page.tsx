@@ -770,7 +770,21 @@ function MatchExercise({ speak, playingItem, playErrorBeep }: { speak: (t: strin
                   else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default" : "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default"; }
                 }
                 return (
-                  <button key={opt.id} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.text]: opt.text })); if(isCorrect) speak(opt.text); else playErrorBeep(); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[4rem] text-center ${btnClass}`}>
+                  <button 
+                    key={opt.id} 
+                    onClick={() => { 
+                      if (!isAnswered) { 
+                        setMatchAnswers(p => ({ ...p, [q.target.text]: opt.text })); 
+                        if (isCorrect) speak(opt.text); 
+                        else playErrorBeep(); 
+                      } else if (isCorrect) {
+                        // Allow the user to replay the sound by clicking the correct answer again
+                        speak(opt.text);
+                      }
+                    }} 
+                    disabled={playingItem !== null || (isAnswered && !isCorrect)} 
+                    className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[4rem] text-center ${btnClass}`}
+                  >
                     {playingItem === opt.text && isCorrect ? <Loader2 size={12} className="animate-spin absolute" /> : opt.hint}
                   </button>
                 );
