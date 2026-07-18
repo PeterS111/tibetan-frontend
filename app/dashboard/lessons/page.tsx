@@ -53,7 +53,7 @@ export default function MyLessonsPage() {
 
 // STRICT FILTER: Only show lessons 1, 2, and 3. 
   // Hides the remaining uncreated modules from the database.
-  const visibleModules = modules.filter(m => Number(m.module_id) >= 1 && Number(m.module_id) <= 3);
+  const visibleModules = modules.filter(m => Number(m.module_id) >= 1 && Number(m.module_id) <= 4);
 
   return (
     <div className="max-w-4xl mx-auto p-8 pb-24 animate-in fade-in duration-500">

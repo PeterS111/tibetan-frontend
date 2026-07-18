@@ -22,7 +22,8 @@ const TRANSLATIONS = {
 const SYLLABUS_TOPICS = [
   "Module 1: The 30 Consonants", 
   "Module 2: The Four Vowels",
-  "Module 3: The Three Superscripts"
+  "Module 3: The Three Superscripts",
+  "Module 4: The Four Subscripts"
 ];
 
 // The 30 consonants perfectly aligned for a 4-column grid (naturally separating by phonetic group)
