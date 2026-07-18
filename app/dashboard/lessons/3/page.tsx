@@ -423,7 +423,7 @@ export default function SuperscriptsLesson() {
 
           <div className="mb-6 flex flex-wrap gap-2">
             {[
-              { key: "all", label: "All", count: VOCAB.length },
+              { key: "all", label: "All", count: VOCAB.length, hex: undefined },
               ...SUPERS.map(s => ({ key: s.key, label: s.name, count: VOCAB.filter(v => v.sup === s.key).length, hex: s.accent.hex }))
             ].map(c => {
               const active = vocabFilter === c.key;
