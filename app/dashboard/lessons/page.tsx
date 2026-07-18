@@ -51,9 +51,9 @@ export default function MyLessonsPage() {
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
 
-  // STRICT FILTER: Only show lessons 1 and 2. 
-  // Hides the 8 uncreated modules from the database.
-  const visibleModules = modules.filter(m => Number(m.module_id) === 1 || Number(m.module_id) === 2);
+// STRICT FILTER: Only show lessons 1, 2, and 3. 
+  // Hides the remaining uncreated modules from the database.
+  const visibleModules = modules.filter(m => Number(m.module_id) >= 1 && Number(m.module_id) <= 3);
 
   return (
     <div className="max-w-4xl mx-auto p-8 pb-24 animate-in fade-in duration-500">

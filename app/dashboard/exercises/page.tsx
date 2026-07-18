@@ -14,7 +14,8 @@ type QuizQuestion = {
 
 const MODULE_OPTIONS = [
   "Module 1: The 30 Consonants", 
-  "Module 2: The Four Vowels"
+  "Module 2: The Four Vowels",
+  "Module 3: The Three Superscripts"
 ];
 
 export default function ExercisesPage() {
