@@ -458,7 +458,14 @@ export default function VowelsLesson() {
 
             <div className="p-6 md:p-12">
               {activePracticeTab === 'Flashcards' && <Flashcards speak={playAudio} playingItem={playingItem} />}
-              {activePracticeTab === 'Trace' && <VowelTrace speak={playAudio} playingItem={playingItem} />}
+              
+              {/* Temporarily disabled Trace exercise matching Lesson 1 */}
+              {activePracticeTab === 'Trace' && (
+                <div className="p-12 text-center text-stone-400 font-medium">
+                  {activePracticeTab} exercises are currently under development.
+                </div>
+              )}
+              
               {activePracticeTab === 'Listen & Select' && <ListenSelect speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
               {activePracticeTab === 'Match' && <MatchExercise speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
               {activePracticeTab === 'Memory Review' && <MemoryReview speak={playAudio} playingItem={playingItem} />}
