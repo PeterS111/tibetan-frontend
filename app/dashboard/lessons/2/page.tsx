@@ -74,48 +74,32 @@ const VOWELS: Vowel[] = [
   },
 ];
 
-// Custom SVGs to replace Emojis
-const VocabIcons = {
-  People: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-indigo-500"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
-  Who: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-rose-500"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>,
-  Teeth: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-700"><path d="M12 4c-3 0-5 3-5 6v4c0 3 2 6 5 6s5-3 5-6v-4c0-3-2-6-5-6z"/><path d="M7 14h10M7 10h10M12 4v16"/></svg>,
-  Water: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-blue-500"><path d="M12 22a7 7 0 007-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 007 7z"/></svg>,
-  Fire: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-orange-500"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>,
-  Male: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-sky-600"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/></svg>,
-  Twenty: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-emerald-600"><path d="M8 10h3v10M8 14h3M15 10c-1.5 0-3 1-3 3v4c0 2 1.5 3 3 3s3-1 3-3v-4c0-2-1.5-3-3-3z"/></svg>,
-  Drawing: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-fuchsia-500"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.124-.224-.254-.377-.59-.377-.96 0-.825.675-1.5 1.5-1.5H16c3.315 0 6-2.685 6-6 0-4.97-4.925-9-11-9z"/></svg>,
-  Milk: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-sky-300"><path d="M8 2h8M10 2v4M14 2v4M6 8h12l-1 14H7L6 8zM6 12h12"/></svg>,
-  Paper: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-400"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>,
-  Apple: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-red-500"><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.914 4.914 0 0017 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 00-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06zM10 2c1 .5 2 2 2 5"/></svg>,
-  Sun: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-amber-400"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
-  Female: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-rose-400"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/><path d="M16 11s-1.5-2-4-2-4 2-4 2"/></svg>,
-  Yoghurt: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-amber-100"><path d="M12 22a8 8 0 008-8H4a8 8 0 008 8z"/><path d="M4 14a8 8 0 0116 0"/><path d="M8 12s1.5-2 4-2 4 2 4 2"/></svg>,
-  Mouse: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-stone-500"><path d="M5 3a4 4 0 00-4 4c0 1.5 1 3 2 3v3c0 3.5 3.5 6 7 6s7-2.5 7-6v-3c1 0 2-1.5 2-3a4 4 0 00-4-4c-1.5 0-3 1-3 3 0-1.5-1.5-3-3-3S6 4.5 6 6c0-1.5-1-3-1-3zM12 16v1M9 13h.01M15 13h.01"/></svg>,
-  Brother: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-amber-600"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 00-16 0"/><path d="M9 8h.01M15 8h.01M12 11h.01"/></svg>,
-};
+
+
+// DELETE the entire VocabIcons = { ... } object
 
 const VOCAB = [
-  { tib: "མི", translit: "mi", en: "people", Icon: VocabIcons.People, vowel: "i" },
-  { tib: "སུ", translit: "su", en: "who", Icon: VocabIcons.Who, vowel: "u" },
-  { tib: "སོ", translit: "so", en: "teeth", Icon: VocabIcons.Teeth, vowel: "o" },
-  { tib: "ཆུ", translit: "chu", en: "water", Icon: VocabIcons.Water, vowel: "u" },
-  { tib: "མེ", translit: "me", en: "fire", Icon: VocabIcons.Fire, vowel: "e" },
-  { tib: "ཕོ", translit: "pho", en: "male", Icon: VocabIcons.Male, vowel: "o" },
-  { tib: "ཉི་ཤུ", translit: "nyi-shu", en: "twenty", Icon: VocabIcons.Twenty, vowel: "u" },
-  { tib: "རི་མོ", translit: "ri-mo", en: "drawing", Icon: VocabIcons.Drawing, vowel: "i" },
-  { tib: "འོ་མ", translit: "o-ma", en: "milk", Icon: VocabIcons.Milk, vowel: "o" },
-  { tib: "ཤུ་གུ", translit: "shu-gu", en: "paper", Icon: VocabIcons.Paper, vowel: "u" },
-  { tib: "ཀུ་ཤུ", translit: "ku-shu", en: "apple", Icon: VocabIcons.Apple, vowel: "u" },
-  { tib: "ཉི་མ", translit: "nyi-ma", en: "sun", Icon: VocabIcons.Sun, vowel: "i" },
-  { tib: "མོ", translit: "mo", en: "she / female", Icon: VocabIcons.Female, vowel: "o" },
-  { tib: "ཞོ", translit: "zho", en: "yoghurt", Icon: VocabIcons.Yoghurt, vowel: "o" },
-  { tib: "ཙི་ཙི", translit: "tsi-tsi", en: "mouse", Icon: VocabIcons.Mouse, vowel: "i" },
-  { tib: "ཇོ་ཇོ", translit: "jo-jo", en: "elder brother", Icon: VocabIcons.Brother, vowel: "o" },
+  { tib: "མི", translit: "mi", en: "people", emoji: "👥", vowel: "i" },
+  { tib: "སུ", translit: "su", en: "who", emoji: "❓", vowel: "u" },
+  { tib: "སོ", translit: "so", en: "teeth", emoji: "🦷", vowel: "o" },
+  { tib: "ཆུ", translit: "chu", en: "water", emoji: "💧", vowel: "u" },
+  { tib: "མེ", translit: "me", en: "fire", emoji: "🔥", vowel: "e" },
+  { tib: "ཕོ", translit: "pho", en: "male", emoji: "👨", vowel: "o" },
+  { tib: "ཉི་ཤུ", translit: "nyi-shu", en: "twenty", emoji: "2️⃣0️⃣", vowel: "u" },
+  { tib: "རི་མོ", translit: "ri-mo", en: "drawing", emoji: "🎨", vowel: "i" },
+  { tib: "འོ་མ", translit: "o-ma", en: "milk", emoji: "🥛", vowel: "o" },
+  { tib: "ཤུ་གུ", translit: "shu-gu", en: "paper", emoji: "📄", vowel: "u" },
+  { tib: "ཀུ་ཤུ", translit: "ku-shu", en: "apple", emoji: "🍎", vowel: "u" },
+  { tib: "ཉི་མ", translit: "nyi-ma", en: "sun", emoji: "☀️", vowel: "i" },
+  { tib: "མོ", translit: "mo", en: "she / female", emoji: "👩", vowel: "o" },
+  { tib: "ཞོ", translit: "zho", en: "yoghurt", emoji: "🥣", vowel: "o" },
+  { tib: "ཙི་ཙི", translit: "tsi-tsi", en: "mouse", emoji: "🐭", vowel: "i" },
+  { tib: "ཇོ་ཇོ", translit: "jo-jo", en: "elder brother", emoji: "👦", vowel: "o" },
 ];
 
 const COMBINED_PRACTICE_ITEMS = [
-  ...VOWELS.map(v => ({ id: `vowel-${v.key}`, text: v.tib, wylie: v.translit, hint: v.markTranslit, Icon: null, type: 'letter' })),
-  ...VOCAB.map(v => ({ id: `vocab-${v.tib}`, text: v.tib, wylie: v.translit, hint: v.en, Icon: v.Icon, type: 'vocab' }))
+  ...VOWELS.map(v => ({ id: `vowel-${v.key}`, text: v.tib, wylie: v.translit, hint: v.markTranslit, emoji: '', type: 'letter' })),
+  ...VOCAB.map(v => ({ id: `vocab-${v.tib}`, text: v.tib, wylie: v.translit, hint: v.en, emoji: v.emoji, type: 'vocab' }))
 ];
 
 /* ------------------------------------------------------------------ */
