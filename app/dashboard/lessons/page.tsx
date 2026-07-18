@@ -76,7 +76,8 @@ export default function MyLessonsPage() {
         {visibleModules.map((module) => {
           
           // Next.js will automatically route to /lessons/1 or /lessons/2 folder
-          const lessonUrl = `/dashboard/lessons/${module.module_id}`;
+          // FIX: Wrap module_id in Number() to strip any leading zeros (e.g., "01" becomes 1)
+          const lessonUrl = `/dashboard/lessons/${Number(module.module_id)}`;
 
           // COMPLETED STATE
           if (module.status === "completed") {
