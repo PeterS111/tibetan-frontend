@@ -413,11 +413,11 @@ export default function VowelsLesson() {
               return (
                 <div key={v.tib} className="bg-white border border-stone-200 p-5 rounded-xl shadow-sm transition-all hover:border-amber-300 flex flex-col group relative">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 opacity-90"><v.Icon /></div>
-                    <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: pm.hex + "22", color: pm.hex }}>
-                      {v.vowel}
-                    </span>
-                  </div>
+    <div className="text-2xl opacity-90">{v.emoji}</div>
+    <span className="rounded px-2 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: pm.hex + "22", color: pm.hex }}>
+      {v.vowel}
+    </span>
+  </div>
                   <div className="font-serif text-3xl text-stone-900 mb-1">{v.tib}</div>
                   <div className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">{v.translit}</div>
                   <div className="flex items-center justify-between border-t border-stone-100 pt-3">
@@ -562,12 +562,12 @@ function Flashcards({ speak, playingItem }: { speak: (t: string) => void, playin
         {!flipped ? (
           <div className="text-6xl md:text-8xl font-serif text-stone-900 group-hover:scale-105 transition-transform">{card.text}</div>
         ) : (
-          <div className="text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
-            {card.Icon && <div className="w-16 h-16 mb-4 opacity-90 text-stone-700"><card.Icon /></div>}
-            <div className="text-3xl md:text-4xl font-bold text-stone-900 mb-2">{card.hint}</div>
-            <div className="text-lg md:text-xl text-stone-400 tracking-widest">{card.wylie}</div>
-          </div>
-        )}
+    <div className="text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
+      {card.emoji && <div className="text-3xl mb-3">{card.emoji}</div>}
+      <div className="text-3xl md:text-4xl font-bold text-stone-900 mb-2">{card.hint}</div>
+      <div className="text-lg md:text-xl text-stone-400 tracking-widest">{card.wylie}</div>
+    </div>
+  )}
         <div className="absolute bottom-4 right-6 text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-stone-400">Tap card to flip</div>
       </div>
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
