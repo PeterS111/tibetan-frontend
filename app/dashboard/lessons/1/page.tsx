@@ -1,183 +1,190 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
+import { DEV_BYPASS_LOCKS } from "@/app/config";
 import { 
-  ChevronRight, RefreshCcw, Play, Loader2, Info, 
-  Layers, PenTool, Headphones, Shuffle, ArrowLeft, ArrowRight, CheckCircle2, X, PlusSquare, Volume2, XCircle, BookOpen
+  ChevronRight, ChevronLeft, Check, Sparkles, Repeat, Ear, Shuffle, 
+  Layers, CheckCircle2, BookOpen, Info, PenLine, Moon, Sun, Play, 
+  Volume2, Loader2, X, ArrowRight, XCircle
 } from "lucide-react";
 
-type ToneClass = 'HIGH_UNASPIRATED' | 'HIGH_ASPIRATED' | 'LOW_SEMI_ASPIRATED' | 'LOW_NASAL';
+/* ------------------------------------------------------------------ */
+/* Data & Types                                                        */
+/* ------------------------------------------------------------------ */
 
-const TIBETAN_ALPHABET = [
-  { letter: "ཀ", phonetic: "KA", wylie: "[ka]", tone: "HIGH_UNASPIRATED", gender: "Masculine", note: "A crisp, high 'k' sound with no breath." },
-  { letter: "ཁ", phonetic: "KHA", wylie: "[kha]", tone: "HIGH_ASPIRATED", gender: "Neuter", note: "Like 'k' in 'kite', but with a strong puff of air." },
-  { letter: "ག", phonetic: "GA", wylie: "[kha]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'ga'; pronounced as a low, soft 'kha'." },
-  { letter: "ང", phonetic: "NGA", wylie: "[nga]", tone: "LOW_NASAL", gender: "Very Feminine", note: "Like 'ng' in 'sing', but at the start of the syllable." },
-  { letter: "ཅ", phonetic: "CA", wylie: "[ca]", tone: "HIGH_UNASPIRATED", gender: "Masculine", note: "Like 'ch' in 'cheese', but sharp and unbreathed." },
-  { letter: "ཆ", phonetic: "CHA", wylie: "[chha]", tone: "HIGH_ASPIRATED", gender: "Neuter", note: "Like 'ch' with a strong puff of air." },
-  { letter: "ཇ", phonetic: "JA", wylie: "[chha]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'ja'; pronounced as a low, soft 'chha'." },
-  { letter: "ཉ", phonetic: "NYA", wylie: "[nya]", tone: "LOW_NASAL", gender: "Very Feminine", note: "Like 'ny' in 'canyon', spoken low in the voice." },
-  { letter: "ཏ", phonetic: "TA", wylie: "[ta]", tone: "HIGH_UNASPIRATED", gender: "Masculine", note: "A sharp 't' with the tongue touching the teeth." },
-  { letter: "ཐ", phonetic: "THA", wylie: "[tha]", tone: "HIGH_ASPIRATED", gender: "Neuter", note: "A high 't' with a strong puff of air." },
-  { letter: "ད", phonetic: "DA", wylie: "[tha]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'da'; pronounced as a low, soft 'tha'." },
-  { letter: "ན", phonetic: "NA", wylie: "[na]", tone: "LOW_NASAL", gender: "Very Feminine", note: "A standard 'n' sound, spoken low in the voice." },
-  { letter: "པ", phonetic: "PA", wylie: "[pa]", tone: "HIGH_UNASPIRATED", gender: "Masculine", note: "A crisp, high 'p' with no breath." },
-  { letter: "ཕ", phonetic: "PHA", wylie: "[pha]", tone: "HIGH_ASPIRATED", gender: "Neuter", note: "A high 'p' with a strong puff of air." },
-  { letter: "བ", phonetic: "BA", wylie: "[pha]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'ba'; pronounced as a low, soft 'pha'." },
-  { letter: "མ", phonetic: "MA", wylie: "[ma]", tone: "LOW_NASAL", gender: "Very Feminine", note: "A standard 'm' sound, spoken low in the voice." },
-  { letter: "ཙ", phonetic: "TSA", wylie: "[tsa]", tone: "HIGH_UNASPIRATED", gender: "Masculine", note: "Like 'ts' in 'cats', sharp and unbreathed." },
-  { letter: "ཚ", phonetic: "TSHA", wylie: "[ts'ha]", tone: "HIGH_ASPIRATED", gender: "Neuter", note: "High 'ts' with a strong puff of air." },
-  { letter: "ཛ", phonetic: "DZA", wylie: "[ts'ha]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'dza'; pronounced as a low, soft 'ts'ha'." },
-  { letter: "ཝ", phonetic: "WA", wylie: "[wa]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Like 'w' in 'water', spoken low." },
-  { letter: "ཞ", phonetic: "ZHA", wylie: "[sha]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'zha'; pronounced as a low, soft 'sha'." },
-  { letter: "ཟ", phonetic: "ZA", wylie: "[sa]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Written 'za'; pronounced as a low, soft 'sa'." },
-  { letter: "འ", phonetic: "'A", wylie: "[ah]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "The soft, low-toned glottal root." },
-  { letter: "ཡ", phonetic: "YA", wylie: "[ya]", tone: "LOW_SEMI_ASPIRATED", gender: "Feminine", note: "Like 'y' in 'yellow', spoken low." },
-  { letter: "ར", phonetic: "RA", wylie: "[ra]", tone: "LOW_SEMI_ASPIRATED", gender: "Sub-Feminine", note: "A lightly rolled or tapped 'r'." },
-  { letter: "ལ", phonetic: "LA", wylie: "[la]", tone: "LOW_SEMI_ASPIRATED", gender: "Sub-Feminine", note: "A standard 'l' sound." },
-  { letter: "ཤ", phonetic: "SHA", wylie: "[shha]", tone: "LOW_SEMI_ASPIRATED", gender: "Sub-Feminine", note: "Like 'sh' in 'shine', spoken high in the voice." },
-  { letter: "ས", phonetic: "SA", wylie: "[s'ha]", tone: "LOW_SEMI_ASPIRATED", gender: "Sub-Feminine", note: "A standard 's' sound, spoken high in the voice." },
-  { letter: "ཧ", phonetic: "HA", wylie: "[ha]", tone: "LOW_SEMI_ASPIRATED", gender: "Root", note: "The high-toned aspirated breath root." },
-  { letter: "ཨ", phonetic: "A", wylie: "[a]", tone: "HIGH_UNASPIRATED", gender: "Root", note: "The high-toned neutral vowel carrier." }
-];
+type Tone = "high-unasp" | "high-asp" | "low-asp" | "low-nasal";
+type Gender = "masculine" | "neuter" | "feminine" | "very-feminine" | "sub-feminine";
 
+interface Consonant {
+  tib: string;
+  translit: string;
+  pron: string; 
+  tone: Tone;
+  gender: Gender;
+  note: string;
+}
 
-
-
-const VOCABULARY = [
-  { tib: "ཁ་བ་", wylie: "kha-wa", eng: "snow", emoji: "❄️" },
-  { tib: "ང་", wylie: "nga", eng: "I / me", emoji: "🙋" },
-  { tib: "ཇ་མ་", wylie: "ja-ma", eng: "cook", emoji: "👨‍🍳" },
-  { tib: "ཉ་", wylie: "nya", eng: "fish", emoji: "🐟" },
-  { tib: "ཐ་མ་", wylie: "tha-ma", eng: "cigarette", emoji: "🚬" },
-  { tib: "ཨ་མ་", wylie: "a-ma", eng: "mother", emoji: "👩" },
-  { tib: "ན་ཚ་", wylie: "na-tsha", eng: "illness", emoji: "🏥" },
-  { tib: "ཤ་", wylie: "sha", eng: "meat", emoji: "🍖" },
-  { tib: "ཕ་མ་", wylie: "pha-ma", eng: "parents", emoji: "👨‍👩‍👧" },
-  { tib: "ཨ་ར་", wylie: "a-ra", eng: "beard", emoji: "🧔" },
-  { tib: "ཤ་བ་", wylie: "sha-wa", eng: "deer", emoji: "🦌" },
-  { tib: "ཁ་", wylie: "kha", eng: "mouth", emoji: "👄" },
-  { tib: "ར་", wylie: "ra", eng: "goat", emoji: "🐐" },
-  { tib: "ཇ་", wylie: "ja", eng: "tea", emoji: "🍵" },
-  { tib: "ཟ་མ་", wylie: "za-ma", eng: "food", emoji: "🍲" },
-  { tib: "ཉ་པ་", wylie: "nya-pa", eng: "fisherman", emoji: "🎣" },
-  { tib: "ཁ་ཚ་མ་", wylie: "kha-tsha-ma", eng: "chilli", emoji: "🌶️" },
-  { tib: "ཀ་བ་", wylie: "ka-wa", eng: "pillar", emoji: "🏛️" },
-];
-
-// Unified array for exercises (48 items)
-const COMBINED_PRACTICE_ITEMS = [
-  ...TIBETAN_ALPHABET.map(item => ({
-    id: `letter-${item.letter}`,
-    text: item.letter,
-    wylie: item.wylie,
-    hint: item.phonetic, // Hint is phonetics for letters
-    emoji: '',
-    type: 'letter'
-  })),
-  ...VOCABULARY.map(item => ({
-    id: `vocab-${item.tib}`,
-    text: item.tib,
-    wylie: item.wylie,
-    hint: item.eng, // Hint is English translation for vocab
-    emoji: item.emoji,
-    type: 'vocab'
-  }))
-];
-
-const TONE_COLORS = {
-  HIGH_UNASPIRATED: "border-t-[#0ea5e9]",
-  HIGH_ASPIRATED: "border-t-[#f59e0b]",
-  LOW_SEMI_ASPIRATED: "border-t-[#a855f7]",
-  LOW_NASAL: "border-t-[#f43f5e]"
+const TONE_META: Record<Tone, { label: string; short: string; swatch: string; ring: string; text: string; description: string }> = {
+  "high-unasp": { label: "High tone · Non-aspirated", short: "High · Unaspirated", swatch: "bg-sky-100", ring: "ring-sky-300", text: "text-sky-800", description: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright." },
+  "high-asp": { label: "High tone · Strongly aspirated", short: "High · Aspirated", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", description: "Pronounced high in the voice with a strong puff of air, as if adding a breathy ‘h’ after the sound." },
+  "low-asp": { label: "Low tone · Semi-aspirated", short: "Low · Semi-aspirated", swatch: "bg-violet-100", ring: "ring-violet-300", text: "text-violet-800", description: "Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart." },
+  "low-nasal": { label: "Low tone · Nasal", short: "Low · Nasal", swatch: "bg-rose-100", ring: "ring-rose-300", text: "text-rose-800", description: "The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air." },
 };
 
-const TONE_INFO: Record<string, { label: string, desc: string, bg: string, text: string }> = {
-  HIGH_UNASPIRATED: { label: "High · Unaspirated", desc: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.", bg: "bg-sky-50 border-sky-100", text: "text-sky-700" },
-  HIGH_ASPIRATED: { label: "High · Aspirated", desc: "Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.", bg: "bg-amber-50 border-amber-100", text: "text-amber-700" },
-  LOW_SEMI_ASPIRATED: { label: "Low · Semi-aspirated", desc: "Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.", bg: "bg-purple-50 border-purple-100", text: "text-purple-700" },
-  LOW_NASAL: { label: "Low · Nasal", desc: "Voice resonates through the nose, low in pitch, with no puff of air.", bg: "bg-rose-50 border-rose-100", text: "text-rose-700" }
+const TONE_HEX: Record<Tone, string> = {
+  "high-unasp": "#0ea5e9",
+  "high-asp": "#f59e0b",
+  "low-asp": "#8b5cf6",
+  "low-nasal": "#f43f5e",
 };
 
-const GENDER_INFO: Record<string, { bg: string, text: string, dot: string }> = {
-  'Masculine': { bg: 'bg-red-50 border-red-100', text: 'text-red-700', dot: 'bg-red-500' },
-  'Neuter': { bg: 'bg-amber-50 border-amber-100', text: 'text-amber-700', dot: 'bg-amber-500' },
-  'Feminine': { bg: 'bg-teal-50 border-teal-100', text: 'text-teal-700', dot: 'bg-teal-500' },
-  'Very Feminine': { bg: 'bg-purple-50 border-purple-100', text: 'text-purple-700', dot: 'bg-purple-500' },
-  'Sub-Feminine': { bg: 'bg-blue-50 border-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' },
-  'Root': { bg: 'bg-stone-50 border-stone-200', text: 'text-stone-600', dot: 'bg-stone-400' },
+const GENDER_META: Record<Gender, { label: string; tib: string; color: string; tint: string; text: string }> = {
+  masculine:       { label: "Masculine",     tib: "ཕོ་",         color: "#dc2626", tint: "rgba(220,38,38,0.08)",  text: "#991b1b" },
+  neuter:          { label: "Neuter",        tib: "མ་ནིང་",     color: "#eab308", tint: "rgba(234,179,8,0.14)",  text: "#854d0e" },
+  feminine:        { label: "Feminine",      tib: "མོ་",         color: "#0d9488", tint: "rgba(13,148,136,0.08)", text: "#115e59" },
+  "very-feminine": { label: "Very Feminine", tib: "ཤིན་ཏུ་མོ་", color: "#a855f7", tint: "rgba(168,85,247,0.08)", text: "#6b21a8" },
+  "sub-feminine":  { label: "Sub-Feminine",  tib: "མོ་གཤམ་",   color: "#3b82f6", tint: "rgba(59,130,246,0.08)", text: "#1e40af" },
 };
 
-export default function LessonDetailPage() {
+const CONSONANTS: Consonant[] = [
+  { tib: "ཀ", translit: "ka",  pron: "[ka]",    tone: "high-unasp", gender: "masculine",     note: "As in English ‘skate’ — high, clean, no puff of air." },
+  { tib: "ཁ", translit: "kha", pron: "[kha]",   tone: "high-asp",   gender: "neuter",        note: "Like ‘k’ in ‘kite’ with a strong breathy release." },
+  { tib: "ག", translit: "ga",  pron: "[kha]",   tone: "low-asp",    gender: "feminine",      note: "Written ‘ga’; a low semi-aspirated sound, close to a soft ‘kha’." },
+  { tib: "ང", translit: "nga", pron: "[nga]",   tone: "low-nasal",  gender: "very-feminine", note: "Nasal ‘ng’ as in ‘sing’, held at the back of the mouth." },
+  { tib: "ཅ", translit: "ca",  pron: "[ca]",    tone: "high-unasp", gender: "masculine",     note: "Like ‘ch’ in ‘chip’ but crisper — no aspiration." },
+  { tib: "ཆ", translit: "cha", pron: "[chha]",  tone: "high-asp",   gender: "neuter",        note: "Aspirated ‘ch’ — as in ‘cheese’ with a strong puff of air." },
+  { tib: "ཇ", translit: "ja",  pron: "[chha]",  tone: "low-asp",    gender: "feminine",      note: "Written ‘ja’; low semi-aspirated, softening toward a gentle ‘chha’." },
+  { tib: "ཉ", translit: "nya", pron: "[nya]",   tone: "low-nasal",  gender: "very-feminine", note: "Palatal nasal ‘ny’, as in the Spanish ‘ñ’." },
+  { tib: "ཏ", translit: "ta",  pron: "[ta]",    tone: "high-unasp", gender: "masculine",     note: "As in ‘stop’ — dental, unaspirated, high pitch." },
+  { tib: "ཐ", translit: "tha", pron: "[tha]",   tone: "high-asp",   gender: "neuter",        note: "Strongly aspirated ‘t’ — a clear breath follows the sound." },
+  { tib: "ད", translit: "da",  pron: "[tha]",   tone: "low-asp",    gender: "feminine",      note: "Low-tone ‘da’; a semi-aspirated sound, often heard as a soft ‘tha’." },
+  { tib: "ན", translit: "na",  pron: "[na]",    tone: "low-nasal",  gender: "very-feminine", note: "Dental nasal ‘n’, as in English ‘nun’." },
+  { tib: "པ", translit: "pa",  pron: "[pa]",    tone: "high-unasp", gender: "masculine",     note: "As in ‘spin’ — unaspirated ‘p’, high pitch." },
+  { tib: "ཕ", translit: "pha", pron: "[pha]",   tone: "high-asp",   gender: "neuter",        note: "Aspirated ‘p’, as in ‘pin’ — never like English ‘f’." },
+  { tib: "བ", translit: "ba",  pron: "[pha]",   tone: "low-asp",    gender: "feminine",      note: "Low-tone ‘ba’; semi-aspirated, softening toward a light ‘pha’." },
+  { tib: "མ", translit: "ma",  pron: "[ma]",    tone: "low-nasal",  gender: "very-feminine", note: "Bilabial nasal ‘m’, as in ‘mother’." },
+  { tib: "ཙ", translit: "tsa", pron: "[tsa]",   tone: "high-unasp", gender: "masculine",     note: "Like ‘ts’ in ‘cats’, spoken high and cleanly." },
+  { tib: "ཚ", translit: "tsha",pron: "[ts’ha]", tone: "high-asp",   gender: "neuter",        note: "Aspirated ‘ts’ — a puff of air follows the sound." },
+  { tib: "ཛ", translit: "dza", pron: "[ts’ha]", tone: "low-asp",    gender: "feminine",      note: "Low ‘dza’; a semi-aspirated sound, heard close to a gentle ‘tsha’." },
+  { tib: "ཝ", translit: "wa",  pron: "[wa]",    tone: "low-asp",    gender: "feminine",      note: "As in English ‘water’ — a soft, low ‘w’." },
+  { tib: "ཞ", translit: "zha", pron: "[sha]",   tone: "low-asp",    gender: "feminine",      note: "Low-tone ‘zha’, close to a soft ‘sh’ sound." },
+  { tib: "ཟ", translit: "za",  pron: "[sa]",    tone: "low-asp",    gender: "feminine",      note: "Low-tone ‘za’, often realised close to a low ‘sa’." },
+  { tib: "འ", translit: "'a",  pron: "[ah]",    tone: "low-asp",    gender: "feminine",      note: "A soft glottal ‘a’ — carries the vowel without a hard onset." },
+  { tib: "ཡ", translit: "ya",  pron: "[ya]",    tone: "low-asp",    gender: "feminine",      note: "As in ‘yes’ — palatal glide, low pitch." },
+  { tib: "ར", translit: "ra",  pron: "[ra]",    tone: "low-asp",    gender: "sub-feminine",  note: "A soft, low ‘r’ — closer to a Spanish ‘r’ than an English one." },
+  { tib: "ལ", translit: "la",  pron: "[la]",    tone: "low-asp",    gender: "sub-feminine",  note: "As in ‘look’ — clear, low ‘l’." },
+  { tib: "ཤ", translit: "sha", pron: "[shha]",  tone: "high-asp",   gender: "feminine",      note: "Like ‘sh’ in ‘shine’, spoken high in the voice." },
+  { tib: "ས", translit: "sa",  pron: "[s’ha]",  tone: "high-asp",   gender: "feminine",      note: "High-tone ‘s’, close to English ‘sun’." },
+  { tib: "ཧ", translit: "ha",  pron: "[ha]",    tone: "high-asp",   gender: "sub-feminine",  note: "Aspirated ‘h’, breathy and light." },
+  { tib: "ཨ", translit: "a",   pron: "[a]",     tone: "high-unasp", gender: "sub-feminine",  note: "The neutral vowel carrier — a clean ‘a’ with no consonant." },
+];
+
+const VOCAB = [
+  { tib: "ཁ་བ",   translit: "kha-wa",   en: "snow",       emoji: "❄️" },
+  { tib: "ང",     translit: "nga",      en: "I / me",     emoji: "🙋" },
+  { tib: "ཇ་མ",   translit: "ja-ma",    en: "cook",       emoji: "👨‍🍳" },
+  { tib: "ཉ",     translit: "nya",      en: "fish",       emoji: "🐟" },
+  { tib: "ཐ་མ",   translit: "tha-ma",   en: "cigarette",  emoji: "🚬" },
+  { tib: "ཨ་མ",   translit: "a-ma",     en: "mother",    emoji: "👩" },
+  { tib: "ན་ཚ",   translit: "na-tsha",  en: "illness",    emoji: "🏥" },
+  { tib: "ཤ",     translit: "sha",      en: "meat",       emoji: "🍖" },
+  { tib: "ཕ་མ",   translit: "pha-ma",   en: "parents",    emoji: "👨‍👩‍👧" },
+  { tib: "ཨ་ར",   translit: "a-ra",     en: "beard",      emoji: "🧔" },
+  { tib: "ཤ་བ",   translit: "sha-wa",   en: "deer",       emoji: "🦌" },
+  { tib: "ཁ",     translit: "kha",      en: "mouth",      emoji: "👄" },
+  { tib: "ར",     translit: "ra",       en: "goat",       emoji: "🐐" },
+  { tib: "ཇ",     translit: "ja",       en: "tea",        emoji: "🍵" },
+  { tib: "ཟ་མ",   translit: "za-ma",    en: "food",       emoji: "🍚" },
+  { tib: "ཉ་པ",   translit: "nya-pa",   en: "fisherman",  emoji: "🎣" },
+  { tib: "ཁ་ཚ་མ", translit: "kha-tsha-ma", en: "chilli",  emoji: "🌶️" },
+  { tib: "ཀ་བ",   translit: "ka-wa",    en: "pillar",     emoji: "🏛️" },
+];
+
+const STEPS = [
+  { id: "intro", eyebrow: "Introduction", title: "Welcome to the 30 consonants", description: "A short orientation before you meet the letters." },
+  { id: "grid", eyebrow: "Step 01", title: "The alphabet, as a type specimen", description: "Tap each letter to hear its sound and see its details." },
+  { id: "tone", eyebrow: "Step 02", title: "Understanding tone", description: "The four voice registers that colour every consonant." },
+  { id: "roots", eyebrow: "Step 03", title: "The three root sounds", description: "Trace every consonant back to ཨ, ཧ, or འ." },
+  { id: "gender", eyebrow: "Step 04", title: "Traditional gender classification", description: "The five effort-based groupings of the alphabet." },
+  { id: "vocab", eyebrow: "Step 05", title: "Nouns formed from the 30 consonants", description: "Read and hear real words built from the root letters." },
+  { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and stroke tracing." },
+  { id: "complete", eyebrow: "Final test", title: "Lesson test — unlock the next lesson", description: "Score 80% or higher on the final test to unlock The Four Vowels." },
+];
+
+/* ------------------------------------------------------------------ */
+/* Main Lesson Component                                               */
+/* ------------------------------------------------------------------ */
+
+export default function ConsonantsLesson() {
   const { getToken } = useAuth();
   
-  // Section 1 State
-  const [activeFilter, setActiveFilter] = useState<ToneClass | 'ALL'>('ALL');
+  const [selected, setSelected] = useState<Consonant | null>(null);
+  const [filter, setFilter] = useState<"all" | Tone>("all");
+  const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   const [playingItem, setPlayingItem] = useState<string | null>(null);
-  
-  // Drawer State
-  const [selectedLetter, setSelectedLetter] = useState<typeof TIBETAN_ALPHABET[0] | null>(null);
 
-  // Practice Section State
-  const [activePracticeTab, setActivePracticeTab] = useState('Memory Review'); 
-  
-  // Flashcards State
-  const [flashcardIdx, setFlashcardIdx] = useState(0);
-  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  // Progressive disclosure state
+  const [completed, setCompleted] = useState<Set<number>>(new Set());
+  const [currentStep, setCurrentStep] = useState(0);
+  const [manualExpanded, setManualExpanded] = useState<Set<number>>(new Set());
 
-  // Listen & Select State
-  const [lsOptions, setLsOptions] = useState<typeof COMBINED_PRACTICE_ITEMS>([]);
-  const [lsCorrectLetter, setLsCorrectLetter] = useState<typeof COMBINED_PRACTICE_ITEMS[0] | null>(null);
-  const [lsSelectedLetter, setLsSelectedLetter] = useState<string | null>(null);
+  const total = STEPS.length;
+  const progress = Math.round((completed.size / total) * 100);
 
-  // Match State
-  type MatchQuestion = {
-    target: typeof COMBINED_PRACTICE_ITEMS[0];
-    options: typeof COMBINED_PRACTICE_ITEMS[0][];
+  const statusOf = (i: number): "done" | "current" | "upcoming" =>
+    completed.has(i) ? "done" : i === currentStep ? "current" : "upcoming";
+    
+  const isExpanded = (i: number) =>
+    DEV_BYPASS_LOCKS || i === currentStep || completed.has(i) || manualExpanded.has(i);
+
+  const scrollToStep = (i: number) => {
+    if (typeof window === "undefined") return;
+    window.requestAnimationFrame(() => {
+      document.getElementById(`step-${STEPS[i].id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
-  const [matchQuestions, setMatchQuestions] = useState<MatchQuestion[]>([]);
-  const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({});
 
-  // Memory Review State
-  const [reviewDeck, setReviewDeck] = useState<typeof COMBINED_PRACTICE_ITEMS>([]);
-  const [reviewedCount, setReviewedCount] = useState(0);
-  const [reviewRating, setReviewRating] = useState<'Hard' | 'Good' | 'Easy' | null>(null);
-
-  // Initialize Memory Review deck when the tab is clicked
-  useEffect(() => {
-    if (activePracticeTab === 'Memory Review' && reviewDeck.length === 0 && reviewedCount === 0) {
-      setReviewDeck([...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random()));
+  const toggleStep = (i: number) => {
+    if (i === currentStep) {
+      setManualExpanded((prev) => {
+        const next = new Set(prev);
+        if (next.has(i)) next.delete(i); else next.add(i);
+        return next;
+      });
+      return;
     }
-  }, [activePracticeTab, reviewDeck.length, reviewedCount]);
-
-  const handleReviewNext = () => {
-    if (!reviewRating || reviewDeck.length === 0) return;
-
-    const currentCard = reviewDeck[0];
-    let newDeck = reviewDeck.slice(1);
-
-    if (reviewRating === 'Hard') {
-      // Re-insert near the front so they see it again very soon (within the next 2-3 cards)
-      const insertPos = Math.min(Math.floor(Math.random() * 3) + 1, newDeck.length);
-      newDeck.splice(insertPos, 0, currentCard);
-    } else if (reviewRating === 'Good') {
-      // Re-insert at the very end of the deck
-      newDeck.push(currentCard);
+    if (completed.has(i) || manualExpanded.has(i)) {
+      setManualExpanded((prev) => {
+        const next = new Set(prev);
+        if (next.has(i)) next.delete(i); else next.add(i);
+        return next;
+      });
+    } else if (DEV_BYPASS_LOCKS) {
+      setManualExpanded((prev) => new Set(prev).add(i));
     }
-    // If 'Easy', it is completely removed from the newDeck.
-
-    setReviewDeck(newDeck);
-    setReviewedCount(prev => prev + 1);
-    setReviewRating(null); // Reset rating for the next card
   };
 
-  const resetReview = () => {
-    setReviewDeck([...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random()));
-    setReviewedCount(0);
-    setReviewRating(null);
+  const goPrev = (i: number) => {
+    const target = Math.max(0, i - 1);
+    setCurrentStep(target);
+    scrollToStep(target);
   };
+
+  const goContinue = (i: number) => {
+    setCompleted((prev) => new Set(prev).add(i));
+    setManualExpanded((prev) => {
+      const next = new Set(prev);
+      next.delete(i);
+      return next;
+    });
+    const target = Math.min(total - 1, i + 1);
+    setCurrentStep(target);
+    scrollToStep(target);
+  };
+
+  const filtered = useMemo(() => (filter === "all" ? CONSONANTS : CONSONANTS.filter((c) => c.tone === filter)), [filter]);
 
   const playAudio = async (text: string) => {
     if (playingItem) return;
@@ -187,14 +194,8 @@ export default function LessonDetailPage() {
       const formData = new FormData();
       formData.append("text", text);
       formData.append("language", "en"); 
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { 
-        method: "POST", 
-        headers: { Authorization: `Bearer ${token}` }, 
-        body: formData 
-      });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tts`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
       const data = await res.json();
-
       if (data.audio_sequence && data.audio_sequence.length > 0) {
         const part = data.audio_sequence[0];
         if (part.audio_base64) {
@@ -213,837 +214,347 @@ export default function LessonDetailPage() {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
-      
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
-      
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.15);
-      
       gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.15);
-    } catch (e) {
-      console.error("Audio beep failed", e);
-    }
+    } catch (e) { console.error("Audio beep failed", e); }
   };
-
-  const handleNextCard = () => {
-    setIsCardFlipped(false);
-    setFlashcardIdx((prev) => (prev + 1) % COMBINED_PRACTICE_ITEMS.length);
-  };
-
-  const handlePrevCard = () => {
-    setIsCardFlipped(false);
-    setFlashcardIdx((prev) => (prev - 1 + COMBINED_PRACTICE_ITEMS.length) % COMBINED_PRACTICE_ITEMS.length);
-  };
-
-  const currentFlashcard = COMBINED_PRACTICE_ITEMS[flashcardIdx];
-
-  const generateListenSelectRound = () => {
-    const shuffled = [...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random());
-    const selected4 = shuffled.slice(0, 4);
-    setLsOptions(selected4);
-    setLsCorrectLetter(selected4[Math.floor(Math.random() * 4)]);
-    setLsSelectedLetter(null);
-  };
-
-  useEffect(() => {
-    if (activePracticeTab === 'Listen & Select' && lsOptions.length === 0) generateListenSelectRound();
-  }, [activePracticeTab]);
-
-  const generateMatchRound = () => {
-    const shuffled = [...COMBINED_PRACTICE_ITEMS].sort(() => 0.5 - Math.random());
-    const targets = shuffled.slice(0, 6); 
-    
-    const newQuestions = targets.map(target => {
-      const distractors = COMBINED_PRACTICE_ITEMS.filter(item => item.id !== target.id)
-                                          .sort(() => 0.5 - Math.random())
-                                          .slice(0, 2);
-      const options = [target, ...distractors].sort(() => 0.5 - Math.random());
-      return { target, options };
-    });
-    
-    setMatchQuestions(newQuestions);
-    setMatchAnswers({});
-  };
-
-  useEffect(() => {
-    if (activePracticeTab === 'Match' && matchQuestions.length === 0) generateMatchRound();
-  }, [activePracticeTab]);
-
-  const handleMatchSelect = (targetText: string, selectedOptionText: string) => {
-    const isCorrect = targetText === selectedOptionText;
-    
-    if (matchAnswers[targetText]) {
-      if (isCorrect) playAudio(selectedOptionText);
-      return; 
-    }
-    
-    if (isCorrect) {
-      playAudio(selectedOptionText);
-    } else {
-      playErrorBeep();
-    }
-    
-    setMatchAnswers(prev => ({ ...prev, [targetText]: selectedOptionText }));
-  };
-
-  const filteredAlphabet = activeFilter === 'ALL' 
-    ? TIBETAN_ALPHABET 
-    : TIBETAN_ALPHABET.filter(item => item.tone === activeFilter);
 
   return (
     <div className="bg-[#fdfbf7] min-h-screen text-stone-800 font-sans pb-40 relative overflow-x-hidden">
-      
       <div className="max-w-5xl mx-auto px-6 py-8">
         
-        {/* BREADCRUMBS & HERO */}
-        <div className="flex items-center gap-2 text-xs font-medium text-stone-500 mb-8 uppercase tracking-widest">
-          <Link href="/dashboard/lessons" className="hover:text-stone-800 transition-colors">My Lessons</Link>
-          <ChevronRight size={14} />
+        {/* Breadcrumb */}
+        <div className="mb-6 flex items-center gap-2 text-xs font-medium text-stone-500 uppercase tracking-widest">
+          <Link href="/dashboard/lessons" className="hover:text-stone-800 transition-colors">
+            My Lessons
+          </Link>
+          <ChevronRight className="size-3" />
           <span>Unit 01</span>
-          <ChevronRight size={14} />
+          <ChevronRight className="size-3" />
           <span className="text-stone-800 font-bold">The 30 Consonants</span>
         </div>
 
-        <div className="space-y-4 mb-12">
-          <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em]">Lesson 01 · Foundations</div>
-          <h1 className="text-4xl sm:text-5xl font-serif text-stone-900 leading-tight">The 30 Tibetan Consonants</h1>
-          <div className="text-xl font-medium text-stone-600 mb-4 font-serif">གསལ་བྱེད་སུམ་ཅུ།</div>
-          <p className="text-[15px] text-stone-600 leading-relaxed max-w-3xl">
-            The Tibetan alphabet is built on thirty root letters — the foundation of every word you will read, write, and speak. Learn each letter's shape, tone, and traditional gender classification, then practise with vocabulary formed from these consonants alone.
-          </p>
-        </div>
-
-        {/* PROGRESS GRID */}
-        <div className="mb-16">
-          <div className="flex justify-between items-end mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500">Lesson Progress</span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-500">6 of 8 Sections</span>
-          </div>
-          <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden mb-8">
-            <div className="h-full bg-amber-400 w-3/4 rounded-full"></div>
-          </div>
-          <div className="grid grid-cols-3 border border-stone-200 rounded-lg bg-[#fdfbf7]">
-            <div className="p-6 flex flex-col items-center justify-center border-r border-stone-200">
-              <span className="text-3xl font-serif text-stone-800 mb-1">30</span>
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Letters</span>
+        {/* Hero */}
+        <section className="mb-8 grid gap-6 border border-[#e8e4d9] bg-white rounded-xl shadow-sm p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10">
+          <div>
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-500">
+              Lesson 01 · Foundations
             </div>
-            <div className="p-6 flex flex-col items-center justify-center border-r border-stone-200">
-              <span className="text-3xl font-serif text-stone-800 mb-1">4</span>
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Tones</span>
-            </div>
-            <div className="p-6 flex flex-col items-center justify-center">
-              <span className="text-3xl font-serif text-stone-800 mb-1">5</span>
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Genders</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full h-px bg-stone-200 mb-16"></div>
-
-        {/* ========================================================= */}
-        {/* SECTION 01: THE ALPHABET GRID */}
-        {/* ========================================================= */}
-        <div className="mb-20">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 01</div>
-              <h2 className="text-3xl font-serif text-stone-900">The alphabet, as a type specimen</h2>
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-stone-200 rounded-lg text-xs font-bold text-stone-600 hover:bg-stone-50 transition-colors uppercase tracking-widest">
-              <RefreshCcw size={14} /> Study Mode
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 mb-8 text-[10px] font-bold tracking-widest uppercase">
-            <button onClick={() => setActiveFilter('ALL')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'ALL' ? 'bg-stone-900 text-white' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>All 30</button>
-            <button onClick={() => setActiveFilter('HIGH_UNASPIRATED')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'HIGH_UNASPIRATED' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>High · Unaspirated</button>
-            <button onClick={() => setActiveFilter('HIGH_ASPIRATED')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'HIGH_ASPIRATED' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>High · Aspirated</button>
-            <button onClick={() => setActiveFilter('LOW_SEMI_ASPIRATED')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'LOW_SEMI_ASPIRATED' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>Low · Semi-Aspirated</button>
-            <button onClick={() => setActiveFilter('LOW_NASAL')} className={`px-4 py-2 rounded transition-colors ${activeFilter === 'LOW_NASAL' ? 'bg-stone-100 text-stone-900 border border-stone-300' : 'bg-transparent text-stone-500 border border-stone-200 hover:border-stone-400'}`}>Low · Nasal</button>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border-t border-l border-stone-200 bg-white">
-            {filteredAlphabet.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => { playAudio(item.letter); setSelectedLetter(item); }}
-                className={`relative flex flex-col items-center justify-center p-8 border-b border-r border-stone-200 transition-colors group h-40 border-t-4 ${TONE_COLORS[item.tone as ToneClass]} ${playingItem === item.letter || selectedLetter?.letter === item.letter ? 'bg-stone-100' : 'bg-white hover:bg-stone-50'}`}
-              >
-                <div className="text-5xl font-serif text-stone-900 group-hover:scale-110 transition-transform mb-4">{item.letter}</div>
-                <div className="absolute bottom-4 left-4 text-left">
-                  <div className="text-[11px] font-bold tracking-widest text-stone-800 uppercase leading-none mb-1">{item.phonetic}</div>
-                  <div className="text-[10px] text-stone-400 tracking-widest leading-none">{item.wylie}</div>
-                </div>
-                {playingItem === item.letter && <div className="absolute top-4 right-4"><Loader2 className="w-4 h-4 animate-spin text-stone-400" /></div>}
-              </button>
-            ))}
-          </div>
-
-          {/* LEGEND */}
-          <div className="mt-6 flex flex-wrap items-center gap-6 text-[10px] font-bold text-stone-500 uppercase tracking-widest">
-            <span className="text-stone-400">Legend</span>
-            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#0ea5e9]"></div> High · Unaspirated</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#f59e0b]"></div> High · Aspirated</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#a855f7]"></div> Low · Semi-aspirated</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-1.5 bg-[#f43f5e]"></div> Low · Nasal</div>
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SECTION 02: UNDERSTANDING TONE */}
-        {/* ========================================================= */}
-        <div className="mb-20">
-          <div className="mb-8">
-            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02</div>
-            <h2 className="text-3xl font-serif text-stone-900">Understanding tone</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            
-            {/* Card 1: High Unaspirated */}
-            <div className="bg-white border border-sky-300 p-6 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-sky-800 bg-sky-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Unaspirated</div>
-              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">6 letters</h3>
-              <p className="text-sm text-stone-600 mb-6 flex-1">Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright.</p>
-              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
-                {['ཀ', 'ཅ', 'ཏ', 'པ', 'ཙ', 'ཨ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-sky-100 border-sky-400 text-sky-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 2: High Aspirated */}
-            <div className="bg-white border border-amber-300 p-6 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-amber-800 bg-amber-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">High · Aspirated</div>
-              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">8 letters</h3>
-              <p className="text-sm text-stone-600 mb-6 flex-1">Pronounced high in the voice with a strong puff of air, as if adding a breathy 'h' after the sound.</p>
-              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
-                {['ཁ', 'ཆ', 'ཐ', 'ཕ', 'ཚ', 'ཤ', 'ས', 'ཧ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-amber-100 border-amber-400 text-amber-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 3: Low Semi-aspirated */}
-            <div className="bg-white border border-purple-300 p-6 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-purple-800 bg-purple-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Semi-aspirated</div>
-              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">12 letters</h3>
-              <p className="text-sm text-stone-600 mb-6 flex-1">Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart.</p>
-              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
-                {['ག', 'ཇ', 'ད', 'བ', 'ཛ', 'ཝ', 'ཞ', 'ཟ', 'འ', 'ཡ', 'ར', 'ལ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-purple-100 border-purple-400 text-purple-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Card 4: Low Nasal */}
-            <div className="bg-white border border-rose-300 p-6 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-rose-800 bg-rose-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-4">Low · Nasal</div>
-              <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">4 letters</h3>
-              <p className="text-sm text-stone-600 mb-6 flex-1">The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air.</p>
-              <div className="flex flex-wrap gap-2 text-xl font-serif text-stone-800">
-                {['ང', 'ཉ', 'ན', 'མ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`w-9 h-9 flex items-center justify-center border rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-rose-100 border-rose-400 text-rose-800' : 'border-stone-200 hover:bg-stone-50 hover:border-stone-300'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white border border-stone-200 p-4 rounded-lg flex items-start gap-3">
-             <Info className="text-amber-500 shrink-0 mt-0.5" size={18} />
-             <p className="text-sm text-stone-600">
-               The lines drawn above and below the transliteration in traditional Tibetan textbooks indicate <strong>high tone</strong> and <strong>low tone</strong> respectively. Pay close attention to your teacher's pronunciation, and repeat each consonant the same way it is spoken.
-             </p>
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SECTION 02B: ROOT SOUNDS */}
-        {/* ========================================================= */}
-        <div className="mb-20">
-          <div className="mb-8">
-            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 02B</div>
-            <h2 className="text-3xl font-serif text-stone-900 mb-4">The three root sounds</h2>
-            <p className="text-sm text-stone-600 mb-8 max-w-4xl leading-relaxed">
-              Traditional Tibetan phonology traces every consonant back to one of three root sounds — seed syllables that anchor a whole tone family. Learn these three, and the rest of the alphabet becomes a family tree rather than a list.
+            <h1 className="font-serif text-3xl leading-tight tracking-tight md:text-5xl text-stone-900">
+              The 30 Tibetan Consonants
+            </h1>
+            <p className="mt-1 font-serif text-2xl italic text-stone-500">གསལ་བྱེད་སུམ་ཅུ།</p>
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-stone-600">
+              The Tibetan alphabet is built on thirty root letters — the foundation of every word you
+              will read, write, and speak. Move through the lesson one step at a time; every section
+              stays available for review whenever you want to jump ahead.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Card 1: Neutral Root */}
-            <div className="bg-white border border-sky-300 p-8 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-sky-800 bg-sky-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-6">Neutral Root · High Register</div>
-              <button onClick={() => { playAudio('ཨ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཨ') || null); }} className={`flex items-end gap-2 mb-6 w-fit transition-opacity hover:opacity-70 ${playingItem === 'ཨ' || selectedLetter?.letter === 'ཨ' ? 'opacity-50' : ''}`}>
-                <span className="text-6xl font-serif text-stone-900 leading-none">ཨ</span><span className="text-lg font-serif italic text-stone-500 mb-1">a</span>
-              </button>
-              <p className="text-sm text-stone-600 mb-8 leading-relaxed flex-1">
-                The neutral vowel carrier — a clean 'a' with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice.
-              </p>
-              <div className="border-t border-stone-100 pt-4">
-                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
-                <div className="font-serif text-lg tracking-[0.2em] text-stone-800">ཨ ཀ ཅ ཏ པ ཙ</div>
+          <div className="w-full md:w-72">
+            <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-500">
+              <span>Lesson progress</span>
+              <span className="text-amber-500">
+                {completed.size} of {total} sections
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="border border-[#e8e4d9] p-2 bg-stone-50 rounded-lg">
+                <div className="font-serif text-2xl text-stone-800">30</div>
+                <div className="text-[9px] uppercase tracking-widest text-stone-500">Letters</div>
               </div>
-            </div>
-            
-            {/* Card 2: Aspirated Root */}
-            <div className="bg-white border border-amber-300 p-8 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-amber-800 bg-amber-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-6">Aspirated Root · Breath</div>
-              <button onClick={() => { playAudio('ཧ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'ཧ') || null); }} className={`flex items-end gap-2 mb-6 w-fit transition-opacity hover:opacity-70 ${playingItem === 'ཧ' || selectedLetter?.letter === 'ཧ' ? 'opacity-50' : ''}`}>
-                <span className="text-6xl font-serif text-stone-900 leading-none">ཧ</span><span className="text-lg font-serif italic text-stone-500 mb-1">ha</span>
-              </button>
-              <p className="text-sm text-stone-600 mb-8 leading-relaxed flex-1">
-                The breath root — a light, aspirated 'h'. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air.
-              </p>
-              <div className="border-t border-stone-100 pt-4">
-                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
-                <div className="font-serif text-lg tracking-[0.2em] text-stone-800">ཧ ཁ ཆ ཐ ཕ ཚ ཤ ས</div>
+              <div className="border border-[#e8e4d9] p-2 bg-stone-50 rounded-lg">
+                <div className="font-serif text-2xl text-stone-800">4</div>
+                <div className="text-[9px] uppercase tracking-widest text-stone-500">Tones</div>
               </div>
-            </div>
-
-            {/* Card 3: Glottal Root */}
-            <div className="bg-white border border-rose-300 p-8 flex flex-col rounded-lg">
-              <div className="text-[10px] font-bold text-rose-800 bg-rose-100 w-fit px-2 py-1 rounded uppercase tracking-widest mb-6">Glottal Root · Voiced Flow</div>
-              <button onClick={() => { playAudio('འ'); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === 'འ') || null); }} className={`flex items-end gap-2 mb-6 w-fit transition-opacity hover:opacity-70 ${playingItem === 'འ' || selectedLetter?.letter === 'འ' ? 'opacity-50' : ''}`}>
-                <span className="text-6xl font-serif text-stone-900 leading-none">འ</span><span className="text-lg font-serif italic text-stone-500 mb-1">'a</span>
-              </button>
-              <p className="text-sm text-stone-600 mb-8 leading-relaxed flex-1">
-                The glottal root — a soft, voiced 'a' that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཝ ཞ ཟ ཡ ར ལ), and the nasals (ང ཉ ན མ).
-              </p>
-              <div className="border-t border-stone-100 pt-4">
-                <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Family</div>
-                <div className="font-serif text-lg tracking-[0.2em] text-stone-800">འ ག ཇ ད བ ཛ ཝ ཞ ཟ ཡ ར ལ ང ཉ ན མ</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SECTION 03: GENDER CLASSIFICATION */}
-        {/* ========================================================= */}
-        <div className="mb-20">
-          <div className="mb-8">
-            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 03</div>
-            <h2 className="text-3xl font-serif text-stone-900 mb-4">Traditional gender classification</h2>
-            <p className="text-sm text-stone-600 mb-8 max-w-4xl leading-relaxed">
-              The thirty consonants are traditionally divided into five gender groups depending on how much effort is required for their pronunciation.
-            </p>
-          </div>
-
-          <div className="border border-stone-200 rounded-lg overflow-hidden bg-white shadow-sm">
-            <div className="grid grid-cols-12 bg-stone-50 border-b border-stone-200 p-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest hidden sm:grid">
-              <div className="col-span-3">Gender</div>
-              <div className="col-span-3">Tibetan</div>
-              <div className="col-span-6">Consonants</div>
-            </div>
-
-            {/* Row 1: Masculine */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#fff5f5] p-4 sm:items-center gap-4 sm:gap-0">
-              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-red-500"></div> Masculine</div>
-              <div className="col-span-3 font-serif text-lg text-stone-800">ཕོ་</div>
-              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-red-700">
-                {['ཀ', 'ཅ', 'ཏ', 'པ', 'ཙ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-red-100 border-red-400' : 'border-red-200 hover:border-red-300 hover:bg-red-50'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Row 2: Neuter */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#fffbeb] p-4 sm:items-center gap-4 sm:gap-0">
-              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-amber-400"></div> Neuter</div>
-              <div className="col-span-3 font-serif text-lg text-stone-800">མ་ནིང་</div>
-              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-amber-700">
-                {['ཁ', 'ཆ', 'ཐ', 'ཕ', 'ཚ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-amber-100 border-amber-400' : 'border-amber-200 hover:border-amber-300 hover:bg-amber-50'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Row 3: Feminine */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#f0fdfa] p-4 sm:items-center gap-4 sm:gap-0">
-              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-teal-500"></div> Feminine</div>
-              <div className="col-span-3 font-serif text-lg text-stone-800">མོ་</div>
-              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-teal-700">
-                {['ག', 'ཇ', 'ད', 'བ', 'ཛ', 'ཝ', 'ཞ', 'ཟ', 'འ', 'ཡ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-teal-100 border-teal-400' : 'border-teal-200 hover:border-teal-300 hover:bg-teal-50'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Row 4: Very Feminine */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-stone-200 bg-[#faf5ff] p-4 sm:items-center gap-4 sm:gap-0">
-              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Very Feminine</div>
-              <div className="col-span-3 font-serif text-lg text-stone-800">ཤིན་ཏུ་མོ་</div>
-              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-purple-700">
-                {['ང', 'ཉ', 'ན', 'མ'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-purple-100 border-purple-400' : 'border-purple-200 hover:border-purple-300 hover:bg-purple-50'}`}>{char}</button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Row 5: Sub-Feminine */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 bg-[#eff6ff] p-4 sm:items-center gap-4 sm:gap-0">
-              <div className="col-span-3 flex items-center gap-2 font-bold text-stone-800"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Sub-Feminine</div>
-              <div className="col-span-3 font-serif text-lg text-stone-800">མོ་གཤམ་</div>
-              <div className="col-span-6 flex flex-wrap gap-2 text-lg font-serif text-blue-700">
-                {['ར', 'ལ', 'ཤ', 'ས'].map(char => (
-                  <button key={char} onClick={() => { playAudio(char); setSelectedLetter(TIBETAN_ALPHABET.find(a => a.letter === char) || null); }} disabled={playingItem !== null} className={`bg-white border px-3 py-1 rounded transition-colors ${playingItem === char || selectedLetter?.letter === char ? 'bg-blue-100 border-blue-400' : 'border-blue-200 hover:border-blue-300 hover:bg-blue-50'}`}>{char}</button>
-                ))}
+              <div className="border border-[#e8e4d9] p-2 bg-stone-50 rounded-lg">
+                <div className="font-serif text-2xl text-stone-800">5</div>
+                <div className="text-[9px] uppercase tracking-widest text-stone-500">Genders</div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* ========================================================= */}
-        {/* SECTION 04: VOCABULARY */}
-        {/* ========================================================= */}
-        <div className="mb-20">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-            <div>
-              <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 04</div>
-              <h2 className="text-3xl font-serif text-stone-900">Nouns formed from the 30 consonants</h2>
-            </div>
-            <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded text-[10px] font-bold uppercase tracking-widest">
-              Vocabulary · མིང་ཚིག་
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {VOCABULARY.map((word, i) => (
-              <div key={i} className={`bg-white border p-5 rounded-xl shadow-sm transition-colors flex flex-col justify-between h-40 relative group ${playingItem === word.tib ? 'border-amber-400 bg-amber-50/30' : 'border-stone-200 hover:border-amber-300'}`}>
-                <div className="text-2xl mb-2">{word.emoji}</div>
-                <div>
-                  <div className="text-2xl font-serif text-stone-900 mb-1 leading-none">{word.tib}</div>
-                  <div className="text-[10px] font-medium text-stone-400 italic mb-1">{word.wylie}</div>
-                  <div className="text-sm font-bold text-stone-700">{word.eng}</div>
+        <div className="space-y-4">
+          {/* Step 0: Introduction */}
+          <StepCard index={0} total={total} step={STEPS[0]} status={statusOf(0)} isExpanded={isExpanded(0)} onToggle={() => toggleStep(0)} onPrev={() => goPrev(0)} onContinue={() => goContinue(0)} isFirst isLast={false}>
+            <div className="grid gap-6 md:grid-cols-[1.2fr,1fr]">
+              <div>
+                <p className="text-[15px] leading-relaxed text-stone-600">
+                  Over the next few steps you'll meet all thirty consonants — first as a full type
+                  specimen, then broken down by <span className="text-stone-900 font-bold">tone</span>,{" "}
+                  <span className="text-stone-900 font-bold">root sound</span>, and{" "}
+                  <span className="text-stone-900 font-bold">traditional gender</span>. Along the way you'll hear each
+                  letter, read real vocabulary built from them, and finish with a short practice suite.
+                </p>
+                <ul className="mt-6 space-y-3 text-sm text-stone-600">
+                  <li className="flex items-start gap-3">
+                    <Sparkles className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                    Tap any letter card to hear its sound and read the pronunciation notes.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Layers className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                    Steps unlock as you continue, but you can peek at any section from its header.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                    Completed steps are marked and stay open for review.
+                  </li>
+                </ul>
+              </div>
+              <div className="p-6 bg-white border border-[#e8e4d9] rounded-xl shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-4">
+                  What you'll learn
                 </div>
-                <button 
-                  onClick={() => playAudio(word.tib)}
-                  disabled={playingItem !== null}
-                  className={`absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center border rounded-lg transition-colors ${playingItem === word.tib ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600'}`}
-                >
-                  {playingItem === word.tib ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} className="fill-current" />}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* SECTION 05: PRACTICE & EXERCISES */}
-        {/* ========================================================= */}
-        <div className="mb-20">
-          <div className="mb-8">
-            <div className="text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] mb-2">Section 05</div>
-            <h2 className="text-3xl font-serif text-stone-900">Practice & exercises</h2>
-          </div>
-
-          <div className="bg-[#fcfaf5] border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
-            
-            {/* TABS */}
-            <div className="flex flex-wrap items-center justify-between border-b border-stone-200 bg-white">
-              <div className="flex overflow-x-auto custom-scrollbar w-full">
-                {[
-                  { name: 'Flashcards', icon: Layers },
-                  { name: 'Trace', icon: PenTool },
-                  { name: 'Listen & Select', icon: Headphones },
-                  { name: 'Match', icon: Shuffle },
-                  { name: 'Memory Review', icon: RefreshCcw }
-                ].map((tab) => (
-                  <button 
-                    key={tab.name}
-                    onClick={() => setActivePracticeTab(tab.name)}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activePracticeTab === tab.name ? 'border-amber-500 text-stone-900 bg-stone-50/50' : 'border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50'}`}
-                  >
-                    <tab.icon size={16} /> {tab.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* TAB CONTENT: FLASHCARDS */}
-            {activePracticeTab === 'Flashcards' && (
-              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
-                <div className="w-full max-w-2xl flex justify-between items-center mb-4 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-stone-900 text-white px-2 py-1 rounded">ALL CARDS</span>
-                  </div>
-                  <span>Card {flashcardIdx + 1} of {COMBINED_PRACTICE_ITEMS.length}</span>
-                </div>
-
-                <div 
-                  onClick={() => setIsCardFlipped(!isCardFlipped)}
-                  className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group"
-                >
-                  {!isCardFlipped ? (
-                    <div className="text-6xl md:text-8xl font-serif text-stone-900 group-hover:scale-105 transition-transform text-center px-4">
-                      {currentFlashcard.text}
-                    </div>
-                  ) : (
-                    <div className="text-center animate-in fade-in zoom-in-95 duration-200">
-                      {currentFlashcard.emoji && <div className="text-3xl mb-3">{currentFlashcard.emoji}</div>}
-                      <div className="text-3xl md:text-4xl font-bold text-stone-900 mb-2">{currentFlashcard.hint}</div>
-                      <div className="text-lg md:text-xl text-stone-400 tracking-widest">{currentFlashcard.wylie}</div>
-                    </div>
-                  )}
-                  <div className="absolute bottom-4 right-6 text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-stone-400 transition-colors">
-                    Tap card to flip
-                  </div>
-                </div>
-
-                <div className="w-full max-w-2xl flex items-center justify-between mt-8">
-                  <button onClick={handlePrevCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
-                    <ArrowLeft size={16} /> Previous
-                  </button>
-                  <button 
-                    onClick={() => playAudio(currentFlashcard.text)}
-                    disabled={playingItem !== null}
-                    className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors"
-                  >
-                    {playingItem === currentFlashcard.text ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
-                    Play sound
-                  </button>
-                  <button onClick={handleNextCard} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
-                    Next <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* TAB CONTENT: LISTEN & SELECT */}
-            {activePracticeTab === 'Listen & Select' && (
-              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
-                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Listen to the sound and choose the correct option.</p>
-
-                <button
-                  onClick={() => lsCorrectLetter && playAudio(lsCorrectLetter.text)}
-                  disabled={playingItem !== null}
-                  className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 mb-12 shadow-md transition-colors"
-                >
-                  {playingItem === lsCorrectLetter?.text ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
-                  PLAY SOUND
-                </button>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
-                  {lsOptions.map((opt) => {
-                    const isSelected = lsSelectedLetter === opt.text;
-                    const isCorrect = lsCorrectLetter?.text === opt.text;
-                    const showCorrect = isSelected && isCorrect;
-                    const showWrong = isSelected && !isCorrect;
-
-                    let borderClass = "border-stone-200 hover:border-amber-300";
-                    let bgClass = "bg-white hover:bg-stone-50 cursor-pointer";
-                    let textClass = "text-stone-900";
-
-                    if (showCorrect) {
-                      borderClass = "border-emerald-500 ring-2 ring-emerald-500/20";
-                      bgClass = "bg-emerald-50";
-                      textClass = "text-emerald-700";
-                    } else if (showWrong) {
-                      borderClass = "border-rose-500";
-                      bgClass = "bg-rose-50";
-                      textClass = "text-rose-700";
-                    } else if (lsSelectedLetter && isCorrect) {
-                      borderClass = "border-emerald-300 border-dashed";
-                      bgClass = "bg-emerald-50/50";
-                      textClass = "text-emerald-600";
-                    } else if (lsSelectedLetter) {
-                      borderClass = "border-stone-100 opacity-50";
-                      bgClass = "bg-stone-50 cursor-default";
-                    }
-
-                    return (
-                      <button
-                        key={opt.id}
-                        onClick={() => {
-                          if (!lsSelectedLetter) {
-                            setLsSelectedLetter(opt.text);
-                            if (opt.text === lsCorrectLetter?.text) {
-                               playAudio(opt.text); 
-                            } else {
-                               playErrorBeep();
-                            }
-                          }
-                        }}
-                        disabled={lsSelectedLetter !== null}
-                        className={`relative aspect-square flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border-2 transition-all ${borderClass} ${bgClass}`}
-                      >
-                         <span className={`text-4xl sm:text-5xl lg:text-6xl font-serif text-center transition-colors ${textClass}`}>{opt.text}</span>
-                         {showCorrect && <div className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in"><CheckCircle2 size={20}/></div>}
-                         {showWrong && <div className="absolute top-3 right-3 text-rose-500 animate-in zoom-in"><XCircle size={20}/></div>}
-                      </button>
-                    )
-                  })}
-                </div>
-
-                {lsSelectedLetter && (
-                  <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-                    <button onClick={generateListenSelectRound} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2">
-                      Next Round <ArrowRight size={18} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB CONTENT: MATCH */}
-            {activePracticeTab === 'Match' && (
-              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
-                <p className="text-sm text-stone-500 mb-8 self-start w-full max-w-4xl">Match the Tibetan with its English or Phonetic meaning.</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
-                  {matchQuestions.map((q, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 rounded-lg shadow-sm hover:shadow-md transition-shadow gap-4 sm:gap-2">
-                      
-                      {/* Left: Tibetan Text */}
-                      <div className="text-3xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left">{q.target.text}</div>
-                      
-                      {/* Right: Hint Options */}
-                      <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto sm:mr-2">
-                        {q.options.map(opt => {
-                          const isSelected = matchAnswers[q.target.text] === opt.text;
-                          const isCorrect = q.target.text === opt.text;
-                          const isAnswered = !!matchAnswers[q.target.text];
-                          
-                          let btnClass = "border-stone-200 text-stone-600 hover:bg-stone-50 cursor-pointer";
-                          
-                          if (isAnswered) {
-                            if (isCorrect) {
-                              if (isSelected) {
-                                btnClass = "border-emerald-500 bg-emerald-50 text-emerald-700 cursor-pointer hover:bg-emerald-100 hover:border-emerald-500 shadow-sm";
-                              } else {
-                                btnClass = "border-emerald-400 border-dashed bg-emerald-50/50 text-emerald-600 cursor-pointer hover:bg-emerald-100 hover:border-solid hover:border-emerald-500";
-                              }
-                            } else if (isSelected) {
-                              btnClass = "border-rose-500 bg-rose-50 text-rose-700 cursor-default";
-                            } else {
-                              btnClass = "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default";
-                            }
-                          }
-
-                          const isCurrentlyPlaying = playingItem === opt.text && isCorrect;
-
-                          return (
-                            <button 
-                              key={opt.id}
-                              onClick={() => handleMatchSelect(q.target.text, opt.text)}
-                              disabled={playingItem !== null || (isAnswered && !isCorrect)}
-                              className={`relative px-4 py-2 text-[11px] font-bold lowercase tracking-widest border rounded transition-all flex items-center justify-center min-w-[4rem] text-center ${btnClass}`}
-                            >
-                              {isCurrentlyPlaying ? <Loader2 size={12} className="animate-spin absolute" /> : opt.hint}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                    </div>
+                <ol className="space-y-3 text-sm font-medium text-stone-700">
+                  {STEPS.slice(1, -1).map((s, i) => (
+                    <li key={s.id} className="flex items-start gap-3">
+                      <span className="grid size-6 shrink-0 place-items-center bg-stone-100 rounded text-stone-500 font-bold text-xs">
+                        {i + 1}
+                      </span>
+                      <span className="mt-0.5">{s.title}</span>
+                    </li>
                   ))}
-                </div>
-
-                {Object.keys(matchAnswers).length === matchQuestions.length && matchQuestions.length > 0 && (
-                  <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-                    <button 
-                      onClick={generateMatchRound} 
-                      className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2"
-                    >
-                      Next Round <ArrowRight size={18} />
-                    </button>
-                  </div>
-                )}
+                </ol>
               </div>
-            )}
+            </div>
+          </StepCard>
 
-            {/* TAB CONTENT: MEMORY REVIEW */}
-            {activePracticeTab === 'Memory Review' && (
-              <div className="p-6 md:p-12 flex flex-col items-center w-full animate-in fade-in">
-                {reviewDeck.length > 0 ? (
-                  <div className="w-full max-w-4xl">
-                    
-                    <div className="flex justify-between items-center mb-6 text-[10px] font-bold text-stone-500 uppercase tracking-widest border-b border-stone-200 pb-4">
-                      <span>Spaced repetition · rate your recall</span>
-                      <span>{reviewedCount} reviewed</span>
-                    </div>
+          {/* Step 1: Type-specimen grid */}
+          <StepCard index={1} total={total} step={STEPS[1]} status={statusOf(1)} isExpanded={isExpanded(1)} onToggle={() => toggleStep(1)} onPrev={() => goPrev(1)} onContinue={() => goContinue(1)} isFirst={false} isLast={false}>
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {(["all", "high-unasp", "high-asp", "low-asp", "low-nasal"] as const).map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => setFilter(k)}
+                    className={`px-4 py-2 text-[10px] font-bold rounded-lg uppercase tracking-widest transition-colors ${
+                      filter === k ? "bg-stone-900 text-white" : "border border-stone-200 text-stone-500 hover:bg-stone-50"
+                    }`}
+                  >
+                    {k === "all" ? `All ${CONSONANTS.length}` : TONE_META[k].short}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))}
+                className="inline-flex items-center gap-2 border border-stone-200 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 transition hover:bg-stone-50"
+              >
+                {studyMode === "paper" ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
+                {studyMode === "paper" ? "Study mode" : "Paper mode"}
+              </button>
+            </div>
 
-                    <div className="bg-white border border-stone-200 rounded-xl p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm">
-                      <div className="text-6xl sm:text-7xl md:text-[8rem] font-serif text-stone-900 mb-8 leading-none text-center">
-                        {reviewDeck[0].text}
+            <div className={`relative overflow-hidden border rounded-xl p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-[#e8e4d9] bg-gradient-to-br from-stone-50 to-white"}`}>
+              <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
+
+              <div className="relative grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
+                {filtered.map((c, i) => (
+                  <button
+                    key={c.tib + c.translit}
+                    onClick={() => { setSelected(c); playAudio(c.tib); }}
+                    className={`group relative flex aspect-square flex-col overflow-hidden border rounded-xl p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-stone-200 bg-white hover:border-amber-300 hover:shadow-md"}`}
+                  >
+                    <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: TONE_HEX[c.tone] }} />
+                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
+                      {c.tib}
+                    </span>
+                    <div className="mt-2 flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className={`text-[11px] font-bold uppercase tracking-[0.22em] ${studyMode === "night" ? "text-white/80" : "text-stone-800"}`}>{c.translit}</span>
+                        <span className={`text-[9px] font-medium tracking-widest ${studyMode === "night" ? "text-white/40" : "text-stone-400"}`}>{c.pron}</span>
                       </div>
-                      
-                      <button 
-                        onClick={() => playAudio(reviewDeck[0].text)}
-                        disabled={playingItem !== null}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-lg transition-colors text-sm"
-                      >
-                        {playingItem === reviewDeck[0].text ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
-                        Check Sound
-                      </button>
                     </div>
+                    {playingItem === c.tib && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-amber-500" />}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                    <div className="grid grid-cols-3 gap-4 mb-8">
-                      <button 
-                        onClick={() => setReviewRating('Hard')}
-                        className={`py-4 rounded-xl border font-bold text-sm transition-all ${reviewRating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800 ring-2 ring-rose-400/20' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}
-                      >
-                        Hard
-                      </button>
-                      <button 
-                        onClick={() => setReviewRating('Good')}
-                        className={`py-4 rounded-xl border font-bold text-sm transition-all ${reviewRating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800 ring-2 ring-amber-400/20' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}
-                      >
-                        Good
-                      </button>
-                      <button 
-                        onClick={() => setReviewRating('Easy')}
-                        className={`py-4 rounded-xl border font-bold text-sm transition-all ${reviewRating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800 ring-2 ring-emerald-400/20' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}
-                      >
-                        Easy
-                      </button>
+            <div className="mt-6 flex flex-wrap items-center gap-6 text-[11px] font-bold text-stone-500">
+              <span className="uppercase tracking-widest">Legend</span>
+              {(Object.keys(TONE_HEX) as Tone[]).map((t) => (
+                <div key={t} className="inline-flex items-center gap-2">
+                  <span className="h-2 w-4 rounded-sm" style={{ backgroundColor: TONE_HEX[t] }} />
+                  <span>{TONE_META[t].short}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10">
+               <QuizModule title="Mastery check · the 30 letters" intro="Before you move on, make sure each letter's sound is sticking. Take this short check to proceed." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={5} isUnlockTest={false} />
+            </div>
+          </StepCard>
+
+          {/* Step 2: Tone */}
+          <StepCard index={2} total={total} step={STEPS[2]} status={statusOf(2)} isExpanded={isExpanded(2)} onToggle={() => toggleStep(2)} onPrev={() => goPrev(2)} onContinue={() => goContinue(2)} isFirst={false} isLast={false}>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {(Object.keys(TONE_META) as Tone[]).map((t) => {
+                const m = TONE_META[t];
+                const count = CONSONANTS.filter((c) => c.tone === t).length;
+                return (
+                  <div key={t} className={`p-6 rounded-xl border bg-white ${m.ring} shadow-sm`}>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${m.swatch} ${m.text}`}>
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{m.short}</span>
                     </div>
-
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
-                      <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2">
-                        <BookOpen size={14} /> Cards you mark Hard return soon; Easy cards drift further out.
-                      </p>
-                      
-                      <button 
-                        onClick={handleReviewNext}
-                        disabled={!reviewRating}
-                        className={`flex items-center gap-2 px-8 py-3.5 font-bold rounded-xl shadow-sm transition-colors ${reviewRating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
-                      >
-                        Next Card <ArrowRight size={18} />
-                      </button>
+                    <div className="mt-6 font-serif font-bold text-3xl text-stone-900">{count} letters</div>
+                    <p className="mt-3 text-[13px] leading-relaxed text-stone-600 h-20">{m.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {CONSONANTS.filter((c) => c.tone === t).map((c) => (
+                        <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border border-stone-200 rounded-md bg-stone-50 px-3 py-1.5 font-serif text-xl hover:border-amber-300 hover:bg-white transition-colors text-stone-800">
+                          {c.tib}
+                        </button>
+                      ))}
                     </div>
-
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-center h-[400px] animate-in zoom-in-95">
-                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                      <CheckCircle2 size={40} />
-                    </div>
-                    <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Deck Complete!</h3>
-                    <p className="text-stone-500 mb-8 max-w-md">You have successfully mastered all 48 cards in this session.</p>
-                    <button 
-                      onClick={resetReview}
-                      className="px-8 py-3.5 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"
-                    >
-                      <RefreshCcw size={18} /> Review Again
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex gap-4 p-5 bg-[#fcfaf5] border border-stone-200 rounded-xl shadow-sm">
+              <Info className="mt-0.5 size-5 shrink-0 text-amber-500" />
+              <div className="text-sm font-medium leading-relaxed text-stone-600">
+                The lines drawn above and below the transliteration in traditional Tibetan textbooks
+                indicate <span className="font-bold text-stone-900">high tone</span> and{" "}
+                <span className="font-bold text-stone-900">low tone</span> respectively. Pay close attention
+                to your teacher's pronunciation, and repeat each consonant the same way it is spoken.
+              </div>
+            </div>
+          </StepCard>
+
+          {/* Step 3: Three root sounds */}
+          <StepCard index={3} total={total} step={STEPS[3]} status={statusOf(3)} isExpanded={isExpanded(3)} onToggle={() => toggleStep(3)} onPrev={() => goPrev(3)} onContinue={() => goContinue(3)} isFirst={false} isLast={false}>
+            <p className="mb-8 max-w-3xl text-[15px] text-stone-600 leading-relaxed">
+              Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> —
+              seed syllables that anchor a whole tone family. Learn these three, and the rest of the
+              alphabet becomes a family tree rather than a list.
+            </p>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {[
+                { tib: "ཨ", translit: "a", label: "Neutral root · High register", swatch: "bg-sky-100", ring: "ring-sky-300", text: "text-sky-800", members: "ཨ ཀ ཅ ཏ པ ཙ", description: "The neutral vowel carrier — a clean ‘a’ with no consonantal onset. As a root sound, ཨ anchors the plain, unaspirated stops (ཀ ཅ ཏ པ ཙ) together with itself, giving them their basic, unbreathed voice." },
+                { tib: "ཧ", translit: "ha", label: "Aspirated root · Breath", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", members: "ཁ ཆ ཐ ཕ ཚ ཧ ཤ ས", description: "The breath root — a light, aspirated ‘h’. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air." },
+                { tib: "འ", translit: "'a", label: "Glottal root · Voiced flow", swatch: "bg-rose-100", ring: "ring-rose-300", text: "text-rose-800", members: "ག ཇ ད བ ཛ ཞ ཟ འ ཡ ར ལ ང ཉ ན མ", description: "The glottal root — a soft, voiced ‘a’ that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཞ ཟ ཡ ར ལ འ), and the nasals (ང ཉ ན མ)." },
+              ].map((r) => (
+                <div key={r.tib} className={`p-8 bg-white rounded-xl border ${r.ring} shadow-sm flex flex-col`}>
+                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg w-fit ${r.swatch} ${r.text}`}>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{r.label}</span>
+                  </div>
+                  <button onClick={() => playAudio(r.tib)} className="mt-8 flex items-baseline gap-4 w-fit hover:opacity-70 transition-opacity">
+                    <span className="font-serif text-7xl leading-none text-stone-900">{r.tib}</span>
+                    <span className="font-serif text-3xl italic text-stone-400">{r.translit}</span>
+                  </button>
+                  <p className="mt-6 text-sm leading-relaxed text-stone-600 flex-1">{r.description}</p>
+                  <div className="mt-6 border-t border-stone-100 pt-5">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Family</div>
+                    <div className="font-serif text-xl tracking-[0.2em] text-stone-800">{r.members}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </StepCard>
+
+          {/* Step 4: Gender */}
+          <StepCard index={4} total={total} step={STEPS[4]} status={statusOf(4)} isExpanded={isExpanded(4)} onToggle={() => toggleStep(4)} onPrev={() => goPrev(4)} onContinue={() => goContinue(4)} isFirst={false} isLast={false}>
+            <p className="mb-6 max-w-3xl text-[15px] text-stone-600 leading-relaxed">
+              The thirty consonants are traditionally divided into five gender groups depending on how
+              much effort is required for their pronunciation.
+            </p>
+
+            <div className="overflow-hidden border border-[#e8e4d9] rounded-xl shadow-sm">
+              <table className="w-full text-sm">
+                <thead className="bg-stone-50 text-[10px] uppercase tracking-widest text-stone-500 border-b border-[#e8e4d9]">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-bold">Gender</th>
+                    <th className="px-6 py-4 text-left font-bold">Tibetan</th>
+                    <th className="px-6 py-4 text-left font-bold">Consonants</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100 bg-white">
+                  {(Object.keys(GENDER_META) as Gender[]).map((g) => {
+                    const letters = CONSONANTS.filter((c) => c.gender === g);
+                    const gm = GENDER_META[g];
+                    return (
+                      <tr key={g} style={{ backgroundColor: gm.tint }}>
+                        <td className="px-6 py-5 font-bold" style={{ borderLeft: `4px solid ${gm.color}` }}>
+                          <span className="inline-flex items-center gap-3" style={{ color: gm.text }}>
+                            <span className="size-3 rounded-full" style={{ backgroundColor: gm.color }} />
+                            {gm.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 font-serif text-2xl text-stone-800">{gm.tib}</td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-wrap gap-2">
+                            {letters.map((c) => (
+                              <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border bg-white rounded-md px-3.5 py-1.5 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm" style={{ borderColor: gm.color + "55", color: gm.text }} title={c.translit}>
+                                {c.tib}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </StepCard>
+
+          {/* Step 5: Vocabulary */}
+          <StepCard index={5} total={total} step={STEPS[5]} status={statusOf(5)} isExpanded={isExpanded(5)} onToggle={() => toggleStep(5)} onPrev={() => goPrev(5)} onContinue={() => goContinue(5)} isFirst={false} isLast={false}>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <p className="text-[15px] text-stone-600">Real words formed entirely from the root letters.</p>
+              <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold uppercase tracking-widest shrink-0">
+                Vocabulary · མིང་ཚིག
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {VOCAB.map((v) => (
+                <div key={v.tib + v.translit} className="bg-white border border-[#e8e4d9] rounded-xl flex flex-col p-5 transition-all hover:-translate-y-1 hover:border-amber-300 hover:shadow-md relative group">
+                  <div className="text-3xl mb-4">{v.emoji}</div>
+                  <div className="font-serif font-bold text-3xl leading-tight text-stone-900 mb-1">{v.tib}</div>
+                  <div className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">{v.translit}</div>
+                  <div className="flex items-center justify-between border-t border-stone-100 pt-3 mt-auto">
+                    <span className="text-sm font-bold text-stone-700">{v.en}</span>
+                    <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center rounded-lg bg-stone-100 text-stone-600 transition hover:bg-stone-200">
+                      {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-amber-500" /> : <Volume2 className="size-4" />}
                     </button>
                   </div>
-                )}
-              </div>
-            )}
-            
-            {/* OTHER TABS (Placeholders) */}
-            {activePracticeTab === 'Trace' && (
-              <div className="p-12 text-center text-stone-400 font-medium">
-                {activePracticeTab} exercises are currently under development.
-              </div>
-            )}
-            
-          </div>
+                </div>
+              ))}
+            </div>
+          </StepCard>
+
+          {/* Step 6: Practice */}
+          <StepCard index={6} total={total} step={STEPS[6]} status={statusOf(6)} isExpanded={isExpanded(6)} onToggle={() => toggleStep(6)} onPrev={() => goPrev(6)} onContinue={() => goContinue(6)} isFirst={false} isLast={false}>
+            <PracticeArea speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+          </StepCard>
+
+          {/* Step 7: Complete (Final Test) */}
+          <StepCard index={7} total={total} step={STEPS[7]} status={statusOf(7)} isExpanded={isExpanded(7)} onToggle={() => toggleStep(7)} onPrev={() => goPrev(7)} onContinue={() => goContinue(7)} isFirst={false} isLast>
+            <QuizModule title="Final Lesson Test" intro="Score 80% or higher to unlock the next lesson: The Four Vowels." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} />
+          </StepCard>
         </div>
       </div>
 
-      {/* ========================================================= */}
-      {/* SLIDE-OVER DRAWER */}
-      {/* ========================================================= */}
-      {selectedLetter && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div 
-            className="absolute inset-0 bg-stone-900/30 backdrop-blur-sm transition-opacity" 
-            onClick={() => setSelectedLetter(null)}
-          ></div>
-          
-          <div className="relative w-full max-w-md bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-right-8 duration-300 border-l border-[#e8e4d9]">
-            <div className="px-6 py-4 border-b border-[#e8e4d9] flex items-center justify-between bg-white">
-              <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">
-                Consonant · {selectedLetter.phonetic}
-              </span>
-              <button onClick={() => setSelectedLetter(null)} className="p-2 -mr-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors">
-                <X size={20} />
-              </button>
-            </div>
+      {/* Detail Drawer */}
+      {selected && <DetailPanel c={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
 
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-              <div className="flex flex-col items-center justify-center mb-10">
-                <div className="text-[8rem] font-serif text-stone-900 leading-none mb-6">
-                  {selectedLetter.letter}
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-xl font-serif italic text-stone-800">{selectedLetter.phonetic.toLowerCase()}</div>
-                  <div className="text-xl font-medium text-stone-400">{selectedLetter.wylie}</div>
-                  <button 
-                    onClick={() => playAudio(selectedLetter.letter)}
-                    disabled={playingItem !== null}
-                    className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-white rounded-lg flex items-center justify-center shadow-sm transition-colors"
-                  >
-                    {playingItem === selectedLetter.letter ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} className="fill-current" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className={`p-4 rounded-xl border ${TONE_INFO[selectedLetter.tone].bg}`}>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Tone</div>
-                  <div className={`font-serif text-lg ${TONE_INFO[selectedLetter.tone].text}`}>
-                    {TONE_INFO[selectedLetter.tone].label}
-                  </div>
-                </div>
-                
-                <div className={`p-4 rounded-xl border ${GENDER_INFO[selectedLetter.gender].bg}`}>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Gender</div>
-                  <div className={`font-serif text-lg flex items-center gap-2 ${GENDER_INFO[selectedLetter.gender].text}`}>
-                    <div className={`w-2 h-2 rounded-full ${GENDER_INFO[selectedLetter.gender].dot}`}></div>
-                    {selectedLetter.gender}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Pronunciation</div>
-                <p className="text-sm text-stone-700 leading-relaxed">
-                  {TONE_INFO[selectedLetter.tone].desc}
-                </p>
-              </div>
-
-              <div className="mb-8 border-t border-stone-200 pt-6">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Notes from the textbook</div>
-                <p className="text-sm text-stone-600 leading-relaxed italic bg-white p-4 rounded-xl border border-stone-200">
-                  {selectedLetter.note}
-                </p>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-stone-200 bg-white grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => playAudio(selectedLetter.letter)}
-                className="flex items-center justify-center gap-2 py-3 border border-stone-200 hover:bg-stone-50 text-stone-600 font-bold text-sm rounded-xl transition-colors"
-              >
-                <RefreshCcw size={16} /> Play again
-              </button>
-              <button className="flex items-center justify-center gap-2 py-3 bg-stone-900 hover:bg-stone-800 text-white font-bold text-sm rounded-xl transition-colors shadow-sm">
-                <PlusSquare size={16} /> Add to review
-              </button>
-            </div>
-            
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* STICKY FOOTER */}
-      {/* ========================================================= */}
+      {/* Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-[#fdfbf7] border-t border-stone-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
-            <ArrowLeft size={16} /> All lessons
+            <ChevronLeft size={16} /> Syllabus
           </Link>
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors">
             <CheckCircle2 size={18} /> Mark lesson complete
@@ -1053,7 +564,434 @@ export default function LessonDetailPage() {
           </Link>
         </div>
       </div>
+    </div>
+  );
+}
 
+/* ------------------------------------------------------------------ */
+/* Subcomponents                                                       */
+/* ------------------------------------------------------------------ */
+
+function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, onContinue, isFirst, isLast, children }: any) {
+  const badge = status === "done" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : status === "current" ? "bg-amber-100 text-amber-700 border-amber-300 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200";
+
+  return (
+    <section id={`step-${step.id}`} className={`scroll-mt-24 border rounded-2xl bg-white transition-all duration-300 ${status === "current" ? "border-amber-400 shadow-md ring-2 ring-amber-400/20" : "border-[#e8e4d9] shadow-sm hover:border-stone-300"}`}>
+      <button type="button" onClick={onToggle} className="flex w-full items-center gap-4 p-5 text-left transition hover:bg-stone-50/60 md:p-6 rounded-2xl">
+        <div className={`grid size-12 shrink-0 place-items-center font-serif text-xl border rounded-xl ${badge}`}>
+          {status === "done" ? <Check className="size-6" /> : String(index + 1).padStart(2, "0")}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-600">{step.eyebrow}</span>
+            {status === "done" && <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded border border-emerald-200">Completed</span>}
+            {status === "current" && <span className="text-[9px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200">In progress</span>}
+            {status === "upcoming" && <span className="text-[9px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 px-2 py-0.5 rounded border border-stone-200">Up next</span>}
+          </div>
+          <h2 className="truncate font-serif font-bold text-2xl text-stone-900">{step.title}</h2>
+          <p className="mt-1 truncate text-sm text-stone-500">{step.description}</p>
+        </div>
+        <ChevronRight className={`size-6 shrink-0 text-stone-400 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`} />
+      </button>
+
+      {isExpanded && (
+        <div className="border-t border-[#e8e4d9] p-5 md:p-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          {children}
+
+          <div className="mt-10 flex flex-col-reverse gap-4 border-t border-stone-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <button type="button" onClick={onPrev} disabled={isFirst} className="inline-flex items-center justify-center gap-2 border border-stone-200 rounded-xl px-6 py-3 text-sm font-bold text-stone-600 transition hover:bg-stone-50 disabled:opacity-40">
+              <ChevronLeft className="size-4" /> Previous
+            </button>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+              Step {index + 1} of {total}
+            </div>
+            <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-stone-900 rounded-xl px-8 py-3 text-sm font-bold text-white transition hover:bg-stone-800 shadow-sm">
+              {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete lesson" : "Mark complete & continue"}
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PracticeArea({ speak, playingItem, playErrorBeep }: any) {
+  const [tab, setTab] = useState<"flashcards" | "trace" | "listen" | "match" | "review">("flashcards");
+  const tabs = [
+    { id: "flashcards", label: "Flashcards", icon: Layers },
+    { id: "trace", label: "Trace", icon: PenLine },
+    { id: "listen", label: "Listen & Select", icon: Ear },
+    { id: "match", label: "Match", icon: Shuffle },
+    { id: "review", label: "Memory Review", icon: Repeat },
+  ];
+
+  return (
+    <div className="border border-stone-200 rounded-2xl overflow-hidden bg-[#fcfaf5] shadow-sm">
+      <div className="flex flex-wrap border-b border-stone-200 bg-white">
+        <div className="flex overflow-x-auto custom-scrollbar w-full">
+          {tabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id as any)} className={`inline-flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${tab === t.id ? "border-amber-500 bg-stone-50/50 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-50"}`}>
+              <t.icon className="size-4" strokeWidth={2} /> {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="p-6 md:p-10 min-h-[400px]">
+        {tab === "flashcards" && <Flashcards speak={speak} playingItem={playingItem} />}
+        {tab === "trace" && <div className="flex flex-col items-center justify-center h-full pt-12"><PenLine size={48} className="text-stone-300 mb-4"/><p className="text-stone-500 font-bold text-lg">Trace exercises are currently under development.</p></div>}
+        {tab === "listen" && <ListenSelect speak={speak} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
+        {tab === "match" && <MatchExercise speak={speak} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
+        {tab === "review" && <MemoryReview speak={speak} playingItem={playingItem} />}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Universal Quiz Module (Used for Mastery & Final Test)               */
+/* ------------------------------------------------------------------ */
+function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep, questionCount, isUnlockTest }: any) {
+  const [step, setStep] = useState(0);
+  const [score, setScore] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+  
+  const question = useMemo(() => {
+    // Generate questions dynamically
+    const isAudioType = Math.random() > 0.5; // 50% chance of "Listen and select" vs "Which letter reads..."
+    const answer = data[Math.floor(Math.random() * data.length)];
+    const wrongs = data.filter((x: any) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+    const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
+    return { isAudioType, answer, choices };
+  }, [step, data]);
+
+  if (step >= questionCount) {
+    const passed = (score / questionCount) >= 0.8 || DEV_BYPASS_LOCKS;
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-8 bg-white border border-stone-200 rounded-xl shadow-sm">
+        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm ${passed ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+          {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
+        </div>
+        <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">{passed ? "Test Passed!" : "Keep Practicing"}</h3>
+        <p className="text-stone-600 mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {questionCount}.</p>
+        
+        <div className="flex gap-4">
+          <button onClick={() => { setStep(0); setScore(0); setPicked(null); }} className="px-6 py-3 bg-stone-100 font-bold rounded-xl hover:bg-stone-200 transition-colors text-stone-700 flex items-center gap-2">
+            <Shuffle size={18} /> Retake Test
+          </button>
+          {passed && isUnlockTest && (
+            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2">
+              Unlock Next Lesson <ArrowRight size={18} />
+            </button>
+          )}
+        </div>
+        {DEV_BYPASS_LOCKS && !passed && isUnlockTest && (
+          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-stone-200 bg-white rounded-xl p-8 shadow-sm">
+      <div className="mb-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400 border-b border-stone-100 pb-4">
+        <span>Question {step + 1} of {questionCount}</span>
+        <span className="text-amber-600">Score {score}</span>
+      </div>
+
+      <div className="flex flex-col items-center gap-6 mb-8 text-center">
+        {question.isAudioType ? (
+          <>
+            <span className="text-lg font-bold text-stone-700">Listen to the sound and select the matching consonant:</span>
+            <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className="inline-flex items-center gap-3 bg-stone-900 px-8 py-4 rounded-xl text-white font-bold hover:bg-stone-800 transition-colors shadow-md">
+              {playingItem === question.answer.tib ? <Loader2 size={24} className="animate-spin text-amber-500" /> : <Volume2 size={24} className="text-amber-500" />} PLAY AUDIO
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="text-lg font-bold text-stone-700">Which consonant reads <span className="font-mono bg-stone-100 px-2 py-1 rounded border border-stone-200">[{question.answer.pron}]</span>?</span>
+            <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-lg font-bold hover:bg-amber-100 transition-colors border border-amber-200">
+               {playingItem === question.answer.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Play Hint
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {question.choices.map((c: any) => {
+          const isRight = picked && c.tib === question.answer.tib;
+          const isWrong = picked === c.tib && c.tib !== question.answer.tib;
+          return (
+            <button
+              key={c.tib + c.translit} disabled={!!picked}
+              onClick={() => { setPicked(c.tib); if (c.tib === question.answer.tib) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); } }}
+              className={`border-2 p-6 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-2 ${isRight ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isWrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"}`}
+            >
+              <span className="font-serif text-[4rem] leading-none">{c.tib}</span>
+              {picked && <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{c.translit}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {picked && (
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl border bg-stone-50 border-stone-200 shadow-sm">
+          <span className={`text-sm font-bold ${picked === question.answer.tib ? "text-emerald-700" : "text-rose-700"}`}>
+            {picked === question.answer.tib ? "Correct!" : `The correct answer was ${question.answer.tib} (${question.answer.translit}).`}
+          </span>
+          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 rounded-lg px-8 py-3 text-sm font-bold text-white hover:bg-stone-800">
+            Next <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Flashcards({ speak, playingItem }: any) {
+  const [mode, setMode] = useState<"consonants" | "nouns">("consonants");
+  const deck = useMemo(() => mode === "consonants" ? CONSONANTS : VOCAB, [mode]);
+  const [idx, setIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+
+  const card = deck[idx % deck.length] as any;
+  const front = mode === "consonants" ? card.tib : card.tib;
+  const translit = card.translit;
+
+  const next = () => { setFlipped(false); setIdx((i) => (i + 1) % deck.length); };
+  const prev = () => { setFlipped(false); setIdx((i) => (i - 1 + deck.length) % deck.length); };
+
+  return (
+    <div className="flex flex-col items-center w-full animate-in fade-in">
+      <div className="w-full max-w-2xl flex flex-col sm:flex-row justify-between items-center mb-6 text-[10px] font-bold text-stone-400 uppercase tracking-widest gap-4">
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => { setMode("consonants"); setIdx(0); setFlipped(false); }} className={`px-4 py-2 rounded-lg transition-all ${mode === "consonants" ? "bg-stone-900 text-white" : "border border-stone-200 text-stone-500 hover:bg-stone-100"}`}>Consonants · 30</button>
+          <button onClick={() => { setMode("nouns"); setIdx(0); setFlipped(false); }} className={`px-4 py-2 rounded-lg transition-all ${mode === "nouns" ? "bg-stone-900 text-white" : "border border-stone-200 text-stone-500 hover:bg-stone-100"}`}>Nouns · {VOCAB.length}</button>
+        </div>
+        <span>Card {(idx % deck.length) + 1} of {deck.length}</span>
+      </div>
+
+      <div onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group overflow-hidden">
+        {!flipped ? (
+          <div className="flex flex-col items-center gap-4">
+            {mode === "nouns" && <span className="text-6xl">{card.emoji}</span>}
+            <div className="text-[6rem] md:text-[8rem] font-serif text-stone-900 group-hover:scale-105 transition-transform leading-none">{front}</div>
+          </div>
+        ) : (
+          <div className="text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200 p-6">
+            <div className="text-4xl font-serif italic text-stone-600 mb-4">{translit}</div>
+            {mode === "consonants" ? (
+              <>
+                <div className="font-mono text-2xl text-stone-800 font-bold mb-2">{card.pron}</div>
+                <div className="text-sm font-bold uppercase tracking-widest text-stone-400">{TONE_META[card.tone as Tone].short}</div>
+              </>
+            ) : (
+              <div className="text-2xl font-bold text-stone-900">{card.en}</div>
+            )}
+          </div>
+        )}
+        <div className="absolute bottom-4 right-6 text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-stone-400">Tap card to flip</div>
+      </div>
+
+      <div className="w-full max-w-2xl flex items-center justify-between mt-8">
+        <button onClick={prev} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800"><ChevronLeft size={16} /> Previous</button>
+        <button onClick={() => speak(mode === 'consonants' ? card.tib : card.tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm">
+          {playingItem ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />} Play sound
+        </button>
+        <button onClick={next} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800">Next <ChevronRight size={16} /></button>
+      </div>
+    </div>
+  );
+}
+
+function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
+  const [seed, setSeed] = useState(0);
+  const { answer, choices } = useMemo(() => {
+    const shuffled = [...CONSONANTS].sort(() => Math.random() - 0.5);
+    const answer = shuffled[0];
+    const distractors = shuffled.slice(1, 4);
+    const choices = [answer, ...distractors].sort(() => Math.random() - 0.5);
+    return { answer, choices };
+  }, [seed]);
+  const [picked, setPicked] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-col items-center w-full animate-in fade-in">
+      <p className="text-sm font-medium text-stone-500 mb-8 self-start w-full max-w-4xl">Listen to the sound and choose the correct consonant.</p>
+      <button onClick={() => speak(answer.tib)} disabled={playingItem !== null} className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 mb-12 shadow-md transition-colors">
+        {playingItem === answer.tib ? <Loader2 size={20} className="animate-spin text-amber-500" /> : <Volume2 size={20} className="text-amber-500"/>} PLAY SOUND
+      </button>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
+        {choices.map((c) => {
+          const isSelected = picked === c.translit;
+          const isCorrect = answer.translit === c.translit;
+          return (
+            <button key={c.tib + c.translit} onClick={() => { if (!picked) { setPicked(c.translit); if (isCorrect) speak(c.tib); else playErrorBeep(); } }} disabled={picked !== null} className={`relative aspect-square flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border-2 transition-all ${isSelected && isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700" : isSelected && !isCorrect ? "border-rose-500 bg-rose-50 text-rose-700" : picked && isCorrect ? "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600" : picked ? "border-stone-100 opacity-50 bg-stone-50 cursor-default" : "border-stone-200 bg-white hover:bg-stone-50 hover:border-amber-300"}`}>
+              <span className="font-serif text-[4rem] md:text-[5rem] leading-none">{c.tib}</span>
+              {picked && <span className="absolute bottom-4 text-[10px] font-bold uppercase tracking-widest">{c.translit}</span>}
+              {isSelected && isCorrect && <CheckCircle2 size={20} className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in" />}
+              {isSelected && !isCorrect && <XCircle size={20} className="absolute top-3 right-3 text-rose-500 animate-in zoom-in" />}
+            </button>
+          )
+        })}
+      </div>
+      {picked && (
+        <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
+          <button onClick={() => { setPicked(null); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MatchExercise({ speak, playingItem, playErrorBeep }: any) {
+  const [seed, setSeed] = useState(0);
+  const [matchAnswers, setMatchAnswers] = useState<Record<string, string>>({});
+  
+  const questions = useMemo(() => {
+    const targets = [...CONSONANTS].sort(() => Math.random() - 0.5).slice(0, 6);
+    return targets.map(target => {
+      const distractors = CONSONANTS.filter(i => i.tib !== target.tib).sort(() => Math.random() - 0.5).slice(0, 2);
+      return { target, options: [target, ...distractors].sort(() => Math.random() - 0.5) };
+    });
+  }, [seed]);
+
+  return (
+    <div className="flex flex-col items-center w-full animate-in fade-in">
+      <p className="text-sm font-medium text-stone-500 mb-8 self-start w-full max-w-4xl">Match each Tibetan consonant with its pronunciation.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+        {questions.map((q, idx) => (
+          <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 rounded-xl shadow-sm gap-4 sm:gap-2">
+            <div className="text-4xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left">{q.target.tib}</div>
+            <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto sm:mr-2">
+              {q.options.map(opt => {
+                const isSelected = matchAnswers[q.target.tib] === opt.translit;
+                const isCorrect = q.target.translit === opt.translit;
+                const isAnswered = !!matchAnswers[q.target.tib];
+                let btnClass = "border-stone-200 text-stone-600 hover:bg-stone-50 cursor-pointer font-mono";
+                if (isAnswered) {
+                  if (isCorrect) { btnClass = isSelected ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-emerald-400 border-dashed bg-emerald-50/50 text-emerald-600"; } 
+                  else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default" : "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default"; }
+                }
+                return (
+                  <button key={opt.tib + opt.translit} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.tib]: opt.translit })); if(isCorrect) speak(opt.tib); else playErrorBeep(); } else if (isCorrect) { speak(opt.tib); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border rounded-lg transition-all flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
+                    {playingItem === opt.tib && isCorrect ? <Loader2 size={14} className="animate-spin absolute" /> : opt.translit}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      {Object.keys(matchAnswers).length === questions.length && (
+        <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
+          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MemoryReview({ speak, playingItem }: any) {
+  const [deck, setDeck] = useState(() => [...CONSONANTS].sort(() => Math.random() - 0.5));
+  const [reviewedCount, setReviewedCount] = useState(0);
+  const [rating, setRating] = useState<'Hard' | 'Good' | 'Easy' | null>(null);
+
+  const nextCard = () => {
+    if (!rating || deck.length === 0) return;
+    const currentCard = deck[0]; let newDeck = deck.slice(1);
+    if (rating === 'Hard') { newDeck.splice(Math.min(Math.floor(Math.random() * 3) + 1, newDeck.length), 0, currentCard); } 
+    else if (rating === 'Good') { newDeck.push(currentCard); }
+    setDeck(newDeck); setReviewedCount(p => p + 1); setRating(null);
+  };
+
+  if (deck.length === 0) return (
+    <div className="flex flex-col items-center justify-center text-center h-[400px] animate-in zoom-in-95">
+      <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm"><CheckCircle2 size={40} /></div>
+      <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Deck Complete!</h3>
+      <p className="text-stone-500 font-medium mb-8">You have successfully mastered all cards.</p>
+      <button onClick={() => { setDeck([...CONSONANTS].sort(() => Math.random() - 0.5)); setReviewedCount(0); }} className="px-8 py-3.5 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"><Repeat size={18} /> Review Again</button>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col items-center w-full animate-in fade-in">
+      <div className="w-full max-w-4xl">
+        <div className="flex justify-between items-center mb-6 text-[10px] font-bold text-stone-500 uppercase tracking-widest border-b border-stone-200 pb-4">
+          <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
+        </div>
+        <div className="bg-white border border-stone-200 rounded-2xl p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
+          <div className="text-[7rem] md:text-[9rem] font-serif text-stone-900 mb-8 leading-none text-center">{deck[0].tib}</div>
+          <button onClick={() => speak(deck[0].tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-lg transition-colors text-sm">
+            {playingItem === deck[0].tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Check Sound
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <button onClick={() => setRating('Hard')} className={`py-4 rounded-xl border-2 font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
+          <button onClick={() => setRating('Good')} className={`py-4 rounded-xl border-2 font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
+          <button onClick={() => setRating('Easy')} className={`py-4 rounded-xl border-2 font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
+        </div>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
+          <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2"><BookOpen size={14} /> Cards you mark Hard return soon.</p>
+          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold rounded-xl shadow-sm transition-colors w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}>Next Card <ArrowRight size={18} /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
+  const tone = TONE_META[c.tone as Tone];
+  const gender = GENDER_META[c.gender as Gender];
+  
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-stone-900/30 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+      <div className="relative w-full max-w-md bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-right-8 duration-300 border-l border-[#e8e4d9]">
+        <div className="px-6 py-4 border-b border-[#e8e4d9] flex items-center justify-between bg-white">
+          <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Consonant · {c.translit}</span>
+          <button onClick={onClose} className="p-2 -mr-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"><X size={20} /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="flex flex-col items-center justify-center mb-10">
+            <div className="text-[8rem] font-serif text-stone-900 leading-none mb-6">{c.tib}</div>
+            <div className="flex items-center gap-3">
+              <div className="text-xl font-serif italic text-stone-800">{c.translit}</div>
+              <div className="text-xl font-mono font-medium text-stone-400">{c.pron}</div>
+              <button onClick={() => onSpeak(c.tib)} disabled={playingItem !== null} className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-stone-900 rounded-lg flex items-center justify-center shadow-sm transition-colors">
+                {playingItem === c.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className={`p-4 rounded-xl border ${tone.swatch} border-opacity-50`}>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Tone</div>
+              <div className={`font-serif text-lg ${tone.text}`}>{tone.short}</div>
+            </div>
+            
+            <div className="p-4 rounded-xl border bg-white" style={{ borderColor: gender.color + '40', backgroundColor: gender.tint }}>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Gender</div>
+              <div className="font-serif text-lg flex items-center gap-2" style={{ color: gender.text }}>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: gender.color }}></div>
+                {gender.label}
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Pronunciation</div>
+            <p className="text-sm text-stone-700 leading-relaxed">{tone.description}</p>
+          </div>
+
+          <div className="mb-8 border-t border-stone-200 pt-6">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Notes from the textbook</div>
+            <p className="text-sm text-stone-600 leading-relaxed italic bg-white p-4 rounded-xl border border-stone-200">{c.note}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
