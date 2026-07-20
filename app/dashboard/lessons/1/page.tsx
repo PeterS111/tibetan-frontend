@@ -29,7 +29,7 @@ interface Consonant {
 const TONE_META: Record<Tone, { label: string; short: string; swatch: string; ring: string; text: string; description: string }> = {
   "high-unasp": { label: "High tone · Non-aspirated", short: "High · Unaspirated", swatch: "bg-sky-100", ring: "ring-sky-300", text: "text-sky-800", description: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright." },
   "high-asp": { label: "High tone · Strongly aspirated", short: "High · Aspirated", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", description: "Pronounced high in the voice with a strong puff of air, as if adding a breathy ‘h’ after the sound." },
-  "low-asp": { label: "Low tone · Semi-aspirated", short: "Low · Semi-aspirated", swatch: "bg-violet-100", ring: "ring-violet-300", text: "text-violet-800", description: "Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart." },
+  "low-asp": { label: "Low tone · Semi-aspirated", short: "Low · Semi-aspirated", swatch: "bg-violet-100", ring: "ring-violet-300", text: "text-violet-800", description: "Pronounced low in the voice con una aspiración suave. The pitch drops and the sound is gentler than its high-tone counterpart." },
   "low-nasal": { label: "Low tone · Nasal", short: "Low · Nasal", swatch: "bg-rose-100", ring: "ring-rose-300", text: "text-rose-800", description: "The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air." },
 };
 
@@ -128,6 +128,8 @@ export default function ConsonantsLesson() {
   // Progressive disclosure state
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [currentStep, setCurrentStep] = useState(0);
+  
+  // Empty Set ensures everything is collapsed on load!
   const [manualExpanded, setManualExpanded] = useState<Set<number>>(new Set());
 
   const total = STEPS.length;
@@ -136,8 +138,8 @@ export default function ConsonantsLesson() {
   const statusOf = (i: number): "done" | "current" | "upcoming" =>
     completed.has(i) ? "done" : i === currentStep ? "current" : "upcoming";
     
-  const isExpanded = (i: number) =>
-    DEV_BYPASS_LOCKS || i === currentStep || completed.has(i) || manualExpanded.has(i);
+  // Check if a section is strictly opened by the user
+  const isExpanded = (i: number) => manualExpanded.has(i);
 
   const scrollToStep = (i: number) => {
     if (typeof window === "undefined") return;
@@ -147,22 +149,14 @@ export default function ConsonantsLesson() {
   };
 
   const toggleStep = (i: number) => {
-    if (i === currentStep) {
+    // We allow opening a step if bypass is on, if it's the current step, or if it's already completed.
+    if (DEV_BYPASS_LOCKS || i <= currentStep || completed.has(i)) {
       setManualExpanded((prev) => {
         const next = new Set(prev);
-        if (next.has(i)) next.delete(i); else next.add(i);
+        if (next.has(i)) next.delete(i); 
+        else next.add(i);
         return next;
       });
-      return;
-    }
-    if (completed.has(i) || manualExpanded.has(i)) {
-      setManualExpanded((prev) => {
-        const next = new Set(prev);
-        if (next.has(i)) next.delete(i); else next.add(i);
-        return next;
-      });
-    } else if (DEV_BYPASS_LOCKS) {
-      setManualExpanded((prev) => new Set(prev).add(i));
     }
   };
 
@@ -174,13 +168,17 @@ export default function ConsonantsLesson() {
 
   const goContinue = (i: number) => {
     setCompleted((prev) => new Set(prev).add(i));
+    const target = Math.min(total - 1, i + 1);
+    setCurrentStep(target);
+    
+    // Collapse the current section and expand the next one automatically
     setManualExpanded((prev) => {
       const next = new Set(prev);
       next.delete(i);
+      next.add(target);
       return next;
     });
-    const target = Math.min(total - 1, i + 1);
-    setCurrentStep(target);
+    
     scrollToStep(target);
   };
 
@@ -286,7 +284,7 @@ export default function ConsonantsLesson() {
 
         <div className="space-y-4">
           {/* Step 0: Introduction */}
-          <StepCard index={0} total={total} step={STEPS[0]} status={statusOf(0)} isExpanded={isExpanded(0)} onToggle={() => toggleStep(0)} onPrev={() => goPrev(0)} onContinue={() => goContinue(0)} isFirst isLast={false}>
+          <StepCard index={0} total={total} step={STEPS[0]} status={statusOf(0)} isExpanded={isExpanded(0)} onToggle={() => toggleStep(0)} onPrev={() => goPrev(0)} onContinue={() => goContinue(0)} isFirst isLast={false} currentStep={currentStep}>
             <div className="grid gap-6 md:grid-cols-[1.2fr,1fr]">
               <div>
                 <p className="text-[15px] leading-relaxed text-stone-600">
@@ -330,7 +328,7 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           {/* Step 1: Type-specimen grid */}
-          <StepCard index={1} total={total} step={STEPS[1]} status={statusOf(1)} isExpanded={isExpanded(1)} onToggle={() => toggleStep(1)} onPrev={() => goPrev(1)} onContinue={() => goContinue(1)} isFirst={false} isLast={false}>
+          <StepCard index={1} total={total} step={STEPS[1]} status={statusOf(1)} isExpanded={isExpanded(1)} onToggle={() => toggleStep(1)} onPrev={() => goPrev(1)} onContinue={() => goContinue(1)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
                 {(["all", "high-unasp", "high-asp", "low-asp", "low-nasal"] as const).map((k) => (
@@ -396,7 +394,7 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           {/* Step 2: Tone */}
-          <StepCard index={2} total={total} step={STEPS[2]} status={statusOf(2)} isExpanded={isExpanded(2)} onToggle={() => toggleStep(2)} onPrev={() => goPrev(2)} onContinue={() => goContinue(2)} isFirst={false} isLast={false}>
+          <StepCard index={2} total={total} step={STEPS[2]} status={statusOf(2)} isExpanded={isExpanded(2)} onToggle={() => toggleStep(2)} onPrev={() => goPrev(2)} onContinue={() => goContinue(2)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {(Object.keys(TONE_META) as Tone[]).map((t) => {
                 const m = TONE_META[t];
@@ -432,7 +430,7 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           {/* Step 3: Three root sounds */}
-          <StepCard index={3} total={total} step={STEPS[3]} status={statusOf(3)} isExpanded={isExpanded(3)} onToggle={() => toggleStep(3)} onPrev={() => goPrev(3)} onContinue={() => goContinue(3)} isFirst={false} isLast={false}>
+          <StepCard index={3} total={total} step={STEPS[3]} status={statusOf(3)} isExpanded={isExpanded(3)} onToggle={() => toggleStep(3)} onPrev={() => goPrev(3)} onContinue={() => goContinue(3)} isFirst={false} isLast={false} currentStep={currentStep}>
             <p className="mb-8 max-w-3xl text-[15px] text-stone-600 leading-relaxed">
               Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> —
               seed syllables that anchor a whole tone family. Learn these three, and the rest of the
@@ -464,7 +462,7 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           {/* Step 4: Gender */}
-          <StepCard index={4} total={total} step={STEPS[4]} status={statusOf(4)} isExpanded={isExpanded(4)} onToggle={() => toggleStep(4)} onPrev={() => goPrev(4)} onContinue={() => goContinue(4)} isFirst={false} isLast={false}>
+          <StepCard index={4} total={total} step={STEPS[4]} status={statusOf(4)} isExpanded={isExpanded(4)} onToggle={() => toggleStep(4)} onPrev={() => goPrev(4)} onContinue={() => goContinue(4)} isFirst={false} isLast={false} currentStep={currentStep}>
             <p className="mb-6 max-w-3xl text-[15px] text-stone-600 leading-relaxed">
               The thirty consonants are traditionally divided into five gender groups depending on how
               much effort is required for their pronunciation.
@@ -510,7 +508,7 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           {/* Step 5: Vocabulary */}
-          <StepCard index={5} total={total} step={STEPS[5]} status={statusOf(5)} isExpanded={isExpanded(5)} onToggle={() => toggleStep(5)} onPrev={() => goPrev(5)} onContinue={() => goContinue(5)} isFirst={false} isLast={false}>
+          <StepCard index={5} total={total} step={STEPS[5]} status={statusOf(5)} isExpanded={isExpanded(5)} onToggle={() => toggleStep(5)} onPrev={() => goPrev(5)} onContinue={() => goContinue(5)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <p className="text-[15px] text-stone-600">Real words formed entirely from the root letters.</p>
               <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold uppercase tracking-widest shrink-0">
@@ -536,12 +534,12 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           {/* Step 6: Practice */}
-          <StepCard index={6} total={total} step={STEPS[6]} status={statusOf(6)} isExpanded={isExpanded(6)} onToggle={() => toggleStep(6)} onPrev={() => goPrev(6)} onContinue={() => goContinue(6)} isFirst={false} isLast={false}>
+          <StepCard index={6} total={total} step={STEPS[6]} status={statusOf(6)} isExpanded={isExpanded(6)} onToggle={() => toggleStep(6)} onPrev={() => goPrev(6)} onContinue={() => goContinue(6)} isFirst={false} isLast={false} currentStep={currentStep}>
             <PracticeArea speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepCard>
 
           {/* Step 7: Complete (Final Test) */}
-          <StepCard index={7} total={total} step={STEPS[7]} status={statusOf(7)} isExpanded={isExpanded(7)} onToggle={() => toggleStep(7)} onPrev={() => goPrev(7)} onContinue={() => goContinue(7)} isFirst={false} isLast>
+          <StepCard index={7} total={total} step={STEPS[7]} status={statusOf(7)} isExpanded={isExpanded(7)} onToggle={() => toggleStep(7)} onPrev={() => goPrev(7)} onContinue={() => goContinue(7)} isFirst={false} isLast currentStep={currentStep}>
             <QuizModule title="Final Lesson Test" intro="Score 80% or higher to unlock the next lesson: The Four Vowels." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} />
           </StepCard>
         </div>
@@ -572,12 +570,15 @@ export default function ConsonantsLesson() {
 /* Subcomponents                                                       */
 /* ------------------------------------------------------------------ */
 
-function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, onContinue, isFirst, isLast, children }: any) {
+function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, onContinue, isFirst, isLast, currentStep, children }: any) {
   const badge = status === "done" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : status === "current" ? "bg-amber-100 text-amber-700 border-amber-300 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200";
+  
+  // Disable opening upcoming sections if DEV_BYPASS_LOCKS is false
+  const isDisabled = !DEV_BYPASS_LOCKS && index > currentStep && status !== "done";
 
   return (
     <section id={`step-${step.id}`} className={`scroll-mt-24 border rounded-2xl bg-white transition-all duration-300 ${status === "current" ? "border-amber-400 shadow-md ring-2 ring-amber-400/20" : "border-[#e8e4d9] shadow-sm hover:border-stone-300"}`}>
-      <button type="button" onClick={onToggle} className="flex w-full items-center gap-4 p-5 text-left transition hover:bg-stone-50/60 md:p-6 rounded-2xl">
+      <button type="button" onClick={onToggle} disabled={isDisabled} className={`flex w-full items-center gap-4 p-5 text-left transition md:p-6 rounded-2xl ${isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-stone-50/60'}`}>
         <div className={`grid size-12 shrink-0 place-items-center font-serif text-xl border rounded-xl ${badge}`}>
           {status === "done" ? <Check className="size-6" /> : String(index + 1).padStart(2, "0")}
         </div>
