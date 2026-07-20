@@ -1,4 +1,3 @@
---- FILE: tibetan-frontend/app/dashboard/lessons/2/page.tsx ---
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
