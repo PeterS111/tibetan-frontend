@@ -29,7 +29,7 @@ interface Consonant {
 const TONE_META: Record<Tone, { label: string; short: string; swatch: string; ring: string; text: string; description: string }> = {
   "high-unasp": { label: "High tone · Non-aspirated", short: "High · Unaspirated", swatch: "bg-sky-100", ring: "ring-sky-300", text: "text-sky-800", description: "Pronounced high in the voice, with no puff of air. Say the sound cleanly, keeping the pitch bright." },
   "high-asp": { label: "High tone · Strongly aspirated", short: "High · Aspirated", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", description: "Pronounced high in the voice with a strong puff of air, as if adding a breathy ‘h’ after the sound." },
-  "low-asp": { label: "Low tone · Semi-aspirated", short: "Low · Semi-aspirated", swatch: "bg-violet-100", ring: "ring-violet-300", text: "text-violet-800", description: "Pronounced low in the voice con una aspiración suave. The pitch drops and the sound is gentler than its high-tone counterpart." },
+  "low-asp": { label: "Low tone · Semi-aspirated", short: "Low · Semi-aspirated", swatch: "bg-violet-100", ring: "ring-violet-300", text: "text-violet-800", description: "Pronounced low in the voice with a light, softened aspiration. The pitch drops and the sound is gentler than its high-tone counterpart." },
   "low-nasal": { label: "Low tone · Nasal", short: "Low · Nasal", swatch: "bg-rose-100", ring: "ring-rose-300", text: "text-rose-800", description: "The four true nasals — ང ཉ ན མ. Voice resonates through the nose, low in pitch, with no puff of air." },
 };
 
@@ -128,8 +128,6 @@ export default function ConsonantsLesson() {
   // Progressive disclosure state
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [currentStep, setCurrentStep] = useState(0);
-  
-  // Empty Set ensures everything is collapsed on load!
   const [manualExpanded, setManualExpanded] = useState<Set<number>>(new Set());
 
   const total = STEPS.length;
@@ -149,7 +147,6 @@ export default function ConsonantsLesson() {
   };
 
   const toggleStep = (i: number) => {
-    // We allow opening a step if bypass is on, if it's the current step, or if it's already completed.
     if (DEV_BYPASS_LOCKS || i <= currentStep || completed.has(i)) {
       setManualExpanded((prev) => {
         const next = new Set(prev);
@@ -171,7 +168,6 @@ export default function ConsonantsLesson() {
     const target = Math.min(total - 1, i + 1);
     setCurrentStep(target);
     
-    // Collapse the current section and expand the next one automatically
     setManualExpanded((prev) => {
       const next = new Set(prev);
       next.delete(i);
@@ -240,7 +236,7 @@ export default function ConsonantsLesson() {
         </div>
 
         {/* Hero */}
-        <section className="mb-8 grid gap-6 border border-[#e8e4d9] bg-white rounded-xl shadow-sm p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10">
+        <section className="mb-8 grid gap-6 border border-[#e8e4d9] bg-white shadow-sm p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10">
           <div>
             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-500">
               Lesson 01 · Foundations
@@ -262,19 +258,19 @@ export default function ConsonantsLesson() {
                 {completed.size} of {total} sections
               </span>
             </div>
-            <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+            <div className="h-1.5 w-full bg-stone-200 overflow-hidden">
+              <div className="h-full bg-amber-400 transition-all duration-500" style={{ width: `${progress}%` }}></div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <div className="border border-[#e8e4d9] p-2 bg-stone-50 rounded-lg">
+              <div className="border border-[#e8e4d9] p-2 bg-stone-50">
                 <div className="font-serif text-2xl text-stone-800">30</div>
                 <div className="text-[9px] uppercase tracking-widest text-stone-500">Letters</div>
               </div>
-              <div className="border border-[#e8e4d9] p-2 bg-stone-50 rounded-lg">
+              <div className="border border-[#e8e4d9] p-2 bg-stone-50">
                 <div className="font-serif text-2xl text-stone-800">4</div>
                 <div className="text-[9px] uppercase tracking-widest text-stone-500">Tones</div>
               </div>
-              <div className="border border-[#e8e4d9] p-2 bg-stone-50 rounded-lg">
+              <div className="border border-[#e8e4d9] p-2 bg-stone-50">
                 <div className="font-serif text-2xl text-stone-800">5</div>
                 <div className="text-[9px] uppercase tracking-widest text-stone-500">Genders</div>
               </div>
@@ -309,14 +305,14 @@ export default function ConsonantsLesson() {
                   </li>
                 </ul>
               </div>
-              <div className="p-6 bg-white border border-[#e8e4d9] rounded-xl shadow-sm">
+              <div className="p-6 bg-white border border-[#e8e4d9] shadow-sm">
                 <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-4">
                   What you'll learn
                 </div>
                 <ol className="space-y-3 text-sm font-medium text-stone-700">
                   {STEPS.slice(1, -1).map((s, i) => (
                     <li key={s.id} className="flex items-start gap-3">
-                      <span className="grid size-6 shrink-0 place-items-center bg-stone-100 rounded text-stone-500 font-bold text-xs">
+                      <span className="grid size-6 shrink-0 place-items-center bg-stone-100 text-stone-500 font-bold text-xs">
                         {i + 1}
                       </span>
                       <span className="mt-0.5">{s.title}</span>
@@ -335,7 +331,7 @@ export default function ConsonantsLesson() {
                   <button
                     key={k}
                     onClick={() => setFilter(k)}
-                    className={`px-4 py-2 text-[10px] font-bold rounded-lg uppercase tracking-widest transition-colors ${
+                    className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${
                       filter === k ? "bg-stone-900 text-white" : "border border-stone-200 text-stone-500 hover:bg-stone-50"
                     }`}
                   >
@@ -345,14 +341,14 @@ export default function ConsonantsLesson() {
               </div>
               <button
                 onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))}
-                className="inline-flex items-center gap-2 border border-stone-200 rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 transition hover:bg-stone-50"
+                className="inline-flex items-center gap-2 border border-stone-200 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 transition hover:bg-stone-50"
               >
                 {studyMode === "paper" ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
                 {studyMode === "paper" ? "Study mode" : "Paper mode"}
               </button>
             </div>
 
-            <div className={`relative overflow-hidden border rounded-xl p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-[#e8e4d9] bg-gradient-to-br from-stone-50 to-white"}`}>
+            <div className={`relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-[#e8e4d9] bg-gradient-to-br from-stone-50 to-white"}`}>
               <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
 
               <div className="relative grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
@@ -360,7 +356,7 @@ export default function ConsonantsLesson() {
                   <button
                     key={c.tib + c.translit}
                     onClick={() => { setSelected(c); playAudio(c.tib); }}
-                    className={`group relative flex aspect-square flex-col overflow-hidden border rounded-xl p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-stone-200 bg-white hover:border-amber-300 hover:shadow-md"}`}
+                    className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-stone-200 bg-white hover:border-amber-300 hover:shadow-md"}`}
                   >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: TONE_HEX[c.tone] }} />
                     <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
@@ -382,14 +378,14 @@ export default function ConsonantsLesson() {
               <span className="uppercase tracking-widest">Legend</span>
               {(Object.keys(TONE_HEX) as Tone[]).map((t) => (
                 <div key={t} className="inline-flex items-center gap-2">
-                  <span className="h-2 w-4 rounded-sm" style={{ backgroundColor: TONE_HEX[t] }} />
+                  <span className="h-2 w-4" style={{ backgroundColor: TONE_HEX[t] }} />
                   <span>{TONE_META[t].short}</span>
                 </div>
               ))}
             </div>
 
             <div className="mt-10">
-               <QuizModule title="Mastery check · the 30 letters" intro="Before you move on, make sure each letter's sound is sticking. Take this short check to proceed." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={5} isUnlockTest={false} />
+               <QuizModule title="Mastery check · the 30 letters" intro="Before you move on, make sure each letter's sound is sticking. Take this short check as many times as you like." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={8} isUnlockTest={false} />
             </div>
           </StepCard>
 
@@ -400,15 +396,15 @@ export default function ConsonantsLesson() {
                 const m = TONE_META[t];
                 const count = CONSONANTS.filter((c) => c.tone === t).length;
                 return (
-                  <div key={t} className={`p-6 rounded-xl border bg-white ${m.ring} shadow-sm`}>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${m.swatch} ${m.text}`}>
+                  <div key={t} className={`p-6 border bg-white ${m.ring} shadow-sm`}>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 ${m.swatch} ${m.text}`}>
                       <span className="text-[10px] font-bold uppercase tracking-widest">{m.short}</span>
                     </div>
                     <div className="mt-6 font-serif font-bold text-3xl text-stone-900">{count} letters</div>
                     <p className="mt-3 text-[13px] leading-relaxed text-stone-600 h-20">{m.description}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {CONSONANTS.filter((c) => c.tone === t).map((c) => (
-                        <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border border-stone-200 rounded-md bg-stone-50 px-3 py-1.5 font-serif text-xl hover:border-amber-300 hover:bg-white transition-colors text-stone-800">
+                        <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border border-stone-200 bg-stone-50 px-3 py-1.5 font-serif text-xl hover:border-amber-300 hover:bg-white transition-colors text-stone-800">
                           {c.tib}
                         </button>
                       ))}
@@ -418,7 +414,7 @@ export default function ConsonantsLesson() {
               })}
             </div>
 
-            <div className="mt-8 flex gap-4 p-5 bg-[#fcfaf5] border border-stone-200 rounded-xl shadow-sm">
+            <div className="mt-8 flex gap-4 p-5 bg-[#fcfaf5] border border-stone-200 shadow-sm">
               <Info className="mt-0.5 size-5 shrink-0 text-amber-500" />
               <div className="text-sm font-medium leading-relaxed text-stone-600">
                 The lines drawn above and below the transliteration in traditional Tibetan textbooks
@@ -443,8 +439,8 @@ export default function ConsonantsLesson() {
                 { tib: "ཧ", translit: "ha", label: "Aspirated root · Breath", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", members: "ཁ ཆ ཐ ཕ ཚ ཧ ཤ ས", description: "The breath root — a light, aspirated ‘h’. It anchors the aspirated stops and fricatives (ཁ ཆ ཐ ཕ ཚ ཤ ས) along with ཧ itself, where the sound is shaped by the flow of air." },
                 { tib: "འ", translit: "'a", label: "Glottal root · Voiced flow", swatch: "bg-rose-100", ring: "ring-rose-300", text: "text-rose-800", members: "ག ཇ ད བ ཛ ཞ ཟ འ ཡ ར ལ ང ཉ ན མ", description: "The glottal root — a soft, voiced ‘a’ that carries the vowel without a hard onset. It anchors the low-register letters: the semi-aspirated voiced stops (ག ཇ ད བ ཛ), the glides and liquids (ཞ ཟ ཡ ར ལ འ), and the nasals (ང ཉ ན མ)." },
               ].map((r) => (
-                <div key={r.tib} className={`p-8 bg-white rounded-xl border ${r.ring} shadow-sm flex flex-col`}>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg w-fit ${r.swatch} ${r.text}`}>
+                <div key={r.tib} className={`p-8 bg-white border ${r.ring} shadow-sm flex flex-col`}>
+                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit ${r.swatch} ${r.text}`}>
                     <span className="text-[10px] font-bold uppercase tracking-widest">{r.label}</span>
                   </div>
                   <button onClick={() => playAudio(r.tib)} className="mt-8 flex items-baseline gap-4 w-fit hover:opacity-70 transition-opacity">
@@ -468,7 +464,7 @@ export default function ConsonantsLesson() {
               much effort is required for their pronunciation.
             </p>
 
-            <div className="overflow-hidden border border-[#e8e4d9] rounded-xl shadow-sm">
+            <div className="overflow-hidden border border-[#e8e4d9] shadow-sm">
               <table className="w-full text-sm">
                 <thead className="bg-stone-50 text-[10px] uppercase tracking-widest text-stone-500 border-b border-[#e8e4d9]">
                   <tr>
@@ -493,7 +489,7 @@ export default function ConsonantsLesson() {
                         <td className="px-6 py-5">
                           <div className="flex flex-wrap gap-2">
                             {letters.map((c) => (
-                              <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border bg-white rounded-md px-3.5 py-1.5 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm" style={{ borderColor: gm.color + "55", color: gm.text }} title={c.translit}>
+                              <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border bg-white px-3.5 py-1.5 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm" style={{ borderColor: gm.color + "55", color: gm.text }} title={c.translit}>
                                 {c.tib}
                               </button>
                             ))}
@@ -511,20 +507,20 @@ export default function ConsonantsLesson() {
           <StepCard index={5} total={total} step={STEPS[5]} status={statusOf(5)} isExpanded={isExpanded(5)} onToggle={() => toggleStep(5)} onPrev={() => goPrev(5)} onContinue={() => goContinue(5)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <p className="text-[15px] text-stone-600">Real words formed entirely from the root letters.</p>
-              <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold uppercase tracking-widest shrink-0">
+              <div className="px-3 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 text-[10px] font-bold uppercase tracking-widest shrink-0">
                 Vocabulary · མིང་ཚིག
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {VOCAB.map((v) => (
-                <div key={v.tib + v.translit} className="bg-white border border-[#e8e4d9] rounded-xl flex flex-col p-5 transition-all hover:-translate-y-1 hover:border-amber-300 hover:shadow-md relative group">
+                <div key={v.tib + v.translit} className="bg-white border border-[#e8e4d9] flex flex-col p-5 transition-all hover:-translate-y-1 hover:border-amber-300 hover:shadow-md relative group">
                   <div className="text-3xl mb-4">{v.emoji}</div>
                   <div className="font-serif font-bold text-3xl leading-tight text-stone-900 mb-1">{v.tib}</div>
                   <div className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">{v.translit}</div>
                   <div className="flex items-center justify-between border-t border-stone-100 pt-3 mt-auto">
                     <span className="text-sm font-bold text-stone-700">{v.en}</span>
-                    <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center rounded-lg bg-stone-100 text-stone-600 transition hover:bg-stone-200">
+                    <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center bg-stone-100 text-stone-600 transition hover:bg-stone-200">
                       {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-amber-500" /> : <Volume2 className="size-4" />}
                     </button>
                   </div>
@@ -554,7 +550,7 @@ export default function ConsonantsLesson() {
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
             <ChevronLeft size={16} /> Syllabus
           </Link>
-          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm transition-colors">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm transition-colors">
             <CheckCircle2 size={18} /> Mark lesson complete
           </button>
           <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
@@ -571,23 +567,22 @@ export default function ConsonantsLesson() {
 /* ------------------------------------------------------------------ */
 
 function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, onContinue, isFirst, isLast, currentStep, children }: any) {
-  const badge = status === "done" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : status === "current" ? "bg-amber-100 text-amber-700 border-amber-300 shadow-sm" : "bg-stone-50 text-stone-400 border-stone-200";
+  const badge = status === "done" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : status === "current" ? "bg-[#fffdf5] text-amber-700 border-amber-300" : "bg-stone-50 text-stone-400 border-stone-200";
   
-  // Disable opening upcoming sections if DEV_BYPASS_LOCKS is false
   const isDisabled = !DEV_BYPASS_LOCKS && index > currentStep && status !== "done";
 
   return (
-    <section id={`step-${step.id}`} className={`scroll-mt-24 border rounded-2xl bg-white transition-all duration-300 ${status === "current" ? "border-amber-400 shadow-md ring-2 ring-amber-400/20" : "border-[#e8e4d9] shadow-sm hover:border-stone-300"}`}>
-      <button type="button" onClick={onToggle} disabled={isDisabled} className={`flex w-full items-center gap-4 p-5 text-left transition md:p-6 rounded-2xl ${isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-stone-50/60'}`}>
-        <div className={`grid size-12 shrink-0 place-items-center font-serif text-xl border rounded-xl ${badge}`}>
-          {status === "done" ? <Check className="size-6" /> : String(index + 1).padStart(2, "0")}
+    <section id={`step-${step.id}`} className={`scroll-mt-24 border bg-white transition-all duration-300 ${status === "current" ? "border-amber-400 shadow-sm" : "border-[#e8e4d9] hover:border-stone-300"}`}>
+      <button type="button" onClick={onToggle} disabled={isDisabled} className={`flex w-full items-center gap-4 p-5 text-left transition md:p-6 ${isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-stone-50/60'}`}>
+        <div className={`grid size-11 shrink-0 place-items-center font-serif text-lg border ${badge}`}>
+          {status === "done" ? <Check className="size-5" /> : String(index + 1).padStart(2, "0")}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-600">{step.eyebrow}</span>
-            {status === "done" && <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded border border-emerald-200">Completed</span>}
-            {status === "current" && <span className="text-[9px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200">In progress</span>}
-            {status === "upcoming" && <span className="text-[9px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 px-2 py-0.5 rounded border border-stone-200">Up next</span>}
+            {status === "done" && <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 px-2 py-0.5 border border-emerald-200">Completed</span>}
+            {status === "current" && <span className="text-[9px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 px-2 py-0.5 border border-amber-200">In progress</span>}
+            {status === "upcoming" && <span className="text-[9px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 px-2 py-0.5 border border-stone-200">Up next</span>}
           </div>
           <h2 className="truncate font-serif font-bold text-2xl text-stone-900">{step.title}</h2>
           <p className="mt-1 truncate text-sm text-stone-500">{step.description}</p>
@@ -600,13 +595,13 @@ function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, on
           {children}
 
           <div className="mt-10 flex flex-col-reverse gap-4 border-t border-stone-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <button type="button" onClick={onPrev} disabled={isFirst} className="inline-flex items-center justify-center gap-2 border border-stone-200 rounded-xl px-6 py-3 text-sm font-bold text-stone-600 transition hover:bg-stone-50 disabled:opacity-40">
+            <button type="button" onClick={onPrev} disabled={isFirst} className="inline-flex items-center justify-center gap-2 border border-stone-200 px-6 py-3 text-sm font-bold text-stone-600 transition hover:bg-stone-50 disabled:opacity-40">
               <ChevronLeft className="size-4" /> Previous
             </button>
             <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
               Step {index + 1} of {total}
             </div>
-            <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-stone-900 rounded-xl px-8 py-3 text-sm font-bold text-white transition hover:bg-stone-800 shadow-sm">
+            <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 shadow-sm">
               {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete lesson" : "Mark complete & continue"}
               <ChevronRight className="size-4" />
             </button>
@@ -628,7 +623,7 @@ function PracticeArea({ speak, playingItem, playErrorBeep }: any) {
   ];
 
   return (
-    <div className="border border-stone-200 rounded-2xl overflow-hidden bg-[#fcfaf5] shadow-sm">
+    <div className="border border-stone-200 bg-[#fcfaf5] shadow-sm">
       <div className="flex flex-wrap border-b border-stone-200 bg-white">
         <div className="flex overflow-x-auto custom-scrollbar w-full">
           {tabs.map((t) => (
@@ -658,8 +653,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
   const [picked, setPicked] = useState<string | null>(null);
   
   const question = useMemo(() => {
-    // Generate questions dynamically
-    const isAudioType = Math.random() > 0.5; // 50% chance of "Listen and select" vs "Which letter reads..."
+    const isAudioType = Math.random() > 0.5; 
     const answer = data[Math.floor(Math.random() * data.length)];
     const wrongs = data.filter((x: any) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
     const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
@@ -669,79 +663,88 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
   if (step >= questionCount) {
     const passed = (score / questionCount) >= 0.8 || DEV_BYPASS_LOCKS;
     return (
-      <div className="flex flex-col items-center justify-center text-center p-8 bg-white border border-stone-200 rounded-xl shadow-sm">
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm ${passed ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+      <div className={`flex flex-col items-center justify-center text-center p-8 border ${isUnlockTest ? 'bg-white border-stone-200' : 'bg-[#fffdf5] border-[#fde68a]'} shadow-sm`}>
+        <div className={`w-20 h-20 flex items-center justify-center mb-6 shadow-sm border ${passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
           {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
         </div>
         <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">{passed ? "Test Passed!" : "Keep Practicing"}</h3>
         <p className="text-stone-600 mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {questionCount}.</p>
         
         <div className="flex gap-4">
-          <button onClick={() => { setStep(0); setScore(0); setPicked(null); }} className="px-6 py-3 bg-stone-100 font-bold rounded-xl hover:bg-stone-200 transition-colors text-stone-700 flex items-center gap-2">
+          <button onClick={() => { setStep(0); setScore(0); setPicked(null); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2">
             <Shuffle size={18} /> Retake Test
           </button>
           {passed && isUnlockTest && (
-            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold rounded-xl hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2">
+            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2">
               Unlock Next Lesson <ArrowRight size={18} />
             </button>
           )}
         </div>
         {DEV_BYPASS_LOCKS && !passed && isUnlockTest && (
-          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 rounded">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
+          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 border border-rose-200">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
         )}
       </div>
     );
   }
 
   return (
-    <div className="border border-stone-200 bg-white rounded-xl p-8 shadow-sm">
-      <div className="mb-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400 border-b border-stone-100 pb-4">
+    <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
+      {!isUnlockTest && (
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
+          <Sparkles size={14} /> Checkpoint
+        </div>
+      )}
+      <h3 className="text-xl font-serif text-stone-900 mb-2">{title}</h3>
+      <p className="text-sm text-stone-600 mb-6">{intro}</p>
+
+      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400 border-b border-stone-200 pb-3 mb-6">
         <span>Question {step + 1} of {questionCount}</span>
-        <span className="text-amber-600">Score {score}</span>
+        <span className="text-amber-500">Score {score}</span>
       </div>
 
-      <div className="flex flex-col items-center gap-6 mb-8 text-center">
-        {question.isAudioType ? (
-          <>
-            <span className="text-lg font-bold text-stone-700">Listen to the sound and select the matching consonant:</span>
-            <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className="inline-flex items-center gap-3 bg-stone-900 px-8 py-4 rounded-xl text-white font-bold hover:bg-stone-800 transition-colors shadow-md">
-              {playingItem === question.answer.tib ? <Loader2 size={24} className="animate-spin text-amber-500" /> : <Volume2 size={24} className="text-amber-500" />} PLAY AUDIO
-            </button>
-          </>
-        ) : (
-          <>
-            <span className="text-lg font-bold text-stone-700">Which consonant reads <span className="font-mono bg-stone-100 px-2 py-1 rounded border border-stone-200">[{question.answer.pron}]</span>?</span>
-            <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-lg font-bold hover:bg-amber-100 transition-colors border border-amber-200">
-               {playingItem === question.answer.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Play Hint
-            </button>
-          </>
-        )}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Prompt</div>
+          {question.isAudioType ? (
+            <span className="text-xl text-stone-800">Listen and select the matching consonant.</span>
+          ) : (
+            <span className="text-xl text-stone-800">Which letter reads <span className="font-mono bg-stone-100 px-2 py-0.5 border border-stone-200">[{question.answer.pron}]</span>?</span>
+          )}
+        </div>
+        <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className="inline-flex items-center justify-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-5 py-2 font-bold hover:bg-amber-100 transition-colors shrink-0">
+           {playingItem === question.answer.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Play Hint
+        </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {question.choices.map((c: any) => {
           const isRight = picked && c.tib === question.answer.tib;
           const isWrong = picked === c.tib && c.tib !== question.answer.tib;
+          
+          let stateClass = "bg-white border-stone-200 hover:border-amber-400 text-stone-900 hover:shadow-sm";
+          if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400";
+          else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400";
+          else if (picked) stateClass = "bg-stone-50 text-stone-300 opacity-60 border-stone-200";
+
           return (
             <button
               key={c.tib + c.translit} disabled={!!picked}
               onClick={() => { setPicked(c.tib); if (c.tib === question.answer.tib) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); } }}
-              className={`border-2 p-6 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-2 ${isRight ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isWrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"}`}
+              className={`py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
             >
-              <span className="font-serif text-[4rem] leading-none">{c.tib}</span>
-              {picked && <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{c.translit}</span>}
+              <span className="font-serif text-[3rem] leading-none">{c.tib}</span>
             </button>
           );
         })}
       </div>
 
       {picked && (
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl border bg-stone-50 border-stone-200 shadow-sm">
-          <span className={`text-sm font-bold ${picked === question.answer.tib ? "text-emerald-700" : "text-rose-700"}`}>
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border bg-white border-stone-200 shadow-sm">
+          <span className={`text-sm font-bold ${picked === question.answer.tib ? "text-emerald-600" : "text-rose-600"}`}>
             {picked === question.answer.tib ? "Correct!" : `The correct answer was ${question.answer.tib} (${question.answer.translit}).`}
           </span>
-          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 rounded-lg px-8 py-3 text-sm font-bold text-white hover:bg-stone-800">
-            Next <ChevronRight size={16} />
+          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-500 px-6 py-2.5 text-sm font-bold text-stone-900 hover:bg-amber-400 transition">
+            Next <ArrowRight size={16} />
           </button>
         </div>
       )}
@@ -766,13 +769,13 @@ function Flashcards({ speak, playingItem }: any) {
     <div className="flex flex-col items-center w-full animate-in fade-in">
       <div className="w-full max-w-2xl flex flex-col sm:flex-row justify-between items-center mb-6 text-[10px] font-bold text-stone-400 uppercase tracking-widest gap-4">
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => { setMode("consonants"); setIdx(0); setFlipped(false); }} className={`px-4 py-2 rounded-lg transition-all ${mode === "consonants" ? "bg-stone-900 text-white" : "border border-stone-200 text-stone-500 hover:bg-stone-100"}`}>Consonants · 30</button>
-          <button onClick={() => { setMode("nouns"); setIdx(0); setFlipped(false); }} className={`px-4 py-2 rounded-lg transition-all ${mode === "nouns" ? "bg-stone-900 text-white" : "border border-stone-200 text-stone-500 hover:bg-stone-100"}`}>Nouns · {VOCAB.length}</button>
+          <button onClick={() => { setMode("consonants"); setIdx(0); setFlipped(false); }} className={`px-4 py-2 transition-all border ${mode === "consonants" ? "bg-stone-900 text-white border-stone-900" : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50"}`}>Consonants · 30</button>
+          <button onClick={() => { setMode("nouns"); setIdx(0); setFlipped(false); }} className={`px-4 py-2 transition-all border ${mode === "nouns" ? "bg-stone-900 text-white border-stone-900" : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50"}`}>Nouns · {VOCAB.length}</button>
         </div>
         <span>Card {(idx % deck.length) + 1} of {deck.length}</span>
       </div>
 
-      <div onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group overflow-hidden">
+      <div onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center relative group overflow-hidden">
         {!flipped ? (
           <div className="flex flex-col items-center gap-4">
             {mode === "nouns" && <span className="text-6xl">{card.emoji}</span>}
@@ -796,7 +799,7 @@ function Flashcards({ speak, playingItem }: any) {
 
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
         <button onClick={prev} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800"><ChevronLeft size={16} /> Previous</button>
-        <button onClick={() => speak(mode === 'consonants' ? card.tib : card.tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl shadow-sm">
+        <button onClick={() => speak(mode === 'consonants' ? card.tib : card.tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm">
           {playingItem ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />} Play sound
         </button>
         <button onClick={next} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800">Next <ChevronRight size={16} /></button>
@@ -819,7 +822,7 @@ function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in">
       <p className="text-sm font-medium text-stone-500 mb-8 self-start w-full max-w-4xl">Listen to the sound and choose the correct consonant.</p>
-      <button onClick={() => speak(answer.tib)} disabled={playingItem !== null} className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 mb-12 shadow-md transition-colors">
+      <button onClick={() => speak(answer.tib)} disabled={playingItem !== null} className="bg-stone-900 hover:bg-stone-800 text-white px-8 py-4 font-bold flex items-center gap-3 mb-12 shadow-md transition-colors">
         {playingItem === answer.tib ? <Loader2 size={20} className="animate-spin text-amber-500" /> : <Volume2 size={20} className="text-amber-500"/>} PLAY SOUND
       </button>
 
@@ -828,7 +831,7 @@ function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
           const isSelected = picked === c.translit;
           const isCorrect = answer.translit === c.translit;
           return (
-            <button key={c.tib + c.translit} onClick={() => { if (!picked) { setPicked(c.translit); if (isCorrect) speak(c.tib); else playErrorBeep(); } }} disabled={picked !== null} className={`relative aspect-square flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border-2 transition-all ${isSelected && isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700" : isSelected && !isCorrect ? "border-rose-500 bg-rose-50 text-rose-700" : picked && isCorrect ? "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600" : picked ? "border-stone-100 opacity-50 bg-stone-50 cursor-default" : "border-stone-200 bg-white hover:bg-stone-50 hover:border-amber-300"}`}>
+            <button key={c.tib + c.translit} onClick={() => { if (!picked) { setPicked(c.translit); if (isCorrect) speak(c.tib); else playErrorBeep(); } }} disabled={picked !== null} className={`relative py-8 px-4 flex flex-col items-center justify-center border transition-all ${isSelected && isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700" : isSelected && !isCorrect ? "border-rose-500 bg-rose-50 text-rose-700" : picked && isCorrect ? "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600" : picked ? "border-stone-100 opacity-50 bg-stone-50 cursor-default" : "border-stone-200 bg-white hover:bg-stone-50 hover:border-amber-300"}`}>
               <span className="font-serif text-[4rem] md:text-[5rem] leading-none">{c.tib}</span>
               {picked && <span className="absolute bottom-4 text-[10px] font-bold uppercase tracking-widest">{c.translit}</span>}
               {isSelected && isCorrect && <CheckCircle2 size={20} className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in" />}
@@ -839,7 +842,7 @@ function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
       </div>
       {picked && (
         <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-          <button onClick={() => { setPicked(null); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
+          <button onClick={() => { setPicked(null); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
         </div>
       )}
     </div>
@@ -863,20 +866,20 @@ function MatchExercise({ speak, playingItem, playErrorBeep }: any) {
       <p className="text-sm font-medium text-stone-500 mb-8 self-start w-full max-w-4xl">Match each Tibetan consonant with its pronunciation.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
         {questions.map((q, idx) => (
-          <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 rounded-xl shadow-sm gap-4 sm:gap-2">
+          <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 shadow-sm gap-4 sm:gap-2">
             <div className="text-4xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left">{q.target.tib}</div>
             <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto sm:mr-2">
               {q.options.map(opt => {
                 const isSelected = matchAnswers[q.target.tib] === opt.translit;
                 const isCorrect = q.target.translit === opt.translit;
                 const isAnswered = !!matchAnswers[q.target.tib];
-                let btnClass = "border-stone-200 text-stone-600 hover:bg-stone-50 cursor-pointer font-mono";
+                let btnClass = "border-stone-200 bg-white text-stone-600 hover:bg-stone-50 cursor-pointer font-mono";
                 if (isAnswered) {
-                  if (isCorrect) { btnClass = isSelected ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-emerald-400 border-dashed bg-emerald-50/50 text-emerald-600"; } 
-                  else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default" : "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default"; }
+                  if (isCorrect) { btnClass = isSelected ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm font-mono" : "border-emerald-400 border-dashed bg-emerald-50/50 text-emerald-600 font-mono"; } 
+                  else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default font-mono" : "border-stone-100 bg-stone-50 text-stone-300 opacity-50 cursor-default font-mono"; }
                 }
                 return (
-                  <button key={opt.tib + opt.translit} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.tib]: opt.translit })); if(isCorrect) speak(opt.tib); else playErrorBeep(); } else if (isCorrect) { speak(opt.tib); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border rounded-lg transition-all flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
+                  <button key={opt.tib + opt.translit} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.tib]: opt.translit })); if(isCorrect) speak(opt.tib); else playErrorBeep(); } else if (isCorrect) { speak(opt.tib); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border transition-all flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
                     {playingItem === opt.tib && isCorrect ? <Loader2 size={14} className="animate-spin absolute" /> : opt.translit}
                   </button>
                 );
@@ -887,7 +890,7 @@ function MatchExercise({ speak, playingItem, playErrorBeep }: any) {
       </div>
       {Object.keys(matchAnswers).length === questions.length && (
         <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 rounded-xl shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
+          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
         </div>
       )}
     </div>
@@ -909,10 +912,10 @@ function MemoryReview({ speak, playingItem }: any) {
 
   if (deck.length === 0) return (
     <div className="flex flex-col items-center justify-center text-center h-[400px] animate-in zoom-in-95">
-      <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm"><CheckCircle2 size={40} /></div>
+      <div className="w-20 h-20 bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 shadow-sm border border-emerald-200"><CheckCircle2 size={40} /></div>
       <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Deck Complete!</h3>
       <p className="text-stone-500 font-medium mb-8">You have successfully mastered all cards.</p>
-      <button onClick={() => { setDeck([...CONSONANTS].sort(() => Math.random() - 0.5)); setReviewedCount(0); }} className="px-8 py-3.5 bg-stone-900 text-white font-bold rounded-xl hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"><Repeat size={18} /> Review Again</button>
+      <button onClick={() => { setDeck([...CONSONANTS].sort(() => Math.random() - 0.5)); setReviewedCount(0); }} className="px-8 py-3.5 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"><Repeat size={18} /> Review Again</button>
     </div>
   );
 
@@ -922,20 +925,20 @@ function MemoryReview({ speak, playingItem }: any) {
         <div className="flex justify-between items-center mb-6 text-[10px] font-bold text-stone-500 uppercase tracking-widest border-b border-stone-200 pb-4">
           <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
         </div>
-        <div className="bg-white border border-stone-200 rounded-2xl p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
+        <div className="bg-white border border-stone-200 p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
           <div className="text-[7rem] md:text-[9rem] font-serif text-stone-900 mb-8 leading-none text-center">{deck[0].tib}</div>
-          <button onClick={() => speak(deck[0].tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-lg transition-colors text-sm">
+          <button onClick={() => speak(deck[0].tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold transition-colors text-sm border border-stone-200">
             {playingItem === deck[0].tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Check Sound
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <button onClick={() => setRating('Hard')} className={`py-4 rounded-xl border-2 font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
-          <button onClick={() => setRating('Good')} className={`py-4 rounded-xl border-2 font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
-          <button onClick={() => setRating('Easy')} className={`py-4 rounded-xl border-2 font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
+          <button onClick={() => setRating('Hard')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
+          <button onClick={() => setRating('Good')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
+          <button onClick={() => setRating('Easy')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
           <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2"><BookOpen size={14} /> Cards you mark Hard return soon.</p>
-          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold rounded-xl shadow-sm transition-colors w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}>Next Card <ArrowRight size={18} /></button>
+          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold shadow-sm transition-colors w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}>Next Card <ArrowRight size={18} /></button>
         </div>
       </div>
     </div>
@@ -952,7 +955,7 @@ function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
       <div className="relative w-full max-w-md bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-right-8 duration-300 border-l border-[#e8e4d9]">
         <div className="px-6 py-4 border-b border-[#e8e4d9] flex items-center justify-between bg-white">
           <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Consonant · {c.translit}</span>
-          <button onClick={onClose} className="p-2 -mr-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"><X size={20} /></button>
+          <button onClick={onClose} className="p-2 -mr-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"><X size={20} /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
@@ -961,22 +964,22 @@ function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
             <div className="flex items-center gap-3">
               <div className="text-xl font-serif italic text-stone-800">{c.translit}</div>
               <div className="text-xl font-mono font-medium text-stone-400">{c.pron}</div>
-              <button onClick={() => onSpeak(c.tib)} disabled={playingItem !== null} className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-stone-900 rounded-lg flex items-center justify-center shadow-sm transition-colors">
+              <button onClick={() => onSpeak(c.tib)} disabled={playingItem !== null} className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-stone-900 flex items-center justify-center shadow-sm transition-colors">
                 {playingItem === c.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className={`p-4 rounded-xl border ${tone.swatch} border-opacity-50`}>
+            <div className={`p-4 border ${tone.swatch} border-opacity-50`}>
               <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Tone</div>
               <div className={`font-serif text-lg ${tone.text}`}>{tone.short}</div>
             </div>
             
-            <div className="p-4 rounded-xl border bg-white" style={{ borderColor: gender.color + '40', backgroundColor: gender.tint }}>
+            <div className="p-4 border bg-white" style={{ borderColor: gender.color + '40', backgroundColor: gender.tint }}>
               <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Gender</div>
               <div className="font-serif text-lg flex items-center gap-2" style={{ color: gender.text }}>
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: gender.color }}></div>
+                <div className="w-2 h-2" style={{ backgroundColor: gender.color }}></div>
                 {gender.label}
               </div>
             </div>
@@ -989,7 +992,7 @@ function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
 
           <div className="mb-8 border-t border-stone-200 pt-6">
             <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Notes from the textbook</div>
-            <p className="text-sm text-stone-600 leading-relaxed italic bg-white p-4 rounded-xl border border-stone-200">{c.note}</p>
+            <p className="text-sm text-stone-600 leading-relaxed italic bg-white p-4 border border-stone-200">{c.note}</p>
           </div>
         </div>
       </div>
