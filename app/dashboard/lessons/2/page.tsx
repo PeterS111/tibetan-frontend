@@ -1,3 +1,4 @@
+--- FILE: tibetan-frontend/app/dashboard/lessons/2/page.tsx ---
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -7,7 +8,7 @@ import { DEV_BYPASS_LOCKS } from "@/app/config";
 import { 
   ChevronRight, ChevronLeft, Check, Sparkles, Repeat, Ear, Shuffle, 
   Layers, CheckCircle2, BookOpen, Info, PenLine, Moon, Sun, Play, 
-  Volume2, Loader2, X, ArrowRight, XCircle, ArrowUp, ArrowDown
+  Volume2, Loader2, X, ArrowRight, XCircle, ArrowUp, ArrowDown, Trophy, Lock
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -514,7 +515,7 @@ export default function VowelsLesson() {
           <Link href="/dashboard/lessons/1" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
             <ChevronLeft size={16} /> Previous: The 30 Consonants
           </Link>
-          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm transition-colors">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm transition-colors border border-amber-600">
             <CheckCircle2 size={18} /> Mark lesson complete
           </button>
           <Link href="/dashboard/lessons/3" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
@@ -565,7 +566,7 @@ function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, on
             <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
               Step {index + 1} of {total}
             </div>
-            <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 shadow-sm">
+            <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 border border-amber-600 shadow-sm">
               {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete lesson" : "Mark complete & continue"}
               <ChevronRight className="size-4" />
             </button>
@@ -612,6 +613,7 @@ function PracticeArea({ speak, playingItem, playErrorBeep }: any) {
 /* Universal Quiz Module (Used for Mastery & Final Test)               */
 /* ------------------------------------------------------------------ */
 function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep, questionCount, isUnlockTest, isVocabMatch }: any) {
+  const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -622,6 +624,38 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
     const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
     return { answer, choices };
   }, [step, data]);
+
+  if (!hasStarted) {
+    return (
+      <div className="border border-stone-200 bg-white p-6 md:p-8 shadow-sm">
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
+          <Trophy className="size-3.5" /> Final Test
+        </div>
+        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next lesson?</h3>
+        <p className="text-sm text-stone-600 mb-6">
+          {questionCount} questions drawn from everything you covered in this lesson. Score <span className="font-bold">80%</span> or higher to pass. You can retake the test as many times as you like — your best score is saved.
+        </p>
+        <button 
+          onClick={() => setHasStarted(true)} 
+          className="bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600 shadow-sm"
+        >
+          Start the test <ChevronRight size={16} />
+        </button>
+        
+        <div className="border border-stone-200 p-5 bg-[#fafaf9]">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3">
+             <Lock size={14} /> Progression
+          </div>
+          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next lesson in the syllabus. Your progress is saved locally in your browser.</p>
+          <ul className="space-y-2 text-sm text-stone-600">
+             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Mix of recognition and pronunciation prompts</li>
+             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Immediate feedback after each question</li>
+             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Unlimited retakes — best score is kept</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   if (step >= questionCount) {
     const passed = (score / questionCount) >= 0.8 || DEV_BYPASS_LOCKS;
@@ -638,7 +672,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
             <Shuffle size={18} /> Retake Test
           </button>
           {passed && isUnlockTest && (
-            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2">
+            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 border border-amber-600">
               Unlock Next Lesson <ArrowRight size={18} />
             </button>
           )}
@@ -702,11 +736,11 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
       </div>
 
       {picked && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border bg-white border-stone-200 shadow-sm">
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border bg-stone-50 border-stone-200 shadow-sm">
           <span className={`text-sm font-bold ${picked === question.answer.tib ? "text-emerald-600" : "text-rose-600"}`}>
             {picked === question.answer.tib ? "Correct!" : `The correct answer was ${question.answer.tib} (${question.answer.translit}).`}
           </span>
-          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-500 px-6 py-2.5 text-sm font-bold text-stone-900 hover:bg-amber-400 transition">
+          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 px-6 py-2.5 text-sm font-bold text-white hover:bg-stone-800 transition">
             Next <ArrowRight size={16} />
           </button>
         </div>
@@ -762,7 +796,7 @@ function Flashcards({ speak, playingItem }: any) {
 
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
         <button onClick={prev} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800"><ChevronLeft size={16} /> Previous</button>
-        <button onClick={() => speak(translit)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm">
+        <button onClick={() => speak(translit)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm border border-amber-600">
           {playingItem ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />} Play sound
         </button>
         <button onClick={next} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800">Next <ChevronRight size={16} /></button>
@@ -805,7 +839,7 @@ function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
       </div>
       {picked && (
         <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-          <button onClick={() => { setPicked(null); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
+          <button onClick={() => { setPicked(null); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors border border-amber-600 flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
         </div>
       )}
     </div>
@@ -853,7 +887,7 @@ function MatchExercise({ speak, playingItem, playErrorBeep }: any) {
       </div>
       {Object.keys(matchAnswers).length === questions.length && (
         <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
+          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors border border-amber-600 flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
         </div>
       )}
     </div>
@@ -896,13 +930,13 @@ function MemoryReview({ speak, playingItem }: any) {
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <button onClick={() => setRating('Hard')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
-          <button onClick={() => setRating('Good')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
-          <button onClick={() => setRating('Easy')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
+          <button onClick={() => setRating('Hard')} className={`py-4 border font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
+          <button onClick={() => setRating('Good')} className={`py-4 border font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
+          <button onClick={() => setRating('Easy')} className={`py-4 border font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
           <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2"><BookOpen size={14} /> Cards you mark Hard return soon.</p>
-          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold shadow-sm transition-colors w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}>Next Card <ArrowRight size={18} /></button>
+          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold shadow-sm transition-colors border border-amber-600 w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed border-transparent'}`}>Next Card <ArrowRight size={18} /></button>
         </div>
       </div>
     </div>
@@ -927,7 +961,7 @@ function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
             <div className="flex items-center gap-3">
               <div className="text-xl font-serif italic text-stone-800">{v.translit}</div>
               <div className="text-xl font-mono font-medium text-stone-400">{v.markGloss}</div>
-              <button onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-stone-900 flex items-center justify-center shadow-sm transition-colors">
+              <button onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-stone-900 flex items-center justify-center shadow-sm transition-colors border border-amber-600">
                 {playingItem === v.translit ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
               </button>
             </div>
