@@ -37,9 +37,9 @@ interface Super {
 }
 
 const TONE_META: Record<Tone, { label: string; hex: string; Icon: typeof ArrowRight; text: string; bg: string; border: string }> = {
-  same: { label: "Same tone as root", hex: "#10b981", Icon: ArrowRight, text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
-  up:   { label: "Higher tone",       hex: "#f43f5e", Icon: ArrowUp,    text: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200" },
-  down: { label: "Lower tone",        hex: "#0ea5e9", Icon: ArrowDown,  text: "text-sky-700", bg: "bg-sky-50", border: "border-sky-200" },
+  same: { label: "Same tone as root", hex: "#16a34a", Icon: ArrowRight, text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+  up:   { label: "Higher tone",       hex: "#b91c1c", Icon: ArrowUp,    text: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200" },
+  down: { label: "Lower tone",        hex: "#0284c7", Icon: ArrowDown,  text: "text-sky-700", bg: "bg-sky-50", border: "border-sky-200" },
 };
 
 const SUPERS: Super[] = [
@@ -53,7 +53,7 @@ const SUPERS: Super[] = [
     count: 12,
     intro: "The consonant ར (ra) sits above twelve root letters. When it does, it is no longer pronounced on its own — instead it re-tunes the tone of the letter beneath.",
     rootLetters: "ཀ ག ང ཇ ཉ ཏ ད ན བ མ ཙ ཛ",
-    accent: { hex: "#f43f5e", ring: "ring-rose-300", swatch: "bg-rose-100", text: "text-rose-800", band: "bg-rose-500" },
+    accent: { hex: "#b91c1c", ring: "ring-rose-300", swatch: "bg-rose-100", text: "text-rose-800", band: "bg-rose-500" },
     combos: [
       { stack: "རྐ", read: "ka",  tone: "same" }, { stack: "རྒ", read: "ga",  tone: "down" },
       { stack: "རྔ", read: "nga", tone: "up"   }, { stack: "རྗ", read: "ja",  tone: "down" },
@@ -92,7 +92,7 @@ const SUPERS: Super[] = [
     count: 11,
     intro: "The consonant ས (sa) sits above eleven root letters. Sa-go stacks are common in everyday vocabulary — nose, saddle, wheat, body — so they reward memorising early.",
     rootLetters: "ཀ ག ང ཉ ཏ ད ན པ བ མ ཙ",
-    accent: { hex: "#0ea5e9", ring: "ring-sky-300", swatch: "bg-sky-100", text: "text-sky-800", band: "bg-sky-500" },
+    accent: { hex: "#0284c7", ring: "ring-sky-300", swatch: "bg-sky-100", text: "text-sky-800", band: "bg-sky-500" },
     combos: [
       { stack: "སྐ", read: "ka",  tone: "same" }, { stack: "སྒ", read: "ga",  tone: "down" },
       { stack: "སྔ", read: "nga", tone: "up"   }, { stack: "སྙ", read: "nya", tone: "up"   },
@@ -107,10 +107,9 @@ const SUPERS: Super[] = [
 interface Vocab { tib: string; translit: string; en: string; emoji: string; sup: SuperKey; }
 
 const VOCAB: Vocab[] = [
-  // Ra-go
   { tib: "རྟ", translit: "ta", en: "horse", emoji: "🐎", sup: "ra" },
   { tib: "རྔ", translit: "nga", en: "drum", emoji: "🥁", sup: "ra" },
-  { tib: "རྗེ་བོ", translit: "je-wo", en: "king", emoji: "🤴", sup: "ra" },
+  { tib: "རྗེ་བོ", translit: "JE-WO", en: "king", emoji: "🤴", sup: "ra" },
   { tib: "རྡོ", translit: "do", en: "stone", emoji: "🪨", sup: "ra" },
   { tib: "རྡོ་རྗེ", translit: "dor-je", en: "vajra", emoji: "🔱", sup: "ra" },
   { tib: "རྨ", translit: "ma", en: "wound", emoji: "🩹", sup: "ra" },
@@ -119,7 +118,6 @@ const VOCAB: Vocab[] = [
   { tib: "རྣ", translit: "na", en: "ear", emoji: "👂", sup: "ra" },
   { tib: "རྫ་ཆུ", translit: "dza-chu", en: "Mountain river", emoji: "🏞️", sup: "ra" },
   { tib: "རྩ་བ", translit: "tsa-wa", en: "root", emoji: "🌿", sup: "ra" },
-  // La-go
   { tib: "ལྔ", translit: "nga", en: "five", emoji: "5️⃣", sup: "la" },
   { tib: "ལྷ", translit: "lha", en: "deity", emoji: "🕉️", sup: "la" },
   { tib: "ལྷ་མོ", translit: "lha-mo", en: "goddess", emoji: "🪷", sup: "la" },
@@ -128,7 +126,6 @@ const VOCAB: Vocab[] = [
   { tib: "ལྟ", translit: "ta", en: "look", emoji: "🔭", sup: "la" },
   { tib: "ལྗི་བ", translit: "ji-ba", en: "flea", emoji: "🪳", sup: "la" },
   { tib: "ལྕི་བ", translit: "ci-ba", en: "dung", emoji: "💩", sup: "la" },
-  // Sa-go
   { tib: "སྒ", translit: "ga", en: "saddle", emoji: "🐴", sup: "sa" },
   { tib: "སྙེ་མ", translit: "nye-ma", en: "Ear of the grain", emoji: "🌾", sup: "sa" },
   { tib: "སྣ", translit: "na", en: "nose", emoji: "👃", sup: "sa" },
@@ -140,17 +137,12 @@ const VOCAB: Vocab[] = [
   { tib: "སྐེ", translit: "ke", en: "neck", emoji: "🦒", sup: "sa" },
 ];
 
-const COMBINED_PRACTICE_ITEMS = [
-  ...SUPERS.flatMap(s => s.combos.map(c => ({ id: `combo-${c.stack}`, text: c.stack, wylie: c.read, hint: TONE_META[c.tone].label, emoji: '', type: 'letter' }))),
-  ...VOCAB.map(v => ({ id: `vocab-${v.tib}`, text: v.tib, wylie: v.translit, hint: v.en, emoji: v.emoji, type: 'vocab' }))
-];
-
 const STEPS = [
   { id: "intro", eyebrow: "Step 01", title: "What is a superscript?", description: "How superscripts stack over a root letter." },
   { id: "family", eyebrow: "Step 02", title: "Meet the three superscripts", description: "Study each superscript with its root combinations." },
   { id: "vocab", eyebrow: "Step 03", title: "Vocabulary built from superscripts", description: "Real words using stacked letters." },
   { id: "practice", eyebrow: "Step 04", title: "Practice & mastery check", description: "Flashcards, quiz, and matching drills." },
-  { id: "complete", eyebrow: "Final test", title: "Lesson test — unlock the next lesson", description: "Score 80% or higher to unlock Subscripts." },
+  { id: "complete", eyebrow: "Finish", title: "Lesson complete", description: "Continue when you're ready." },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -163,7 +155,6 @@ export default function SuperscriptsLesson() {
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
   const [playingItem, setPlayingItem] = useState<string | null>(null);
   const [vocabFilter, setVocabFilter] = useState<SuperKey | "all">("all");
-  const [activePracticeTab, setActivePracticeTab] = useState("Flashcards");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
 
   const [completed, setCompleted] = useState<Set<number>>(new Set());
@@ -274,7 +265,7 @@ export default function SuperscriptsLesson() {
         </div>
 
         {/* Hero */}
-        <section className="mb-8 grid gap-6 border border-[#e8e4d9] bg-white p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10 shadow-sm">
+        <section className="mb-8 grid gap-6 border border-stone-200/60 bg-white p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10 shadow-sm">
           <div>
             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-500">Lesson 03 · Foundations</div>
             <h1 className="font-serif text-3xl leading-tight tracking-tight md:text-5xl text-stone-900">The Three Superscripts</h1>
@@ -379,7 +370,7 @@ export default function SuperscriptsLesson() {
                       key={s.key}
                       onClick={() => setActiveTab(s.key)}
                       className={`group flex items-center gap-4 px-5 py-3 text-left transition-all border ${
-                        on ? "bg-stone-900 text-white border-stone-900 shadow-md" : "border-[#e8e4d9] bg-white text-stone-700 hover:border-amber-300 hover:bg-amber-50 shadow-sm"
+                        on ? "bg-stone-900 text-white border-stone-900 shadow-md" : "border-stone-200 bg-white text-stone-700 hover:border-amber-300 hover:bg-amber-50 shadow-sm"
                       }`}
                     >
                       <span className="grid size-10 place-items-center font-serif text-2xl" style={{ color: on ? '#fff' : s.accent.hex, backgroundColor: on ? 'rgba(255,255,255,0.15)' : s.accent.swatch }}>
@@ -458,7 +449,7 @@ export default function SuperscriptsLesson() {
                         </span>
                         <ArrowRight size={16} className={studyMode === "night" ? "text-stone-600" : "text-stone-300"} />
                         <span className={`font-mono text-lg font-bold ${studyMode === "night" ? "text-stone-100" : "text-stone-800"}`}>[{c.read}]</span>
-                        <span className="ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ color: M.hex }}>
+                        <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}>
                           <M.Icon size={14} strokeWidth={2.5} /> {M.label}
                         </span>
                         <button onClick={() => playAudio(c.read)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition ${studyMode === "night" ? "bg-amber-900/20 text-amber-500 hover:bg-amber-500 hover:text-stone-900" : "bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200"}`}>
@@ -770,7 +761,7 @@ function Flashcards({ speak, playingItem }: any) {
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
         <button onClick={prev} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800"><ArrowLeft size={16} /> Previous</button>
         <button onClick={() => speak(card.spoken)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm border border-amber-600">
-          {playingItem === card.spoken ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />} Play sound
+          {playingItem ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />} Play sound
         </button>
         <button onClick={next} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-800">Next <ArrowRight size={16} /></button>
       </div>
@@ -893,7 +884,7 @@ function MatchStackToSound({ speak, playingItem, playErrorBeep }: any) {
       </div>
       {Object.keys(matchAnswers).length === questions.length && (
         <div className="mt-12 animate-in fade-in slide-in-from-bottom-4">
-          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors flex items-center gap-2 border border-amber-600">Next Round <ArrowRight size={18} /></button>
+          <button onClick={() => { setMatchAnswers({}); setSeed(s => s + 1); }} className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-8 py-3.5 shadow-sm transition-colors border border-amber-600 flex items-center gap-2">Next Round <ArrowRight size={18} /></button>
         </div>
       )}
     </div>
@@ -936,13 +927,13 @@ function MemoryReview({ speak, playingItem }: any) {
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <button onClick={() => setRating('Hard')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
-          <button onClick={() => setRating('Good')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
-          <button onClick={() => setRating('Easy')} className={`py-4 border-2 font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
+          <button onClick={() => setRating('Hard')} className={`py-4 border font-bold text-sm transition-all ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
+          <button onClick={() => setRating('Good')} className={`py-4 border font-bold text-sm transition-all ${rating === 'Good' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
+          <button onClick={() => setRating('Easy')} className={`py-4 border font-bold text-sm transition-all ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
           <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2"><BookOpen size={14} /> Cards you mark Hard return soon; Easy cards drift further out.</p>
-          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold shadow-sm transition-colors w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900 border border-amber-600' : 'bg-stone-200 text-stone-400 cursor-not-allowed border-transparent'}`}>Next Card <ArrowRight size={18} /></button>
+          <button onClick={nextCard} disabled={!rating} className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold shadow-sm transition-colors border border-amber-600 w-full sm:w-auto ${rating ? 'bg-amber-500 hover:bg-amber-400 text-stone-900' : 'bg-stone-200 text-stone-400 cursor-not-allowed border-transparent'}`}>Next Card <ArrowRight size={18} /></button>
         </div>
       </div>
     </div>
