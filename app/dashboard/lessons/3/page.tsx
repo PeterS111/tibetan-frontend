@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ArrowRight,
+  ArrowLeft,
   ArrowUp,
   ArrowDown,
   Info,
