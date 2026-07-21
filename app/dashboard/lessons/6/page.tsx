@@ -857,11 +857,11 @@ export default function SuffixesLesson() {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {VOCAB.map((v) => (
-                <button key={v.tib} onClick={() => playAudio(v.read)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-3 border border-black/10 bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-md">
+                <button key={v.tib} onClick={() => playAudio(v.translit)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-3 border border-black/10 bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-md">
                   <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: SUFFIXES.find(s => s.key === v.suffix)?.accent || "#000" }} />
                   <div className="flex w-full items-start justify-between">
                     <span className="text-3xl">{v.emoji}</span>
-                    {playingItem === v.read ? <Loader2 size={14} className="animate-spin text-amber-500" /> : <Volume2 size={14} className="text-stone-300 group-hover:text-amber-500 transition-colors" />}
+                    {playingItem === v.translit ? <Loader2 size={14} className="animate-spin text-amber-500" /> : <Volume2 size={14} className="text-stone-300 group-hover:text-amber-500 transition-colors" />}
                   </div>
                   <div className="font-serif text-[2rem] leading-none text-stone-900 mt-2">{v.tib}</div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">[{v.translit}]</div>
