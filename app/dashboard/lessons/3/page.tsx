@@ -238,7 +238,8 @@ export default function SuperscriptsLesson() {
     const next = index + 1;
     if (next > unlockedStep) setUnlockedStep(next);
     setExpandedStep(next);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // FIX: Removed window.scrollTo() so the UI naturally opens the next section 
+    // without snapping the user back to the top of the page.
   };
 
   return (
@@ -291,13 +292,14 @@ export default function SuperscriptsLesson() {
                 <button
                   key={s.key}
                   type="button"
-                  onClick={() => playAudio(s.name)}
+                  // FIX: Pass the native Tibetan label (s.headLabel) instead of the English label (s.name)
+                  onClick={() => playAudio(s.headLabel)}
                   disabled={playingItem !== null}
                   className="group flex flex-col items-center gap-1 border border-black/10 p-3 text-center transition hover:bg-stone-50 hover:border-amber-400"
                 >
                   <div className="flex items-center gap-1">
                     <span className="font-serif text-2xl text-stone-900">{s.headLabel}</span>
-                    {playingItem === s.name ? (
+                    {playingItem === s.headLabel ? (
                        <Loader2 size={12} className="animate-spin text-amber-500" />
                     ) : (
                        <Volume2 size={12} className="text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity" />
