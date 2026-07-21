@@ -1205,8 +1205,22 @@ function MatchWordToSound({ speak, playingItem, playErrorBeep }: any) {
 
 function MemoryReview({ speak, playingItem }: any) {
   const items = useMemo(() => [
-    ...QUIZ.map(c => ({ id: `quiz-${c.word}`, text: c.word, wylie: c.read, hint: `Suffix ${SUFFIXES.find(s => s.key === c.suffix)?.head}`, type: 'combo' })),
-    ...VOCAB.map(v => ({ id: `vocab-${v.tib}`, text: v.tib, wylie: v.read, hint: v.en, emoji: v.emoji, type: 'vocab' }))
+    ...QUIZ.map(c => ({ 
+      id: `quiz-${c.word}`, 
+      text: c.word, 
+      wylie: c.read, 
+      hint: `Suffix ${SUFFIXES.find(s => s.key === c.suffix)?.head}`, 
+      type: 'combo', 
+      emoji: undefined // <-- The fix: explicit undefined for TS
+    })),
+    ...VOCAB.map(v => ({ 
+      id: `vocab-${v.tib}`, 
+      text: v.tib, 
+      wylie: v.read, 
+      hint: v.en, 
+      emoji: v.emoji, 
+      type: 'vocab' 
+    }))
   ], []);
 
   const [deck, setDeck] = useState(() => [...items].sort(() => 0.5 - Math.random()));
