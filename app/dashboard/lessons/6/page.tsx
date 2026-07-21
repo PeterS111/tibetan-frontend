@@ -605,8 +605,8 @@ export default function SuffixesLesson() {
                           Reads as <span style={{ color: s.accent }}>{s.reads}</span>
                         </div>
                       </div>
-                      <button onClick={() => speak(s.examples[0]?.read || s.latin)} className={`ml-auto inline-flex items-center gap-2 border px-4 py-2 text-xs font-bold transition-colors ${studyMode === "night" ? "border-white/20 hover:bg-white/10" : "border-black/10 hover:bg-stone-50"}`}>
-                        <Volume2 size={16} /> Play
+                      <button onClick={() => playAudio(s.examples[0]?.read || s.latin)} disabled={playingItem !== null} className={`ml-auto inline-flex items-center gap-2 border px-4 py-2 text-xs font-bold transition-colors ${studyMode === "night" ? "border-white/20 hover:bg-white/10" : "border-black/10 hover:bg-stone-50"}`}>
+                        {playingItem === (s.examples[0]?.read || s.latin) ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} />} Play
                       </button>
                     </div>
 
@@ -632,12 +632,12 @@ export default function SuffixesLesson() {
                       <div className={`mb-4 text-[10px] font-bold uppercase tracking-widest ${studyMode === "night" ? "text-stone-400" : "text-stone-400"}`}>Examples</div>
                       <div className="grid gap-4 sm:grid-cols-3">
                         {s.examples.map((ex) => (
-                          <button key={ex.word} onClick={() => speak(ex.read)} className={`group flex flex-col items-start gap-1 border p-5 text-left transition-colors ${studyMode === "night" ? "border-white/10 hover:bg-white/5" : "border-black/10 hover:bg-stone-50 shadow-sm"}`}>
+                          <button key={ex.word} onClick={() => playAudio(ex.read)} disabled={playingItem !== null} className={`group flex flex-col items-start gap-1 border p-5 text-left transition-colors ${studyMode === "night" ? "border-white/10 hover:bg-white/5" : "border-black/10 hover:bg-stone-50 shadow-sm"}`}>
                             <span className="font-serif text-[2.5rem] leading-none text-stone-900" style={{ color: studyMode === "night" ? "#fff" : "inherit" }}>{ex.word}</span>
                             <span className="mt-2 text-sm font-bold" style={{ color: s.accent }}>[{ex.read}]</span>
                             {ex.gloss && <span className={`text-xs font-bold ${studyMode === "night" ? "text-stone-400" : "text-stone-500"}`}>{ex.gloss}</span>}
                             <span className={`mt-3 inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-widest opacity-0 transition group-hover:opacity-100 ${studyMode === "night" ? "text-stone-400" : "text-stone-400"}`}>
-                              <Volume2 size={12} /> Play
+                              {playingItem === ex.read ? <Loader2 size={12} className="animate-spin text-amber-500" /> : <Volume2 size={12} />} Play
                             </span>
                           </button>
                         ))}
@@ -1181,13 +1181,15 @@ function MatchWordToSound({ speak, playingItem, playErrorBeep }: any) {
 /* Final Lesson Test (QuizModule Implementation)                       */
 /* ------------------------------------------------------------------ */
 
+type FlashCardLike = { word: string, read: string };
+
 function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
   const [hasStarted, setHasStarted] = useState(false);
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
 
-  // Generate 10 mixed questions (Vocab and Suffixes)
+  // Generate 10 mixed questions (Vocab and Suffix examples)
   const questions = useMemo(() => {
     const allExamples = SUFFIXES.flatMap(s => s.examples);
     const qs = [];
@@ -1205,7 +1207,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
       });
     }
 
-    // Type 2: Tibetan -> Sound (Suffixes) - 6 questions
+    // Type 2: Tibetan -> Sound (Suffix Examples) - 6 questions
     const cTargets = [...allExamples].sort(() => 0.5 - Math.random()).slice(0, 6);
     for (const c of cTargets) {
       const wrongs = allExamples.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -1248,11 +1250,11 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
           {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
         </div>
         <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">{passed ? 'Lesson Mastered!' : 'Keep Practicing'}</h3>
-        <p className="text-stone-600 mb-8 font-bold">You scored <span className={`text-xl ${passed ? 'text-emerald-600' : 'text-rose-600'}`}>{score}</span> out of {total}. {passed ? 'You have completed Unit 6.' : 'You need 8 correct to pass.'}</p>
+        <p className="text-stone-600 mb-8 font-bold">You scored <span className={`text-xl ${passed ? 'text-emerald-600' : 'text-rose-600'}`}>{score}</span> out of {total}. {passed ? 'You have unlocked the next unit.' : 'You need 8 correct to pass.'}</p>
         
         {passed ? (
-          <Link href="/dashboard/lessons" className="px-8 py-3.5 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
-            Return to Syllabus <BookOpen size={18} />
+          <Link href="/dashboard/lessons/7" className="px-8 py-3.5 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
+            Continue to Unit 07 <ArrowRight size={18} />
           </Link>
         ) : (
           <button onClick={() => { setStep(0); setScore(0); setPicked(null); setHasStarted(false); }} className="px-8 py-3.5 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
