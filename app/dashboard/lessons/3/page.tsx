@@ -580,13 +580,13 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
         {sup.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
           return (
-            <button key={c.stack} onClick={() => playAudio(c.read)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-white hover:bg-stone-50"}`}>
+            <button key={c.stack} onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-white hover:bg-stone-50"}`}>
               <span className="font-serif text-[3rem] leading-none" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.stack}</span>
               <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-400" : "text-stone-500"}`}>{c.read}</span>
               <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}>
                 <M.Icon size={12} strokeWidth={3} />
               </span>
-              {playingItem === c.read && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-amber-500" />}
+              {playingItem === c.stack && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-amber-500" />}
             </button>
           )
         })}
@@ -609,8 +609,8 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}>
                   <M.Icon size={14} strokeWidth={2.5} /> {M.label}
                 </span>
-                <button onClick={() => playAudio(c.read)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : "bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-700"}`}>
-                  {playingItem === c.read ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                <button onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : "bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-700"}`}>
+                  {playingItem === c.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
                 </button>
               </div>
             );
@@ -645,7 +645,7 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
   const pick = (read: string) => {
     if (picked) return;
     setPicked(read);
-    if (read === question.answer.read) { setScore(s => s + 1); playAudio(read); } else { playErrorBeep(); }
+    if (read === question.answer.read) { setScore(s => s + 1); playAudio(question.answer.stack); } else { playErrorBeep(); }
   };
 
   if (step >= total) {
@@ -670,8 +670,8 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <span className={`text-[15px] font-bold ${night ? "text-stone-300" : "text-stone-600"}`}>Which stack reads</span>
         <span className={`font-mono text-2xl font-bold border px-3 py-1 ${night ? "bg-white/10 border-white/20 text-white" : "bg-white border-black/10 text-stone-900"}`}>[{question.answer.read}]</span>
-        <button onClick={() => playAudio(question.answer.read)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : "bg-amber-100 border-amber-200 hover:bg-amber-200 text-amber-700"}`}>
-          {playingItem === question.answer.read ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+        <button onClick={() => playAudio(question.answer.stack)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : "bg-amber-100 border-amber-200 hover:bg-amber-200 text-amber-700"}`}>
+          {playingItem === question.answer.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
         </button>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -734,12 +734,12 @@ function VocabFilter({ playAudio, playingItem }: any) {
         {items.map((v) => {
           const s = SUPERS.find((x) => x.key === v.sup)!;
           return (
-            <button key={v.tib + v.translit} onClick={() => playAudio(v.translit)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-4 border border-black/10 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md">
+            <button key={v.tib + v.translit} onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-4 border border-black/10 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md">
               <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
               <div className="flex w-full items-start justify-between">
                 <span className="text-3xl">{v.emoji}</span>
                 <span className="inline-grid size-8 place-items-center bg-stone-50 border border-black/5 text-amber-500 transition-colors group-hover:bg-amber-50 group-hover:border-amber-200">
-                  {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />}
+                  {playingItem === v.tib ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />}
                 </span>
               </div>
               <div className="w-full border-b border-black/5 pb-3">
@@ -791,9 +791,9 @@ function Flashcards({ speak, playingItem }: any) {
   const [mode, setMode] = useState<"stacks" | "words">("stacks");
   const deck = useMemo<FlashCard[]>(() => {
     if (mode === "stacks") {
-      return SUPERS.flatMap((s) => s.combos.map((c) => ({ kind: "stack" as const, tib: c.stack, translit: c.read, en: TONE_META[c.tone].label, sup: s.key, spoken: c.read })));
+      return SUPERS.flatMap((s) => s.combos.map((c) => ({ kind: "stack" as const, tib: c.stack, translit: c.read, en: TONE_META[c.tone].label, sup: s.key, spoken: c.stack })));
     }
-    return VOCAB.map((v) => ({ kind: "word" as const, tib: v.tib, translit: v.translit, en: v.en, sup: v.sup, spoken: v.translit, emoji: v.emoji }));
+    return VOCAB.map((v) => ({ kind: "word" as const, tib: v.tib, translit: v.translit, en: v.en, sup: v.sup, spoken: v.tib, emoji: v.emoji }));
   }, [mode]);
 
   const [idx, setIdx] = useState(0);
@@ -884,8 +884,8 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
       <div className="w-full max-w-4xl flex flex-col items-center gap-6 border border-black/10 bg-white p-10 shadow-sm mb-8">
         <span className="text-[11px] font-bold uppercase tracking-widest text-stone-400">What does this stack read?</span>
         <span className="font-serif leading-none text-stone-900" style={{ fontSize: "7rem" }}>{q.answer.stack}</span>
-        <button onClick={() => speak(q.answer.read)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-stone-50 px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors">
-          {playingItem === q.answer.read ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Play Hint
+        <button onClick={() => speak(q.answer.stack)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-stone-50 px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors">
+          {playingItem === q.answer.stack ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Play Hint
         </button>
       </div>
 
@@ -896,7 +896,7 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
           return (
             <button
               key={c.stack + c.read} disabled={!!picked}
-              onClick={() => { setPicked(c.read); if (c.read === q.answer.read) { setScore((s) => s + 1); speak(q.answer.read); } else { playErrorBeep(); } }}
+              onClick={() => { setPicked(c.read); if (c.read === q.answer.read) { setScore((s) => s + 1); speak(q.answer.stack); } else { playErrorBeep(); } }}
               className={`border p-6 text-center transition-all ${
                 right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
               }`}
@@ -953,8 +953,8 @@ function MatchStackToSound({ speak, playingItem, playErrorBeep }: any) {
                   else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default font-mono" : "border-black/5 bg-stone-50 text-stone-300 opacity-50 cursor-default font-mono"; }
                 }
                 return (
-                  <button key={opt.stack + opt.read} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.stack]: opt.read })); if(isCorrect) speak(opt.read); else playErrorBeep(); } else if (isCorrect) { speak(opt.read); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border transition-colors flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
-                    {playingItem === opt.read && isCorrect ? <Loader2 size={14} className="animate-spin absolute" /> : `[${opt.read}]`}
+                  <button key={opt.stack + opt.read} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.stack]: opt.read })); if(isCorrect) speak(opt.stack); else playErrorBeep(); } else if (isCorrect) { speak(opt.stack); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border transition-colors flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
+                    {playingItem === opt.stack && isCorrect ? <Loader2 size={14} className="animate-spin absolute" /> : `[${opt.read}]`}
                   </button>
                 );
               })}
@@ -1007,8 +1007,8 @@ function MemoryReview({ speak, playingItem }: any) {
         <div className="bg-white border border-black/10 p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
           {deck[0].emoji && <div className="text-6xl mb-6">{deck[0].emoji}</div>}
           <div className="text-7xl sm:text-8xl md:text-[8rem] font-serif text-stone-900 mb-8 leading-none text-center">{deck[0].text}</div>
-          <button onClick={() => speak(deck[0].wylie)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-50 border border-black/10 hover:bg-stone-100 text-stone-700 font-bold transition-colors text-sm shadow-sm">
-            {playingItem === deck[0].wylie ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Check Sound
+          <button onClick={() => speak(deck[0].text)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-50 border border-black/10 hover:bg-stone-100 text-stone-700 font-bold transition-colors text-sm shadow-sm">
+            {playingItem === deck[0].text ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Check Sound
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -1053,7 +1053,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         type: 'vocab',
         questionText: `What is the Tibetan word for "${v.en}"?`,
         answer: v.tib,
-        audio: v.translit,
+        audio: v.tib,
         choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `${x.emoji} ${x.tib}`, value: x.tib }))
       });
     }
@@ -1067,7 +1067,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         questionText: "What does this stack read?",
         prominentTibetan: c.stack,
         answer: c.read,
-        audio: c.read,
+        audio: c.stack,
         choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
       });
     }
