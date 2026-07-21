@@ -783,13 +783,17 @@ function PracticeSuite({ playAudio, playingItem, playErrorBeep }: any) {
   );
 }
 
+type FlashCard =
+  | { kind: "stack"; tib: string; translit: string; en: string; sup: SuperKey; spoken: string; emoji?: string }
+  | { kind: "word";  tib: string; translit: string; en: string; sup: SuperKey; spoken: string; emoji: string };
+
 function Flashcards({ speak, playingItem }: any) {
   const [mode, setMode] = useState<"stacks" | "words">("stacks");
-  const deck = useMemo(() => {
+  const deck = useMemo<FlashCard[]>(() => {
     if (mode === "stacks") {
-      return SUPERS.flatMap((s) => s.combos.map((c) => ({ tib: c.stack, en: `[${c.read}]  ·  ${TONE_META[c.tone].label}`, sup: s.key, spoken: c.read, emoji: '' })));
+      return SUPERS.flatMap((s) => s.combos.map((c) => ({ kind: "stack" as const, tib: c.stack, translit: c.read, en: TONE_META[c.tone].label, sup: s.key, spoken: c.read })));
     }
-    return VOCAB.map((v) => ({ tib: v.tib, en: `${v.en}  ·  ${v.translit}`, sup: v.sup, spoken: v.translit, emoji: v.emoji }));
+    return VOCAB.map((v) => ({ kind: "word" as const, tib: v.tib, translit: v.translit, en: v.en, sup: v.sup, spoken: v.translit, emoji: v.emoji }));
   }, [mode]);
 
   const [idx, setIdx] = useState(0);
@@ -816,7 +820,7 @@ function Flashcards({ speak, playingItem }: any) {
       <button onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-black/10 shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden">
         <span className="absolute left-0 top-0 h-1.5 w-full" style={{ backgroundColor: accent }} />
         {!flipped ? (
-          mode === "words" ? (
+          card.kind === "word" ? (
             <div className="flex flex-col items-center gap-4 group-hover:scale-105 transition-transform">
               <span className="text-5xl">{card.emoji}</span>
               <span className="font-serif text-6xl text-stone-900">{card.tib}</span>
