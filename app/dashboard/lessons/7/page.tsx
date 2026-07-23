@@ -20,6 +20,7 @@ import {
   Loader2,
   XCircle,
   RotateCcw,
+  Trophy // Added missing Trophy import
 } from "lucide-react";
 
 /* -------------------------------------------------------------------- */
@@ -227,7 +228,6 @@ const STEPS = [
   { id: "result", eyebrow: "Section 03", title: "Your result" },
 ];
 
-// UPDATED: Suffixes correctly points to Lesson 6
 const CONCEPT_LABEL: Record<Concept, { name: string; to: string }> = {
   consonants: { name: "The 30 Consonants", to: "/dashboard/lessons/1" },
   vowels: { name: "The Four Vowels", to: "/dashboard/lessons/2" },
@@ -321,7 +321,7 @@ export default function FinalAssessmentLesson() {
     <div className="bg-[#fdfbf7] min-h-screen text-stone-900 font-sans pb-40 selection:bg-amber-200">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
-        {/* UPDATED: Breadcrumb says Unit 07 */}
+        {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-500">
           <Link href="/dashboard/lessons" className="hover:text-stone-900 transition-colors">
             My Lessons
@@ -509,7 +509,6 @@ export default function FinalAssessmentLesson() {
         
         {/* Footer Navigation */}
         <nav className="mt-16 flex flex-col justify-between gap-4 border-t border-black/10 pt-8 sm:flex-row">
-          {/* UPDATED: Previous points to Lesson 6 (Suffixes) */}
           <Link href="/dashboard/lessons/6" className="inline-flex items-center justify-center sm:justify-start gap-2 text-sm font-bold text-stone-500 hover:text-stone-900 transition-colors px-4 py-2 border border-transparent hover:border-black/10 bg-white hover:bg-stone-50">
             <ChevronLeft size={16} /> Previous · Suffixes & Post-suffixes
           </Link>
