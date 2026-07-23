@@ -12,7 +12,8 @@ const FALLBACK_MODULES = [
   { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked" },
   { id: 4, module_id: 4, title: "The Four Subscripts", description: "The subjoined marks Ya-tak, Ra-tak, La-tak, and Wa-zur and their complex sound shifts.", progress: 0, status: "locked" },
   { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked" },
-  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked" }
+  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked" },
+  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked" }
 ];
 
 export default function MyLessonsPage() {
