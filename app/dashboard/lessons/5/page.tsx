@@ -288,7 +288,7 @@ export default function PrefixesLesson() {
     const next = index + 1;
     if (next > unlockedStep) setUnlockedStep(next);
     setExpandedStep(next);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // FIX: removed window.scrollTo
   };
 
   return (
@@ -373,13 +373,21 @@ export default function PrefixesLesson() {
             </p>
 
             <div className="border border-black/10 bg-white shadow-sm overflow-hidden mb-6">
-              <div className="border-b border-black/5 bg-gradient-to-b from-stone-50 to-white px-6 pb-10 pt-8 text-center md:pb-14">
+              <div className="border-b border-black/5 bg-gradient-to-b from-stone-50 to-white px-6 pb-10 pt-8 text-center md:pb-14 relative group">
                 <div className="mb-8 text-[10px] font-bold uppercase tracking-[0.25em] text-stone-400">
                   A full syllable
                 </div>
-                <div className="font-serif tracking-tight text-stone-900 leading-none" style={{ fontSize: "clamp(72px, 14vw, 156px)" }}>
+                {/* FIX: Making the giant letter a clickable audio button pointing to its Tibetan string */}
+                <button 
+                  onClick={() => playAudio("བསྒྲིམས་")} 
+                  disabled={playingItem !== null}
+                  className="font-serif tracking-tight text-stone-900 leading-none transition-colors hover:text-amber-600" 
+                  style={{ fontSize: "clamp(72px, 14vw, 156px)" }}
+                >
                   བསྒྲིམས་
-                </div>
+                </button>
+                {playingItem === "བསྒྲིམས་" && <Loader2 size={24} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin text-amber-500" />}
+                
                 <div className="mt-6 text-[15px] italic text-stone-500">
                   <span className="not-italic font-bold text-stone-900">bsgrims</span> — “concentrated, focused” · read <span className="not-italic font-bold text-stone-900">drim</span>
                 </div>
@@ -798,7 +806,7 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
         {p.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
           return (
-            <button key={c.word + c.read} onClick={() => playAudio(c.read)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-white hover:bg-stone-50"}`}>
+            <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-white hover:bg-stone-50"}`}>
               <span className="absolute left-0 top-0 h-0.5 w-full" style={{ backgroundColor: p.accent.hex }} />
               <span className="font-serif text-[2.5rem] leading-none mb-1" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.word}</span>
               <span className={`font-mono text-xs font-bold ${night ? "text-stone-400" : "text-stone-500"}`}>[{c.read}]</span>
@@ -813,7 +821,7 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
               {c.note && (
                 <span className={`mt-1 text-[9px] font-bold uppercase tracking-widest ${night ? "text-amber-400" : "text-amber-600"}`}>note</span>
               )}
-              {playingItem === c.read && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-amber-500" />}
+              {playingItem === c.word && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-amber-500" />}
             </button>
           )
         })}
@@ -840,8 +848,8 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}>
                   <M.Icon size={14} strokeWidth={2.5} /> {M.label}
                 </span>
-                <button onClick={() => playAudio(c.read)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : "bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-700"}`}>
-                  {playingItem === c.read ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                <button onClick={() => playAudio(c.word)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : "bg-amber-50 border-amber-200 hover:bg-amber-100 text-amber-700"}`}>
+                  {playingItem === c.word ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
                 </button>
               </div>
             );
@@ -876,7 +884,7 @@ function MiniMastery({ p, night, playAudio, playingItem, playErrorBeep }: any) {
   const pick = (word: string) => {
     if (picked) return;
     setPicked(word);
-    if (word === question.answer.word) { setScore(s => s + 1); playAudio(question.answer.read); } else { playErrorBeep(); }
+    if (word === question.answer.word) { setScore(s => s + 1); playAudio(question.answer.word); } else { playErrorBeep(); }
   };
 
   if (step >= total) {
@@ -906,8 +914,8 @@ function MiniMastery({ p, night, playAudio, playingItem, playErrorBeep }: any) {
             “{question.answer.gloss}”
           </span>
         )}
-        <button onClick={() => playAudio(question.answer.read)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : "bg-amber-100 border-amber-200 hover:bg-amber-200 text-amber-700"}`}>
-          {playingItem === question.answer.read ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+        <button onClick={() => playAudio(question.answer.word)} disabled={playingItem !== null} className={`inline-grid size-10 place-items-center transition-colors border ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : "bg-amber-100 border-amber-200 hover:bg-amber-200 text-amber-700"}`}>
+          {playingItem === question.answer.word ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
         </button>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -974,12 +982,12 @@ function VocabFilter({ playAudio, playingItem }: any) {
         {items.map((v) => {
           const hex = accentFor(v.prefix);
           return (
-            <button key={v.tib + v.translit} onClick={() => playAudio(v.translit)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-4 border border-black/10 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md">
+            <button key={v.tib + v.translit} onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-4 border border-black/10 bg-white p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md">
               <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: hex }} />
               <div className="flex w-full items-start justify-between">
                 <span className="text-3xl">{v.emoji}</span>
                 <span className="inline-grid size-8 place-items-center bg-stone-50 border border-black/5 text-amber-500 transition-colors group-hover:bg-amber-50 group-hover:border-amber-200">
-                  {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />}
+                  {playingItem === v.tib ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />}
                 </span>
               </div>
               <div className="w-full border-b border-black/5 pb-3">
@@ -1045,9 +1053,9 @@ function Flashcards({ speak, playingItem }: any) {
   const [mode, setMode] = useState<"stacks" | "words">("stacks");
   const deck = useMemo<FlashCard[]>(() => {
     if (mode === "stacks") {
-      return PREFIXES.flatMap((s) => s.combos.map((c) => ({ kind: "stack" as const, tib: c.word, translit: c.read, en: c.gloss ?? TONE_META[c.tone].label, prefix: s.key, spoken: c.read })));
+      return PREFIXES.flatMap((s) => s.combos.map((c) => ({ kind: "stack" as const, tib: c.word, translit: c.read, en: c.gloss ?? TONE_META[c.tone].label, prefix: s.key, spoken: c.word })));
     }
-    return VOCAB.map((v) => ({ kind: "word" as const, tib: v.tib, translit: v.translit, en: v.en, prefix: v.prefix, spoken: v.translit, emoji: v.emoji }));
+    return VOCAB.map((v) => ({ kind: "word" as const, tib: v.tib, translit: v.translit, en: v.en, prefix: v.prefix, spoken: v.tib, emoji: v.emoji }));
   }, [mode]);
 
   const [idx, setIdx] = useState(0);
@@ -1137,8 +1145,8 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
       <div className="w-full max-w-4xl flex flex-col items-center gap-6 border border-black/10 bg-white p-10 shadow-sm mb-8">
         <span className="text-[11px] font-bold uppercase tracking-widest text-stone-400">What does this word read?</span>
         <span className="font-serif leading-none text-stone-900" style={{ fontSize: "7rem" }}>{q.answer.word}</span>
-        <button onClick={() => speak(q.answer.read)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-stone-50 px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors">
-          {playingItem === q.answer.read ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Play Hint
+        <button onClick={() => speak(q.answer.word)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-stone-50 px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors">
+          {playingItem === q.answer.word ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Play Hint
         </button>
       </div>
 
@@ -1149,7 +1157,7 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
           return (
             <button
               key={c.word + c.read} disabled={!!picked}
-              onClick={() => { setPicked(c.read); if (c.read === q.answer.read) { setScore((s) => s + 1); speak(q.answer.read); } else { playErrorBeep(); } }}
+              onClick={() => { setPicked(c.read); if (c.read === q.answer.read) { setScore((s) => s + 1); speak(q.answer.word); } else { playErrorBeep(); } }}
               className={`border p-6 text-center transition-all ${
                 right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
               }`}
@@ -1206,8 +1214,8 @@ function MatchWordToSound({ speak, playingItem, playErrorBeep }: any) {
                   else { btnClass = isSelected ? "border-rose-500 bg-rose-50 text-rose-700 cursor-default font-mono" : "border-black/5 bg-stone-50 text-stone-300 opacity-50 cursor-default font-mono"; }
                 }
                 return (
-                  <button key={opt.word + opt.read} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.word]: opt.read })); if(isCorrect) speak(opt.read); else playErrorBeep(); } else if (isCorrect) { speak(opt.read); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border transition-colors flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
-                    {playingItem === opt.read && isCorrect ? <Loader2 size={14} className="animate-spin absolute" /> : `[${opt.read}]`}
+                  <button key={opt.word + opt.read} onClick={() => { if(!isAnswered){ setMatchAnswers(p => ({ ...p, [q.target.word]: opt.read })); if(isCorrect) speak(opt.word); else playErrorBeep(); } else if (isCorrect) { speak(opt.word); } }} disabled={playingItem !== null || (isAnswered && !isCorrect)} className={`relative px-4 py-2 text-[13px] font-bold border transition-colors flex items-center justify-center min-w-[5rem] text-center ${btnClass}`}>
+                    {playingItem === opt.word && isCorrect ? <Loader2 size={14} className="animate-spin absolute" /> : `[${opt.read}]`}
                   </button>
                 );
               })}
@@ -1259,8 +1267,8 @@ function MemoryReview({ speak, playingItem }: any) {
           <div className="text-sm italic text-stone-500 font-bold mb-8">
             [{deck[0].read}] · {TONE_META[deck[0].tone as Tone].label} {deck[0].gloss && `· ${deck[0].gloss}`}
           </div>
-          <button onClick={() => speak(deck[0].read)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-50 border border-black/10 hover:bg-stone-100 text-stone-700 font-bold transition-colors text-sm shadow-sm">
-            {playingItem === deck[0].read ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Check Sound
+          <button onClick={() => speak(deck[0].word)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-50 border border-black/10 hover:bg-stone-100 text-stone-700 font-bold transition-colors text-sm shadow-sm">
+            {playingItem === deck[0].word ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Check Sound
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -1305,7 +1313,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         type: 'vocab',
         questionText: `What is the Tibetan word for "${v.en}"?`,
         answer: v.tib,
-        audio: v.translit,
+        audio: v.tib,
         choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `${x.emoji} ${x.tib}`, value: x.tib }))
       });
     }
@@ -1319,7 +1327,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         questionText: "What does this word read?",
         prominentTibetan: c.word,
         answer: c.read,
-        audio: c.read,
+        audio: c.word,
         choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
       });
     }
