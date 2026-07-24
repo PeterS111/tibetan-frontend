@@ -1,3 +1,5 @@
+// app/dashboard/lessons/6/page.tsx
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -394,7 +396,7 @@ export default function SuffixesLesson() {
             {reveal === "ten" && (
               <div className="mt-4 flex flex-wrap gap-2 border border-black/10 bg-stone-50 p-4 shadow-inner">
                 {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); }} className="flex items-center gap-2 border border-black/10 bg-white px-3 py-2 transition hover:border-amber-400 shadow-sm">
+                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }} className="flex items-center gap-2 border border-black/10 bg-white px-3 py-2 transition hover:border-amber-400 shadow-sm text-left">
                     <span className="font-serif leading-none text-2xl" style={{ color: x.accent }}>{x.head}</span>
                     <span className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">{x.latin}</span>
                   </button>
@@ -403,20 +405,20 @@ export default function SuffixesLesson() {
             )}
             {reveal === "two" && (
               <div className="mt-4 flex flex-wrap gap-4 border border-black/10 bg-stone-50 p-4 shadow-inner">
-                <div className="flex items-center gap-4 border border-black/10 bg-white px-5 py-3 shadow-sm">
+                <button onClick={() => playAudio('ད')} className="flex items-center gap-4 border border-black/10 bg-white px-5 py-3 shadow-sm text-left hover:border-amber-400 transition-colors">
                   <span className="font-serif leading-none text-3xl" style={{ color: "#c026d3" }}>ད</span>
                   <div>
                     <div className="text-xs font-bold text-stone-900">da · historical</div>
                     <div className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">silent · classical only</div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4 border border-black/10 bg-white px-5 py-3 shadow-sm">
+                </button>
+                <button onClick={() => playAudio('ས')} className="flex items-center gap-4 border border-black/10 bg-white px-5 py-3 shadow-sm text-left hover:border-amber-400 transition-colors">
                   <span className="font-serif leading-none text-3xl" style={{ color: "#0284c7" }}>ས</span>
                   <div>
                     <div className="text-xs font-bold text-stone-900">sa · modern</div>
                     <div className="text-[10px] uppercase tracking-widest text-stone-500 font-bold">silent · still written</div>
                   </div>
-                </div>
+                </button>
               </div>
             )}
           </div>
@@ -433,7 +435,7 @@ export default function SuffixesLesson() {
               {SUFFIXES.map((x) => (
                 <button
                   key={x.key}
-                  onClick={() => { setActiveTab(x.key); markComplete(0); }}
+                  onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }}
                   className={`aspect-square border p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-amber-50" : "border-black/10 hover:bg-stone-50 hover:border-amber-300 bg-white"}`}
                 >
                   <div className="font-serif leading-none text-2xl" style={{ color: x.accent }}>{x.head}</div>
@@ -478,7 +480,7 @@ export default function SuffixesLesson() {
             <div className="mt-6 border border-black/10 bg-white overflow-hidden">
               <div className="grid grid-cols-5 divide-x divide-y sm:divide-y-0 divide-black/10 md:grid-cols-10">
                 {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); }} className={`group flex flex-col items-center gap-1 p-4 transition-colors hover:bg-stone-50 ${activeTab === x.key ? "bg-amber-50/50" : ""}`}>
+                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }} className={`group flex flex-col items-center gap-1 p-4 transition-colors hover:bg-stone-50 ${activeTab === x.key ? "bg-amber-50/50" : ""}`}>
                     <span className="h-1 w-8" style={{ backgroundColor: x.accent }} />
                     <span className="mt-1 font-serif leading-none text-3xl" style={{ color: x.accent }}>{x.head}</span>
                     <span className="text-xs font-bold text-stone-900">{x.latin}</span>
@@ -520,7 +522,7 @@ export default function SuffixesLesson() {
                 {SUFFIXES.map((x) => {
                   const isActive = activeTab === x.key;
                   return (
-                    <button key={x.key} onClick={() => setActiveTab(x.key)} className={`flex flex-col items-center gap-1 px-2 py-4 text-center transition-colors ${studyMode === "night" ? "hover:bg-white/5" : "hover:bg-stone-50"} ${isActive ? (studyMode === "night" ? "bg-white/10" : "bg-amber-50") : ""}`}>
+                    <button key={x.key} onClick={() => { setActiveTab(x.key); playAudio(x.head); }} className={`flex flex-col items-center gap-1 px-2 py-4 text-center transition-colors ${studyMode === "night" ? "hover:bg-white/5" : "hover:bg-stone-50"} ${isActive ? (studyMode === "night" ? "bg-white/10" : "bg-amber-50") : ""}`}>
                       <span className="h-1 w-8" style={{ backgroundColor: x.accent }} />
                       <span className="mt-1 font-serif leading-none text-[2rem]" style={{ color: x.accent }}>{x.head}</span>
                       <span className="text-[11px] font-bold">{x.latin}</span>
