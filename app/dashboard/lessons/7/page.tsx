@@ -1,3 +1,5 @@
+// app/dashboard/lessons/7/page.tsx
+
 "use client";
 
 import { useState, useMemo, type ReactNode } from "react";
@@ -20,7 +22,7 @@ import {
   Loader2,
   XCircle,
   RotateCcw,
-  Trophy // Added missing Trophy import
+  Trophy
 } from "lucide-react";
 
 /* -------------------------------------------------------------------- */
@@ -425,7 +427,7 @@ export default function FinalAssessmentLesson() {
                 </div>
                 <div className="font-serif text-2xl text-stone-900 mb-4">{total} questions · ~20 min</div>
                 <p className="text-[15px] leading-relaxed text-stone-600">
-                  Auto-advancing after each question. Immediate feedback. Unlimited retakes — your best score is kept, and passing at any point unlocks the certificate for good.
+                  Take your time on each question. You can review your answer before advancing manually. Unlimited retakes — your best score is kept.
                 </p>
               </div>
             </div>
@@ -598,40 +600,44 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: { questions: Ques
   };
   if (q.kind === "order" && orderState.length === 0) initOrder();
 
-  const advance = (isCorrect: boolean) => {
+  const checkAnswer = (isCorrect: boolean) => {
     const nextCorrect = correctCount + (isCorrect ? 1 : 0);
     const nextWrong = { ...wrong };
     if (!isCorrect) nextWrong[q.concept] += 1;
     setCorrectCount(nextCorrect);
     setWrong(nextWrong);
-    window.setTimeout(() => {
-      if (step + 1 >= total) {
-        onFinish({ score: nextCorrect / total, wrongByConcept: nextWrong });
-      } else {
-        setStep(step + 1);
-        setPicked(null);
-        setOrderState([]);
-        setOrderSubmitted(false);
-      }
-    }, 1200);
+  };
+
+  const goNext = () => {
+    if (step + 1 >= total) {
+      onFinish({ score: correctCount / total, wrongByConcept: wrong });
+    } else {
+      setStep(step + 1);
+      setPicked(null);
+      setOrderState([]);
+      setOrderSubmitted(false);
+    }
   };
 
   const handlePick = (key: string) => {
     if (picked) return;
     setPicked(key);
     const answerKey = q.kind === "mc" ? q.answerKey : q.kind === "root" ? q.answer : q.kind === "listen" ? q.answerTib : "";
-    advance(key === answerKey);
+    checkAnswer(key === answerKey);
   };
 
   const handleOrderSubmit = () => {
     if (q.kind !== "order" || orderSubmitted) return;
     setOrderSubmitted(true);
     const isCorrect = orderState.join("|") === q.steps.join("|");
-    advance(isCorrect);
+    checkAnswer(isCorrect);
   };
 
   const progress = Math.round((step / total) * 100);
+  const isAnswered = q.kind === "order" ? orderSubmitted : picked !== null;
   const pickedIsCorrect = picked != null && ((q.kind === "mc" && picked === q.answerKey) || (q.kind === "root" && picked === q.answer) || (q.kind === "listen" && picked === q.answerTib));
+  const orderIsCorrect = q.kind === "order" && orderSubmitted && orderState.join("|") === q.steps.join("|");
+  const currentIsCorrect = q.kind === "order" ? orderIsCorrect : pickedIsCorrect;
 
   return (
     <div className="border border-black/10 bg-white p-6 shadow-sm">
@@ -651,10 +657,10 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: { questions: Ques
         {q.kind === "order" && <OrderView q={q} submitted={orderSubmitted} order={orderState} setOrder={setOrderState} onSubmit={handleOrderSubmit} />}
       </div>
 
-      {q.kind !== "order" && picked && (
-        <div className="mt-8 flex items-center justify-between border-t border-black/5 pt-4">
+      {isAnswered && (
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-black/5 pt-6">
           <div className="flex items-center gap-2">
-            {pickedIsCorrect ? (
+            {currentIsCorrect ? (
               <>
                 <CheckCircle2 className="size-5 text-emerald-600" />
                 <span className="text-sm font-bold text-emerald-700">Correct!</span>
@@ -662,10 +668,16 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: { questions: Ques
             ) : (
               <>
                 <XCircle className="size-5 text-rose-500" />
-                <span className="text-sm font-bold text-rose-700">Not quite — moving on.</span>
+                <span className="text-sm font-bold text-rose-700">Incorrect.</span>
               </>
             )}
           </div>
+          <button
+            onClick={goNext}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 hover:bg-amber-400 shadow-sm transition-colors"
+          >
+            {step + 1 >= total ? "See Results" : "Next Question"} <ChevronRight className="size-4" />
+          </button>
         </div>
       )}
     </div>
@@ -684,7 +696,10 @@ function MCView({ q, picked, onPick }: any) {
             <button
               key={c.key} type="button" disabled={!!picked} onClick={() => onPick(c.key)}
               className={`flex min-h-[5rem] items-center justify-center border-2 p-3 text-center text-lg font-bold transition-all ${
-                isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isWrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-black/10 bg-white text-stone-800 hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
+                isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : 
+                isWrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" : 
+                picked ? "border-black/10 bg-white text-stone-400 opacity-50" : 
+                "border-black/10 bg-white text-stone-800 hover:border-amber-400 hover:bg-amber-50 hover:shadow-md cursor-pointer"
               }`}
             >
               {c.label}
@@ -713,7 +728,10 @@ function RootPickView({ q, picked, onPick }: any) {
             <button
               key={tile} type="button" disabled={!!picked} onClick={() => onPick(tile)}
               className={`flex aspect-square items-center justify-center border-2 p-3 font-serif text-[3.5rem] transition-all ${
-                isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isWrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
+                isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : 
+                isWrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" : 
+                picked ? "border-black/10 bg-white text-stone-300 opacity-50" : 
+                "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md cursor-pointer"
               }`} style={TIB}
             >
               {tile}
@@ -744,7 +762,7 @@ function OrderView({ q, submitted, order, setOrder, onSubmit }: any) {
       <ol className="space-y-3">
         {order.map((s: string, i: number) => (
           <li key={`${s}-${i}`} className={`flex items-center gap-4 border-2 p-4 transition-colors ${
-            submitted ? (s === q.steps[i] ? "border-emerald-500 bg-emerald-50 text-emerald-900" : "border-rose-400 bg-rose-50 text-rose-900") : "border-black/10 bg-white"
+            submitted ? (s === q.steps[i] ? "border-emerald-500 bg-emerald-50 text-emerald-900" : "border-rose-400 bg-rose-50 text-rose-900 opacity-80") : "border-black/10 bg-white"
           }`}>
             <span className="grid size-8 shrink-0 place-items-center bg-stone-100 text-xs font-bold text-stone-400 rounded-full">{i + 1}</span>
             <span className="flex-1 font-serif text-3xl" style={TIB}>{s}</span>
@@ -775,11 +793,6 @@ function OrderView({ q, submitted, order, setOrder, onSubmit }: any) {
           </div>
         </div>
       )}
-      {submitted && correct && (
-        <div className="mt-6 text-emerald-600 font-bold flex items-center gap-2">
-          <CheckCircle2 size={20} /> Perfect arrangement!
-        </div>
-      )}
     </>
   );
 }
@@ -808,7 +821,10 @@ function ListenView({ q, picked, onPick, playAudio, playingItem }: any) {
             <button
               key={c.tib} type="button" disabled={!!picked} onClick={() => onPick(c.tib)}
               className={`flex min-h-[6rem] flex-col items-center justify-center gap-2 border-2 p-3 transition-all ${
-                isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isWrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
+                isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : 
+                isWrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" : 
+                picked ? "border-black/10 bg-white text-stone-300 opacity-50" : 
+                "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md cursor-pointer"
               }`}
             >
               <span className="font-serif text-[2.5rem] leading-none" style={TIB}>{c.tib}</span>
