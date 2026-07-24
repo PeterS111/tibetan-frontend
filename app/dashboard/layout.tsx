@@ -9,7 +9,7 @@ import {
   CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X, Calendar, LogOut 
 } from "lucide-react";
 // Add the new import here:
-import FeedbackWidget from "@/components/FeedbackWidget";
+import FeedbackWidget from "../components/FeedbackWidget";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
