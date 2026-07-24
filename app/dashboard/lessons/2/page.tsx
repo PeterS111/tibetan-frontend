@@ -505,7 +505,7 @@ export default function VowelsLesson() {
         </div>
       </div>
 
-      {/* Detail Drawer */}
+      {/* Non-Blocking Inspector Window */}
       {selected && <DetailPanel v={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
 
       {/* Sticky Footer */}
@@ -543,7 +543,7 @@ function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, on
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-600">{step.eyebrow}</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-600">{step.eyebrow}</span>
             {status === "done" && <span className="text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600 px-2 py-0.5 border border-emerald-200">Completed</span>}
             {status === "current" && <span className="text-[9px] font-bold uppercase tracking-widest bg-amber-50 text-amber-600 px-2 py-0.5 border border-amber-200">In progress</span>}
             {status === "upcoming" && <span className="text-[9px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 px-2 py-0.5 border border-stone-200">Up next</span>}
@@ -946,47 +946,48 @@ function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
   const pm = POSITION_META[v.position as Position];
   
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-stone-900/30 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-      <div className="relative w-full max-w-md bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-right-8 duration-300 border-l border-[#e8e4d9]">
-        <div className="px-6 py-4 border-b border-[#e8e4d9] flex items-center justify-between bg-white">
+    <div className="fixed bottom-[80px] sm:bottom-24 left-2 right-2 sm:left-auto sm:right-6 z-50 pointer-events-none flex flex-col justify-end sm:w-[24rem]">
+      <div className="bg-[#fdfbf7] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#e8e4d9] rounded-xl sm:rounded-2xl pointer-events-auto flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-right-8 duration-300 max-h-[50vh] sm:max-h-[70vh] overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#e8e4d9] flex items-center justify-between bg-white shrink-0">
           <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Vowel · {v.translit}</span>
-          <button onClick={onClose} className="p-2 -mr-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"><X size={20} /></button>
+          <button onClick={onClose} className="p-1.5 -mr-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-md transition-colors"><X size={18} /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          <div className="flex flex-col items-center justify-center mb-10">
-            <div className="text-[8rem] font-serif text-stone-900 leading-none mb-6">{v.tib}</div>
-            <div className="flex items-center gap-3">
-              <div className="text-xl font-serif italic text-stone-800">{v.translit}</div>
-              <div className="text-xl font-mono font-medium text-stone-400">{v.markGloss}</div>
-              <button onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-8 h-8 bg-amber-500 hover:bg-amber-400 text-stone-900 flex items-center justify-center shadow-sm transition-colors border border-amber-600">
-                {playingItem === v.translit ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
+          <div className="flex items-center gap-5 mb-6">
+            <div className="text-[5rem] sm:text-[6rem] font-serif text-stone-900 leading-none">{v.tib}</div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <div className="text-xl font-serif italic text-stone-800">{v.translit}</div>
+                <div className="text-base font-mono font-medium text-stone-400">{v.markGloss}</div>
+              </div>
+              <button onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 flex items-center gap-2 text-xs font-bold transition-colors shadow-sm border border-amber-600">
+                {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Play
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className={`p-4 border ${pm.swatch} border-opacity-50`}>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Position</div>
-              <div className={`font-serif text-lg ${pm.text}`}>{pm.label}</div>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className={`p-3 border ${pm.swatch} border-opacity-50`}>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-1">Position</div>
+              <div className={`font-serif text-sm ${pm.text}`}>{pm.label}</div>
             </div>
             
-            <div className="p-4 border bg-white border-stone-200">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Mark Name</div>
-              <div className="font-serif text-xl text-stone-800">{v.markTib}</div>
-              <div className="text-xs italic text-stone-500 mt-1">{v.markTranslit}</div>
+            <div className="p-3 border bg-white border-stone-200">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-1">Mark Name</div>
+              <div className="font-serif text-base text-stone-800">{v.markTib}</div>
+              <div className="text-[10px] italic text-stone-500">{v.markTranslit}</div>
             </div>
           </div>
 
-          <div className="mb-8">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Pronunciation</div>
+          <div className="mb-6">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Pronunciation</div>
             <p className="text-sm text-stone-700 leading-relaxed">{v.english}</p>
           </div>
 
-          <div className="mb-8 border-t border-stone-200 pt-6">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Notes from the textbook</div>
-            <p className="text-sm text-stone-600 leading-relaxed italic bg-white p-4 border border-stone-200">{v.note}</p>
+          <div className="border-t border-stone-200 pt-4">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Notes from the textbook</div>
+            <p className="text-sm text-stone-600 leading-relaxed italic">{v.note}</p>
           </div>
         </div>
       </div>
