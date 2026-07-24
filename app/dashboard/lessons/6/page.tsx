@@ -922,7 +922,12 @@ function VocabMiniMastery({ playAudio, playingItem, playErrorBeep }: any) {
   const pick = (read: string) => {
     if (picked) return;
     setPicked(read);
-    if (read === question.answer.read) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); }
+    if (read === question.answer.read) { 
+      setScore(s => s + 1); 
+      playAudio(question.answer.tib); 
+    } else { 
+      playErrorBeep(); 
+    }
   };
 
   if (step >= total) {
@@ -955,10 +960,18 @@ function VocabMiniMastery({ playAudio, playingItem, playErrorBeep }: any) {
           const wrong = picked === c.read && c.read !== question.answer.read;
           return (
             <button
-              key={c.read} disabled={!!picked} onClick={() => pick(c.read)}
+              key={c.read} 
+              disabled={!!picked && c.read !== question.answer.read} 
+              onClick={() => {
+                if (!picked) {
+                  pick(c.read);
+                } else if (c.read === question.answer.read) {
+                  playAudio(question.answer.tib);
+                }
+              }}
               className={`flex items-center justify-center border-2 font-mono font-bold text-xl py-6 transition-all ${
-                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" 
-                : wrong ? "border-rose-400 bg-rose-50 text-rose-700" 
+                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm cursor-pointer hover:bg-emerald-100" 
+                : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" 
                 : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 text-stone-900 hover:shadow-md"
               }`}
             >
@@ -1065,8 +1078,12 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
     if (picked) return;
     setPicked(k);
     setSeen((v) => v + 1);
-    if (k === item.suffix) { setScore((v) => v + 1); speak(item.word); }
-    else playErrorBeep();
+    if (k === item.suffix) { 
+      setScore((v) => v + 1); 
+      speak(item.word); 
+    } else { 
+      playErrorBeep(); 
+    }
   };
 
   const next = () => { setPicked(null); setI((v) => (v + 1) % QUIZ.length); };
@@ -1104,9 +1121,21 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
         {options.map((o) => {
           const isCorrect = o.key === item.suffix;
           const isPicked = picked === o.key;
-          const state = !picked ? "border-black/10 hover:bg-stone-50 hover:border-amber-400" : isCorrect ? "border-emerald-500 bg-emerald-50 shadow-sm" : isPicked ? "border-rose-400 bg-rose-50" : "border-black/10 opacity-50 grayscale";
+          const state = !picked ? "border-black/10 hover:bg-stone-50 hover:border-amber-400" 
+            : isCorrect ? "border-emerald-500 bg-emerald-50 shadow-sm cursor-pointer hover:bg-emerald-100" 
+            : isPicked ? "border-rose-400 bg-rose-50" 
+            : "border-black/10 opacity-50 grayscale";
+
           return (
-            <button key={o.key} onClick={() => answer(o.key)} disabled={!!picked} className={`flex flex-col items-center gap-2 border p-6 transition-all bg-white ${state}`}>
+            <button 
+              key={o.key} 
+              onClick={() => {
+                if (!picked) answer(o.key);
+                else if (isCorrect) speak(item.word);
+              }} 
+              disabled={!!picked && !isCorrect} 
+              className={`flex flex-col items-center gap-2 border p-6 transition-all bg-white ${state}`}
+            >
               <span className="font-serif text-[3rem] leading-none" style={{ color: o.accent }}>{o.head}</span>
               <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">{o.latin}</span>
             </button>
@@ -1393,12 +1422,19 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         {currentQ.choices.map((c: any) => {
           const right = picked && c.value === currentQ.answer;
           const wrong = picked === c.value && c.value !== currentQ.answer;
+
           return (
             <button
-              key={c.value} disabled={!!picked}
-              onClick={() => pick(c.value)}
+              key={c.value} 
+              disabled={!!picked && c.value !== currentQ.answer}
+              onClick={() => {
+                if (!picked) pick(c.value);
+                else if (c.value === currentQ.answer && currentQ.audioString) playAudio(currentQ.audioString);
+              }}
               className={`border p-6 text-center transition-all ${
-                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
+                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm hover:bg-emerald-100 cursor-pointer" 
+                : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" 
+                : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
               }`}
             >
               <div className={`text-xl font-bold ${currentQ.type === 'vocab' ? 'font-serif' : 'font-mono'}`}>{c.label}</div>
