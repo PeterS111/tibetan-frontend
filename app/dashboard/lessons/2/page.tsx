@@ -945,14 +945,56 @@ function MemoryReview({ speak, playingItem }: any) {
 function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
   const pm = POSITION_META[v.position as Position];
   
+  // --- DRAG LOGIC ---
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging || !dragRef.current) return;
+    setPosition({
+      x: dragRef.current.initX + (e.clientX - dragRef.current.startX),
+      y: dragRef.current.initY + (e.clientY - dragRef.current.startY)
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+  // ------------------
+  
   return (
     <div className="fixed bottom-[80px] sm:bottom-24 left-2 right-2 sm:left-auto sm:right-6 z-50 pointer-events-none flex flex-col justify-end sm:w-[24rem]">
-      <div className="bg-[#fdfbf7] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#e8e4d9] rounded-xl sm:rounded-2xl pointer-events-auto flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-right-8 duration-300 max-h-[50vh] sm:max-h-[70vh] overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#e8e4d9] flex items-center justify-between bg-white shrink-0">
-          <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Vowel · {v.translit}</span>
-          <button onClick={onClose} className="p-1.5 -mr-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-md transition-colors"><X size={18} /></button>
+      <div 
+        className="bg-[#fdfbf7] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#e8e4d9] rounded-xl sm:rounded-2xl pointer-events-auto flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-right-8 duration-300 max-h-[50vh] sm:max-h-[70vh] overflow-hidden"
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
+      >
+        {/* DRAGGABLE HEADER */}
+        <div 
+          className="px-4 py-3 border-b border-[#e8e4d9] flex items-center justify-between bg-white shrink-0 cursor-move select-none"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest pointer-events-none">Vowel · {v.translit}</span>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onClose(); }} 
+            onPointerDown={(e) => e.stopPropagation()} 
+            className="p-1.5 -mr-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-md transition-colors"
+          >
+            <X size={18} />
+          </button>
         </div>
 
+        {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
           <div className="flex items-center gap-5 mb-6">
             <div className="text-[5rem] sm:text-[6rem] font-serif text-stone-900 leading-none">{v.tib}</div>
