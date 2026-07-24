@@ -1,10 +1,9 @@
-import { ClerkProvider, SignedIn } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Lora, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-// Import your widget! (Ensure this path matches where you saved it)
-import FeedbackWidget from "./components/FeedbackWidget"; 
+import FeedbackWidget from "./components/FeedbackWidget";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -39,16 +38,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-serif bg-stone-50 text-stone-900">
         <ClerkProvider>
           {children}
-
-          {/* 
-            Adding the Feedback Widget here makes it available on EVERY page.
-            We wrap it in <SignedIn> so it only shows up if the user is 
-            actually logged in (preventing API errors on the public login pages).
-          */}
-          <SignedIn>
-            <FeedbackWidget />
-          </SignedIn>
-
+          {/* We removed the <SignedIn> wrapper here */}
+          <FeedbackWidget />
         </ClerkProvider>
       </body>
     </html>

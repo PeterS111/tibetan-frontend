@@ -13,15 +13,20 @@ export default function FeedbackWidget() {
   const [error, setError] = useState("");
   
   const pathname = usePathname();
-  const { getToken } = useAuth();
+  
+  // 1. Grab isLoaded and isSignedIn from Clerk
+  const { getToken, isLoaded, isSignedIn } = useAuth();
 
-  // Lock body scrolling when the popup window is open
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "unset";
-    
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
+
+  // 2. If Clerk is still loading, or the user is NOT signed in, don't render the widget!
+  if (!isLoaded || !isSignedIn) {
+    return null;
+  }
 
   const resetForm = () => {
     setFeedback("");
@@ -31,7 +36,7 @@ export default function FeedbackWidget() {
 
   const handleClose = () => {
     setIsOpen(false);
-    setTimeout(resetForm, 300); // Wait for fade-out before resetting text
+    setTimeout(resetForm, 300); 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,10 +74,6 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      {/* 
-        HIGHLY VISIBLE TOP BUTTON 
-        A large, prominent pill floating at the top-center of the screen.
-      */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-lg flex justify-center pointer-events-none">
         <button
           onClick={() => setIsOpen(true)}
@@ -90,15 +91,10 @@ export default function FeedbackWidget() {
         </button>
       </div>
 
-      {/* 
-        POPUP WINDOW MODAL (Not fullscreen)
-        A nicely sized window centered on the screen with a dark dimming overlay.
-      */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
             
-            {/* Window Header */}
             <div className="bg-amber-50 px-6 py-4 border-b border-amber-100 flex items-center justify-between">
               <h2 className="font-serif font-bold text-xl text-amber-900">
                 Send Feedback
@@ -111,7 +107,6 @@ export default function FeedbackWidget() {
               </button>
             </div>
 
-            {/* Window Body */}
             <div className="p-6 bg-white">
               {isSuccess ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in zoom-in duration-300">
