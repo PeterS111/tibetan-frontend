@@ -1,5 +1,3 @@
-// app/dashboard/lessons/6/page.tsx
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -342,7 +340,6 @@ export default function SuffixesLesson() {
     const next = index + 1;
     if (next > unlockedStep) setUnlockedStep(next);
     setExpandedStep(next);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -546,8 +543,8 @@ export default function SuffixesLesson() {
                           Reads as <span style={{ color: s.accent }}>{s.reads}</span>
                         </div>
                       </div>
-                      <button onClick={() => playAudio(s.examples[0]?.read || s.latin)} disabled={playingItem !== null} className={`ml-auto inline-flex items-center gap-2 border px-4 py-2 text-xs font-bold transition-colors ${studyMode === "night" ? "border-white/20 hover:bg-white/10" : "border-black/10 hover:bg-stone-50 text-stone-700"}`}>
-                        {playingItem === (s.examples[0]?.read || s.latin) ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} />} Play
+                      <button onClick={() => playAudio(s.examples[0]?.word || s.head)} disabled={playingItem !== null} className={`ml-auto inline-flex items-center gap-2 border px-4 py-2 text-xs font-bold transition-colors ${studyMode === "night" ? "border-white/20 hover:bg-white/10" : "border-black/10 hover:bg-stone-50 text-stone-700"}`}>
+                        {playingItem === (s.examples[0]?.word || s.head) ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} />} Play
                       </button>
                     </div>
 
@@ -573,12 +570,12 @@ export default function SuffixesLesson() {
                       <div className={`mb-4 text-[10px] font-bold uppercase tracking-widest ${studyMode === "night" ? "text-stone-400" : "text-stone-400"}`}>Examples</div>
                       <div className="grid gap-4 sm:grid-cols-3">
                         {s.examples.map((ex) => (
-                          <button key={ex.word} onClick={() => playAudio(ex.read)} disabled={playingItem !== null} className={`group flex flex-col items-start gap-1 border p-5 text-left transition-colors ${studyMode === "night" ? "border-white/10 hover:bg-white/5" : "border-black/10 hover:bg-stone-50 shadow-sm"}`}>
+                          <button key={ex.word} onClick={() => playAudio(ex.word)} disabled={playingItem !== null} className={`group flex flex-col items-start gap-1 border p-5 text-left transition-colors ${studyMode === "night" ? "border-white/10 hover:bg-white/5" : "border-black/10 hover:bg-stone-50 shadow-sm"}`}>
                             <span className="font-serif text-[2.5rem] leading-none text-stone-900" style={{ color: studyMode === "night" ? "#fff" : "inherit" }}>{ex.word}</span>
                             <span className="mt-2 text-sm font-bold" style={{ color: s.accent }}>[{ex.read}]</span>
                             {ex.gloss && <span className={`text-xs font-bold ${studyMode === "night" ? "text-stone-400" : "text-stone-500"}`}>{ex.gloss}</span>}
                             <span className={`mt-3 inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-widest opacity-0 transition group-hover:opacity-100 ${studyMode === "night" ? "text-stone-400" : "text-stone-400"}`}>
-                              {playingItem === ex.read ? <Loader2 size={12} className="animate-spin text-amber-500" /> : <Volume2 size={12} />} Play
+                              {playingItem === ex.word ? <Loader2 size={12} className="animate-spin text-amber-500" /> : <Volume2 size={12} />} Play
                             </span>
                           </button>
                         ))}
@@ -798,11 +795,11 @@ export default function SuffixesLesson() {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {VOCAB.map((v) => (
-                <button key={v.tib} onClick={() => playAudio(v.read)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-3 border border-black/10 bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-md">
+                <button key={v.tib} onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-3 border border-black/10 bg-white p-5 text-left transition hover:-translate-y-1 hover:shadow-md">
                   <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: SUFFIXES.find(s => s.key === v.suffix)?.accent || "#000" }} />
                   <div className="flex w-full items-start justify-between">
                     <span className="text-3xl">{v.emoji}</span>
-                    {playingItem === v.read ? <Loader2 size={14} className="animate-spin text-amber-500" /> : <Volume2 size={14} className="text-stone-300 group-hover:text-amber-500 transition-colors" />}
+                    {playingItem === v.tib ? <Loader2 size={14} className="animate-spin text-amber-500" /> : <Volume2 size={14} className="text-stone-300 group-hover:text-amber-500 transition-colors" />}
                   </div>
                   <div className="font-serif text-[2rem] leading-none text-stone-900 mt-2">{v.tib}</div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400">[{v.read}]</div>
@@ -923,7 +920,7 @@ function VocabMiniMastery({ playAudio, playingItem, playErrorBeep }: any) {
   const pick = (read: string) => {
     if (picked) return;
     setPicked(read);
-    if (read === question.answer.read) { setScore(s => s + 1); playAudio(question.answer.read); } else { playErrorBeep(); }
+    if (read === question.answer.read) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); }
   };
 
   if (step >= total) {
@@ -1039,8 +1036,8 @@ function Flashcards({ speak, playingItem }: any) {
 
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
         <button onClick={prev} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-900"><ArrowLeft size={16} /> Prev</button>
-        <button onClick={() => speak(item.read)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-stone-100 border border-black/5 hover:bg-stone-200 text-stone-700 font-bold shadow-sm transition-colors">
-          {playingItem === item.read ? <Loader2 size={18} className="animate-spin text-amber-600" /> : <Play size={18} className="fill-current text-amber-500" />} Play
+        <button onClick={() => speak(item.word)} disabled={playingItem !== null} className="flex items-center gap-2 px-8 py-3 bg-stone-100 border border-black/5 hover:bg-stone-200 text-stone-700 font-bold shadow-sm transition-colors">
+          {playingItem === item.word ? <Loader2 size={18} className="animate-spin text-amber-600" /> : <Play size={18} className="fill-current text-amber-500" />} Play
         </button>
         <button onClick={next} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-stone-500 hover:text-stone-900">Next <ArrowRight size={16} /></button>
       </div>
@@ -1066,7 +1063,7 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
     if (picked) return;
     setPicked(k);
     setSeen((v) => v + 1);
-    if (k === item.suffix) { setScore((v) => v + 1); speak(item.read); }
+    if (k === item.suffix) { setScore((v) => v + 1); speak(item.word); }
     else playErrorBeep();
   };
 
@@ -1096,8 +1093,8 @@ function CumulativeQuiz({ speak, playingItem, playErrorBeep }: any) {
         </div>
         <span className="text-[11px] font-bold uppercase tracking-widest text-stone-400">Which suffix closes this word?</span>
         <span className="font-serif leading-none text-stone-900" style={{ fontSize: "7rem" }}>{item.word}</span>
-        <button onClick={() => speak(item.read)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-stone-50 px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors mt-2">
-          {playingItem === item.read ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} [{item.read}]
+        <button onClick={() => speak(item.word)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-stone-50 px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors mt-2">
+          {playingItem === item.word ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} [{item.read}]
         </button>
       </div>
 
@@ -1141,7 +1138,7 @@ function MatchWordToSound({ speak, playingItem, playErrorBeep }: any) {
     const targetItem = pool.find(p => p.word === selectedWord);
     if (targetItem?.read === read) {
       setPairs((p) => ({ ...p, [selectedWord]: read }));
-      speak(read);
+      speak(targetItem.word);
     } else {
       playErrorBeep();
     }
@@ -1253,8 +1250,8 @@ function MemoryReview({ speak, playingItem }: any) {
         <div className="bg-white border border-black/10 p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
           {deck[0].emoji && <div className="text-6xl mb-6">{deck[0].emoji}</div>}
           <div className="text-7xl sm:text-8xl md:text-[8rem] font-serif text-stone-900 mb-8 leading-none text-center">{deck[0].text}</div>
-          <button onClick={() => speak(deck[0].wylie)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-50 border border-black/10 hover:bg-stone-100 text-stone-700 font-bold transition-colors text-sm shadow-sm">
-            {playingItem === deck[0].wylie ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Check Sound
+          <button onClick={() => speak(deck[0].text)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-50 border border-black/10 hover:bg-stone-100 text-stone-700 font-bold transition-colors text-sm shadow-sm">
+            {playingItem === deck[0].text ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Check Sound
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -1297,7 +1294,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         type: 'vocab',
         questionText: `What is the Tibetan word for "${v.en}"?`,
         answer: v.tib,
-        audio: v.read,
+        audioString: v.tib,
         choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `${x.emoji} ${x.tib}`, value: x.tib }))
       });
     }
@@ -1311,7 +1308,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         questionText: "What does this word read?",
         prominentTibetan: c.word,
         answer: c.read,
-        audio: c.read,
+        audioString: c.word,
         choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
       });
     }
@@ -1365,7 +1362,7 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
     setPicked(val);
     if (val === currentQ.answer) {
       setScore(s => s + 1);
-      if (currentQ.audio) playAudio(currentQ.audio);
+      if (currentQ.audioString) playAudio(currentQ.audioString);
     } else {
       playErrorBeep();
     }
@@ -1383,9 +1380,9 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         {currentQ.prominentTibetan && (
            <span className="font-serif leading-none text-stone-900" style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span>
         )}
-        {currentQ.audio && !currentQ.prominentTibetan && (
-          <button onClick={() => playAudio(currentQ.audio)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-white px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors shadow-sm mt-4">
-            {playingItem === currentQ.audio ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Hear Sound
+        {currentQ.audioString && !currentQ.prominentTibetan && (
+          <button onClick={() => playAudio(currentQ.audioString)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-white px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors shadow-sm mt-4">
+            {playingItem === currentQ.audioString ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Hear Sound
           </button>
         )}
       </div>
