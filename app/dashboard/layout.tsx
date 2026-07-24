@@ -8,6 +8,8 @@ import {
   LayoutDashboard, BookOpen, MessageSquare, 
   CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X, Calendar, LogOut 
 } from "lucide-react";
+// Add the new import here:
+import FeedbackWidget from "@/components/FeedbackWidget";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -210,6 +212,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </main>
+	      {/* ADD THE GLOBAL FEEDBACK WIDGET HERE */}
+      <FeedbackWidget />
     </div>
   );
 }
