@@ -50,9 +50,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 // Inside app/dashboard/layout.tsx
 // (Replace the navItems array at approx line 47)
 
-  const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Steps", href: "/dashboard/lessons", icon: BookOpen }, // Updated to "My Steps"
+const navItems = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "My Lessons", href: "/dashboard/lessons", icon: BookOpen },
     { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare },
     { name: "Exercises", href: "/dashboard/exercises", icon: CheckSquare },
     { name: "Tutors", href: "/dashboard/tutors", icon: Calendar },
