@@ -19,26 +19,28 @@ export default function FeedbackWidget() {
 
   // --- DRAG LOGIC FOR THE FLOATING BUTTON ---
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [hasDragged, setHasDragged] = useState(false); // Distinguish between a click and a drag
+  
+  // We use refs instead of state for drag tracking so the click event can read the exact value instantly without waiting for a re-render.
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const hasDraggedRef = useRef(false); 
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    setHasDragged(false); // Reset drag detection on new touch/click
+    isDraggingRef.current = true;
+    hasDraggedRef.current = false; // Reset on new click
     dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging || !dragRef.current) return;
+    if (!isDraggingRef.current || !dragRef.current) return;
     
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     
-    // If moved more than 3 pixels, register it as a drag rather than a click
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      setHasDragged(true);
+    // Threshold: If moved more than 5 pixels, register it as a real drag, not a jittery click.
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasDraggedRef.current = true;
     }
     
     setPosition({
@@ -48,7 +50,7 @@ export default function FeedbackWidget() {
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    setIsDragging(false);
+    isDraggingRef.current = false;
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
   // ------------------------------------------
@@ -59,7 +61,6 @@ export default function FeedbackWidget() {
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
-  // 2. If Clerk is still loading, or the user is NOT signed in, don't render the widget!
   if (!isLoaded || !isSignedIn) {
     return null;
   }
@@ -110,7 +111,7 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      {/* DRAGGABLE FLOATING BUTTON - NOW Positioned at TOP-RIGHT (top-24 to avoid the header) */}
+      {/* DRAGGABLE FLOATING BUTTON - TOP RIGHT */}
       <div 
         className="fixed top-24 right-6 sm:top-28 sm:right-8 z-[60] touch-none cursor-move flex flex-col items-center group/draggable"
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
@@ -121,8 +122,8 @@ export default function FeedbackWidget() {
       >
         <button
           onClick={(e) => {
-            // Prevent opening the modal if the user was just dragging the button
-            if (hasDragged) {
+            // Prevent opening the modal if the user actually dragged the button
+            if (hasDraggedRef.current) {
               e.preventDefault();
               e.stopPropagation();
               return;
@@ -139,7 +140,7 @@ export default function FeedbackWidget() {
           </div>
         </button>
         {/* Subtle drag indicator on hover */}
-        <div className="opacity-0 group-hover/draggable:opacity-100 transition-opacity mt-1 flex items-center gap-1 text-[10px] text-stone-400 font-bold uppercase tracking-widest bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-stone-200 pointer-events-none">
+        <div className="opacity-0 group-hover/draggable:opacity-100 transition-opacity mt-1 flex items-center gap-1 text-[10px] text-stone-400 font-bold uppercase tracking-widest bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-stone-200 pointer-events-none shadow-sm">
           <GripHorizontal size={10} /> Drag to move
         </div>
       </div>
