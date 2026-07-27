@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
@@ -69,7 +69,7 @@ const STEPS = [
   { id: "spelling", eyebrow: "Step 04", title: "Spelling — root letter + vowel mark", description: "Combine any consonant with the four vowel marks." },
   { id: "vocab", eyebrow: "Step 05", title: "Nouns formed with the four vowels", description: "Read and hear real words using vowels only." },
   { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
-  { id: "complete", eyebrow: "Final test", title: "Lesson test — unlock the next lesson", description: "Score 80% or higher to unlock Superscripts." },
+  { id: "complete", eyebrow: "Final test", title: "Step test — unlock the next step", description: "Score 80% or higher to unlock Superscripts." },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -79,7 +79,7 @@ const STEPS = [
 export default function VowelsLesson() {
   const { getToken } = useAuth();
   
-  const [selected, setSelected] = useState<Vowel | null>(null);
+  const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Position>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   const [playingItem, setPlayingItem] = useState<string | null>(null);
@@ -184,7 +184,7 @@ export default function VowelsLesson() {
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-xs font-medium text-stone-500 uppercase tracking-widest">
           <Link href="/dashboard/lessons" className="hover:text-stone-800 transition-colors">
-            My Lessons
+            My Steps
           </Link>
           <ChevronRight className="size-3" />
           <span>Unit 02</span>
@@ -196,12 +196,12 @@ export default function VowelsLesson() {
         <section className="mb-8 grid gap-6 border border-[#e8e4d9] bg-white shadow-sm p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10">
           <div>
             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-500">
-              Lesson 02 · Foundations
+              Step 02 · Foundations
             </div>
             <h1 className="font-serif text-3xl leading-tight tracking-tight md:text-5xl text-stone-900">
               The Four Vowels
             </h1>
-            <p className="mt-1 font-serif text-2xl italic text-stone-500">དབྱངས་བཞི།</p>
+            <p className="mt-1 font-serif text-2xl italic text-stone-500 tibetan">དབྱངས་བཞི།</p>
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-stone-600">
               Every Tibetan syllable is voiced through a vowel. Just four diacritic marks — three
               above the letter and one below — turn the thirty consonants into the full range of
@@ -211,7 +211,7 @@ export default function VowelsLesson() {
           </div>
           <div className="w-full md:w-72">
             <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-500">
-              <span>Lesson progress</span>
+              <span>Step progress</span>
               <span className="text-amber-500">
                 {completed.size} of {total} sections
               </span>
@@ -274,7 +274,7 @@ export default function VowelsLesson() {
                     className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-stone-200 bg-white hover:border-amber-300 hover:shadow-md"}`}
                   >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
-                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] tibetan ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
                       {"\u25CC" + v.mark}
                     </span>
                     {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-amber-500" />}
@@ -287,11 +287,11 @@ export default function VowelsLesson() {
                 {filtered.map((v, i) => (
                   <button
                     key={v.key}
-                    onClick={() => { setSelected(v); playAudio(v.tib); }}
+                    onClick={(e) => { setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); playAudio(v.tib); }}
                     className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-stone-200 bg-white hover:border-amber-300 hover:shadow-md"}`}
                   >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
-                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] tibetan ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
                       {v.tib}
                     </span>
                     <div className="mt-2 flex items-end justify-between">
@@ -338,8 +338,8 @@ export default function VowelsLesson() {
                   {VOWELS.map((v) => (
                     <tr key={v.key} className="transition hover:bg-stone-50">
                       <td className="px-6 py-5">
-                        <button onClick={() => setSelected(v)} className="inline-flex items-center gap-3">
-                          <span className="font-serif text-3xl leading-none text-stone-900">{v.tib}</span>
+                        <button onClick={(e) => setSelected({ v, rect: e.currentTarget.getBoundingClientRect() })} className="inline-flex items-center gap-3">
+                          <span className="font-serif text-3xl leading-none text-stone-900 tibetan">{v.tib}</span>
                           <span className="text-xs font-bold uppercase tracking-widest text-stone-500">{v.markTranslit}</span>
                         </button>
                       </td>
@@ -384,12 +384,12 @@ export default function VowelsLesson() {
                       <span className="text-[10px] font-bold uppercase tracking-widest">{pm.label}</span>
                     </div>
                     <div className="mt-6 flex items-baseline gap-4">
-                      <span className="font-serif text-7xl leading-none text-stone-900">{v.tib}</span>
+                      <span className="font-serif text-7xl leading-none text-stone-900 tibetan">{v.tib}</span>
                       <span className="font-serif text-3xl italic text-stone-400">{v.translit}</span>
                     </div>
                     <div className="mt-6 border-t border-stone-100 pt-4 flex-1">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Mark name</div>
-                      <div className="font-serif text-2xl text-stone-800">{v.markTib}</div>
+                      <div className="font-serif text-2xl text-stone-800 tibetan">{v.markTib}</div>
                       <div className="text-xs italic text-stone-500 mt-1">{v.markTranslit} · {v.markGloss}</div>
                     </div>
                     <p className="mt-4 text-[13px] leading-relaxed text-stone-600 bg-stone-50 p-3 border border-stone-100">{v.note}</p>
@@ -422,11 +422,11 @@ export default function VowelsLesson() {
                     </div>
 
                     <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
-                      <span className="font-serif text-5xl leading-none text-stone-900">ཨ</span>
+                      <span className="font-serif text-5xl leading-none text-stone-900 tibetan">ཨ</span>
                       <span className="text-2xl text-stone-400">+</span>
-                      <span className="font-serif text-5xl leading-none text-stone-900">{v.markTib}</span>
+                      <span className="font-serif text-5xl leading-none text-stone-900 tibetan">{v.markTib}</span>
                       <span className="text-2xl text-stone-400">⇒</span>
-                      <span className="font-serif text-5xl leading-none text-amber-600">{v.tib}</span>
+                      <span className="font-serif text-5xl leading-none text-amber-600 tibetan">{v.tib}</span>
                       <span className="text-2xl text-stone-400">⇒</span>
                       <span className="font-serif text-4xl italic text-stone-800">{v.translit}</span>
                       <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="ml-2 inline-grid size-10 place-items-center bg-stone-100 border border-stone-200 text-stone-600 transition hover:bg-stone-200">
@@ -445,7 +445,7 @@ export default function VowelsLesson() {
                       <div className="flex flex-wrap gap-2">
                         {v.examples.map((ex) => (
                           <button key={ex} onClick={() => playAudio(ex)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-stone-200 bg-white px-4 py-2 transition hover:-translate-y-0.5 hover:shadow-sm hover:border-amber-300">
-                            <span className="font-serif text-2xl text-stone-800">{ex}</span>
+                            <span className="font-serif text-2xl text-stone-800 tibetan">{ex}</span>
                             {playingItem === ex ? <Loader2 className="size-4 animate-spin text-amber-500" /> : <Volume2 className="size-4 text-amber-500" />}
                           </button>
                         ))}
@@ -479,7 +479,7 @@ export default function VowelsLesson() {
                         {v.vowel}
                       </span>
                     </div>
-                    <div className="font-serif font-bold text-3xl leading-tight text-stone-900 mb-1">{v.tib}</div>
+                    <div className="font-serif font-bold text-3xl leading-tight text-stone-900 mb-1 tibetan">{v.tib}</div>
                     <div className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">{v.translit}</div>
                     <div className="flex items-center justify-between border-t border-stone-100 pt-3 mt-auto">
                       <span className="text-sm font-bold text-stone-700">{v.en}</span>
@@ -500,13 +500,13 @@ export default function VowelsLesson() {
 
           {/* Step 6: Complete (Final Test) */}
           <StepCard index={6} total={total} step={STEPS[6]} status={statusOf(6)} isExpanded={isExpanded(6)} onToggle={() => toggleStep(6)} onPrev={() => goPrev(6)} onContinue={() => goContinue(6)} isFirst={false} isLast currentStep={currentStep}>
-            <QuizModule title="Final Lesson Test" intro="Score 80% or higher to unlock the next lesson: The Three Superscripts." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} isVocabMatch={true} />
+            <QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: The Three Superscripts." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} isVocabMatch={true} />
           </StepCard>
         </div>
       </div>
 
       {/* Non-Blocking Inspector Window */}
-      {selected && <DetailPanel v={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
+      {selected && <DetailPanel data={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
 
       {/* Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-[#fdfbf7] border-t border-stone-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
@@ -515,7 +515,7 @@ export default function VowelsLesson() {
             <ChevronLeft size={16} /> Previous: The 30 Consonants
           </Link>
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold shadow-sm transition-colors border border-amber-600">
-            <CheckCircle2 size={18} /> Mark lesson complete
+            <CheckCircle2 size={18} /> Mark step complete
           </button>
           <Link href="/dashboard/lessons/3" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
             Next: The Three Superscripts <ArrowRight size={16} />
@@ -566,7 +566,7 @@ function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, on
               Step {index + 1} of {total}
             </div>
             <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 border border-amber-600 shadow-sm">
-              {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete lesson" : "Mark complete & continue"}
+              {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete step" : "Mark complete & continue"}
               <ChevronRight className="size-4" />
             </button>
           </div>
@@ -630,7 +630,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
           <Trophy className="size-3.5" /> Final Test
         </div>
-        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next lesson?</h3>
+        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next step?</h3>
         <p className="text-sm text-stone-600 mb-6">
           {questionCount} questions drawn from everything you covered in this lesson. Score <span className="font-bold">80%</span> or higher to pass. You can retake the test as many times as you like — your best score is saved.
         </p>
@@ -645,7 +645,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3">
              <Lock size={14} /> Progression
           </div>
-          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next lesson in the syllabus. Your progress is saved locally in your browser.</p>
+          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next step in the syllabus. Your progress is saved locally in your browser.</p>
           <ul className="space-y-2 text-sm text-stone-600">
              <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Mix of recognition and pronunciation prompts</li>
              <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Immediate feedback after each question</li>
@@ -672,7 +672,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
           </button>
           {passed && isUnlockTest && (
             <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 border border-amber-600">
-              Unlock Next Lesson <ArrowRight size={18} />
+              Unlock Next Step <ArrowRight size={18} />
             </button>
           )}
         </div>
@@ -728,7 +728,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
               onClick={() => { setPicked(c.tib); if (c.tib === question.answer.tib) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); } }}
               className={`py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
             >
-              <span className="font-serif text-[3rem] leading-none">{c.tib}</span>
+              <span className="font-serif text-[3rem] leading-none tibetan">{c.tib}</span>
             </button>
           );
         })}
@@ -775,7 +775,7 @@ function Flashcards({ speak, playingItem }: any) {
         {!flipped ? (
           <div className="flex flex-col items-center gap-4">
             {mode === "nouns" && <span className="text-6xl">{card.emoji}</span>}
-            <div className="text-[6rem] md:text-[8rem] font-serif text-stone-900 group-hover:scale-105 transition-transform leading-none">{front}</div>
+            <div className="text-[6rem] md:text-[8rem] font-serif text-stone-900 group-hover:scale-105 transition-transform leading-none tibetan">{front}</div>
           </div>
         ) : (
           <div className="text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200 p-6">
@@ -828,7 +828,7 @@ function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
           const isCorrect = answer.translit === c.translit;
           return (
             <button key={c.tib + c.translit} onClick={() => { if (!picked) { setPicked(c.translit); if (isCorrect) speak(c.tib); else playErrorBeep(); } }} disabled={picked !== null} className={`relative py-8 px-4 flex flex-col items-center justify-center border transition-all ${isSelected && isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700" : isSelected && !isCorrect ? "border-rose-500 bg-rose-50 text-rose-700" : picked && isCorrect ? "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600" : picked ? "border-stone-100 opacity-50 bg-stone-50 cursor-default" : "border-stone-200 bg-white hover:bg-stone-50 hover:border-amber-300"}`}>
-              <span className="font-serif text-[4rem] md:text-[5rem] leading-none">{"\u25CC" + c.mark}</span>
+              <span className="font-serif text-[4rem] md:text-[5rem] leading-none tibetan">{"\u25CC" + c.mark}</span>
               {picked && <span className="absolute bottom-4 text-[10px] font-bold uppercase tracking-widest">{c.translit}</span>}
               {isSelected && isCorrect && <CheckCircle2 size={20} className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in" />}
               {isSelected && !isCorrect && <XCircle size={20} className="absolute top-3 right-3 text-rose-500 animate-in zoom-in" />}
@@ -863,7 +863,7 @@ function MatchExercise({ speak, playingItem, playErrorBeep }: any) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
         {questions.map((q, idx) => (
           <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 shadow-sm gap-4 sm:gap-2">
-            <div className="text-4xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left">{"\u25CC" + q.target.mark}</div>
+            <div className="text-4xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left tibetan">{"\u25CC" + q.target.mark}</div>
             <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto sm:mr-2">
               {q.options.map(opt => {
                 const isSelected = matchAnswers[q.target.tib] === opt.markTranslit;
@@ -923,7 +923,7 @@ function MemoryReview({ speak, playingItem }: any) {
         </div>
         <div className="bg-white border border-stone-200 p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
           <div className="text-6xl mb-6">{deck[0].emoji}</div>
-          <div className="text-[7rem] md:text-[9rem] font-serif text-stone-900 mb-8 leading-none text-center">{deck[0].tib}</div>
+          <div className="text-[7rem] md:text-[9rem] font-serif text-stone-900 mb-8 leading-none text-center tibetan">{deck[0].tib}</div>
           <button onClick={() => speak(deck[0].tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold transition-colors text-sm border border-stone-200">
             {playingItem === deck[0].tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Check Sound
           </button>
@@ -942,13 +942,59 @@ function MemoryReview({ speak, playingItem }: any) {
   );
 }
 
-function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
+function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
+  const { v, rect } = data;
   const pm = POSITION_META[v.position as Position];
   
-  // --- DRAG LOGIC ---
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: -9999, y: -9999 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+  useIsoLayoutEffect(() => {
+    if (!rect || !panelRef.current) return;
+    
+    // Panel sizing (falling back to estimations if paint cycle isn't done)
+    const panelRect = panelRef.current.getBoundingClientRect();
+    const panelWidth = panelRect.width || 384; 
+    const panelHeight = panelRect.height || 400; 
+    const margin = 16;
+    
+    // 1. Try to spawn to the immediate right of the clicked item
+    let startX = rect.right + margin;
+    let startY = rect.top;
+
+    // 2. Fallback to left if there's an overflow
+    if (startX + panelWidth > window.innerWidth) {
+      startX = rect.left - panelWidth - margin;
+    }
+
+    // 3. If left also overflows (e.g. mobile), center it horizontally 
+    if (startX < margin) {
+      startX = (window.innerWidth - panelWidth) / 2;
+      if (startX < margin) startX = margin; 
+
+      // Try placing above
+      startY = rect.top - panelHeight - margin;
+      
+      // Try placing below if above overflows
+      if (startY < margin) {
+        startY = rect.bottom + margin;
+      }
+    }
+
+    // 4. Vertical clamping to strictly keep panel on-screen
+    if (startY + panelHeight > window.innerHeight) {
+      startY = window.innerHeight - panelHeight - margin;
+    }
+    if (startY < margin) {
+      startY = margin;
+    }
+
+    setPosition({ x: startX, y: startY });
+  }, [rect]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     setIsDragging(true);
@@ -968,13 +1014,17 @@ function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
     setIsDragging(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
-  // ------------------
   
   return (
-    <div className="fixed bottom-[80px] sm:bottom-24 left-2 right-2 sm:left-auto sm:right-6 z-50 pointer-events-none flex flex-col justify-end sm:w-[24rem]">
+    <div className="fixed inset-0 z-50 pointer-events-none">
       <div 
-        className="bg-[#fdfbf7] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#e8e4d9] rounded-xl sm:rounded-2xl pointer-events-auto flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-right-8 duration-300 max-h-[50vh] sm:max-h-[70vh] overflow-hidden"
-        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
+        ref={panelRef}
+        className="absolute pointer-events-auto flex flex-col sm:w-[24rem] w-[calc(100%-2rem)] max-h-[70vh] bg-[#fdfbf7] shadow-2xl border border-[#e8e4d9] rounded-xl sm:rounded-2xl overflow-hidden"
+        style={{ 
+          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+          opacity: position.x === -9999 ? 0 : 1,
+          transition: isDragging ? 'none' : 'opacity 0.2s ease-in-out'
+        }}
       >
         {/* DRAGGABLE HEADER */}
         <div 
@@ -997,7 +1047,7 @@ function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
           <div className="flex items-center gap-5 mb-6">
-            <div className="text-[5rem] sm:text-[6rem] font-serif text-stone-900 leading-none">{v.tib}</div>
+            <div className="text-[5rem] sm:text-[6rem] font-serif text-stone-900 leading-none tibetan">{v.tib}</div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <div className="text-xl font-serif italic text-stone-800">{v.translit}</div>
@@ -1017,8 +1067,8 @@ function DetailPanel({ v, onClose, onSpeak, playingItem }: any) {
             
             <div className="p-3 border bg-white border-stone-200">
               <div className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-1">Mark Name</div>
-              <div className="font-serif text-base text-stone-800">{v.markTib}</div>
-              <div className="text-[10px] italic text-stone-500">{v.markTranslit}</div>
+              <div className="font-serif text-base text-stone-800 tibetan">{v.markTib}</div>
+              <div className="text-[10px] italic text-stone-500 mt-1">{v.markTranslit}</div>
             </div>
           </div>
 

@@ -10,13 +10,13 @@ const FALLBACK_MODULES = [
   { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active" },
   { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked" },
   { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked" },
-  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The subjoined marks Ya-tak, Ra-tak, La-tak, and Wa-zur and their complex sound shifts.", progress: 0, status: "locked" },
+  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked" },
   { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked" },
   { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked" },
   { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked" }
 ];
 
-export default function MyLessonsPage() {
+export default function MyStepsPage() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const [modules, setModules] = useState<any[]>([]);
@@ -46,7 +46,6 @@ export default function MyLessonsPage() {
           const data = await res.json();
           
           if (isMounted) {
-            // Safely handle empty arrays from the database
             if (data.modules && Array.isArray(data.modules) && data.modules.length > 0) {
               setModules(data.modules);
             } else {
@@ -68,7 +67,6 @@ export default function MyLessonsPage() {
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-amber-500" /></div>;
 
-  // Sort modules safely
   const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
 
   return (
@@ -90,11 +88,9 @@ export default function MyLessonsPage() {
       {/* Curriculum List */}
       <div className="space-y-4">
         {visibleModules.map((module) => {
-          
           const lessonUrl = `/dashboard/lessons/${Number(module.module_id)}`;
           const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
 
-          // COMPLETED STATE
           if (module.status === "completed") {
             return (
               <div key={module.id || module.module_id} className="flex flex-col md:flex-row bg-white border border-[#e8e4d9] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow gap-6">
@@ -117,7 +113,6 @@ export default function MyLessonsPage() {
             );
           }
 
-          // LOCKED STATE
           if (isLocked) {
              return (
                <div key={module.id || module.module_id} className="flex flex-col md:flex-row bg-[#f8f6f0] border border-[#e8e4d9] rounded-2xl p-6 gap-6 relative overflow-hidden opacity-70">
@@ -135,7 +130,6 @@ export default function MyLessonsPage() {
              )
           }
 
-          // ACTIVE & UNLOCKED STATE
           return (
             <div key={module.id || module.module_id} className={`flex flex-col md:flex-row bg-white border-2 ${module.progress > 0 ? 'border-amber-400 shadow-md' : 'border-[#e8e4d9] hover:border-amber-400 shadow-sm'} rounded-2xl p-6 gap-6 relative overflow-hidden transition-colors`}>
               {module.progress > 0 && <div className="absolute left-0 top-0 w-1 h-full bg-amber-400"></div>}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
-/* Data & Types                                                        */
+/* Data & Types                                                       */
 /* ------------------------------------------------------------------ */
 
 type Tone = "high-unasp" | "high-asp" | "low-asp" | "low-nasal";
@@ -110,22 +110,21 @@ const STEPS = [
   { id: "gender", eyebrow: "Step 04", title: "Traditional gender classification", description: "The five effort-based groupings of the alphabet." },
   { id: "vocab", eyebrow: "Step 05", title: "Nouns formed from the 30 consonants", description: "Read and hear real words built from the root letters." },
   { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and stroke tracing." },
-  { id: "complete", eyebrow: "Final test", title: "Lesson test — unlock the next lesson", description: "Score 80% or higher on the final test to unlock The Four Vowels." },
+  { id: "complete", eyebrow: "Final test", title: "Step test — unlock the next step", description: "Score 80% or higher on the final test to unlock The Four Vowels." },
 ];
 
 /* ------------------------------------------------------------------ */
-/* Main Lesson Component                                               */
+/* Main Lesson Component                                              */
 /* ------------------------------------------------------------------ */
 
 export default function ConsonantsLesson() {
   const { getToken } = useAuth();
   
-  const [selected, setSelected] = useState<Consonant | null>(null);
+  const [selected, setSelected] = useState<{ c: Consonant, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Tone>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   const [playingItem, setPlayingItem] = useState<string | null>(null);
 
-  // Progressive disclosure state
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [currentStep, setCurrentStep] = useState(0);
   const [manualExpanded, setManualExpanded] = useState<Set<number>>(new Set());
@@ -136,7 +135,6 @@ export default function ConsonantsLesson() {
   const statusOf = (i: number): "done" | "current" | "upcoming" =>
     completed.has(i) ? "done" : i === currentStep ? "current" : "upcoming";
     
-  // Check if a section is strictly opened by the user
   const isExpanded = (i: number) => manualExpanded.has(i);
 
   const scrollToStep = (i: number) => {
@@ -227,7 +225,7 @@ export default function ConsonantsLesson() {
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-xs font-medium text-stone-500 uppercase tracking-widest">
           <Link href="/dashboard/lessons" className="hover:text-stone-800 transition-colors">
-            My Lessons
+            My Steps
           </Link>
           <ChevronRight className="size-3" />
           <span>Unit 01</span>
@@ -239,12 +237,12 @@ export default function ConsonantsLesson() {
         <section className="mb-8 grid gap-6 border border-[#e8e4d9] bg-white p-6 md:grid-cols-[1fr,auto] md:items-end md:p-10">
           <div>
             <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-500">
-              Lesson 01 · Foundations
+              Step 01 · Foundations
             </div>
             <h1 className="font-serif text-3xl leading-tight tracking-tight md:text-5xl text-stone-900">
               The 30 Tibetan Consonants
             </h1>
-            <p className="mt-1 font-serif text-2xl italic text-stone-500">གསལ་བྱེད་སུམ་ཅུ།</p>
+            <p className="mt-1 font-serif text-2xl italic text-stone-500 tibetan">གསལ་བྱེད་སུམ་ཅུ།</p>
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-stone-600">
               The Tibetan alphabet is built on thirty root letters — the foundation of every word you
               will read, write, and speak. Move through the lesson one step at a time; every section
@@ -253,7 +251,7 @@ export default function ConsonantsLesson() {
           </div>
           <div className="w-full md:w-72">
             <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-500">
-              <span>Lesson progress</span>
+              <span>Step progress</span>
               <span className="text-amber-500">
                 {completed.size} of {total} sections
               </span>
@@ -279,7 +277,6 @@ export default function ConsonantsLesson() {
         </section>
 
         <div className="space-y-4">
-          {/* Step 0: Introduction */}
           <StepCard index={0} total={total} step={STEPS[0]} status={statusOf(0)} isExpanded={isExpanded(0)} onToggle={() => toggleStep(0)} onPrev={() => goPrev(0)} onContinue={() => goContinue(0)} isFirst isLast={false} currentStep={currentStep}>
             <div className="grid gap-6 md:grid-cols-[1.2fr,1fr]">
               <div>
@@ -293,7 +290,7 @@ export default function ConsonantsLesson() {
                 <ul className="mt-6 space-y-3 text-sm text-stone-600">
                   <li className="flex items-start gap-3">
                     <Sparkles className="mt-0.5 size-4 shrink-0 text-amber-500" />
-                    Tap any letter card to hear its sound and read the pronunciation notes.
+                    Tap any letter card to hear its sound and see its details.
                   </li>
                   <li className="flex items-start gap-3">
                     <Layers className="mt-0.5 size-4 shrink-0 text-amber-500" />
@@ -323,7 +320,6 @@ export default function ConsonantsLesson() {
             </div>
           </StepCard>
 
-          {/* Step 1: Type-specimen grid */}
           <StepCard index={1} total={total} step={STEPS[1]} status={statusOf(1)} isExpanded={isExpanded(1)} onToggle={() => toggleStep(1)} onPrev={() => goPrev(1)} onContinue={() => goContinue(1)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
@@ -355,11 +351,14 @@ export default function ConsonantsLesson() {
                 {filtered.map((c, i) => (
                   <button
                     key={c.tib + c.translit}
-                    onClick={() => { setSelected(c); playAudio(c.tib); }}
+                    onClick={(e) => { 
+                      setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); 
+                      playAudio(c.tib); 
+                    }}
                     className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-stone-200 bg-white hover:border-amber-300 hover:shadow-md"}`}
                   >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: TONE_HEX[c.tone] }} />
-                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
+                    <span className={`flex flex-1 items-center justify-center font-serif leading-none transition-transform duration-500 group-hover:scale-[1.1] tibetan ${studyMode === "night" ? "text-amber-500" : "text-stone-900"}`} style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
                       {c.tib}
                     </span>
                     <div className="mt-2 flex items-end justify-between">
@@ -389,7 +388,6 @@ export default function ConsonantsLesson() {
             </div>
           </StepCard>
 
-          {/* Step 2: Tone */}
           <StepCard index={2} total={total} step={STEPS[2]} status={statusOf(2)} isExpanded={isExpanded(2)} onToggle={() => toggleStep(2)} onPrev={() => goPrev(2)} onContinue={() => goContinue(2)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {(Object.keys(TONE_META) as Tone[]).map((t) => {
@@ -404,7 +402,7 @@ export default function ConsonantsLesson() {
                     <p className="mt-3 text-[13px] leading-relaxed text-stone-600 h-20">{m.description}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {CONSONANTS.filter((c) => c.tone === t).map((c) => (
-                        <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border border-stone-200 bg-stone-50 px-3 py-1.5 font-serif text-xl hover:border-amber-300 hover:bg-white transition-colors text-stone-800">
+                        <button key={c.tib} onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} className="border border-stone-200 bg-stone-50 px-3 py-1.5 font-serif text-xl hover:border-amber-300 hover:bg-white transition-colors text-stone-800 tibetan">
                           {c.tib}
                         </button>
                       ))}
@@ -425,7 +423,6 @@ export default function ConsonantsLesson() {
             </div>
           </StepCard>
 
-          {/* Step 3: Three root sounds */}
           <StepCard index={3} total={total} step={STEPS[3]} status={statusOf(3)} isExpanded={isExpanded(3)} onToggle={() => toggleStep(3)} onPrev={() => goPrev(3)} onContinue={() => goContinue(3)} isFirst={false} isLast={false} currentStep={currentStep}>
             <p className="mb-8 max-w-3xl text-[15px] text-stone-600 leading-relaxed">
               Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> —
@@ -444,20 +441,19 @@ export default function ConsonantsLesson() {
                     <span className="text-[10px] font-bold uppercase tracking-widest">{r.label}</span>
                   </div>
                   <button onClick={() => playAudio(r.tib)} className="mt-8 flex items-baseline gap-4 w-fit hover:opacity-70 transition-opacity">
-                    <span className="font-serif text-7xl leading-none text-stone-900">{r.tib}</span>
+                    <span className="font-serif text-7xl leading-none text-stone-900 tibetan">{r.tib}</span>
                     <span className="font-serif text-3xl italic text-stone-400">{r.translit}</span>
                   </button>
                   <p className="mt-6 text-sm leading-relaxed text-stone-600 flex-1">{r.description}</p>
                   <div className="mt-6 border-t border-stone-100 pt-5">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Family</div>
-                    <div className="font-serif text-xl tracking-[0.2em] text-stone-800">{r.members}</div>
+                    <div className="font-serif text-xl tracking-[0.2em] text-stone-800 tibetan">{r.members}</div>
                   </div>
                 </div>
               ))}
             </div>
           </StepCard>
 
-          {/* Step 4: Gender */}
           <StepCard index={4} total={total} step={STEPS[4]} status={statusOf(4)} isExpanded={isExpanded(4)} onToggle={() => toggleStep(4)} onPrev={() => goPrev(4)} onContinue={() => goContinue(4)} isFirst={false} isLast={false} currentStep={currentStep}>
             <p className="mb-6 max-w-3xl text-[15px] text-stone-600 leading-relaxed">
               The thirty consonants are traditionally divided into five gender groups depending on how
@@ -485,11 +481,11 @@ export default function ConsonantsLesson() {
                             {gm.label}
                           </span>
                         </td>
-                        <td className="px-6 py-5 font-serif text-2xl text-stone-800">{gm.tib}</td>
+                        <td className="px-6 py-5 font-serif text-2xl text-stone-800 tibetan">{gm.tib}</td>
                         <td className="px-6 py-5">
                           <div className="flex flex-wrap gap-2">
                             {letters.map((c) => (
-                              <button key={c.tib} onClick={() => { setSelected(c); playAudio(c.tib); }} className="border bg-white px-3.5 py-1.5 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm" style={{ borderColor: gm.color + "55", color: gm.text }} title={c.translit}>
+                              <button key={c.tib} onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} className="border bg-white px-3.5 py-1.5 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm tibetan" style={{ borderColor: gm.color + "55", color: gm.text }} title={c.translit}>
                                 {c.tib}
                               </button>
                             ))}
@@ -503,7 +499,6 @@ export default function ConsonantsLesson() {
             </div>
           </StepCard>
 
-          {/* Step 5: Vocabulary */}
           <StepCard index={5} total={total} step={STEPS[5]} status={statusOf(5)} isExpanded={isExpanded(5)} onToggle={() => toggleStep(5)} onPrev={() => goPrev(5)} onContinue={() => goContinue(5)} isFirst={false} isLast={false} currentStep={currentStep}>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <p className="text-[15px] text-stone-600">Real words formed entirely from the root letters.</p>
@@ -516,7 +511,7 @@ export default function ConsonantsLesson() {
               {VOCAB.map((v) => (
                 <div key={v.tib + v.translit} className="bg-white border border-[#e8e4d9] flex flex-col p-5 transition-all hover:-translate-y-1 hover:border-amber-300 hover:shadow-md relative group">
                   <div className="text-3xl mb-4">{v.emoji}</div>
-                  <div className="font-serif font-bold text-3xl leading-tight text-stone-900 mb-1">{v.tib}</div>
+                  <div className="font-serif font-bold text-3xl leading-tight text-stone-900 mb-1 tibetan">{v.tib}</div>
                   <div className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">{v.translit}</div>
                   <div className="flex items-center justify-between border-t border-stone-100 pt-3 mt-auto">
                     <span className="text-sm font-bold text-stone-700">{v.en}</span>
@@ -529,29 +524,25 @@ export default function ConsonantsLesson() {
             </div>
           </StepCard>
 
-          {/* Step 6: Practice */}
           <StepCard index={6} total={total} step={STEPS[6]} status={statusOf(6)} isExpanded={isExpanded(6)} onToggle={() => toggleStep(6)} onPrev={() => goPrev(6)} onContinue={() => goContinue(6)} isFirst={false} isLast={false} currentStep={currentStep}>
             <PracticeArea speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepCard>
 
-          {/* Step 7: Complete (Final Test) */}
           <StepCard index={7} total={total} step={STEPS[7]} status={statusOf(7)} isExpanded={isExpanded(7)} onToggle={() => toggleStep(7)} onPrev={() => goPrev(7)} onContinue={() => goContinue(7)} isFirst={false} isLast currentStep={currentStep}>
-            <QuizModule title="Final Lesson Test" intro="Score 80% or higher to unlock the next lesson: The Four Vowels." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} />
+            <QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: The Four Vowels." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} />
           </StepCard>
         </div>
       </div>
 
-      {/* Non-Blocking Inspector Window */}
-      {selected && <DetailPanel c={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
+      {selected && <DetailPanel data={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
 
-      {/* Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-[#fdfbf7] border-t border-stone-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-500 hover:text-stone-800 transition-colors">
             <ChevronLeft size={16} /> Syllabus
           </Link>
           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold transition-colors border border-amber-600">
-            <CheckCircle2 size={18} /> Mark lesson complete
+            <CheckCircle2 size={18} /> Mark step complete
           </button>
           <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-stone-800 hover:text-amber-600 transition-colors">
             Next: The Four Vowels <ArrowRight size={16} />
@@ -563,13 +554,11 @@ export default function ConsonantsLesson() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Subcomponents                                                       */
+/* Subcomponents                                                      */
 /* ------------------------------------------------------------------ */
 
 function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, onContinue, isFirst, isLast, currentStep, children }: any) {
   const badge = status === "done" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : status === "current" ? "bg-[#fffdf5] text-amber-700 border-amber-300" : "bg-stone-50 text-stone-400 border-stone-200";
-  
-  // Disable opening upcoming sections if DEV_BYPASS_LOCKS is false
   const isDisabled = !DEV_BYPASS_LOCKS && index > currentStep && status !== "done";
 
   return (
@@ -603,7 +592,7 @@ function StepCard({ index, total, step, status, isExpanded, onToggle, onPrev, on
               Step {index + 1} of {total}
             </div>
             <button type="button" onClick={onContinue} className="inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 transition hover:bg-amber-400 border border-amber-600">
-              {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete lesson" : "Mark complete & continue"}
+              {status === "done" ? isLast ? "Finish" : "Next section" : isLast ? "Complete step" : "Mark complete & continue"}
               <ChevronRight className="size-4" />
             </button>
           </div>
@@ -645,9 +634,6 @@ function PracticeArea({ speak, playingItem, playErrorBeep }: any) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Universal Quiz Module (Used for Mastery & Final Test)               */
-/* ------------------------------------------------------------------ */
 function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep, questionCount, isUnlockTest, isVocabMatch }: any) {
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
@@ -655,8 +641,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
   const [picked, setPicked] = useState<string | null>(null);
   
   const question = useMemo(() => {
-    // Generate questions dynamically
-    const isAudioType = Math.random() > 0.5; // 50% chance of "Listen and select" vs "Which letter reads..."
+    const isAudioType = Math.random() > 0.5;
     const answer = data[Math.floor(Math.random() * data.length)];
     const wrongs = data.filter((x: any) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
     const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
@@ -669,7 +654,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
           <Trophy className="size-3.5" /> Final Test
         </div>
-        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next lesson?</h3>
+        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next step?</h3>
         <p className="text-sm text-stone-600 mb-6">
           {questionCount} questions drawn from everything you covered in this lesson. Score <span className="font-bold">80%</span> or higher to pass. You can retake the test as many times as you like — your best score is saved.
         </p>
@@ -684,7 +669,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3">
              <Lock size={14} /> Progression
           </div>
-          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next lesson in the syllabus. Your progress is saved locally in your browser.</p>
+          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next step in the syllabus. Your progress is saved locally in your browser.</p>
           <ul className="space-y-2 text-sm text-stone-600">
              <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Mix of recognition and pronunciation prompts</li>
              <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Immediate feedback after each question</li>
@@ -711,13 +696,10 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
           </button>
           {passed && isUnlockTest && (
             <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors flex items-center gap-2 border border-amber-600">
-              Unlock Next Lesson <ArrowRight size={18} />
+              Unlock Next Step <ArrowRight size={18} />
             </button>
           )}
         </div>
-        {DEV_BYPASS_LOCKS && !passed && isUnlockTest && (
-          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 border border-rose-200">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
-        )}
       </div>
     );
   }
@@ -751,7 +733,6 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
           )}
         </div>
         
-        {/* Play Hint Button for Phonetic matching OR Audio matching */}
         {(!isVocabMatch) && (
           <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className={`inline-flex items-center justify-center gap-2 border px-5 py-2 font-bold transition-colors shrink-0 ${question.isAudioType ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
              {playingItem === question.answer.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} 
@@ -776,7 +757,7 @@ function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep,
               onClick={() => { setPicked(c.tib); if (c.tib === question.answer.tib) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); } }}
               className={`py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
             >
-              <span className="font-serif text-[3rem] leading-none">{c.tib}</span>
+              <span className="font-serif text-[3rem] leading-none tibetan">{c.tib}</span>
             </button>
           );
         })}
@@ -823,7 +804,7 @@ function Flashcards({ speak, playingItem }: any) {
         {!flipped ? (
           <div className="flex flex-col items-center gap-4">
             {mode === "nouns" && <span className="text-6xl">{card.emoji}</span>}
-            <div className="text-[6rem] md:text-[8rem] font-serif text-stone-900 group-hover:scale-105 transition-transform leading-none">{front}</div>
+            <div className="text-[6rem] md:text-[8rem] font-serif text-stone-900 group-hover:scale-105 transition-transform leading-none tibetan">{front}</div>
           </div>
         ) : (
           <div className="text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200 p-6">
@@ -876,7 +857,7 @@ function ListenSelect({ speak, playingItem, playErrorBeep }: any) {
           const isCorrect = answer.translit === c.translit;
           return (
             <button key={c.tib + c.translit} onClick={() => { if (!picked) { setPicked(c.translit); if (isCorrect) speak(c.tib); else playErrorBeep(); } }} disabled={picked !== null} className={`relative py-8 px-4 flex flex-col items-center justify-center border transition-all ${isSelected && isCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-700" : isSelected && !isCorrect ? "border-rose-500 bg-rose-50 text-rose-700" : picked && isCorrect ? "border-emerald-300 border-dashed bg-emerald-50/50 text-emerald-600" : picked ? "border-stone-100 opacity-50 bg-stone-50 cursor-default" : "border-stone-200 bg-white hover:bg-stone-50 hover:border-amber-300"}`}>
-              <span className="font-serif text-[4rem] md:text-[5rem] leading-none">{c.tib}</span>
+              <span className="font-serif text-[4rem] md:text-[5rem] leading-none tibetan">{c.tib}</span>
               {picked && <span className="absolute bottom-4 text-[10px] font-bold uppercase tracking-widest">{c.translit}</span>}
               {isSelected && isCorrect && <CheckCircle2 size={20} className="absolute top-3 right-3 text-emerald-500 animate-in zoom-in" />}
               {isSelected && !isCorrect && <XCircle size={20} className="absolute top-3 right-3 text-rose-500 animate-in zoom-in" />}
@@ -911,7 +892,7 @@ function MatchExercise({ speak, playingItem, playErrorBeep }: any) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
         {questions.map((q, idx) => (
           <div key={idx} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border border-stone-200 gap-4 sm:gap-2">
-            <div className="text-4xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left">{q.target.tib}</div>
+            <div className="text-4xl font-serif text-stone-900 sm:ml-4 text-center sm:text-left tibetan">{q.target.tib}</div>
             <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto sm:mr-2">
               {q.options.map(opt => {
                 const isSelected = matchAnswers[q.target.tib] === opt.translit;
@@ -970,7 +951,7 @@ function MemoryReview({ speak, playingItem }: any) {
           <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
         </div>
         <div className="bg-white border border-stone-200 p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] relative overflow-hidden">
-          <div className="text-[7rem] md:text-[9rem] font-serif text-stone-900 mb-8 leading-none text-center">{deck[0].tib}</div>
+          <div className="text-[7rem] md:text-[9rem] font-serif text-stone-900 mb-8 leading-none text-center tibetan">{deck[0].tib}</div>
           <button onClick={() => speak(deck[0].tib)} disabled={playingItem !== null} className="flex items-center gap-2 px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold transition-colors text-sm border border-stone-200">
             {playingItem === deck[0].tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Check Sound
           </button>
@@ -989,14 +970,60 @@ function MemoryReview({ speak, playingItem }: any) {
   );
 }
 
-function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
+function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
+  const { c, rect } = data;
   const tone = TONE_META[c.tone as Tone];
   const gender = GENDER_META[c.gender as Gender];
   
-  // --- DRAG LOGIC ---
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: -9999, y: -9999 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  
+  const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+  useIsoLayoutEffect(() => {
+    if (!rect || !panelRef.current) return;
+    
+    // Panel sizing (falling back to estimations if paint cycle isn't done)
+    const panelRect = panelRef.current.getBoundingClientRect();
+    const panelWidth = panelRect.width || 384; 
+    const panelHeight = panelRect.height || 400; 
+    const margin = 16;
+    
+    // 1. Try to spawn to the immediate right of the clicked item
+    let startX = rect.right + margin;
+    let startY = rect.top;
+
+    // 2. Fallback to left if there's an overflow
+    if (startX + panelWidth > window.innerWidth) {
+      startX = rect.left - panelWidth - margin;
+    }
+
+    // 3. If left also overflows (e.g. mobile), center it horizontally 
+    if (startX < margin) {
+      startX = (window.innerWidth - panelWidth) / 2;
+      if (startX < margin) startX = margin; 
+
+      // Try placing above
+      startY = rect.top - panelHeight - margin;
+      
+      // Try placing below if above overflows
+      if (startY < margin) {
+        startY = rect.bottom + margin;
+      }
+    }
+
+    // 4. Vertical clamping to strictly keep panel on-screen
+    if (startY + panelHeight > window.innerHeight) {
+      startY = window.innerHeight - panelHeight - margin;
+    }
+    if (startY < margin) {
+      startY = margin;
+    }
+
+    setPosition({ x: startX, y: startY });
+  }, [rect]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     setIsDragging(true);
@@ -1016,13 +1043,17 @@ function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
     setIsDragging(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
-  // ------------------
   
   return (
-    <div className="fixed bottom-[80px] sm:bottom-24 left-2 right-2 sm:left-auto sm:right-6 z-50 pointer-events-none flex flex-col justify-end sm:w-[24rem]">
+    <div className="fixed inset-0 z-50 pointer-events-none">
       <div 
-        className="bg-[#fdfbf7] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[#e8e4d9] rounded-xl sm:rounded-2xl pointer-events-auto flex flex-col animate-in slide-in-from-bottom-8 sm:slide-in-from-right-8 duration-300 max-h-[50vh] sm:max-h-[70vh] overflow-hidden"
-        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
+        ref={panelRef}
+        className="absolute pointer-events-auto flex flex-col sm:w-[24rem] w-[calc(100%-2rem)] max-h-[70vh] bg-[#fdfbf7] shadow-2xl border border-[#e8e4d9] rounded-xl sm:rounded-2xl overflow-hidden"
+        style={{ 
+          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+          opacity: position.x === -9999 ? 0 : 1, // Stay completely hidden until layout calculates safely
+          transition: isDragging ? 'none' : 'opacity 0.2s ease-in-out'
+        }}
       >
         {/* DRAGGABLE HEADER */}
         <div 
@@ -1045,7 +1076,7 @@ function DetailPanel({ c, onClose, onSpeak, playingItem }: any) {
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
           <div className="flex items-center gap-5 mb-6">
-            <div className="text-[5rem] sm:text-[6rem] font-serif text-stone-900 leading-none">{c.tib}</div>
+            <div className="text-[5rem] sm:text-[6rem] font-serif text-stone-900 leading-none tibetan">{c.tib}</div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <div className="text-xl font-serif italic text-stone-800">{c.translit}</div>
