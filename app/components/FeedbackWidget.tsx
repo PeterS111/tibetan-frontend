@@ -110,9 +110,9 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      {/* DRAGGABLE FLOATING BUTTON */}
+      {/* DRAGGABLE FLOATING BUTTON - NOW Positioned at TOP-RIGHT (top-24 to avoid the header) */}
       <div 
-        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[60] touch-none cursor-move flex flex-col items-center group/draggable"
+        className="fixed top-24 right-6 sm:top-28 sm:right-8 z-[60] touch-none cursor-move flex flex-col items-center group/draggable"
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
