@@ -17,17 +17,13 @@ export default function FeedbackWidget() {
   // 1. Grab isLoaded and isSignedIn from Clerk
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
-  // --- DRAG LOGIC FOR THE FLOATING BUTTON ---
+  // --- DRAG LOGIC (Now assigned ONLY to the drag handle) ---
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  
-  // We use refs instead of state for drag tracking so the click event can read the exact value instantly without waiting for a re-render.
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
   const isDraggingRef = useRef(false);
-  const hasDraggedRef = useRef(false); 
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     isDraggingRef.current = true;
-    hasDraggedRef.current = false; // Reset on new click
     dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -37,11 +33,6 @@ export default function FeedbackWidget() {
     
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    
-    // Threshold: If moved more than 5 pixels, register it as a real drag, not a jittery click.
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      hasDraggedRef.current = true;
-    }
     
     setPosition({
       x: dragRef.current.initX + dx,
@@ -53,7 +44,7 @@ export default function FeedbackWidget() {
     isDraggingRef.current = false;
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
-  // ------------------------------------------
+  // ----------------------------------------------------------
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
@@ -111,25 +102,14 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      {/* DRAGGABLE FLOATING BUTTON - TOP RIGHT */}
+      {/* FLOATING WIDGET CONTAINER */}
       <div 
-        className="fixed top-24 right-6 sm:top-28 sm:right-8 z-[60] touch-none cursor-move flex flex-col items-center group/draggable"
+        className="fixed top-24 right-6 sm:top-28 sm:right-8 z-[60] flex flex-col items-end gap-2"
         style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
       >
+        {/* PURE CLICK BUTTON (No drag logic here!) */}
         <button
-          onClick={(e) => {
-            // Prevent opening the modal if the user actually dragged the button
-            if (hasDraggedRef.current) {
-              e.preventDefault();
-              e.stopPropagation();
-              return;
-            }
-            setIsOpen(true);
-          }}
+          onClick={() => setIsOpen(true)}
           className="group flex items-center justify-center gap-3 bg-amber-600/95 backdrop-blur-md text-white shadow-lg px-4 sm:px-6 py-3 rounded-full hover:bg-amber-700 hover:shadow-xl transition-all duration-300 border border-amber-500 select-none"
         >
           <MessageSquarePlus size={22} className="text-amber-100 group-hover:scale-110 transition-transform" />
@@ -139,9 +119,19 @@ export default function FeedbackWidget() {
             </span>
           </div>
         </button>
-        {/* Subtle drag indicator on hover */}
-        <div className="opacity-0 group-hover/draggable:opacity-100 transition-opacity mt-1 flex items-center gap-1 text-[10px] text-stone-400 font-bold uppercase tracking-widest bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-stone-200 pointer-events-none shadow-sm">
-          <GripHorizontal size={10} /> Drag to move
+        
+        {/* DEDICATED DRAG HANDLE */}
+        <div 
+          className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-sm cursor-move touch-none hover:bg-stone-50 transition-colors mr-2 sm:mr-4"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          <GripHorizontal size={14} className="text-stone-400" />
+          <span className="text-[10px] text-stone-500 font-bold uppercase tracking-widest select-none">
+            Drag
+          </span>
         </div>
       </div>
 
