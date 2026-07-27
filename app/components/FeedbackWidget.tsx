@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { MessageSquarePlus, X, Loader2, CheckCircle2, Heart } from "lucide-react";
+import { MessageSquarePlus, X, Loader2, CheckCircle2, Heart, GripHorizontal } from "lucide-react";
 
 export default function FeedbackWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +16,42 @@ export default function FeedbackWidget() {
   
   // 1. Grab isLoaded and isSignedIn from Clerk
   const { getToken, isLoaded, isSignedIn } = useAuth();
+
+  // --- DRAG LOGIC FOR THE FLOATING BUTTON ---
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasDragged, setHasDragged] = useState(false); // Distinguish between a click and a drag
+  const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setHasDragged(false); // Reset drag detection on new touch/click
+    dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging || !dragRef.current) return;
+    
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    
+    // If moved more than 3 pixels, register it as a drag rather than a click
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      setHasDragged(true);
+    }
+    
+    setPosition({
+      x: dragRef.current.initX + dx,
+      y: dragRef.current.initY + dy
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+  // ------------------------------------------
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
@@ -74,23 +110,41 @@ export default function FeedbackWidget() {
 
   return (
     <>
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-lg flex justify-center pointer-events-none">
+      {/* DRAGGABLE FLOATING BUTTON */}
+      <div 
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[60] touch-none cursor-move flex flex-col items-center group/draggable"
+        style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
         <button
-          onClick={() => setIsOpen(true)}
-          className="pointer-events-auto group flex items-center justify-center gap-3 bg-amber-600/95 backdrop-blur-md text-white shadow-lg px-6 py-3 rounded-full hover:bg-amber-700 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-amber-500"
+          onClick={(e) => {
+            // Prevent opening the modal if the user was just dragging the button
+            if (hasDragged) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            setIsOpen(true);
+          }}
+          className="group flex items-center justify-center gap-3 bg-amber-600/95 backdrop-blur-md text-white shadow-lg px-4 sm:px-6 py-3 rounded-full hover:bg-amber-700 hover:shadow-xl transition-all duration-300 border border-amber-500 select-none"
         >
-          <MessageSquarePlus size={24} className="text-amber-100 group-hover:scale-110 transition-transform hidden sm:block" />
-          <div className="flex flex-col text-center sm:text-left">
-            <span className="font-bold text-base md:text-lg leading-tight tracking-wide">
-              Please leave feedback
-            </span>
-            <span className="text-xs md:text-sm text-amber-100 font-medium">
-              Help us improve the website!
+          <MessageSquarePlus size={22} className="text-amber-100 group-hover:scale-110 transition-transform" />
+          <div className="flex flex-col text-left hidden sm:flex">
+            <span className="font-bold text-sm md:text-base leading-tight tracking-wide">
+              Leave Feedback
             </span>
           </div>
         </button>
+        {/* Subtle drag indicator on hover */}
+        <div className="opacity-0 group-hover/draggable:opacity-100 transition-opacity mt-1 flex items-center gap-1 text-[10px] text-stone-400 font-bold uppercase tracking-widest bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-stone-200 pointer-events-none">
+          <GripHorizontal size={10} /> Drag to move
+        </div>
       </div>
 
+      {/* FEEDBACK MODAL OVERLAY */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
