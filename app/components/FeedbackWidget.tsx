@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { MessageSquarePlus, X, Loader2, CheckCircle2, Heart, GripHorizontal } from "lucide-react";
+import { MessageSquarePlus, X, Loader2, CheckCircle2, Heart, Move } from "lucide-react";
 
 export default function FeedbackWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -120,18 +120,16 @@ export default function FeedbackWidget() {
           </div>
         </button>
         
-        {/* DEDICATED DRAG HANDLE */}
+        {/* DEDICATED DRAG HANDLE - LARGER CROSS ARROWS */}
         <div 
-          className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-stone-200 shadow-sm cursor-move touch-none hover:bg-stone-50 transition-colors mr-2 sm:mr-4"
+          className="flex items-center justify-center bg-white/90 backdrop-blur-sm p-2.5 rounded-full border border-stone-200 shadow-sm cursor-move touch-none hover:bg-stone-100 transition-colors mr-4 sm:mr-8"
+          title="Move widget"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
-          <GripHorizontal size={14} className="text-stone-400" />
-          <span className="text-[10px] text-stone-500 font-bold uppercase tracking-widest select-none">
-            Drag
-          </span>
+          <Move size={20} className="text-stone-500" />
         </div>
       </div>
 
