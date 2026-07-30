@@ -146,8 +146,8 @@ export default function SuperscriptsLesson() {
           
           {/* Step 01 */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card variant="sharp" className="p-6 bg-surface">
+<div className="grid gap-4 md:grid-cols-3">
+              <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                   <Layers size={14} /> Stacking
                 </div>
@@ -155,7 +155,7 @@ export default function SuperscriptsLesson() {
                   A superscript is a small consonant written <span className="font-bold text-ink">on top of</span> a root letter. Only three consonants — <span className="font-serif text-lg">ར ལ ས</span> — are permitted.
                 </p>
               </Card>
-              <Card variant="sharp" className="p-6 bg-surface">
+              <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                   <Volume2 size={14} /> Silence
                 </div>
@@ -163,7 +163,7 @@ export default function SuperscriptsLesson() {
                   The superscript itself is <span className="font-bold text-ink">not pronounced</span>. Only the root letter is spoken.
                 </p>
               </Card>
-              <Card variant="sharp" className="p-6 bg-surface">
+              <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                   <ArrowUp size={14} /> Tone shift
                 </div>
