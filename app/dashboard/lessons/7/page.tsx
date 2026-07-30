@@ -225,7 +225,7 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: any) {
   });
 
   const total = questions.length;
-  const q = questions[step];
+  const q = questions[step] as Question;
 
   if (q.kind === "order" && orderState.length === 0) setOrderState([...q.steps].sort(() => Math.random() - 0.5));
 
