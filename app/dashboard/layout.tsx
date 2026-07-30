@@ -1,3 +1,4 @@
+// app/dashboard/layout.tsx
 "use client";
 
 import Link from "next/link";
@@ -8,8 +9,9 @@ import {
   LayoutDashboard, BookOpen, MessageSquare, 
   CheckSquare, FileText, TrendingUp, Settings, Flame, Menu, X, Calendar, LogOut 
 } from "lucide-react";
-// Add the new import here:
 
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -26,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (isLoaded && user) {
         try {
           const token = await getToken();
-          if (!token) return; // FIX: Don't fire if privacy blockers are delaying the token
+          if (!token) return; 
           
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -35,7 +37,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           if (isMounted) {
             if (data.profile) setProfile(data.profile);
-            // FIX: Only update modules if the array actually exists. Do NOT wipe with || []
             if (data.modules && Array.isArray(data.modules)) {
               setModules(data.modules);
             }
@@ -47,12 +48,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => { isMounted = false; };
   }, [user, isLoaded, getToken]);
 
-// Inside app/dashboard/layout.tsx
-// (Replace the navItems array at approx line 47)
-
-const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "My Lessons", href: "/dashboard/lessons", icon: BookOpen },
+  const navItems = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "My Lessons", href: "/dashboard/lessons", icon: BookOpen },
     { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare },
     { name: "Exercises", href: "/dashboard/exercises", icon: CheckSquare },
     { name: "Tutors", href: "/dashboard/tutors", icon: Calendar },
@@ -69,48 +67,55 @@ const navItems = [
   const streak = profile?.streak || 0;
 
   return (
-    <div className="min-h-screen flex bg-[#fdfbf7] text-stone-800 font-sans">
+    <div className="min-h-screen flex bg-paper text-ink font-sans">
       
       {/* DESKTOP SIDEBAR */}
-      <aside className="w-64 border-r border-[#e8e4d9] bg-[#fdfbf7] hidden md:flex flex-col shrink-0">
+      <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
         <div className="p-6 flex items-center gap-3">
           <div>
-            <h1 className="font-bold text-stone-800 leading-tight text-lg">Learn Tibetan UK</h1>
+            <h1 className="font-bold text-ink leading-tight text-lg">Learn Tibetan UK</h1>
           </div>
         </div>
 
         <div className="px-4 py-2 flex-1 overflow-y-auto custom-scrollbar">
-          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">Beginner · Level I</div>
+          <div className="text-eyebrow mb-4 px-3">Beginner · Level I</div>
           <nav className="space-y-1 mb-8">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link key={item.name} href={item.href} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${isActive ? "bg-amber-50 text-amber-800 relative" : "text-stone-600 hover:bg-stone-100"}`}>
-                  <item.icon size={18} className={isActive ? "text-amber-600" : "text-stone-400"} />
+                <Link 
+                  key={item.name} 
+                  href={item.href} 
+                  className={`flex items-center gap-3 px-3 py-2.5 font-medium text-sm transition-colors ${isActive ? "bg-brand-light text-brand-dark border-l-2 border-brand" : "text-ink-light hover:bg-surface-muted border-l-2 border-transparent"}`}
+                >
+                  <item.icon size={18} className={isActive ? "text-brand-dark" : "text-ink-muted"} />
                   {item.name}
-                  {isActive && <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-amber-500"></div>}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">More</div>
+          <div className="text-eyebrow mb-4 px-3">More</div>
           <nav className="space-y-1">
             {moreItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link key={item.name} href={item.href} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${isActive ? "bg-amber-50 text-amber-800 relative" : "text-stone-600 hover:bg-stone-100"}`}>
-                  <item.icon size={18} className={isActive ? "text-amber-600" : "text-stone-400"} />
+                <Link 
+                  key={item.name} 
+                  href={item.href} 
+                  className={`flex items-center gap-3 px-3 py-2.5 font-medium text-sm transition-colors ${isActive ? "bg-brand-light text-brand-dark border-l-2 border-brand" : "text-ink-light hover:bg-surface-muted border-l-2 border-transparent"}`}
+                >
+                  <item.icon size={18} className={isActive ? "text-brand-dark" : "text-ink-muted"} />
                   {item.name}
                 </Link>
               );
             })}
 
             {/* EXPLICIT SIGN OUT BUTTON - DESKTOP */}
-            <div className="pt-2 mt-2 border-t border-stone-200/60">
+            <div className="pt-2 mt-2 border-t border-border-subtle">
               <SignOutButton>
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-stone-600 hover:bg-rose-50 hover:text-rose-700 transition-colors group text-left">
-                  <LogOut size={18} className="text-stone-400 group-hover:text-rose-500 transition-colors" />
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 font-medium text-sm text-ink-light hover:bg-destructive/10 hover:text-destructive transition-colors border-l-2 border-transparent group text-left">
+                  <LogOut size={18} className="text-ink-muted group-hover:text-destructive transition-colors" />
                   Sign Out
                 </button>
               </SignOutButton>
@@ -118,23 +123,23 @@ const navItems = [
           </nav>
         </div>
 
-        <div className="p-6 border-t border-[#e8e4d9]">
-          <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-3 uppercase">Tier Progress</div>
+        <div className="p-6 border-t border-border-subtle">
+          <div className="text-eyebrow mb-3">Tier Progress</div>
           <div className="flex items-end gap-2 mb-2">
-            <span className="text-2xl font-bold text-stone-800 leading-none">{progressPercent}<span className="text-base">%</span></span>
-            <span className="text-xs text-stone-500 font-medium mb-0.5">of {modules.length || 10} units</span>
+            <span className="text-2xl font-bold text-ink leading-none">{progressPercent}<span className="text-base">%</span></span>
+            <span className="text-xs text-ink-light font-medium mb-0.5">of {modules.length || 10} units</span>
           </div>
-          <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-amber-500 h-full rounded-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
+          <div className="w-full bg-border-subtle h-1.5 overflow-hidden">
+            <div className="bg-brand h-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
           </div>
         </div>
 
-        <div className="p-4 m-4 mt-0 bg-white border border-[#e8e4d9] rounded-2xl flex items-center gap-3 shadow-sm">
+        <div className="p-4 m-4 mt-0 bg-surface border border-border-subtle flex items-center gap-3 shadow-sm">
           <UserButton />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-stone-800 truncate">{user?.firstName || "Student"}</p>
-            <div className="flex items-center gap-1 text-xs text-amber-600 font-bold">
-              <Flame size={12} className={streak > 0 ? "fill-amber-500" : "text-stone-300"} /> {streak} Day Streak
+            <p className="text-sm font-bold text-ink truncate">{user?.firstName || "Student"}</p>
+            <div className="flex items-center gap-1 text-xs text-brand-dark font-bold">
+              <Flame size={12} className={streak > 0 ? "fill-brand" : "text-ink-muted"} /> {streak} Day Streak
             </div>
           </div>
         </div>
@@ -143,41 +148,40 @@ const navItems = [
       {/* MOBILE MENU OVERLAY */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="relative w-64 bg-[#fdfbf7] h-full shadow-2xl flex flex-col animate-in slide-in-from-left-8 duration-300 border-r border-[#e8e4d9]">
-            <div className="p-4 flex items-center justify-between border-b border-[#e8e4d9]">
-              <div className="font-bold text-stone-800 text-lg">Learn Tibetan UK</div>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-500 hover:bg-stone-200 rounded-lg transition-colors"><X size={20}/></button>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="relative w-64 bg-paper h-full shadow-2xl flex flex-col animate-in slide-in-from-left-8 duration-300 border-r border-border-subtle">
+            <div className="p-4 flex items-center justify-between border-b border-border-subtle">
+              <div className="font-bold text-ink text-lg">Learn Tibetan UK</div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-ink-light hover:bg-surface-muted transition-colors"><X size={20}/></button>
             </div>
             <div className="px-4 py-6 flex-1 overflow-y-auto">
               <nav className="space-y-1 mb-8">
                 {navItems.map((item) => {
                   const isActive = pathname === item.href;
                   return (
-                    <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${isActive ? "bg-amber-50 text-amber-800" : "text-stone-600 hover:bg-stone-100"}`}>
-                      <item.icon size={18} className={isActive ? "text-amber-600" : "text-stone-400"} />
+                    <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 font-medium text-sm transition-colors ${isActive ? "bg-brand-light text-brand-dark border-l-2 border-brand" : "text-ink-light hover:bg-surface-muted border-l-2 border-transparent"}`}>
+                      <item.icon size={18} className={isActive ? "text-brand-dark" : "text-ink-muted"} />
                       {item.name}
                     </Link>
                   );
                 })}
               </nav>
-              <div className="text-[11px] font-bold text-stone-400 tracking-[0.15em] mb-4 px-3 uppercase">More</div>
+              <div className="text-eyebrow mb-4 px-3">More</div>
               <nav className="space-y-1 mb-8">
                 {moreItems.map((item) => {
                   const isActive = pathname === item.href;
                   return (
-                    <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${isActive ? "bg-amber-50 text-amber-800" : "text-stone-600 hover:bg-stone-100"}`}>
-                      <item.icon size={18} className={isActive ? "text-amber-600" : "text-stone-400"} />
+                    <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={`flex items-center gap-3 px-3 py-2.5 font-medium text-sm transition-colors ${isActive ? "bg-brand-light text-brand-dark border-l-2 border-brand" : "text-ink-light hover:bg-surface-muted border-l-2 border-transparent"}`}>
+                      <item.icon size={18} className={isActive ? "text-brand-dark" : "text-ink-muted"} />
                       {item.name}
                     </Link>
                   );
                 })}
 
-                {/* EXPLICIT SIGN OUT BUTTON - MOBILE MENU */}
-                <div className="pt-2 mt-2 border-t border-stone-200/60">
+                <div className="pt-2 mt-2 border-t border-border-subtle">
                   <SignOutButton>
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-stone-600 hover:bg-rose-50 hover:text-rose-700 transition-colors group text-left">
-                      <LogOut size={18} className="text-stone-400 group-hover:text-rose-500 transition-colors" />
+                    <button className="w-full flex items-center gap-3 px-3 py-2.5 font-medium text-sm text-ink-light hover:bg-destructive/10 hover:text-destructive transition-colors border-l-2 border-transparent group text-left">
+                      <LogOut size={18} className="text-ink-muted group-hover:text-destructive transition-colors" />
                       Sign Out
                     </button>
                   </SignOutButton>
@@ -190,22 +194,20 @@ const navItems = [
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
-        <header className="h-16 border-b border-[#e8e4d9] bg-[#fdfbf7]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shrink-0">
-          <div className="flex items-center gap-3 text-sm font-medium text-stone-500">
-            {/* Mobile Hamburger Button */}
-            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-1.5 -ml-1.5 text-stone-600 hover:bg-stone-200 rounded-md transition-colors">
+        <header className="h-16 border-b border-border-subtle bg-paper/90 backdrop-blur-md flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shrink-0">
+          <div className="flex items-center gap-3 text-sm font-medium text-ink-light">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-1.5 -ml-1.5 text-ink-light hover:bg-surface-muted transition-colors">
               <Menu size={20} />
             </button>
-            <span className="uppercase tracking-widest text-[11px] font-bold text-amber-600 hidden sm:inline-block">Level I</span>
-            <span className="text-stone-300 hidden sm:inline-block">/</span>
-            <span className="text-stone-800 font-serif">Beginner Hub</span>
+            <span className="text-eyebrow text-brand-dark hidden sm:inline-block">Level I</span>
+            <span className="text-border-subtle hidden sm:inline-block">/</span>
+            <span className="text-ink font-serif">Beginner Hub</span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-widest">
-              Weekly Goal <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm"></div>
+            <div className="hidden sm:flex items-center gap-2 text-eyebrow">
+              Weekly Goal <div className="w-4 h-4 bg-brand border border-border-strong shadow-sm"></div>
             </div>
             
-            {/* MOBILE ONLY: Always visible profile & signout dropdown in the header */}
             <div className="md:hidden flex items-center mt-1">
               <UserButton />
             </div>
