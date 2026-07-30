@@ -158,7 +158,7 @@ export default function FinalAssessmentLesson() {
                 questions={questions}
                 playAudio={playAudio}
                 playingItem={playingItem}
-                onFinish={(r) => {
+                onFinish={(r: { score: number; wrongByConcept: Record<Concept, number> }) => {
                   submitResult(r.score);
                   setLastResult(r);
                   setInProgress(false);
