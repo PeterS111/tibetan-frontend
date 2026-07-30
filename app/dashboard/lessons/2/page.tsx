@@ -6,7 +6,7 @@ import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import Link from "next/link";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
-  Info, Moon, Sun, Volume2, Loader2, X 
+  Info, Moon, Sun, Volume2, Loader2, X, CheckCircle2, Shuffle
 } from "lucide-react";
 
 // --- Custom Hooks ---
