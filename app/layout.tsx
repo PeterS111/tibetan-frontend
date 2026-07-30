@@ -1,23 +1,30 @@
+// app/layout.tsx
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Lora, Geist, Geist_Mono } from "next/font/google";
+import { Lora, Geist, Geist_Mono, Jomolhari } from "next/font/google";
 import "./globals.css";
 
 import FeedbackWidget from "./components/FeedbackWidget";
 
 const lora = Lora({
-  variable: "--font-lora",
+  variable: "--font-serif",
   subsets: ["latin"],
 });
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
+});
+
+const jomolhari = Jomolhari({
+  weight: "400",
+  variable: "--font-tibetan",
+  subsets: ["tibetan"],
 });
 
 export const metadata: Metadata = {
@@ -33,12 +40,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${lora.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${lora.variable} ${geistSans.variable} ${geistMono.variable} ${jomolhari.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-serif bg-stone-50 text-stone-900">
+      <body className="min-h-full flex flex-col font-sans bg-paper text-ink selection:bg-brand-light">
         <ClerkProvider>
           {children}
-          {/* We removed the <SignedIn> wrapper here */}
           <FeedbackWidget />
         </ClerkProvider>
       </body>
