@@ -9,6 +9,7 @@ import {
   Layers, CheckCircle2, BookOpen, Info, PenLine, Moon, Sun, Play, 
   Volume2, Loader2, X, ArrowRight, XCircle, Trophy, Lock
 } from "lucide-react";
+import QuizModule from "@/app/components/QuizModule";
 
 /* ------------------------------------------------------------------ */
 /* Data & Types                                                       */
@@ -529,7 +530,7 @@ export default function ConsonantsLesson() {
           </StepCard>
 
           <StepCard index={7} total={total} step={STEPS[7]} status={statusOf(7)} isExpanded={isExpanded(7)} onToggle={() => toggleStep(7)} onPrev={() => goPrev(7)} onContinue={() => goContinue(7)} isFirst={false} isLast currentStep={currentStep}>
-            <QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: The Four Vowels." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} />
+            <QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: The Four Vowels." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={10} isUnlockTest={true} nextLessonPath="/dashboard/lessons/2" />
           </StepCard>
         </div>
       </div>
@@ -634,148 +635,7 @@ function PracticeArea({ speak, playingItem, playErrorBeep }: any) {
   );
 }
 
-function QuizModule({ title, intro, data, playAudio, playingItem, playErrorBeep, questionCount, isUnlockTest, isVocabMatch }: any) {
-  const [hasStarted, setHasStarted] = useState(!isUnlockTest);
-  const [step, setStep] = useState(0);
-  const [score, setScore] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-  
-  const question = useMemo(() => {
-    const isAudioType = Math.random() > 0.5;
-    const answer = data[Math.floor(Math.random() * data.length)];
-    const wrongs = data.filter((x: any) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
-    return { isAudioType, answer, choices };
-  }, [step, data]);
 
-  if (!hasStarted) {
-    return (
-      <div className="border border-stone-200 bg-white p-6 md:p-8">
-        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
-          <Trophy className="size-3.5" /> Final Test
-        </div>
-        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next step?</h3>
-        <p className="text-sm text-stone-600 mb-6">
-          {questionCount} questions drawn from everything you covered in this lesson. Score <span className="font-bold">80%</span> or higher to pass. You can retake the test as many times as you like — your best score is saved.
-        </p>
-        <button 
-          onClick={() => setHasStarted(true)} 
-          className="bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600"
-        >
-          Start the test <ChevronRight size={16} />
-        </button>
-        
-        <div className="border border-stone-200 p-5 bg-[#fafaf9]">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3">
-             <Lock size={14} /> Progression
-          </div>
-          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next step in the syllabus. Your progress is saved locally in your browser.</p>
-          <ul className="space-y-2 text-sm text-stone-600">
-             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Mix of recognition and pronunciation prompts</li>
-             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Immediate feedback after each question</li>
-             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Unlimited retakes — best score is kept</li>
-          </ul>
-        </div>
-      </div>
-    );
-  }
-
-  if (step >= questionCount) {
-    const passed = (score / questionCount) >= 0.8 || DEV_BYPASS_LOCKS;
-    return (
-      <div className={`flex flex-col items-center justify-center text-center p-8 border ${isUnlockTest ? 'bg-white border-stone-200' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
-        <div className={`w-20 h-20 flex items-center justify-center mb-6 border ${passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
-          {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
-        </div>
-        <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">{passed ? "Test Passed!" : "Keep Practicing"}</h3>
-        <p className="text-stone-600 mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {questionCount}.</p>
-        
-        <div className="flex gap-4">
-          <button onClick={() => { setStep(0); setScore(0); setPicked(null); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2">
-            <Shuffle size={18} /> Retake Test
-          </button>
-          {passed && isUnlockTest && (
-            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors flex items-center gap-2 border border-amber-600">
-              Unlock Next Step <ArrowRight size={18} />
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
-      {!isUnlockTest && (
-        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
-          <Sparkles size={14} /> Checkpoint
-        </div>
-      )}
-      <h3 className="text-xl font-serif text-stone-900 mb-2">{title}</h3>
-      <p className="text-sm text-stone-600 mb-6">{intro}</p>
-
-      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400 border-b border-stone-200 pb-3 mb-6">
-        <span>Question {step + 1} of {questionCount}</span>
-        <span className="text-amber-500">Score {score}</span>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Prompt</div>
-          {isVocabMatch ? (
-             <span className="text-xl text-stone-800">Which word means <span className="font-bold">"{question.answer.en}"</span>?</span>
-          ) : (
-            question.isAudioType ? (
-              <span className="text-xl text-stone-800">Listen and select the matching consonant.</span>
-            ) : (
-              <span className="text-xl text-stone-800">Which letter reads <span className="font-mono bg-stone-100 px-2 py-0.5 border border-stone-200">[{question.answer.pron}]</span>?</span>
-            )
-          )}
-        </div>
-        
-        {(!isVocabMatch) && (
-          <button onClick={() => playAudio(question.answer.tib)} disabled={playingItem !== null} className={`inline-flex items-center justify-center gap-2 border px-5 py-2 font-bold transition-colors shrink-0 ${question.isAudioType ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
-             {playingItem === question.answer.tib ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} 
-             {question.isAudioType ? "PLAY AUDIO" : "Play Hint"}
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {question.choices.map((c: any) => {
-          const isRight = picked && c.tib === question.answer.tib;
-          const isWrong = picked === c.tib && c.tib !== question.answer.tib;
-          
-          let stateClass = "bg-white border-stone-200 hover:border-amber-400 text-stone-900";
-          if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400";
-          else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400";
-          else if (picked) stateClass = "bg-stone-50 text-stone-300 opacity-60 border-stone-200";
-
-          return (
-            <button
-              key={c.tib + c.translit} disabled={!!picked}
-              onClick={() => { setPicked(c.tib); if (c.tib === question.answer.tib) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); } }}
-              className={`py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
-            >
-              <span className="font-serif text-[3rem] leading-none tibetan">{c.tib}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {picked && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border bg-stone-50 border-stone-200">
-          <span className={`text-sm font-bold ${picked === question.answer.tib ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === question.answer.tib ? "Correct!" : `The correct answer was ${question.answer.tib} (${question.answer.translit}).`}
-          </span>
-          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 px-6 py-2.5 text-sm font-bold text-white hover:bg-stone-800 transition">
-            Next <ArrowRight size={16} />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function Flashcards({ speak, playingItem }: any) {
   const [mode, setMode] = useState<"consonants" | "nouns">("consonants");

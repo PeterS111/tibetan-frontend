@@ -29,6 +29,8 @@ import {
   AlertTriangle
 } from "lucide-react";
 
+import QuizModule from "@/app/components/QuizModule";
+
 /* ------------------------------------------------------------------ */
 /* Data & Types                                                        */
 /* ------------------------------------------------------------------ */
@@ -1308,16 +1310,9 @@ function Repeat(props: any) {
 /* ------------------------------------------------------------------ */
 
 function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
-  const [hasStarted, setHasStarted] = useState(false);
-  const [step, setStep] = useState(0);
-  const [score, setScore] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-
-  // Generate 10 mixed questions (Vocab and Prefix/Suffix examples)
   const questions = useMemo(() => {
     const qs = [];
     
-    // Type 1: Translit -> Tibetan (Vocab) - 4 questions
     const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
     for (const v of vTargets) {
       const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -1326,11 +1321,10 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
         questionText: `What is the Tibetan word for "${v.en}"?`,
         answer: v.tib,
         audioString: v.tib,
-        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `${x.emoji} ${x.tib}`, value: x.tib }))
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji }))
       });
     }
 
-    // Type 2: Tibetan -> Sound (General Examples) - 6 questions
     const cTargets = [...QUIZ].sort(() => 0.5 - Math.random()).slice(0, 6);
     for (const c of cTargets) {
       const wrongs = QUIZ.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -1347,112 +1341,16 @@ function LessonFinalTest({ playAudio, playingItem, playErrorBeep }: any) {
     return qs.sort(() => 0.5 - Math.random());
   }, []);
 
-  const total = questions.length;
-  const currentQ = questions[step];
-
-  if (!hasStarted) {
-    return (
-      <div className="flex flex-col items-center justify-center text-center py-12 px-4 animate-in fade-in">
-        <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-amber-200"><Sparkles size={32} /></div>
-        <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">Ready to unlock the next lesson?</h3>
-        <p className="text-stone-600 mb-8 max-w-md leading-relaxed">
-          10 questions drawn from everything you covered in this lesson. Score <span className="font-bold text-stone-900">80%</span> or higher to pass. You can retake the test as many times as you like.
-        </p>
-        <button onClick={() => setHasStarted(true)} className="px-8 py-3.5 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2">
-          Start the test <ChevronRight size={18} />
-        </button>
-      </div>
-    );
-  }
-
-  if (step >= total) {
-    const passed = score >= 8;
-    return (
-      <div className="flex flex-col items-center justify-center text-center py-12 px-4 animate-in zoom-in-95">
-        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm border ${passed ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-rose-100 text-rose-600 border-rose-200'}`}>
-          {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
-        </div>
-        <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">{passed ? 'Lesson Mastered!' : 'Keep Practicing'}</h3>
-        <p className="text-stone-600 mb-8 font-bold">You scored <span className={`text-xl ${passed ? 'text-emerald-600' : 'text-rose-600'}`}>{score}</span> out of {total}. {passed ? 'You have unlocked the next unit.' : 'You need 8 correct to pass.'}</p>
-        
-        {passed ? (
-          <Link href="/dashboard/lessons/7" className="px-8 py-3.5 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
-            Continue to Unit 07 <ArrowRight size={18} />
-          </Link>
-        ) : (
-          <button onClick={() => { setStep(0); setScore(0); setPicked(null); setHasStarted(false); }} className="px-8 py-3.5 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
-            <Shuffle size={18} /> Retake Test
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  const pick = (val: string) => {
-    if (picked) return;
-    setPicked(val);
-    if (val === currentQ.answer) {
-      setScore(s => s + 1);
-      if (currentQ.audioString) playAudio(currentQ.audioString);
-    } else {
-      playErrorBeep();
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center w-full animate-in fade-in">
-      <div className="w-full max-w-3xl mb-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
-        <span>Question {step + 1} of {total}</span>
-        <span className="text-amber-600">Score {score}</span>
-      </div>
-      
-      <div className="w-full max-w-3xl flex flex-col items-center gap-6 border border-black/10 bg-stone-50 p-10 shadow-sm mb-8">
-        <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">{currentQ.questionText}</span>
-        {currentQ.prominentTibetan && (
-           <span className="font-serif leading-none text-stone-900" style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span>
-        )}
-        {currentQ.audioString && !currentQ.prominentTibetan && (
-          <button onClick={() => playAudio(currentQ.audioString)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-white px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors shadow-sm mt-4">
-            {playingItem === currentQ.audioString ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Hear Sound
-          </button>
-        )}
-      </div>
-
-      <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {currentQ.choices.map((c: any) => {
-          const right = picked && c.value === currentQ.answer;
-          const wrong = picked === c.value && c.value !== currentQ.answer;
-
-          return (
-            <button
-              key={c.value} 
-              disabled={!!picked && c.value !== currentQ.answer}
-              onClick={() => {
-                if (!picked) pick(c.value);
-                else if (c.value === currentQ.answer && currentQ.audioString) playAudio(currentQ.audioString);
-              }}
-              className={`border p-6 text-center transition-all ${
-                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm hover:bg-emerald-100 cursor-pointer" 
-                : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" 
-                : "border-black/10 bg-white hover:border-amber-400 hover:bg-amber-50 hover:shadow-md"
-              }`}
-            >
-              <div className={`text-xl font-bold ${currentQ.type === 'vocab' ? 'font-serif' : 'font-mono'}`}>{c.label}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      {picked && (
-        <div className="w-full max-w-3xl mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 border border-black/10 bg-white shadow-sm">
-          <span className={`text-sm font-bold ${picked === currentQ.answer ? "text-emerald-700" : "text-rose-700"}`}>
-            {picked === currentQ.answer ? 'Correct!' : `Incorrect. The right answer was ${currentQ.choices.find((x:any) => x.value === currentQ.answer)?.label}.`}
-          </span>
-          <button onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-500 px-8 py-3 text-sm font-bold text-stone-900 hover:bg-amber-400 shadow-sm transition-colors">
-            {step + 1 === total ? 'See Results' : 'Next Question'} <ChevronRight size={16} />
-          </button>
-        </div>
-      )}
-    </div>
+    <QuizModule
+      title="Final Step Test"
+      intro="Score 80% or higher to unlock the next step: Capstone."
+      questions={questions}
+      playAudio={playAudio}
+      playingItem={playingItem}
+      playErrorBeep={playErrorBeep}
+      isUnlockTest={true}
+      nextLessonPath="/dashboard/lessons/7"
+    />
   );
 }
