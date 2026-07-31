@@ -96,5 +96,5 @@ export const STEPS = [
   { id: "gender", eyebrow: "Step 04", title: "Traditional gender classification", description: "The five effort-based groupings of the alphabet." },
   { id: "vocab", eyebrow: "Step 05", title: "Nouns formed from the 30 consonants", description: "Read and hear real words built from the root letters." },
   { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and stroke tracing." },
-  { id: "complete", eyebrow: "Final test", title: "Step test — unlock the next step", description: "Score 80% or higher on the final test to unlock The Four Vowels." },
+  { id: "complete", eyebrow: "Final test", title: "Step complete — unlock the next step", description: "Score 80% or higher on the final test to unlock The Four Vowels." },
 ];

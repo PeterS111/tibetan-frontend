@@ -1,5 +1,3 @@
-// app/dashboard/lessons/5/page.tsx
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -175,7 +173,7 @@ export default function PrefixesLesson() {
                 ].map((s) => (
                   <div key={s.role} className={`relative p-5 text-center flex flex-col items-center justify-center ${s.highlight ? "bg-brand-light" : "bg-surface"}`}>
                     {s.highlight && <span className="absolute top-2 right-2 bg-amber-200 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-brand-dark">This lesson</span>}
-                    <div className="grid size-14 place-items-center font-serif text-[2.5rem] leading-none mb-3" style={{ color: s.accent }}>{s.letter}</div>
+                    <div className="grid size-14 place-items-center font-serif text-[2.5rem] leading-normal mb-3" style={{ color: s.accent }}>{s.letter}</div>
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: s.accent }}>{s.role}</div>
                     <div className="mt-1 font-serif text-xs italic text-ink-muted">{s.tib}</div>
                     <div className="mt-1 text-[10px] text-ink-light font-bold uppercase tracking-widest">{s.pos}</div>
@@ -285,7 +283,7 @@ export default function PrefixesLesson() {
                 <div className="mb-4 inline-flex items-center gap-2 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-700 self-start">
                   <AlertTriangle size={14} /> ད + བ → [wa]
                 </div>
-                <div className="font-tibetan text-[2.5rem] leading-none text-ink mb-4">དབུ་ · དབྱེ་ · དབྲ་</div>
+                <div className="font-tibetan text-[2.5rem] leading-normal pb-2 text-ink mb-4">དབུ་ · དབྱེ་ · དབྲ་</div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">
                   When ད precedes root བ, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [ra].
                 </p>
@@ -295,7 +293,7 @@ export default function PrefixesLesson() {
                 <div className="mb-4 inline-flex items-center gap-2 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-700 self-start">
                   <AlertTriangle size={14} /> འ + བ → [ba]
                 </div>
-                <div className="font-tibetan text-[2.5rem] leading-none text-ink mb-4">འབུ་ · འབྲི་ · འབྲུ་</div>
+                <div className="font-tibetan text-[2.5rem] leading-normal pb-2 text-ink mb-4">འབུ་ · འབྲི་ · འབྲུ་</div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">
                   With prefix འ the root བ retains its [b-] onset in a low nasal tone: [ng’bu], [ng’dri].
                 </p>
@@ -305,7 +303,7 @@ export default function PrefixesLesson() {
                 <div className="mb-4 inline-flex items-center gap-2 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-700 self-start">
                   <AlertTriangle size={14} /> ག + ཡ → [yo]
                 </div>
-                <div className="font-tibetan text-[2.5rem] leading-none text-ink mb-4">གཡོ་ · གཡུ་ · གཡི་</div>
+                <div className="font-tibetan text-[2.5rem] leading-normal pb-2 text-ink mb-4">གཡོ་ · གཡུ་ · གཡི་</div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">
                   Prefix ག lifts the feminine ཡ to a <span className="font-bold text-ink">high</span> tone.
                 </p>
@@ -388,7 +386,7 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
           return (
             <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-surface hover:bg-surface-muted"}`}>
               <span className="absolute left-0 top-0 h-0.5 w-full" style={{ backgroundColor: p.accent.hex }} />
-              <span className="font-tibetan text-[2.5rem] leading-none mb-1" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.word}</span>
+              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.word}</span>
               <span className={`font-mono text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}>[{c.read}]</span>
               {c.gloss && (
                 <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-500" : "text-ink-muted"}`}>{c.gloss}</span>
@@ -409,7 +407,7 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
             const M = TONE_META[c.tone as Tone];
             return (
               <div key={c.word + c.read} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
-                <span className="font-tibetan text-[2.5rem] leading-none w-16 text-center text-ink">{c.word}</span>
+                <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-16 text-center text-ink">{c.word}</span>
                 <span className={`text-xs font-bold font-serif ${night ? "text-stone-400" : "text-ink-light"}`}>
                   {c.parts}
                 </span>
@@ -498,7 +496,7 @@ function MiniMastery({ p, night, playAudio, playingItem, playErrorBeep }: any) {
           return (
             <button
               key={c.word} disabled={!!picked} onClick={() => pick(c.word)}
-              className={`flex aspect-[3/2] items-center justify-center border-2 font-tibetan text-3xl transition-all ${
+              className={`flex aspect-[3/2] items-center justify-center border-2 font-tibetan text-3xl leading-normal pb-2 transition-all ${
                 right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" 
                 : wrong ? "border-rose-400 bg-rose-50 text-rose-700" 
                 : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" 
@@ -579,7 +577,7 @@ function VocabFilter({ playAudio, playingItem }: any) {
         </div>
         <div>
           <div className="text-eyebrow mb-2">Reminder · Letters that never take a prefix</div>
-          <p className="font-tibetan text-3xl font-bold text-ink tracking-[0.2em] leading-relaxed">{NEVER_TAKE}</p>
+          <p className="font-tibetan text-3xl font-bold text-ink tracking-[0.2em] leading-normal pb-2">{NEVER_TAKE}</p>
         </div>
       </div>
     </>

@@ -1,4 +1,4 @@
-// app/dashboard/lessons/3/page.tsx
+
 
 "use client";
 
@@ -289,7 +289,7 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           const M = TONE_META[c.tone as Tone];
           return (
             <button key={c.stack} onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-surface hover:bg-surface-muted"}`}>
-              <span className="font-tibetan text-[3rem] leading-none" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.stack}</span>
+              <span className="font-tibetan text-[3rem] leading-normal pb-2" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.stack}</span>
               <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-400" : "text-ink-light"}`}>{c.read}</span>
               <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}>
                 <M.Icon size={12} strokeWidth={3} />
@@ -308,7 +308,7 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
             const rootTib = c.stack.charAt(1);
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
-                <span className="font-tibetan text-[2.5rem] leading-none w-12 text-center">{c.stack}</span>
+                <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center">{c.stack}</span>
                 <span className={`text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}>
                   <span className="font-serif text-lg">{sup.head}</span> + <span className="font-serif text-lg">{rootTib || "◌"}</span> + བཏགས་
                 </span>
@@ -389,7 +389,7 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
           return (
             <button
               key={c.stack} disabled={!!picked} onClick={() => pick(c.read)}
-              className={`flex aspect-square items-center justify-center border-2 font-tibetan text-[3.5rem] transition-all ${
+              className={`flex aspect-square items-center justify-center border-2 font-tibetan text-[3.5rem] leading-normal pb-2 transition-all ${
                 right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" 
                 : wrong ? "border-rose-400 bg-rose-50 text-rose-700" 
                 : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" 

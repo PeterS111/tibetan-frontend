@@ -233,5 +233,5 @@ export const STEPS = [
   { id: "root", eyebrow: "Step 05", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
   { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
   { id: "practice", eyebrow: "Step 07", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
-  { id: "test", eyebrow: "Step 08", title: "Final test", description: "Pass to unlock the next lesson." }
+  { id: "test", eyebrow: "Step 08", title: "Step complete", description: "Pass to unlock the next lesson." }
 ];
