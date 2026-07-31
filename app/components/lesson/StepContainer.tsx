@@ -1,8 +1,7 @@
-// app/components/lesson/StepContainer.tsx
+
 
 import { ReactNode } from "react";
-import { ChevronRight, Check } from "lucide-react";
-import { Card } from "@/app/components/ui/Card";
+import { ChevronDown, Check, ChevronRight, ChevronLeft } from "lucide-react";
 import { Badge } from "@/app/components/ui/Badge";
 import { Button } from "@/app/components/ui/Button";
 
@@ -15,6 +14,10 @@ interface StepContainerProps {
   onContinue: () => void;
   isLast?: boolean;
   children: ReactNode;
+  
+  // Optional props to support the pagination seen in the design
+  onPrevious?: () => void;
+  totalSteps?: number;
 }
 
 export function StepContainer({ 
@@ -25,51 +28,112 @@ export function StepContainer({
   onToggle, 
   children, 
   onContinue, 
-  isLast 
+  isLast,
+  onPrevious,
+  totalSteps
 }: StepContainerProps) {
   
   const isUnlocked = status !== "upcoming";
+  const stepNumber = index + 1 < 10 ? `0${index + 1}` : index + 1;
+
+  // Determine container styling based on state
+  let containerClasses = "flex flex-col transition-all duration-200 border bg-surface ";
+  
+  if (status === "current") {
+    containerClasses += "border-2 border-brand shadow-sm z-10 relative";
+  } else if (status === "upcoming") {
+    containerClasses += "border-border-subtle bg-[#FAFAFA] opacity-75";
+  } else if (status === "done") {
+    containerClasses += "border-border-subtle hover:border-ink/20";
+  }
+
+  // Determine number box styling
+  let numberBoxClasses = "w-12 h-12 flex items-center justify-center font-serif text-lg mr-5 transition-colors ";
+  
+  if (status === "current") {
+    numberBoxClasses += "border border-brand text-brand-dark bg-brand/5";
+  } else if (status === "upcoming") {
+    numberBoxClasses += "border border-border-subtle text-ink-muted bg-transparent";
+  } else if (status === "done") {
+    numberBoxClasses += "border border-border-subtle text-ink-light bg-surface-muted";
+  }
 
   return (
-    <Card className={`p-0 ${!isUnlocked ? 'opacity-60 grayscale bg-surface-muted' : ''}`}>
+    <div className={containerClasses}>
       <button 
         onClick={onToggle} 
         disabled={!isUnlocked} 
-        className="w-full flex items-center p-4 md:p-6 text-left hover:bg-surface-muted transition-colors"
+        className="w-full flex items-center p-6 text-left group"
       >
-        <div className={`w-12 h-12 flex items-center justify-center border font-serif text-xl mr-5 transition-colors ${
-          status === "done" ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-          status === "current" ? 'bg-brand-light text-brand-dark border-amber-300' : 
-          'bg-transparent border-border-subtle text-ink-muted'
-        }`}>
-          {status === "done" ? <Check className="size-5" /> : (index + 1 < 10 ? `0${index + 1}` : index + 1)}
+        <div className={numberBoxClasses}>
+          {status === "done" ? <Check className="size-5 text-ink-light" strokeWidth={2.5} /> : stepNumber}
         </div>
         
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-1">
-            <span className="text-eyebrow">{step.eyebrow}</span>
-            {status === "done" && <Badge variant="success">Completed</Badge>}
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="flex items-center gap-3 mb-1.5">
+            <span className="text-eyebrow group-hover:text-ink-light transition-colors">
+              {step.eyebrow}
+            </span>
+            {status === "done" && <span className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Completed</span>}
             {status === "current" && <Badge variant="brand">In Progress</Badge>}
+            {status === "upcoming" && <span className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Up Next</span>}
           </div>
-          <div className={`text-xl font-serif ${isUnlocked ? 'text-ink' : 'text-ink-muted'}`}>{step.title}</div>
+          <div className={`text-xl font-serif font-bold ${status === 'upcoming' ? 'text-ink-light' : 'text-ink'}`}>
+            {step.title}
+          </div>
         </div>
         
-        <ChevronRight className={`text-ink-muted transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`} />
+        <div className="ml-4 pl-4 border-l border-border-subtle h-8 flex items-center justify-center">
+          <ChevronDown className={`text-ink-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
+        </div>
       </button>
       
       {isExpanded && (
-        <div className="p-4 md:p-8 border-t border-border-subtle bg-surface animate-in slide-in-from-top-2 fade-in duration-200">
-          {children}
+        <div className="flex flex-col animate-in slide-in-from-top-2 fade-in duration-200">
+          
+          <div className="p-6 md:p-8 pt-2">
+            {children}
+          </div>
 
-          {!isLast && (
-            <div className="mt-10 flex justify-end border-t border-border-strong pt-6">
-              <Button onClick={onContinue}>
-                Mark complete & continue <ChevronRight className="size-4" />
-              </Button>
+          <div className={`mt-4 px-6 md:px-8 py-5 flex items-center justify-between border-t ${status === 'current' ? 'border-brand/20' : 'border-border-subtle bg-surface-muted/30'}`}>
+            
+            {/* Previous Button (if provided) */}
+            <div>
+              {onPrevious && index > 0 ? (
+                <button 
+                  onClick={onPrevious}
+                  className="flex items-center gap-2 text-sm font-medium text-ink-light hover:text-ink transition-colors"
+                >
+                  <ChevronLeft className="size-4" /> Previous
+                </button>
+              ) : (
+                <div className="w-20"></div> /* Spacer */
+              )}
             </div>
-          )}
+
+            {/* Step Counter (if provided) */}
+            {totalSteps && (
+              <div className="text-[11px] font-bold tracking-[0.15em] text-ink-muted">
+                {index + 1} / {totalSteps}
+              </div>
+            )}
+
+            {/* Next / Complete Button */}
+            <div>
+              {!isLast ? (
+                <Button onClick={onContinue} className="px-6 shadow-sm">
+                  Mark complete & continue <ChevronRight className="size-4" strokeWidth={2.5} />
+                </Button>
+              ) : (
+                <Button onClick={onContinue} className="px-6 shadow-sm">
+                  Finish Unit <Check className="size-4" strokeWidth={2.5} />
+                </Button>
+              )}
+            </div>
+
+          </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
