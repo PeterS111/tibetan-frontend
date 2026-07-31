@@ -60,12 +60,14 @@ export default function DashboardHub() {
   return (
     <div className="max-w-5xl mx-auto p-8 pb-24 space-y-12 animate-in fade-in duration-500">
       
+// Inside app/dashboard/page.tsx (Replace the Welcome Banner section)
+
       {/* Welcome Banner */}
-      <div className="space-y-4">
-        <h1 className="text-4xl md:text-5xl font-bold font-serif text-ink leading-tight">
+      <div className="space-y-4 pt-4 mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold font-serif text-ink leading-[1.2]">
           Five tiers. One scholarly path <br />through the Tibetan language.
         </h1>
-        <p className="text-lg text-ink-light font-sans max-w-2xl">
+        <p className="text-[15px] text-ink-light font-sans max-w-2xl leading-relaxed">
           Each tier is its own complete hub — lessons, AI dialogue, exercises, and materials — building on the foundations of the one before. Welcome back, {user?.firstName || "Student"}.
         </p>
       </div>

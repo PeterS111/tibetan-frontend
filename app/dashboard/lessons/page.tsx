@@ -4,12 +4,11 @@
 import Link from "next/link";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { Check, Play, Loader2, Lock } from "lucide-react"; 
+import { Check, Loader2, Lock } from "lucide-react"; 
 import { DEV_BYPASS_LOCKS } from "@/app/config";
 
 import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/Button";
 
 const FALLBACK_MODULES = [
   { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active" },
@@ -78,13 +77,14 @@ export default function MyStepsPage() {
     <div className="max-w-4xl mx-auto p-8 pb-24 animate-in fade-in duration-500">
       
       {/* Page Header */}
-      <div className="mb-10">
-        <h2 className="text-eyebrow text-brand-dark mb-3">Syllabus</h2>
+      <div className="mb-10 pt-4">
+        {/* Matched to the burnt orange/brown "SYLLABUS" text */}
+        <h2 className="text-[10px] font-bold uppercase text-brand-dark mb-3 tracking-[0.2em]">Syllabus</h2>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border-subtle pb-6">
           <h1 className="text-3xl md:text-4xl font-bold font-serif text-ink">
             The Beginner curriculum
           </h1>
-          <div className="text-sm font-medium text-ink-light mb-1">
+          <div className="text-sm font-medium text-ink-light mb-1 hidden md:block">
             {visibleModules.length} modules · Active Syllabus
           </div>
         </div>
@@ -98,21 +98,21 @@ export default function MyStepsPage() {
 
           if (module.status === "completed") {
             return (
-              <Card key={module.id || module.module_id} className="flex flex-col md:flex-row p-6 gap-6 shadow-sm hover:shadow-md">
-                <div className="flex-shrink-0 w-16 h-16 bg-emerald-50 text-emerald-700 font-serif text-2xl font-bold flex items-center justify-center border border-emerald-200">
+              <Card key={module.id || module.module_id} className="flex flex-col md:flex-row p-6 gap-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex-shrink-0 w-14 h-14 bg-emerald-50 text-emerald-700 font-serif text-xl font-bold flex items-center justify-center border border-emerald-200">
                   {module.module_id}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-xl font-bold text-ink">{module.title}</h3>
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <h3 className="text-xl font-bold font-serif text-ink">{module.title}</h3>
                     <Badge variant="success">Completed</Badge>
                   </div>
-                  <p className="text-ink-light text-sm mb-3">{module.description}</p>
+                  <p className="text-ink-light text-sm">{module.description}</p>
                 </div>
                 <div className="flex items-center mt-4 md:mt-0">
                   <Link 
                     href={lessonUrl} 
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-none bg-surface text-ink-light border border-border-subtle hover:bg-surface-muted hover:text-ink w-full md:w-auto"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-none bg-transparent text-ink border border-border-strong hover:border-ink w-full md:w-auto"
                   >
                     <Check size={16} /> Review
                   </Link>
@@ -123,16 +123,16 @@ export default function MyStepsPage() {
 
           if (isLocked) {
              return (
-               <Card key={module.id || module.module_id} className="flex flex-col md:flex-row bg-surface-muted p-6 gap-6 relative overflow-hidden opacity-70">
-                 <div className="flex-shrink-0 w-16 h-16 bg-border-subtle text-ink-muted font-serif text-2xl font-bold flex items-center justify-center">
-                   <Lock size={20} />
+               <Card key={module.id || module.module_id} className="flex flex-col md:flex-row bg-surface-muted border-border-subtle p-6 gap-6 relative overflow-hidden opacity-70">
+                 <div className="flex-shrink-0 w-14 h-14 bg-border-subtle text-ink-muted font-serif text-xl font-bold flex items-center justify-center">
+                   <Lock size={18} />
                  </div>
-                 <div className="flex-1">
-                   <div className="flex items-center gap-3 mb-1">
-                     <h3 className="text-xl font-bold text-ink-light">{module.title}</h3>
+                 <div className="flex-1 flex flex-col justify-center">
+                   <div className="flex items-center gap-3 mb-1.5">
+                     <h3 className="text-xl font-bold font-serif text-ink-light">{module.title}</h3>
                      <Badge variant="locked">Locked</Badge>
                    </div>
-                   <p className="text-ink-muted text-sm mb-4">{module.description}</p>
+                   <p className="text-ink-muted text-sm">{module.description}</p>
                  </div>
                </Card>
              )
@@ -141,37 +141,43 @@ export default function MyStepsPage() {
           return (
             <Card 
               key={module.id || module.module_id} 
-              className={`flex flex-col md:flex-row p-6 gap-6 relative overflow-hidden transition-colors border-2 ${module.progress > 0 ? 'border-brand shadow-md' : 'border-border-subtle hover:border-brand shadow-sm'}`}
+              className={`flex flex-col md:flex-row p-6 gap-6 relative overflow-hidden transition-colors border ${module.progress > 0 ? 'border-brand shadow-sm' : 'border-border-subtle hover:border-ink shadow-none'}`}
             >
-              <div className={`flex-shrink-0 w-16 h-16 ${module.progress > 0 ? 'bg-brand-light text-brand-dark border border-amber-200' : 'bg-surface-muted text-ink-light border border-border-subtle'} font-serif text-2xl font-bold flex items-center justify-center`}>
+              {/* The Number Box - Matched to crop (light gray bg, no visible thick border, serif number) */}
+              <div className={`flex-shrink-0 w-14 h-14 ${module.progress > 0 ? 'bg-brand/10 text-brand-dark' : 'bg-surface-muted text-ink'} font-serif text-xl font-bold flex items-center justify-center`}>
                 {module.module_id}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-xl font-bold text-ink">{module.title}</h3>
+              
+              <div className="flex-1 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-1.5">
+                  {/* Module Title is serif and bold in the screenshot */}
+                  <h3 className="text-xl font-bold font-serif text-ink">{module.title}</h3>
                   {module.progress > 0 ? (
                     <Badge variant="brand">In Progress</Badge>
                   ) : (
                     <Badge variant="default">Ready to Start</Badge>
                   )}
                 </div>
-                <p className="text-ink-light text-sm mb-4">{module.description}</p>
+                <p className="text-ink-light text-sm">{module.description}</p>
                 
-                <div className="flex items-center gap-4 w-full max-w-md">
-                  <div className="flex-1 flex items-center gap-3">
-                    <div className="w-full h-1.5 bg-surface-muted overflow-hidden">
-                      <div className="h-full bg-brand" style={{ width: `${module.progress}%` }}></div>
+                {module.progress > 0 && (
+                  <div className="flex items-center gap-4 w-full max-w-md mt-4">
+                    <div className="flex-1 flex items-center gap-3">
+                      <div className="w-full h-1 bg-surface-muted overflow-hidden">
+                        <div className="h-full bg-brand" style={{ width: `${module.progress}%` }}></div>
+                      </div>
+                      <span className="text-[10px] font-bold text-brand-dark shrink-0 tracking-wider uppercase">{module.progress}% DONE</span>
                     </div>
-                    <span className="text-xs font-bold text-brand-dark shrink-0">{module.progress}% DONE</span>
                   </div>
-                </div>
+                )}
               </div>
+
               <div className="flex items-center mt-4 md:mt-0">
                 <Link 
                   href={lessonUrl} 
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-none bg-brand text-ink hover:bg-amber-400 border border-amber-600 shadow-sm w-full md:w-auto"
+                  className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-none w-full md:w-auto ${module.progress > 0 ? 'bg-brand text-ink hover:bg-[#E5AC00]' : 'bg-transparent text-ink border border-border-strong hover:border-ink'}`}
                 >
-                  <Play size={16} className="fill-ink" /> {module.progress > 0 ? 'Continue' : 'Start Module'}
+                  {module.progress > 0 ? 'Continue' : 'Start'}
                 </Link>
               </div>
             </Card>

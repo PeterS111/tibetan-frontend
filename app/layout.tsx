@@ -1,17 +1,20 @@
 // app/layout.tsx
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Newsreader, Inter, Jomolhari } from "next/font/google";
+import { Merriweather, Inter, Jomolhari } from "next/font/google";
 import "./globals.css";
 
 import FeedbackWidget from "./components/FeedbackWidget";
 
-const newsreader = Newsreader({
+// Merriweather matches the sturdy, heavy slab-like serifs in the screenshots
+const merriweather = Merriweather({
+  weight: ["300", "400", "700", "900"],
   variable: "--font-serif",
   subsets: ["latin"],
   style: ["normal", "italic"],
 });
 
+// Inter matches the clean body copy with the single-story 'g'
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -36,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${newsreader.variable} ${inter.variable} ${jomolhari.variable} h-full antialiased`}
+      className={`${merriweather.variable} ${inter.variable} ${jomolhari.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-paper text-ink selection:bg-brand-light">
         <ClerkProvider>
