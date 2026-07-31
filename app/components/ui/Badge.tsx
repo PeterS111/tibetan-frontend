@@ -1,3 +1,4 @@
+// app/components/ui/Badge.tsx
 import { ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -8,14 +9,15 @@ interface BadgeProps {
 }
 
 export function Badge({ children, variant = "default", className }: BadgeProps) {
-  const baseClasses = "inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-none";
+  // Matched exactly to the tiny "IN PROGRESS" and "READY TO START" badges in the screenshots
+  const baseClasses = "inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-none";
   
   const variants = {
-    default: "bg-surface-muted text-ink-light border border-border-subtle",
-    brand: "bg-brand-light text-brand-dark border border-amber-200",
-    warning: "bg-rose-50 text-rose-700 border border-rose-200",
-    success: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    locked: "bg-stone-200 text-stone-500 border border-stone-300",
+    default: "bg-surface-muted text-ink-light",
+    brand: "bg-brand-light text-brand-dark",
+    warning: "bg-orange-50 text-orange-700",
+    success: "bg-emerald-50 text-emerald-700",
+    locked: "bg-transparent text-ink-muted border border-border-subtle",
   };
 
   return (

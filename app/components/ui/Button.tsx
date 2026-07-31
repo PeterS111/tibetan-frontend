@@ -1,3 +1,4 @@
+// app/components/ui/Button.tsx
 import { ButtonHTMLAttributes, ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -12,13 +13,14 @@ export function Button({
   className, 
   ...props 
 }: ButtonProps) {
-  const baseClasses = "inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-none";
+  // Buttons in the dashboard are extremely flat, sharp, and minimal
+  const baseClasses = "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-none";
   
   const variants = {
-    primary: "bg-brand text-ink hover:bg-amber-400 border border-amber-600 shadow-sm",
-    secondary: "bg-ink text-white hover:bg-stone-800 shadow-sm",
-    outline: "bg-surface text-ink-light border border-border-subtle hover:bg-surface-muted hover:text-ink",
-    ghost: "bg-transparent text-ink-light hover:bg-surface-muted hover:text-ink",
+    primary: "bg-brand text-ink hover:bg-[#E5AC00]",
+    secondary: "bg-ink text-surface hover:bg-ink-light",
+    outline: "bg-transparent text-ink border border-border-subtle hover:border-ink",
+    ghost: "bg-transparent text-ink-light hover:text-ink",
   };
 
   return (
