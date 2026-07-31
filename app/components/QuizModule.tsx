@@ -1,4 +1,4 @@
-// app/components/QuizModule.tsx
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -20,7 +20,8 @@ export default function QuizModule({
   questionCount = 10, 
   isUnlockTest, 
   isVocabMatch,
-  nextLessonPath
+  nextLessonPath,
+  isLesson1 // Trigger for showing transliteration vs phonetics
 }: any) {
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
@@ -46,9 +47,11 @@ export default function QuizModule({
         choices: choices.map(c => ({
           value: c.tib,
           tib: c.tib,
-          translit: c.translit || c.pron,
+          translit: c.translit, // Pass them both purely, resolve logic on render
+          pron: c.pron,
           en: c.en,
-          emoji: c.emoji
+          emoji: c.emoji,
+          label: c.label
         }))
       });
     }
@@ -62,9 +65,10 @@ export default function QuizModule({
     return (
       <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
-          <Trophy className="size-3.5" /> Final Test
+          {/* Changed "Final Test" to "Step Complete" */}
+          <Trophy className="size-3.5" /> Step Complete
         </div>
-        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to unlock the next step?</h3>
+        <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to complete this step?</h3>
         <p className="text-sm text-stone-600 mb-6">
           {total} questions drawn from everything you covered in this lesson. Score <span className="font-bold">80%</span> or higher to pass. You can retake the test as many times as you like.
         </p>
@@ -72,7 +76,7 @@ export default function QuizModule({
           onClick={() => setHasStarted(true)} 
           className="bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600 shadow-sm"
         >
-          Start the test <ChevronRight size={16} />
+          Start <ChevronRight size={16} />
         </button>
         
         <div className="border border-stone-200 p-5 bg-[#fafaf9]">
@@ -102,7 +106,7 @@ export default function QuizModule({
         
         <div className="flex gap-4">
           <button onClick={() => { setStep(0); setScore(0); setPicked(null); if(isUnlockTest) setHasStarted(false); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2">
-            <Shuffle size={18} /> Retake Test
+            <Shuffle size={18} /> Retake
           </button>
           {passed && isUnlockTest && nextLessonPath && (
             <Link href={nextLessonPath} className="px-8 py-3 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
@@ -135,6 +139,11 @@ export default function QuizModule({
 
   const currentIsVocabMatch = isVocabMatch || currentQ.type === 'vocab';
 
+  // Format reading (remove brackets, prefer translit in Lesson 1, pron everywhere else)
+  const readingToDisplay = isLesson1 
+    ? (currentQ.answerObj?.translit || currentQ.answerObj?.pron) 
+    : (currentQ.answerObj?.pron || currentQ.answerObj?.translit);
+
   return (
     <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
       {!isUnlockTest && (
@@ -160,11 +169,13 @@ export default function QuizModule({
           ) : currentQ.isAudioType ? (
             <span className="text-xl text-stone-800">Listen and select the matching option.</span>
           ) : (
-            <span className="text-xl text-stone-800">Which option reads <span className="font-mono bg-stone-100 px-2 py-0.5 border border-stone-200">[{currentQ.answerObj?.pron || currentQ.answerObj?.translit}]</span>?</span>
+            <span className="text-xl text-stone-800">Which option reads <span className="font-mono bg-stone-100 px-2 py-0.5 border border-stone-200">{readingToDisplay}</span>?</span>
           )}
+          
           {currentQ.prominentTibetan && (
             <div className="mt-4">
-              <span className="font-serif leading-none text-stone-900" style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span>
+              {/* Fix Overlap: Added leading-[1.4] and pb-4 */}
+              <span className="font-serif leading-[1.4] pb-4 block text-stone-900" style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span>
             </div>
           )}
         </div>
@@ -203,9 +214,9 @@ export default function QuizModule({
                 <div className={`text-xl font-bold ${currentQ.type === 'vocab' ? 'font-serif' : 'font-mono'}`}>{c.label}</div>
               ) : (
                 <>
-                  {/* CRITICAL LOGIC FIX: emoji strictly hidden during translation testing */}
                   {c.emoji && !currentIsVocabMatch && <span className="text-3xl mb-2">{c.emoji}</span>}
-                  <span className="font-serif text-[3rem] leading-none tibetan">{c.tib || c.value}</span>
+                  {/* Fix Overlap: Added leading-normal and pb-2 here too */}
+                  <span className="font-serif text-[3rem] leading-normal pb-2 tibetan">{c.tib || c.value}</span>
                 </>
               )}
             </button>

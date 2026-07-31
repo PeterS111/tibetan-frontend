@@ -1,4 +1,4 @@
-/* app/globals.css */
+
 @import "tailwindcss" source(none);
 @source "../app";
 
@@ -8,7 +8,8 @@
   /* Fonts */
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-serif), ui-serif, Georgia, serif;
-  --font-tibetan: var(--font-tibetan), "Noto Sans Tibetan", serif;
+  /* Enforce Jomolhari strictly for Tibetan text */
+  --font-tibetan: var(--font-tibetan), "Jomolhari", serif;
 
   /* Global App Palette - Scholar's Edition */
   --color-paper: #FCFBF9;        /* Warm off-white from the screenshots */
@@ -39,7 +40,6 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
   }
-  /* Removed the font-weight: 400 override so bold works again */
   h1, h2, h3, h4, h5 {
     font-family: var(--font-serif);
   }
@@ -50,12 +50,13 @@
     @apply text-[10px] font-bold uppercase tracking-[0.15em] text-ink-muted;
   }
   
+  /* Fix overlaps: Changed leading-none to leading-normal and added pb-4 for subscript clearance */
   .text-tibetan-display {
-    @apply font-tibetan text-[4rem] md:text-[5rem] leading-none text-ink not-italic;
+    @apply font-tibetan text-[4rem] md:text-[5rem] leading-normal pb-4 text-ink not-italic;
   }
 
   .text-tibetan-card {
-    @apply font-tibetan text-3xl md:text-4xl leading-none text-ink not-italic;
+    @apply font-tibetan text-3xl md:text-4xl leading-normal pb-2 text-ink not-italic;
   }
 }
 

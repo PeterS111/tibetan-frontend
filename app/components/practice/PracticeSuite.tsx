@@ -13,15 +13,17 @@ import { Button } from "@/app/components/ui/Button";
 // --- THE UNIFIED INTERFACE ---
 export interface PracticeItem {
   id: string;
-  tibetan: string;     // The main Tibetan text (e.g., ཀ, ཁང་, སྒྲ)
-  reading: string;     // Transliteration/phonetics (e.g., ka, khang, dra)
-  english: string;     // English translation or tone description
-  audioTarget: string; // The string passed to the TTS API
-  emoji?: string;      // Optional emoji for vocab
+  tibetan: string;     
+  reading: string;     // Fallback text
+  translit?: string;   // Added for Lesson 1 specific rendering
+  pron?: string;       // Added for standard phonetics
+  english: string;     
+  audioTarget: string; 
+  emoji?: string;      
 }
 
 export interface PracticeGroup {
-  name: string;        // e.g., "Consonants" or "Vocabulary"
+  name: string;        
   items: PracticeItem[];
 }
 
@@ -30,9 +32,16 @@ interface PracticeSuiteProps {
   playAudio: (text: string) => void;
   playingItem: string | null;
   playErrorBeep: () => void;
+  isLesson1?: boolean; // Prop to trigger transliteration rules
 }
 
-export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep }: PracticeSuiteProps) {
+// Helper: Ensure we resolve the correct string without brackets based on lesson logic
+const getReading = (item: PracticeItem, isLesson1: boolean) => {
+  const preferred = isLesson1 ? (item.translit || item.pron) : (item.pron || item.translit);
+  return preferred || item.reading;
+};
+
+export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
   const [tab, setTab] = useState<"flash" | "match" | "srs">("flash");
 
   // Flatten all items for games that mix everything (like the Match game or SRS)
@@ -59,8 +68,8 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
       </div>
       
       <div className="p-6 md:p-10 bg-paper">
-        {tab === "flash" && <Flashcards groups={groups} speak={playAudio} playingItem={playingItem} />}
-        {tab === "match" && <MatchGame items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
+        {tab === "flash" && <Flashcards groups={groups} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} />}
+        {tab === "match" && <MatchGame items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isLesson1={isLesson1} />}
         {tab === "srs" && <MemoryReview items={allItems} speak={playAudio} playingItem={playingItem} />}
       </div>
     </Card>
@@ -68,7 +77,7 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
 }
 
 // --- FLASHCARDS ---
-function Flashcards({ groups, speak, playingItem }: any) {
+function Flashcards({ groups, speak, playingItem, isLesson1 }: any) {
   const [activeGroupIdx, setActiveGroupIdx] = useState(0);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -106,7 +115,7 @@ function Flashcards({ groups, speak, playingItem }: any) {
         ) : (
           <div className="max-w-md px-6 text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
             <div className="text-2xl sm:text-3xl font-bold text-ink mb-2 leading-relaxed">{card.english}</div>
-            <div className="text-sm sm:text-lg text-ink-light font-bold uppercase tracking-widest">[{card.reading}]</div>
+            <div className="text-sm sm:text-lg text-ink-light font-bold uppercase tracking-widest">{getReading(card, isLesson1)}</div>
           </div>
         )}
         <span className="absolute bottom-4 right-6 text-[10px] font-bold text-border-strong uppercase tracking-widest group-hover:text-ink-muted transition-colors">Tap card to flip</span>
@@ -124,18 +133,18 @@ function Flashcards({ groups, speak, playingItem }: any) {
 }
 
 // --- MATCH GAME ---
-function MatchGame({ items, speak, playingItem, playErrorBeep }: any) {
+function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any) {
   const [seed, setSeed] = useState(0);
   const [pairs, setPairs] = useState<Record<string, string>>({});
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const pool = useMemo(() => [...items].sort(() => 0.5 - Math.random()).slice(0, 6), [seed, items]);
-  const readings = useMemo(() => pool.map(p => p.reading).sort(() => 0.5 - Math.random()), [pool]);
+  const readings = useMemo(() => pool.map(p => getReading(p, isLesson1)).sort(() => 0.5 - Math.random()), [pool, isLesson1]);
 
   const pick = (reading: string) => {
     if (!selectedWord) return;
     const targetItem = pool.find(p => p.tibetan === selectedWord);
-    if (targetItem?.reading === reading) {
+    if (targetItem && getReading(targetItem, isLesson1) === reading) {
       setPairs(p => ({ ...p, [selectedWord]: reading }));
       speak(targetItem.audioTarget);
     } else {
@@ -144,7 +153,7 @@ function MatchGame({ items, speak, playingItem, playErrorBeep }: any) {
     setSelectedWord(null);
   };
 
-  const solved = pool.every(p => pairs[p.tibetan] === p.reading);
+  const solved = pool.every(p => pairs[p.tibetan] === getReading(p, isLesson1));
 
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in">
@@ -155,7 +164,7 @@ function MatchGame({ items, speak, playingItem, playErrorBeep }: any) {
           {pool.map((p) => {
             const active = selectedWord === p.tibetan;
             const paired = pairs[p.tibetan];
-            const correct = paired === p.reading;
+            const correct = paired === getReading(p, isLesson1);
             return (
               <button
                 key={`tib-${p.id}`} onClick={() => !paired && setSelectedWord(p.tibetan)}
@@ -163,8 +172,8 @@ function MatchGame({ items, speak, playingItem, playErrorBeep }: any) {
                   active ? "border-ink bg-ink text-white shadow-sm" : paired ? (correct ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-rose-400 bg-rose-50 text-rose-700") : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
                 }`}
               >
-                <span className="font-tibetan text-3xl leading-none">{p.tibetan}</span>
-                {paired && <span className="text-xs font-bold font-mono">[{paired}]</span>}
+                <span className="font-tibetan text-3xl leading-normal pb-1">{p.tibetan}</span>
+                {paired && <span className="text-xs font-bold font-mono">{paired}</span>}
               </button>
             );
           })}
@@ -179,7 +188,7 @@ function MatchGame({ items, speak, playingItem, playErrorBeep }: any) {
                   taken ? "border-border-subtle bg-surface-muted opacity-40 text-ink-muted" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm" : "cursor-not-allowed border-border-strong text-ink-light"
                 }`}
               >
-                <span>[{r}]</span>
+                <span>{r}</span>
                 <ArrowLeft size={18} className={selectedWord && !taken ? "text-brand" : "text-transparent"} />
               </button>
             );

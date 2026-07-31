@@ -1,4 +1,4 @@
-
+// app/dashboard/lessons/1/page.tsx
 
 "use client";
 
@@ -175,7 +175,17 @@ export default function ConsonantsLesson() {
             </div>
             
             <div className="mt-10">
-               <QuizModule title="Mastery check" intro="Test your listening before you move on." data={CONSONANTS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={8} isUnlockTest={false} />
+               <QuizModule 
+                 title="Mastery check" 
+                 intro="Test your listening before you move on." 
+                 data={CONSONANTS} 
+                 playAudio={playAudio} 
+                 playingItem={playingItem} 
+                 playErrorBeep={playErrorBeep} 
+                 questionCount={8} 
+                 isUnlockTest={false} 
+                 isLesson1={true}
+               />
             </div>
           </StepContainer>
 
@@ -295,7 +305,13 @@ export default function ConsonantsLesson() {
 
           {/* Generic Practice Suite */}
           <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
-            <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <PracticeSuite 
+              groups={practiceGroups} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+              isLesson1={true}
+            />
           </StepContainer>
 
           {/* Final Test */}
@@ -309,6 +325,7 @@ export default function ConsonantsLesson() {
               playErrorBeep={playErrorBeep} 
               questionCount={10} 
               isUnlockTest={true} 
+              isLesson1={true}
               nextLessonPath="/dashboard/lessons/2" 
             />
           </StepContainer>

@@ -46,7 +46,7 @@ export default function SubscriptsLesson() {
     }
   ], []);
 
-  // Generate dynamic questions for the Final Step Test
+  // Generate dynamic questions for the Cumulative Exercise (Final Step)
   const quizQuestions = useMemo(() => {
     const regularCombos = SUBS.flatMap(s => s.combos);
     const qs = [];
@@ -334,11 +334,11 @@ export default function SubscriptsLesson() {
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 06: Final Test */}
+          {/* Step 06: Cumulative Exercise */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => {}} isLast>
             <QuizModule 
-              title="Final Step Test" 
-              intro="Score 80% or higher to unlock the next step: The Five Prefixes." 
+              title="Cumulative Exercise" 
+              intro="Test your recognition of all subscript variations combined. Score 80% or higher to unlock the next unit." 
               questions={quizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 

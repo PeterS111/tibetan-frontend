@@ -1,4 +1,4 @@
-// app/data/lesson4.ts
+
 import { ArrowRight, ArrowUp, ArrowDown } from "lucide-react";
 
 export type Tone = "same" | "up" | "down";
@@ -230,5 +230,6 @@ export const STEPS = [
   { id: "super-sub", eyebrow: "Step 03", title: "Roots with a superscript and subscript", desc: "Three-letter stacks combining both." },
   { id: "vocab", eyebrow: "Step 04", title: "Vocabulary built from subscripts", desc: "Real words using subjoined letters." },
   { id: "practice", eyebrow: "Step 05", title: "Practice & mastery check", desc: "Flashcards, quiz, and matching drills." },
-  { id: "complete", eyebrow: "Finish", title: "Lesson complete", desc: "Take the final test to unlock the next unit." }
+  // Updated step array explicitly adds the Cumulative Exercise here
+  { id: "cumulative", eyebrow: "Step Complete", title: "Cumulative Exercise", desc: "Test your recognition of all subscript variations combined." }
 ];
