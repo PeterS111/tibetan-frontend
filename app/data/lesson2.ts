@@ -60,9 +60,8 @@ export const VOCAB = [
   { tib: "སུ",     translit: "su",       en: "who",            emoji: "❓",       vowel: "u" },
   { tib: "སོ",     translit: "so",       en: "teeth",          emoji: "😁",       vowel: "o" },
   { tib: "ཆུ",     translit: "chu",      en: "water",          emoji: "💧",       vowel: "u" },
-  // THE CACHE BUSTERS ARE ADDED HERE:
-  { tib: "མེ",     translit: "me",       en: "fire",           emoji: "🔥",       vowel: "e", audio: "Fire_New" },
-  { tib: "ཕོ",     translit: "pho",      en: "male",           emoji: "🧑",       vowel: "o", audio: "Male_New" },
+ { tib: "མེ",     translit: "me",       en: "fire",           emoji: "🔥",       vowel: "e" },
+  { tib: "ཕོ",     translit: "pho",      en: "male",           emoji: "🧑",       vowel: "o" },
   { tib: "ཉི་ཤུ",  translit: "nyi-shu",  en: "twenty",         emoji: "🔢",       vowel: "u" },
   { tib: "རི་མོ",  translit: "ri-mo",    en: "drawing",        emoji: "🎨",       vowel: "i" },
   { tib: "འོ་མ",   translit: "o-ma",     en: "milk",           emoji: "🥛",       vowel: "o" },
