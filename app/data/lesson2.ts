@@ -1,8 +1,7 @@
-
-
 export type VowelKey = "i" | "u" | "e" | "o";
 export type Position = "above" | "below";
 
+// Added spellings property mapping to support standard Tibetan spelling in frontend
 export interface Vowel {
   key: VowelKey;
   tib: string;
@@ -14,6 +13,7 @@ export interface Vowel {
   position: Position;
   english: string;
   examples: string[];
+  spellings?: { word: string; spell: string; roman: string }[];
   note: string;
 }
 
@@ -23,11 +23,37 @@ export const POSITION_META: Record<Position, { label: string; swatch: string; ri
 };
 
 export const VOWELS: Vowel[] = [
-  // Removed brackets from markGloss for each vowel
-  { key: "i", tib: "ཨི", mark: "ི", translit: "I", markTib: "གི་གུ", markTranslit: "gi-gu", markGloss: "khi khu", position: "above", english: "As in “peer”, “real”, “ear”.", examples: ["མི", "རི", "ཤི"], note: "A small hook drawn above the root letter. Front, close vowel — spread the lips slightly as in English ‘ee’." },
-  { key: "u", tib: "ཨུ", mark: "ུ", translit: "U", markTib: "ཞབས་ཀྱུ", markTranslit: "shab-kyu", markGloss: "shab kyu / tyu", position: "below", english: "As in “bush”, “push”, “put”.", examples: ["སུ", "ཆུ", "ཕུ"], note: "A small curl drawn beneath the root letter. Back, close-rounded vowel — round the lips as in English ‘oo’ in ‘put’." },
-  { key: "e", tib: "ཨེ", mark: "ེ", translit: "E", markTib: "འགྲེང་བུ", markTranslit: "'dreng-bu", markGloss: "ng’dreng po", position: "above", english: "As in “pay”, “say”, “may”.", examples: ["མེ", "སེ", "ཏེ"], note: "A short slanted stroke drawn above the root letter. Front, mid vowel — brighter and higher than English ‘e’ in ‘bed’." },
-  { key: "o", tib: "ཨོ", mark: "ོ", translit: "O", markTib: "ན་རོ", markTranslit: "na-ro", markGloss: "na ro", position: "above", english: "As in “more”, “door”, “orange”.", examples: ["མོ", "ཇོ", "ཤོ"], note: "A small circle drawn above the root letter. Back, mid-rounded vowel — round the lips as in English ‘oh’." },
+  { 
+    key: "i", tib: "ཨི", mark: "ི", translit: "I", markTib: "གི་གུ", markTranslit: "gi-gu", markGloss: "khi khu", position: "above", english: "As in “peer”, “real”, “ear”.", examples: ["མི", "རི", "ཤི"], 
+    spellings: [
+      { word: "མི", spell: "མ་གི་གུ་མི", roman: "ma gi-gu mi" },
+      { word: "རི", spell: "ར་གི་གུ་རི", roman: "ra gi-gu ri" },
+      { word: "ཤི", spell: "ཤ་གི་གུ་ཤི", roman: "sha gi-gu shi" }
+    ],
+    note: "A small hook drawn above the root letter. Front, close vowel — spread the lips slightly as in English ‘ee’." 
+  },
+  { 
+    key: "u", tib: "ཨུ", mark: "ུ", translit: "U", markTib: "ཞབས་ཀྱུ", markTranslit: "shab-kyu", markGloss: "shab kyu / tyu", position: "below", english: "As in “bush”, “push”, “put”.", examples: ["སུ", "ཆུ", "ཕུ"], 
+    spellings: [
+      { word: "སུ", spell: "ས་ཞབས་ཀྱུ་སུ", roman: "sa shab-kyu su" },
+      { word: "ཆུ", spell: "ཆ་ཞབས་ཀྱུ་ཆུ", roman: "cha shab-kyu chu" }
+    ],
+    note: "A small curl drawn beneath the root letter. Back, close-rounded vowel — round the lips as in English ‘oo’ in ‘put’." 
+  },
+  { 
+    key: "e", tib: "ཨེ", mark: "ེ", translit: "E", markTib: "འགྲེང་བུ", markTranslit: "'dreng-bu", markGloss: "ng’dreng po", position: "above", english: "As in “pay”, “say”, “may”.", examples: ["མེ", "སེ", "ཏེ"], 
+    spellings: [
+      { word: "མེ", spell: "མ་འགྲེང་བུ་མེ", roman: "ma 'dreng-bu me" }
+    ],
+    note: "A short slanted stroke drawn above the root letter. Front, mid vowel — brighter and higher than English ‘e’ in ‘bed’." 
+  },
+  { 
+    key: "o", tib: "ཨོ", mark: "ོ", translit: "O", markTib: "ན་རོ", markTranslit: "na-ro", markGloss: "na ro", position: "above", english: "As in “more”, “door”, “orange”.", examples: ["མོ", "ཇོ", "ཤོ"], 
+    spellings: [
+      { word: "མོ", spell: "མ་ན་རོ་མོ", roman: "ma na-ro mo" }
+    ],
+    note: "A small circle drawn above the root letter. Back, mid-rounded vowel — round the lips as in English ‘oh’." 
+  },
 ];
 
 export const VOCAB = [

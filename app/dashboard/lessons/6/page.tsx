@@ -1,11 +1,9 @@
-// app/dashboard/lessons/6/page.tsx
-
 "use client";
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Volume2, ChevronRight, ChevronLeft, ArrowRight, Info, CheckCircle2, 
+  Volume2, ChevronRight, ArrowRight, Info, CheckCircle2, 
   Moon, Sun, BookOpen, Loader2, Shuffle, History, Sparkles
 } from "lucide-react";
 
@@ -14,7 +12,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 
 // --- Data ---
-import { SUFFIXES, VOCAB, QUIZ, STEPS, FAMILY_META, type SuffixKey } from "@/app/data/lesson6";
+import { SUFFIXES, VOCAB, QUIZ, STEPS, FAMILY_META, SPELLINGS, VOWEL_SHIFTS, type SuffixKey } from "@/app/data/lesson6";
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
@@ -31,7 +29,6 @@ export default function SuffixesLesson() {
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   const [reveal, setReveal] = useState<null | "ten" | "two">(null);
 
-  // Map to Generic Practice Suite Format
   const practiceGroups = useMemo(() => [
     {
       name: "Words",
@@ -47,11 +44,8 @@ export default function SuffixesLesson() {
     }
   ], []);
 
-  // Generate dynamic questions for the Final Step Test
   const quizQuestions = useMemo(() => {
     const qs = [];
-    
-    // Vocab Questions
     const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
     for (const v of vTargets) {
       const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -64,7 +58,6 @@ export default function SuffixesLesson() {
       });
     }
 
-    // Suffix Reading questions
     const cTargets = [...QUIZ].sort(() => 0.5 - Math.random()).slice(0, 6);
     for (const c of cTargets) {
       const wrongs = QUIZ.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -77,14 +70,42 @@ export default function SuffixesLesson() {
         choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
       });
     }
-
     return qs.sort(() => 0.5 - Math.random());
+  }, []);
+
+  // Mastery Checks Setup
+  const suffixQuestions = useMemo(() => [
+    { promptText: "Which suffix is almost silent (a glottal stop)?", answer: "ག", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}, {label: "ལ", value: "ལ", isTibetan: true}], explanation: "The suffix ག (ga) is pronounced as a light glottal stop." },
+    { promptText: "Which suffix has a nasal sound like the 'ng' in lung?", answer: "ང", choices: [{label: "ན", value: "ན", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "བ", value: "བ", isTibetan: true}], explanation: "The suffix ང (nga) gives a nasal 'ng' sound." },
+    { promptText: "How does", promptHighlight: "རབ་", promptEnd: "read?", answer: "rap", audioTarget: "རབ་", choices: [{label: "rap", value: "rap"}, {label: "ram", value: "ram"}, {label: "rak", value: "rak"}, {label: "rang", value: "rang"}], explanation: "རབ་ uses the བ (ba) suffix, which closes the syllable with a soft 'p' sound." },
+    { promptText: "Which suffix is pronounced like a Scottish rolled 'r'?", answer: "ར", choices: [{label: "ལ", value: "ལ", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}], explanation: "The suffix ར (ra) is pronounced as a rolled 'r'." },
+  ], []);
+
+  const postSuffixQuestions = useMemo(() => [
+    { promptText: "Which two letters can act as post-suffixes?", answer: "da-sa", choices: [{label: "ད and ས", value: "da-sa", isTibetan: true}, {label: "ག and ང", value: "ga-nga", isTibetan: true}, {label: "བ and མ", value: "ba-ma", isTibetan: true}, {label: "ན and ལ", value: "na-la", isTibetan: true}], explanation: "Only ད (da) and ས (sa) can be used as post-suffixes." },
+    { promptText: "Do post-suffixes change how a word is pronounced?", answer: "no", choices: [{label: "Yes", value: "yes"}, {label: "No", value: "no"}], explanation: "Post-suffixes are completely silent and do not alter the pronunciation." },
+    { promptText: "Which post-suffix is still used in modern spelling?", answer: "sa", choices: [{label: "ད", value: "da", isTibetan: true}, {label: "ས", value: "sa", isTibetan: true}], explanation: "The post-suffix ས (sa) is still written today to distinguish homophones, while ད (da) is historical." },
+  ], []);
+
+  const vocabQuestions = useMemo(() => {
+    const targets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 5);
+    return targets.map(v => {
+      const others = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const choices = [v, ...others].sort(() => 0.5 - Math.random()).map(c => ({
+        label: c.read, value: c.read
+      }));
+      return {
+        promptText: "How does", promptHighlight: v.tib, promptEnd: "read?",
+        answer: v.read, audioTarget: v.tib, choices, explanation: `${v.tib} reads [${v.read}].`
+      };
+    });
   }, []);
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
+        {/* Breadcrumb & Hero Component Omitted for Brevity - keeping existing implementation intact */}
         {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
@@ -171,6 +192,7 @@ export default function SuffixesLesson() {
           
           {/* Step 01: What is a suffix? */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
+            {/* Same implementation as before */}
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
@@ -197,19 +219,6 @@ export default function SuffixesLesson() {
                 </p>
               </Card>
             </div>
-
-            <div className="mt-6 border border-border-strong bg-surface overflow-hidden">
-              <div className="grid grid-cols-5 divide-x divide-y sm:divide-y-0 divide-border-strong md:grid-cols-10">
-                {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }} className={`group flex flex-col items-center gap-1 p-4 transition-colors hover:bg-surface-muted ${activeTab === x.key ? "bg-amber-50/50" : ""}`}>
-                    <span className="h-1 w-8" style={{ backgroundColor: x.accent }} />
-                    <span className="mt-1 font-tibetan text-3xl" style={{ color: x.accent }}>{x.head}</span>
-                    <span className="text-xs font-bold text-ink">{x.latin}</span>
-                    <span className="text-[9px] uppercase tracking-widest text-ink-muted font-bold">{x.reads}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </StepContainer>
 
           {/* Step 02: Meet the ten suffixes */}
@@ -222,6 +231,7 @@ export default function SuffixesLesson() {
             </div>
 
             <div className={`border transition-colors duration-500 ${studyMode === "night" ? "bg-stone-900 text-white border-white/10" : "bg-surface border-border-strong"}`}>
+              {/* Table rendering implementation remains identical */}
               <div className={`grid grid-cols-5 md:grid-cols-10 divide-x border-b ${studyMode === "night" ? "divide-white/10 border-white/10" : "divide-border-strong border-border-strong"}`}>
                 {SUFFIXES.map((x) => {
                   const isActive = activeTab === x.key;
@@ -288,12 +298,43 @@ export default function SuffixesLesson() {
                 );
               })()}
             </div>
+            
+            {/* TASK 3: Added Suffix Mastery Check block */}
+            <div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
+              <div className="flex items-center gap-2 mb-6">
+                <CheckCircle2 className="size-5 text-brand-dark" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Suffix Mastery Check</span>
+              </div>
+              <MiniMastery questions={suffixQuestions} playAudio={playAudio} playErrorBeep={playErrorBeep} title="Suffixes" />
+            </div>
           </StepContainer>
 
-          {/* Step 03: Vowel Shift Table */}
+          {/* TASK 3: New Step 03 - Spelling Walkthrough */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+            <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
+              <h2 className="font-serif text-2xl text-ink mb-1">{STEPS[2].title}</h2>
+            </div>
+            <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">
+              To spell a word with a suffix, read the root letter, then the suffix, then read them together as the final word. Click each to hear it spelt out.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {SPELLINGS.map((s, idx) => (
+                <button key={idx} onClick={() => playAudio(s.word)} className="text-left border border-border-strong bg-surface p-6 hover:border-brand hover:shadow-sm transition-all group">
+                   <div className="flex justify-between items-start mb-4">
+                     <span className="font-tibetan text-4xl text-ink group-hover:text-brand transition-colors">{s.word}</span>
+                     <span className="text-xs font-bold text-ink-muted uppercase tracking-widest">{s.en}</span>
+                   </div>
+                   <div className="text-xl font-tibetan text-ink-light mb-1">{s.spell}</div>
+                   <div className="text-sm font-mono text-brand-dark">{s.roman}</div>
+                </button>
+              ))}
+            </div>
+          </StepContainer>
+
+          {/* Step 04: Vowel Shift Table */}
+          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[2].title}</h2>
+              <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
             </div>
             <p className="mb-6 max-w-3xl text-[15px] leading-relaxed text-ink-light">
               Four suffixes — <span className="font-serif font-bold text-ink">ད ན ལ ས</span> — recolour the vowel that precedes them. Find a vowel on the left, follow the row across, and hear how each suffix reshapes it.
@@ -304,7 +345,7 @@ export default function SuffixesLesson() {
                 <table className="w-full min-w-[640px] border-collapse">
                   <thead>
                     <tr className="bg-surface-muted border-b border-border-strong">
-                      <th className="w-32 px-5 py-4 text-left text-eyebrow">Vowel</th>
+                      <th className="w-40 px-5 py-4 text-left text-eyebrow">Vowel</th>
                       {[
                         { suf: "ལ", latin: "la", accent: "#7c3aed", family: "keeps [l]" },
                         { suf: "ན", latin: "na", accent: "#0369a1", family: "keeps [n]" },
@@ -321,23 +362,23 @@ export default function SuffixesLesson() {
                       ))}
                     </tr>
                   </thead>
+                  
+                  {/* TASK 3: Updated to map over proper VOWEL_SHIFTS object with real words */}
                   <tbody className="divide-y divide-border-strong">
-                    {[
-                      { vowel: "ི", label: "[i]", cells: ["[il]", "[in]", "[i]", "[i]"] },
-                      { vowel: "ུ", label: "[u]", cells: ["[ül]", "[ün]", "[ü]", "[ü]"] },
-                      { vowel: "ེ", label: "[e]", cells: ["[el]", "[en]", "[e]", "[e]"] },
-                      { vowel: "ོ", label: "[o]", cells: ["[öl]", "[ön]", "[ö]", "[ö]"] },
-                    ].map((r) => (
+                    {VOWEL_SHIFTS.map((r) => (
                       <tr key={r.label} className="hover:bg-surface-muted transition-colors">
                         <td className="px-5 py-5 border-r border-border-strong">
                           <div className="flex items-center gap-4">
-                            <span className="font-serif leading-none text-[2rem] text-brand">{r.vowel}</span>
+                            <span className="font-serif leading-none text-[2.5rem] text-brand">{r.vowel}</span>
                             <span className="text-[15px] font-bold text-ink">{r.label}</span>
                           </div>
                         </td>
                         {r.cells.map((cell, i) => (
                           <td key={i} className="border-l border-border-strong px-4 py-5 text-center">
-                            <span className="inline-block font-mono text-lg font-bold" style={{ color: ["#7c3aed", "#0369a1", "#0891b2", "#0284c7"][i] }}>{cell}</span>
+                            <button onClick={() => playAudio(cell.word)} className="flex w-full flex-col items-center justify-center gap-1 hover:opacity-80 transition-opacity">
+                              <span className="inline-block font-tibetan text-[2rem] font-bold" style={{ color: ["#7c3aed", "#0369a1", "#0891b2", "#0284c7"][i] }}>{cell.word}</span>
+                              <span className="text-xs font-mono font-bold text-ink-muted">[{cell.read}]</span>
+                            </button>
                           </td>
                         ))}
                       </tr>
@@ -345,37 +386,18 @@ export default function SuffixesLesson() {
                   </tbody>
                 </table>
               </div>
-
-              <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border-strong border-t border-border-strong">
-                <div className="p-6 bg-surface-muted">
-                  <div className="mb-3 flex items-center gap-3">
-                    <span className="h-1 w-8" style={{ backgroundColor: "#7c3aed" }} />
-                    <span className="text-eyebrow text-ink-light">ལ · ན — closing consonant heard</span>
-                  </div>
-                  <p className="text-[13px] font-bold leading-relaxed text-ink-light">
-                    The suffix keeps its own sound as a soft [l] or [n], and the vowel fronts to match.
-                  </p>
-                </div>
-                <div className="p-6 bg-surface-muted">
-                  <div className="mb-3 flex items-center gap-3">
-                    <span className="h-1 w-8" style={{ backgroundColor: "#0284c7" }} />
-                    <span className="text-eyebrow text-ink-light">ད · ས — silent, vowel only</span>
-                  </div>
-                  <p className="text-[13px] font-bold leading-relaxed text-ink-light">
-                    Both letters drop out of pronunciation. Only the fronted vowel remains.
-                  </p>
-                </div>
-              </div>
             </div>
           </StepContainer>
 
-          {/* Step 04: Post-suffixes */}
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+          {/* Step 05: Post-suffixes */}
+          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">
                 The two post-suffixes <span className="font-serif italic text-ink-muted ml-2">ཡང་འཇུག་གཉིས།</span>
               </h2>
             </div>
+            {/* Same history UI... */}
+            
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">
               Only two letters — <span className="font-serif font-bold text-ink">ད</span> and <span className="font-serif font-bold text-ink">ས</span> — may sit <em>after</em> a suffix, becoming the very last letter of the word. They are <span className="font-bold text-ink">silent</span> — they don’t change how the word is pronounced.
             </p>
@@ -459,12 +481,22 @@ export default function SuffixesLesson() {
                 </div>
               </Card>
             </div>
+
+            {/* TASK 3: Added Post-Suffix Mastery Check block */}
+            <div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
+              <div className="flex items-center gap-2 mb-6">
+                <CheckCircle2 className="size-5 text-sky-700" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Post-Suffix Mastery Check</span>
+              </div>
+              <MiniMastery questions={postSuffixQuestions} playAudio={playAudio} playErrorBeep={playErrorBeep} title="Post-Suffixes" />
+            </div>
           </StepContainer>
 
-          {/* Step 05: Root Letter Recognition */}
-          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
-            <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[4].title}</h2>
+          {/* Step 06: Root Letter Recognition */}
+          <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+             {/* Same logic, index incremented */}
+             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
+              <h2 className="font-serif text-2xl text-ink">{STEPS[5].title}</h2>
             </div>
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">
               Now that words can stretch to four horizontal letters, the eye needs a strategy. With practice, finding the root becomes automatic.
@@ -488,10 +520,10 @@ export default function SuffixesLesson() {
             </div>
           </StepContainer>
 
-          {/* Step 06: Vocabulary */}
-          <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+          {/* Step 07: Vocabulary */}
+          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[5].title}</h2>
+              <h2 className="font-serif text-2xl text-ink">{STEPS[6].title}</h2>
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong">{VOCAB.length} words</span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -514,17 +546,17 @@ export default function SuffixesLesson() {
                 <CheckCircle2 className="size-5 text-brand-dark" />
                 <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Vocab Mastery Check</span>
               </div>
-              <VocabMiniMastery playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+              <MiniMastery questions={vocabQuestions} playAudio={playAudio} playErrorBeep={playErrorBeep} title="Vocabulary" />
             </div>
           </StepContainer>
 
-          {/* Step 07: Cumulative Practice */}
-          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
+          {/* Step 08: Cumulative Practice */}
+          <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)}>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 08: Final Test */}
-          <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => {}} isLast>
+          {/* Step 09: Final Test */}
+          <StepContainer index={8} step={STEPS[8]} status={statusOf(8)} isExpanded={expandedStep === 8} onToggle={() => toggleStep(8)} onContinue={() => {}} isLast>
             <QuizModule 
               title="Final Step Test" 
               intro="Score 80% or higher to unlock the next step: Capstone." 
@@ -544,26 +576,25 @@ export default function SuffixesLesson() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Subcomponents                                                       */
+/* Generic Mini Mastery Component for Tasks 3                          */
 /* ------------------------------------------------------------------ */
-
-function VocabMiniMastery({ playAudio, playingItem, playErrorBeep }: any) {
+function MiniMastery({ questions, playAudio, playErrorBeep, title = "Mastery Check" }: any) {
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
 
-  const question = useMemo(() => {
-    const answer = VOCAB[step % VOCAB.length];
-    const others = VOCAB.filter((v: any) => v.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [...others, answer].sort(() => 0.5 - Math.random());
-    return { answer, choices };
-  }, [step]);
+  const question = questions[step % questions.length];
+  const total = questions.length;
 
-  const total = 6;
-  const pick = (read: string) => {
+  const pick = (val: string) => {
     if (picked) return;
-    setPicked(read);
-    if (read === question.answer.read) { setScore(s => s + 1); playAudio(question.answer.tib); } else { playErrorBeep(); }
+    setPicked(val);
+    if (val === question.answer) {
+      setScore(s => s + 1);
+      if (question.audioTarget) playAudio(question.audioTarget);
+    } else {
+      playErrorBeep();
+    }
   };
 
   if (step >= total) {
@@ -582,37 +613,41 @@ function VocabMiniMastery({ playAudio, playingItem, playErrorBeep }: any) {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between text-eyebrow text-ink-muted">
-        <span>Question {step + 1} of {total}</span>
+        <span>{title} · Question {step + 1} of {total}</span>
         <span className="text-brand-dark">Score {score}</span>
       </div>
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <span className="text-[15px] font-bold text-ink-light">How does</span>
-        <span className="font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink">{question.answer.tib}</span>
-        <span className="text-[15px] font-bold text-ink-light">read?</span>
+        <span className="text-[15px] font-bold text-ink-light">{question.promptText}</span>
+        {question.promptHighlight && (
+          <span className="font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink">{question.promptHighlight}</span>
+        )}
+        {question.promptEnd && (
+          <span className="text-[15px] font-bold text-ink-light">{question.promptEnd}</span>
+        )}
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4">
         {question.choices.map((c: any) => {
-          const right = picked && c.read === question.answer.read;
-          const wrong = picked === c.read && c.read !== question.answer.read;
+          const right = picked && c.value === question.answer;
+          const wrong = picked === c.value && c.value !== question.answer;
           return (
             <button
-              key={c.read} disabled={!!picked && c.read !== question.answer.read} 
-              onClick={() => { if (!picked) { pick(c.read); } else if (c.read === question.answer.read) { playAudio(question.answer.tib); } }}
-              className={`flex items-center justify-center border-2 font-mono font-bold text-xl py-6 transition-all ${
-                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm cursor-pointer hover:bg-emerald-100" 
+              key={c.value} disabled={!!picked} 
+              onClick={() => pick(c.value)}
+              className={`flex items-center justify-center border-2 font-bold text-xl py-6 px-4 text-center transition-all ${
+                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" 
                 : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" 
                 : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"
-              }`}
+              } ${c.isTibetan ? 'font-tibetan text-[2rem]' : 'font-mono'}`}
             >
-              {c.read}
+              {c.label}
             </button>
           );
         })}
       </div>
       {picked && (
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-border-strong bg-surface shadow-sm">
-          <span className={`text-sm font-bold ${picked === question.answer.read ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === question.answer.read ? `Correct!` : `Answer: ${question.answer.tib} reads [${question.answer.read}].`}
+          <span className={`text-sm font-bold ${picked === question.answer ? "text-emerald-600" : "text-rose-600"}`}>
+            {picked === question.answer ? `Correct!` : question.explanation || `Incorrect.`}
           </span>
           <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">
             Next <ChevronRight size={16} />

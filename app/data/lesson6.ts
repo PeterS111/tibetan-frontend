@@ -1,5 +1,3 @@
-// app/data/lesson6.ts
-
 export type Family = "silent" | "nasal" | "up" | "e-shift" | "el" | "r-scot";
 
 export type SuffixKey = "ga" | "nga" | "da" | "na" | "ba" | "ma" | "a" | "ra" | "la" | "sa";
@@ -180,6 +178,42 @@ export const SUFFIXES: Suffix[] = [
   },
 ];
 
+// TASK 3: Added spelling walkthrough data
+export const SPELLINGS = [
+  { word: "ལག་", spell: "ལ་ག་ལག", roman: "la ga lak", en: "hand (part of lak-pa)" },
+  { word: "ནད་", spell: "ན་ད་ནད", roman: "na da ne", en: "illness" },
+  { word: "ལམ་", spell: "ལ་མ་ལམ", roman: "la ma lam", en: "path" },
+  { word: "རང་", spell: "ར་ང་རང", roman: "ra nga rang", en: "self" }
+];
+
+// TASK 3: Updated to use actual Tibetan words for Vowel Shifts
+export const VOWEL_SHIFTS = [
+  { vowel: "ི", label: "[i]", cells: [
+    { word: "རིལ་", read: "ril", en: "pill / round" },
+    { word: "རིན་", read: "rin", en: "price" },
+    { word: "ཡིད་", read: "yi", en: "mind" },
+    { word: "རིས་", read: "ri", en: "figure" }
+  ]},
+  { vowel: "ུ", label: "[u]", cells: [
+    { word: "ཡུལ་", read: "yül", en: "country" },
+    { word: "ཐུན་", read: "thün", en: "session" },
+    { word: "བུད་", read: "pü", en: "blown" },
+    { word: "དུས་", read: "tü", en: "time" }
+  ]},
+  { vowel: "ེ", label: "[e]", cells: [
+    { word: "སེལ་", read: "sel", en: "remove" },
+    { word: "ལེན་", read: "len", en: "take" },
+    { word: "མེད་", read: "me", en: "without" },
+    { word: "ཤེས་", read: "she", en: "know" }
+  ]},
+  { vowel: "ོ", label: "[o]", cells: [
+    { word: "སོལ་", read: "söl", en: "coal" },
+    { word: "དོན་", read: "tön", en: "meaning" },
+    { word: "བོད་", read: "phö", en: "Tibet" },
+    { word: "ཆོས་", read: "chö", en: "dharma" }
+  ]},
+];
+
 export interface Vocab {
   tib: string;
   read: string;
@@ -225,13 +259,15 @@ export const QUIZ: QuizItem[] = [
   { word: "ཁམས་", read: "kham", suffix: "ma", post: "sa" },
 ];
 
+// TASK 3: Reorganized STEPS to include the new Spelling step (now exactly 9 steps)
 export const STEPS = [
   { id: "intro", eyebrow: "Step 01", title: "What is a suffix?", description: "The ten suffixes and the two post-suffixes." },
   { id: "suffixes", eyebrow: "Step 02", title: "Meet the ten suffixes", description: "Study each suffix and its spelling." },
-  { id: "vowel", eyebrow: "Step 03", title: "When the vowel meets the suffix", description: "How suffixes reshape the preceding vowel." },
-  { id: "post", eyebrow: "Step 04", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical vs modern." },
-  { id: "root", eyebrow: "Step 05", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
-  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
-  { id: "practice", eyebrow: "Step 07", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
-  { id: "test", eyebrow: "Step 08", title: "Step complete", description: "Pass to unlock the next lesson." }
+  { id: "spelling", eyebrow: "Step 03", title: "Spelling walkthrough", description: "How to spell words with a suffix." },
+  { id: "vowel", eyebrow: "Step 04", title: "When the vowel meets the suffix", description: "How suffixes reshape the preceding vowel." },
+  { id: "post", eyebrow: "Step 05", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical vs modern." },
+  { id: "root", eyebrow: "Step 06", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
+  { id: "vocab", eyebrow: "Step 07", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
+  { id: "practice", eyebrow: "Step 08", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
+  { id: "test", eyebrow: "Step 09", title: "Step complete", description: "Pass to unlock the next lesson." }
 ];

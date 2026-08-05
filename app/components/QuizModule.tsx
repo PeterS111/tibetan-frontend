@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -21,7 +20,7 @@ export default function QuizModule({
   isUnlockTest, 
   isVocabMatch,
   nextLessonPath,
-  isLesson1 // Trigger for showing transliteration vs phonetics
+  isLesson1 
 }: any) {
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
@@ -47,7 +46,7 @@ export default function QuizModule({
         choices: choices.map(c => ({
           value: c.tib,
           tib: c.tib,
-          translit: c.translit, // Pass them both purely, resolve logic on render
+          translit: c.translit, 
           pron: c.pron,
           en: c.en,
           emoji: c.emoji,
@@ -65,7 +64,6 @@ export default function QuizModule({
     return (
       <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
-          {/* Changed "Final Test" to "Step Complete" */}
           <Trophy className="size-3.5" /> Step Complete
         </div>
         <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to complete this step?</h3>
@@ -137,9 +135,9 @@ export default function QuizModule({
     }
   };
 
-  const currentIsVocabMatch = isVocabMatch || currentQ.type === 'vocab';
+  // Robustly determine if this question tests Vocabulary meaning
+  const isVocab = isVocabMatch || currentQ.type === 'vocab' || (currentQ.questionText && currentQ.questionText.includes("Tibetan word for"));
 
-  // Format reading (remove brackets, prefer translit in Lesson 1, pron everywhere else)
   const readingToDisplay = isLesson1 
     ? (currentQ.answerObj?.translit || currentQ.answerObj?.pron) 
     : (currentQ.answerObj?.pron || currentQ.answerObj?.translit);
@@ -164,7 +162,7 @@ export default function QuizModule({
           <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Prompt</div>
           {currentQ.questionText ? (
             <span className="text-xl text-stone-800">{currentQ.questionText}</span>
-          ) : currentIsVocabMatch ? (
+          ) : isVocab ? (
             <span className="text-xl text-stone-800">Which word means <span className="font-bold">"{currentQ.answerObj?.en}"</span>?</span>
           ) : currentQ.isAudioType ? (
             <span className="text-xl text-stone-800">Listen and select the matching option.</span>
@@ -174,13 +172,12 @@ export default function QuizModule({
           
           {currentQ.prominentTibetan && (
             <div className="mt-4">
-              {/* Fix Overlap: Added leading-[1.4] and pb-4 */}
               <span className="font-serif leading-[1.4] pb-4 block text-stone-900" style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span>
             </div>
           )}
         </div>
         
-        {(!currentIsVocabMatch && !currentQ.questionText) && !currentQ.prominentTibetan && (
+        {(!isVocab && !currentQ.questionText) && !currentQ.prominentTibetan && (
           <button onClick={() => playAudio(currentQ.audioString || currentQ.answer)} disabled={playingItem !== null} className={`inline-flex items-center justify-center gap-2 border px-5 py-2 font-bold transition-colors shrink-0 ${currentQ.isAudioType ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
              {playingItem === (currentQ.audioString || currentQ.answer) ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} 
              {currentQ.isAudioType ? "PLAY AUDIO" : "Play Hint"}
@@ -214,8 +211,8 @@ export default function QuizModule({
                 <div className={`text-xl font-bold ${currentQ.type === 'vocab' ? 'font-serif' : 'font-mono'}`}>{c.label}</div>
               ) : (
                 <>
-                  {c.emoji && !currentIsVocabMatch && <span className="text-3xl mb-2">{c.emoji}</span>}
-                  {/* Fix Overlap: Added leading-normal and pb-2 here too */}
+                  {/* TASK 1: Hide Emojis fully if it's a Vocab test */}
+                  {c.emoji && !isVocab && <span className="text-3xl mb-2">{c.emoji}</span>}
                   <span className="font-serif text-[3rem] leading-normal pb-2 tibetan">{c.tib || c.value}</span>
                 </>
               )}

@@ -1,4 +1,4 @@
-// app/components/practice/PracticeSuite.tsx
+
 
 "use client";
 
@@ -10,13 +10,12 @@ import {
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 
-// --- THE UNIFIED INTERFACE ---
 export interface PracticeItem {
   id: string;
   tibetan: string;     
-  reading: string;     // Fallback text
-  translit?: string;   // Added for Lesson 1 specific rendering
-  pron?: string;       // Added for standard phonetics
+  reading: string;     
+  translit?: string;   
+  pron?: string;       
   english: string;     
   audioTarget: string; 
   emoji?: string;      
@@ -32,10 +31,9 @@ interface PracticeSuiteProps {
   playAudio: (text: string) => void;
   playingItem: string | null;
   playErrorBeep: () => void;
-  isLesson1?: boolean; // Prop to trigger transliteration rules
+  isLesson1?: boolean; 
 }
 
-// Helper: Ensure we resolve the correct string without brackets based on lesson logic
 const getReading = (item: PracticeItem, isLesson1: boolean) => {
   const preferred = isLesson1 ? (item.translit || item.pron) : (item.pron || item.translit);
   return preferred || item.reading;
@@ -44,7 +42,6 @@ const getReading = (item: PracticeItem, isLesson1: boolean) => {
 export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
   const [tab, setTab] = useState<"flash" | "match" | "srs">("flash");
 
-  // Flatten all items for games that mix everything (like the Match game or SRS)
   const allItems = useMemo(() => groups.flatMap(g => g.items), [groups]);
 
   return (
@@ -109,11 +106,13 @@ function Flashcards({ groups, speak, playingItem, isLesson1 }: any) {
       <button onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-border-strong shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden">
         {!flipped ? (
           <div className="flex flex-col items-center gap-4 group-hover:scale-105 transition-transform">
-            {card.emoji && <span className="text-5xl">{card.emoji}</span>}
+            {/* TASK 1: Emojis completely removed from the front of the flashcard */}
             <span className="text-tibetan-display">{card.tibetan}</span>
           </div>
         ) : (
           <div className="max-w-md px-6 text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
+            {/* TASK 1: Emojis moved to the back of the flashcard */}
+            {card.emoji && <span className="text-5xl mb-4">{card.emoji}</span>}
             <div className="text-2xl sm:text-3xl font-bold text-ink mb-2 leading-relaxed">{card.english}</div>
             <div className="text-sm sm:text-lg text-ink-light font-bold uppercase tracking-widest">{getReading(card, isLesson1)}</div>
           </div>
@@ -240,7 +239,7 @@ function MemoryReview({ items, speak, playingItem }: any) {
           <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
         </div>
         <div className="bg-white border border-border-strong p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
-          {deck[0].emoji && <div className="text-6xl mb-6">{deck[0].emoji}</div>}
+          {/* TASK 1: Emojis completely removed from the Tibetan reading display */}
           <div className="text-tibetan-display mb-8 text-center">{deck[0].tibetan}</div>
           <Button variant="outline" onClick={() => speak(deck[0].audioTarget)} disabled={playingItem !== null}>
             {playingItem === deck[0].audioTarget ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand" />} Check Sound
