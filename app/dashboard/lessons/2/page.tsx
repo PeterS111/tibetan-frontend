@@ -1,4 +1,4 @@
-// app/dashboard/lessons/2/page.tsx
+
 
 "use client";
 
@@ -44,8 +44,8 @@ export default function VowelsLesson() {
     {
       name: "Vocabulary",
       items: VOCAB.map(v => ({
-        // CACHE BUSTER UPDATE HERE: Use v.audio if it exists
-        id: `voc-${v.tib}`, tibetan: v.tib, reading: v.translit, english: v.en, audioTarget: v.audio || v.tib, emoji: v.emoji
+        // Reverted to clean v.tib without the cache buster
+        id: `voc-${v.tib}`, tibetan: v.tib, reading: v.translit, english: v.en, audioTarget: v.tib, emoji: v.emoji
       }))
     }
   ], []);
@@ -295,9 +295,9 @@ export default function VowelsLesson() {
                     <div className="text-eyebrow mb-3">{v.translit}</div>
                     <div className="flex items-center justify-between border-t border-border-strong pt-3 mt-auto">
                       <span className="text-sm font-bold text-ink">{v.en}</span>
-                      {/* CACHE BUSTER UPDATE HERE */}
-                      <button onClick={() => playAudio(v.audio || v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center bg-surface-muted border border-border-strong text-ink-light transition hover:bg-stone-200">
-                        {playingItem === (v.audio || v.tib) ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4" />}
+                      {/* Reverted back to standard v.tib audio lookup */}
+                      <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center bg-surface-muted border border-border-strong text-ink-light transition hover:bg-stone-200">
+                        {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4" />}
                       </button>
                     </div>
                   </div>
