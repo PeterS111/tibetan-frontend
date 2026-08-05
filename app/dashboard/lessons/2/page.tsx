@@ -6,7 +6,7 @@ import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import Link from "next/link";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
-  Info, Moon, Sun, Volume2, Loader2, X, CheckCircle2, Shuffle
+  Info, Moon, Sun, Volume2, Loader2, X, CheckCircle2
 } from "lucide-react";
 
 // --- Custom Hooks ---
@@ -18,7 +18,6 @@ import { VOWELS, VOCAB, STEPS, POSITION_META, type Vowel, type Position } from "
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
-import { Badge } from "@/app/components/ui/Badge";
 import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
@@ -250,17 +249,29 @@ export default function VowelsLesson() {
                         {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand-dark" />}
                       </Button>
                     </div>
-                    <div className="mt-6 border-t border-border-strong pt-5">
-                      <div className="text-eyebrow mb-3">Try it with other consonants</div>
-                      <div className="flex flex-wrap gap-2">
-                        {v.examples.map((ex) => (
-                          <Button key={ex} variant="outline" onClick={() => playAudio(ex)} disabled={playingItem !== null}>
-                            <span className="font-tibetan text-2xl text-ink">{ex}</span>
-                            {playingItem === ex ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand" />}
-                          </Button>
-                        ))}
+                    
+                    {/* Render out all individual spellings using v.spellings data */}
+                    {v.spellings && v.spellings.length > 0 && (
+                      <div className="mt-8 border-t border-border-strong pt-5">
+                        <div className="text-eyebrow mb-4 text-ink-muted">Spelling Walkthrough</div>
+                        <div className="grid gap-3">
+                          {v.spellings.map((s) => (
+                            <button 
+                              key={s.word} 
+                              onClick={() => playAudio(s.audio || s.word)} 
+                              className="text-left border border-border-strong bg-surface hover:bg-brand-light/20 p-4 hover:border-brand hover:shadow-sm transition-all group flex flex-col gap-1"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-tibetan text-4xl text-ink group-hover:text-brand transition-colors">{s.word}</span>
+                                {playingItem === (s.audio || s.word) ? <Loader2 className="size-5 animate-spin text-brand" /> : <Volume2 className="size-5 text-ink-muted group-hover:text-brand transition-colors" />}
+                              </div>
+                              <div className="text-xl font-tibetan text-ink-light">{s.spell}</div>
+                              <div className="text-xs font-mono text-brand-dark mt-1">{s.roman}</div>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
