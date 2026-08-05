@@ -64,10 +64,31 @@ export default function QuizModule({
   if (!hasStarted) {
     return (
       <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
+          <Trophy className="size-3.5" /> Step Complete
+        </div>
         <h3 className="text-2xl font-serif text-stone-900 mb-2">Ready to complete this step?</h3>
-        <button onClick={() => setHasStarted(true)} className="bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600 shadow-sm">
+        <p className="text-sm text-stone-600 mb-6">
+          {total} questions drawn from everything you covered in this lesson. Score <span className="font-bold">80%</span> or higher to pass. You can retake the test as many times as you like.
+        </p>
+        <button 
+          onClick={() => setHasStarted(true)} 
+          className="bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600 shadow-sm"
+        >
           Start <ChevronRight size={16} />
         </button>
+        
+        <div className="border border-stone-200 p-5 bg-[#fafaf9]">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3">
+             <Lock size={14} /> Progression
+          </div>
+          <p className="text-sm text-stone-600 mb-4">Passing this test unlocks the next step in the syllabus. Your progress is saved locally in your browser.</p>
+          <ul className="space-y-2 text-sm text-stone-600">
+             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Mix of recognition and pronunciation prompts</li>
+             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Immediate feedback after each question</li>
+             <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Unlimited retakes — best score is kept</li>
+          </ul>
+        </div>
       </div>
     );
   }
@@ -76,12 +97,30 @@ export default function QuizModule({
     const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
     return (
       <div className={`flex flex-col items-center justify-center text-center p-8 border ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
+        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm border ${passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
+          {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
+        </div>
         <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4">{passed ? "Test Passed!" : "Keep Practicing"}</h3>
+        <p className="text-stone-600 mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {total}.</p>
+        
         <div className="flex gap-4">
           <button onClick={() => { setStep(0); setScore(0); setPicked(null); if(isUnlockTest) setHasStarted(false); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2">
             <Shuffle size={18} /> Retake
           </button>
+          {passed && isUnlockTest && nextLessonPath && (
+            <Link href={nextLessonPath} className="px-8 py-3 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
+              Unlock Next Step <ArrowRight size={18} />
+            </Link>
+          )}
+          {passed && isUnlockTest && !nextLessonPath && (
+            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 border border-amber-600">
+              Unlock Next Step <ArrowRight size={18} />
+            </button>
+          )}
         </div>
+        {DEV_BYPASS_LOCKS && !passed && isUnlockTest && (
+          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 border border-rose-200">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
+        )}
       </div>
     );
   }
@@ -102,7 +141,18 @@ export default function QuizModule({
 
   return (
     <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
+      {!isUnlockTest && (
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
+          <Sparkles size={14} /> Checkpoint
+        </div>
+      )}
       <h3 className="text-xl font-serif text-stone-900 mb-2">{title}</h3>
+      {intro && <p className="text-sm text-stone-600 mb-6">{intro}</p>}
+
+      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400 border-b border-stone-200 pb-3 mb-6">
+        <span>Question {step + 1} of {total}</span>
+        <span className="text-amber-500">Score {score}</span>
+      </div>
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
@@ -126,6 +176,12 @@ export default function QuizModule({
           <button onClick={() => playAudio(currentQ.audioString || currentQ.answer)} disabled={playingItem !== null} className={`inline-flex items-center justify-center gap-2 border px-5 py-2 font-bold transition-colors shrink-0 ${currentQ.isAudioType ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
              {playingItem === (currentQ.audioString || currentQ.answer) ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} 
              {currentQ.isAudioType ? "PLAY AUDIO" : "Play Hint"}
+          </button>
+        )}
+        
+        {currentQ.audioString && !currentQ.prominentTibetan && currentQ.questionText && (
+          <button onClick={() => playAudio(currentQ.audioString)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-white px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors shadow-sm mt-4 sm:mt-0 shrink-0">
+            {playingItem === currentQ.audioString ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Hear Sound
           </button>
         )}
       </div>
