@@ -122,17 +122,21 @@ export default function VowelsLesson() {
 
 <div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => {
-                  // i, e, o work perfectly. For u, we prepend a Non-Breaking Space to bypass the browser's duplicate circle bug.
-                  const displayMark = v.key === 'u' ? "\u00A0\u0F74" : (v.key === 'i' ? "\u0F72" : v.key === 'e' ? "\u0F7A" : "\u0F7C");
-                  
                   return (
                     <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
                       <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className={v.key === 'u' ? "translate-x-[-0.12em]" : ""}>
-                          {displayMark}
-                        </span>
+                        {v.key === 'u' ? (
+                          <span className="relative inline-flex items-center justify-center">
+                            <span className="absolute">{"\u25CC"}</span>
+                            {/* Thin space suppresses the browser circle, lang="bo" prevents font dropping */}
+                            <span lang="bo" className="relative z-10 -translate-x-[0.05em]">{"\u2009\u0F74"}</span>
+                          </span>
+                        ) : (
+                          // The original method that works perfectly for i, e, and o
+                          "\u25CC" + v.mark
+                        )}
                       </span>
                       
                       {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
