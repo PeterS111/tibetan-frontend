@@ -127,9 +127,11 @@ export default function VowelsLesson() {
                     <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
-                      <span className={`relative flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className="absolute">{"\u25CC"}</span>
-                        <span className="relative z-10">{"\u00A0" + pureMark}</span>
+                      <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+                        <span className="inline-grid items-baseline justify-items-center">
+                          <span className="col-start-1 row-start-1">{"\u25CC"}</span>
+                          <span className="col-start-1 row-start-1">{"\u200B" + pureMark}</span>
+                        </span>
                       </span>
                       
                       {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
