@@ -120,6 +120,8 @@ export default function VowelsLesson() {
             <div className={`relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-border-subtle bg-gradient-to-br from-stone-50 to-white"}`}>
               <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
 
+
+
 <div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => {
                   return (
@@ -128,11 +130,15 @@ export default function VowelsLesson() {
                       
                       <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
                         {v.key === 'u' ? (
-                          <span className="inline-grid place-items-center">
-                            {/* Grid guarantees they share the exact same space without collapsing */}
-                            <span className="col-start-1 row-start-1">{"\u25CC"}</span>
-                            {/* A standard space preserves the Tibetan font and stops the browser from generating double circles */}
-                            <span className="col-start-1 row-start-1 -translate-x-[0.15em]">{" \u0F74"}</span>
+                          <span className="relative flex items-center justify-center">
+                            <span className="absolute">{"\u25CC"}</span>
+                            {/* We render the full ཨུ to guarantee the authentic font, then visually chop off the top 60% */}
+                            <span 
+                              className="relative z-10 -translate-x-[0.12em]" 
+                              style={{ clipPath: "polygon(0 60%, 100% 60%, 100% 150%, 0 150%)" }}
+                            >
+                              {"ཨ\u0F74"}
+                            </span>
                           </span>
                         ) : (
                           "\u25CC" + v.mark
