@@ -186,20 +186,30 @@ export default function QuizModule({
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {currentQ.choices.map((c: any) => {
           const isRight = picked && c.value === currentQ.answer;
           const isWrong = picked === c.value && c.value !== currentQ.answer;
           let stateClass = "bg-white border-stone-200 hover:border-amber-400 text-stone-900 hover:shadow-sm";
-          if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400";
+          if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400 cursor-pointer hover:bg-emerald-100";
           else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400 opacity-60";
           else if (picked) stateClass = "bg-stone-50 text-stone-300 opacity-60 border-stone-200";
 
           return (
             <button
-              key={c.value} disabled={!!picked} onClick={() => pick(c.value)}
-              className={`py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
+              key={c.value} 
+              disabled={!!picked && !isRight} 
+              onClick={() => {
+                if (!picked) pick(c.value);
+                else if (isRight) playAudio(currentQ.audioString || currentQ.answer);
+              }}
+              className={`relative py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
             >
+              {isRight && (
+                <div className="absolute top-3 right-3 text-emerald-600 opacity-70">
+                  {playingItem === (currentQ.audioString || currentQ.answer) ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />}
+                </div>
+              )}
               {c.label ? (
                 <div className={`text-xl font-bold ${currentQ.type === 'vocab' ? 'font-serif' : 'font-mono'}`}>{c.label}</div>
               ) : (
