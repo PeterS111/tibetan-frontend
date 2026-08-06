@@ -121,15 +121,21 @@ export default function VowelsLesson() {
               <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
 
 <div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
-                {filtered.map((v) => (
-                  <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
-                    <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
-                    <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                      {v.key === "u" ? v.mark : "\u25CC" + v.mark}
-                    </span>
-                    {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
-                  </button>
-                ))}
+                {filtered.map((v) => {
+                  const pureMark = v.mark.replace(/\u25CC/g, '');
+                  return (
+                    <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
+                      <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
+                      
+                      <span className={`relative flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+                        <span className="absolute">{"\u25CC"}</span>
+                        <span className="relative z-10">{"\u00A0" + pureMark}</span>
+                      </span>
+                      
+                      {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="relative grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
