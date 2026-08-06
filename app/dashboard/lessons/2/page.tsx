@@ -128,13 +128,13 @@ export default function VowelsLesson() {
                       
                       <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
                         {v.key === 'u' ? (
-                          <span className="relative inline-flex items-center justify-center">
-                            <span className="absolute">{"\u25CC"}</span>
-                            {/* Thin space suppresses the browser circle, lang="bo" prevents font dropping */}
-                            <span lang="bo" className="relative z-10 -translate-x-[0.05em]">{"\u2009\u0F74"}</span>
+                          <span className="inline-grid place-items-center">
+                            {/* Grid guarantees they share the exact same space without collapsing */}
+                            <span className="col-start-1 row-start-1">{"\u25CC"}</span>
+                            {/* A standard space preserves the Tibetan font and stops the browser from generating double circles */}
+                            <span className="col-start-1 row-start-1 -translate-x-[0.15em]">{" \u0F74"}</span>
                           </span>
                         ) : (
-                          // The original method that works perfectly for i, e, and o
                           "\u25CC" + v.mark
                         )}
                       </span>
