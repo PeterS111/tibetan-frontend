@@ -132,11 +132,16 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
         formData.append('module_id', lessonId.toString());
         formData.append('unlocked_step', nextIndex.toString());
         
-        await fetch(`${apiUrl}/api/update-lesson-progress`, {
+        const res = await fetch(`${apiUrl}/api/update-lesson-progress`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData
         });
+
+        if (!res.ok) {
+           const errText = await res.text();
+           console.error("Backend refused to update progress:", errText);
+        }
       }
     } catch (e) {
       console.error("Failed to save progress to server", e);

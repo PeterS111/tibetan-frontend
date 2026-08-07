@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Loader2, Volume2, ChevronRight, Trophy, Sparkles, 
@@ -63,6 +63,15 @@ export default function QuizModule({
   const total = providedQuestions ? providedQuestions.length : questionCount;
   const currentQ = questions[step];
 
+  useEffect(() => {
+    if (step >= total) {
+      const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
+      if (passed && onPass) {
+        onPass();
+      }
+    }
+  }, [step, total, score, onPass]);
+
   if (!hasStarted) {
     return (
       <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
@@ -100,7 +109,6 @@ export default function QuizModule({
     
     const handleUnlock = async () => {
       setIsSaving(true);
-      if (onPass) await onPass();
       if (nextLessonPath) {
         router.push(nextLessonPath);
       } else {

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
@@ -342,9 +340,13 @@ export default function ConsonantsLesson() {
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Syllabus
           </Link>
-          <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
-            <CheckCircle2 size={18} /> Mark step complete
-          </Button>
+          
+          {expandedStep !== STEPS.length - 1 && (
+            <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
+              <CheckCircle2 size={18} /> Mark step complete
+            </Button>
+          )}
+
           <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-dark transition-colors">
             Next: The Four Vowels <ArrowRight size={16} />
           </Link>
