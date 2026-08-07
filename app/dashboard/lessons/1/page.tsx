@@ -48,10 +48,18 @@ export default function ConsonantsLesson() {
     }
   ], []);
 
-  return (
+return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto px-6 py-8">
         
+        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
+        <button 
+          onClick={() => markComplete(STEPS.length - 1)} 
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg"
+        >
+          🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE TO DATABASE 🛠️
+        </button>
+
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Steps</Link>
