@@ -24,15 +24,15 @@ import QuizModule from "@/app/components/QuizModule";
 
 export default function SuperscriptsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  
+  // 🚨 FIXED: Hardcoded 5 steps
+  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(5);
 
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   
-  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
   const [isBypassing, setIsBypassing] = useState(false);
 
-  // Map to Generic Practice Suite Format
   const practiceGroups = useMemo(() => [
     {
       name: "Stacks",
@@ -48,12 +48,10 @@ export default function SuperscriptsLesson() {
     }
   ], []);
 
-  // Generate dynamic questions for the Final Step Test
   const quizQuestions = useMemo(() => {
     const allCombos = SUPERS.flatMap(s => s.combos);
     const qs = [];
     
-    // Vocab Questions
     const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
     for (const v of vTargets) {
       const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -66,7 +64,6 @@ export default function SuperscriptsLesson() {
       });
     }
 
-    // Stack reading questions
     const cTargets = [...allCombos].sort(() => 0.5 - Math.random()).slice(0, 6);
     for (const c of cTargets) {
       const wrongs = allCombos.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -87,15 +84,11 @@ export default function SuperscriptsLesson() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
-        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(STEPS.length - 1);
-            // Wait a second to guarantee the network request finishes, then auto-redirect
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 1000);
+            await markComplete(4); // 🚨 FIXED: Hardcoded index 4
+            setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
           className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
@@ -103,7 +96,6 @@ export default function SuperscriptsLesson() {
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
 
-        {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
           <ChevronRight size={14} />
@@ -112,7 +104,6 @@ export default function SuperscriptsLesson() {
           <span className="text-ink">Superscripts</span>
         </div>
 
-        {/* Hero */}
         <Card className="mb-12 grid gap-8 md:grid-cols-[1fr,auto] md:items-end p-6 md:p-10">
           <div>
             <div className="mb-3 text-eyebrow text-brand-dark">Lesson 03 · Foundations</div>
@@ -128,7 +119,7 @@ export default function SuperscriptsLesson() {
           <div className="w-full md:w-72">
             <div className="mb-3 flex items-center justify-between text-eyebrow">
               <span>Lesson progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, STEPS.length)} of {STEPS.length} sections</span>
+              <span className="text-brand-dark">{Math.min(unlockedStep, 5)} of 5 sections</span> {/* 🚨 FIXED */}
             </div>
             <div className="h-1.5 w-full bg-border-subtle overflow-hidden">
               <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -150,9 +141,7 @@ export default function SuperscriptsLesson() {
                        <Volume2 size={12} className="text-brand opacity-50 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
-                  <div className="text-[9px] uppercase tracking-widest text-ink-muted">
-                    {s.count} stacks
-                  </div>
+                  <div className="text-[9px] uppercase tracking-widest text-ink-muted">{s.count} stacks</div>
                 </button>
               ))}
             </div>
@@ -161,7 +150,6 @@ export default function SuperscriptsLesson() {
 
         <div className="space-y-4">
           
-          {/* Step 01 */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
@@ -214,7 +202,6 @@ export default function SuperscriptsLesson() {
             </div>
           </StepContainer>
 
-          {/* Step 02: Families */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[1].title}</h2>
@@ -243,17 +230,14 @@ export default function SuperscriptsLesson() {
             <SuperPanel sup={SUPERS.find(s => s.key === activeTab)!} night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 03: Vocab */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <VocabFilter playAudio={playAudio} playingItem={playingItem} />
           </StepContainer>
 
-          {/* Step 04: Practice */}
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* 🚨 FIXED: Step 05 - Final Test */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)} isLast>
             <QuizModule 
               title="Final Step Test" 
@@ -264,21 +248,20 @@ export default function SuperscriptsLesson() {
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/4" 
-              onPass={() => markComplete(4)}
+              onPass={() => markComplete(4)} 
             />
           </StepContainer>
 
         </div>
       </div>
 
-      {/* 🚨 ADDED: Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== STEPS.length - 1 && (
+          {expandedStep !== 4 && ( /* 🚨 FIXED */
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -293,20 +276,13 @@ export default function SuperscriptsLesson() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Subcomponents                                                       */
-/* ------------------------------------------------------------------ */
-
 function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className={`relative overflow-hidden border transition-colors duration-500 ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
       <div className="h-1 w-full" style={{ backgroundColor: sup.accent.hex }} />
-
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none" style={{ backgroundColor: night ? `${sup.accent.hex}20` : `${sup.accent.hex}15`, color: sup.accent.hex }}>
-            {sup.head}
-          </div>
+          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none" style={{ backgroundColor: night ? `${sup.accent.hex}20` : `${sup.accent.hex}15`, color: sup.accent.hex }}>{sup.head}</div>
           <div>
             <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Superscript</div>
             <div className="font-serif text-3xl font-bold">{sup.title}</div>
@@ -320,7 +296,6 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           </span>
         </p>
       </div>
-
       <div className={`grid grid-cols-3 gap-px border-b sm:grid-cols-4 md:grid-cols-6 ${night ? "border-white/10 bg-white/10" : "border-border-strong bg-border-strong"}`}>
         {sup.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
@@ -328,15 +303,12 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
             <button key={c.stack} onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-surface hover:bg-surface-muted"}`}>
               <span className="font-tibetan text-[3rem] leading-normal pb-2" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.stack}</span>
               <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-400" : "text-ink-light"}`}>{c.read}</span>
-              <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}>
-                <M.Icon size={12} strokeWidth={3} />
-              </span>
+              <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
               {playingItem === c.stack && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
             </button>
           )
         })}
       </div>
-
       <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
         <div className={`mb-6 text-eyebrow ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
         <div className="space-y-2">
@@ -346,14 +318,10 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
                 <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center">{c.stack}</span>
-                <span className={`text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}>
-                  <span className="font-serif text-lg">{sup.head}</span> + <span className="font-serif text-lg">{rootTib || "◌"}</span> + བཏགས་
-                </span>
+                <span className={`text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}><span className="font-serif text-lg">{sup.head}</span> + <span className="font-serif text-lg">{rootTib || "◌"}</span> + བཏགས་</span>
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
-                <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}>
-                  <M.Icon size={14} strokeWidth={2.5} /> {M.label}
-                </span>
+                <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                 <Button variant="outline" onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
                   {playingItem === c.stack ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
                 </Button>
@@ -362,7 +330,6 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           })}
         </div>
       </div>
-
       <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: sup.accent.hex }} />
@@ -396,12 +363,8 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
   if (step >= total) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
-        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>
-          Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sup.accent.hex }}>{score}</span> / {total} on {sup.name}.
-        </div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}>
-          <Shuffle size={14} /> Try again
-        </Button>
+        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sup.accent.hex }}>{score}</span> / {total} on {sup.name}.</div>
+        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}><Shuffle size={14} /> Try again</Button>
       </div>
     );
   }
@@ -424,15 +387,7 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
           const right = picked && c.read === question.answer.read;
           const wrong = picked === c.read && c.read !== question.answer.read;
           return (
-            <button
-              key={c.stack} disabled={!!picked} onClick={() => pick(c.read)}
-              className={`flex aspect-square items-center justify-center border-2 font-tibetan text-[3.5rem] leading-normal pb-2 transition-all ${
-                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" 
-                : wrong ? "border-rose-400 bg-rose-50 text-rose-700" 
-                : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" 
-                : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"
-              }`}
-            >
+            <button key={c.stack} disabled={!!picked} onClick={() => pick(c.read)} className={`flex aspect-square items-center justify-center border-2 font-tibetan text-[3.5rem] leading-normal pb-2 transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"}`}>
               {c.stack}
             </button>
           );
@@ -443,9 +398,7 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
           <span className={`text-sm font-bold ${picked === question.answer.read ? "text-emerald-600" : "text-rose-600"}`}>
             {picked === question.answer.read ? `Correct — ${question.answer.stack} reads [${question.answer.read}].` : `Answer: ${question.answer.stack} reads [${question.answer.read}].`}
           </span>
-          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">
-            Next <ChevronRight size={16} />
-          </Button>
+          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
         </div>
       )}
     </div>
@@ -462,13 +415,7 @@ function VocabFilter({ playAudio, playingItem }: any) {
         {[{ key: "all", label: "All", count: VOCAB.length, hex: undefined }, ...SUPERS.map(s => ({ key: s.key, label: s.name, count: VOCAB.filter(v => v.sup === s.key).length, hex: s.accent.hex }))].map((c) => {
           const active = filter === c.key;
           return (
-            <button
-              key={c.key}
-              onClick={() => setFilter(c.key as any)}
-              className={`inline-flex items-center gap-2 border px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-colors ${
-                active ? "border-ink bg-ink text-white shadow-sm" : "border-border-strong bg-surface text-ink-light hover:border-ink-muted hover:text-ink"
-              }`}
-            >
+            <button key={c.key} onClick={() => setFilter(c.key as any)} className={`inline-flex items-center gap-2 border px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-colors ${active ? "border-ink bg-ink text-white shadow-sm" : "border-border-strong bg-surface text-ink-light hover:border-ink-muted hover:text-ink"}`}>
               {c.hex && <span className="size-2.5 rounded-full" style={{ backgroundColor: c.hex }} />}
               {c.label} · {c.count}
             </button>

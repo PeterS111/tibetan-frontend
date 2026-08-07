@@ -24,17 +24,15 @@ const PASS_THRESHOLD = 0.8;
 export default function FinalAssessmentLesson() {
   const { playAudio, playingItem } = useAudio();
   
-  // 🚨 FIXED: Extracted statusOf from the hook to match the rest of the pipeline
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  // 🚨 FIXED: Hardcoded 3 steps
+  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(3);
 
   const [attempt, setAttempt] = useState(0);
   const [inProgress, setInProgress] = useState(false);
   const [lastResult, setLastResult] = useState<{ score: number; wrongByConcept: Record<Concept, number> } | null>(null);
   
-  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
   const [isBypassing, setIsBypassing] = useState(false);
 
-  // Simulated DB record for this standalone page
   const [record, setRecord] = useState({ passed: false, bestScore: 0, attempts: 0 });
 
   const questions = useMemo(() => buildBank(), [attempt]);
@@ -44,7 +42,7 @@ export default function FinalAssessmentLesson() {
     setInProgress(true);
     setLastResult(null);
     setAttempt((a) => a + 1);
-    toggleStep(1); // Force expand the test section
+    toggleStep(1);
   };
 
   const submitResult = (score: number) => {
@@ -59,15 +57,11 @@ export default function FinalAssessmentLesson() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
-        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(STEPS.length - 1);
-            // Wait a second to guarantee the network request finishes, then auto-redirect
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 1000);
+            await markComplete(2); // 🚨 FIXED: Hardcoded index 2
+            setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
           className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
@@ -75,7 +69,6 @@ export default function FinalAssessmentLesson() {
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
 
-        {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
           <ChevronRight size={14} />
@@ -84,7 +77,6 @@ export default function FinalAssessmentLesson() {
           <span className="text-ink font-bold">Capstone</span>
         </div>
 
-        {/* Hero */}
         <div className="mb-12 grid gap-6 md:grid-cols-[1.4fr,1fr] md:items-end">
           <div>
             <div className="inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark">
@@ -95,9 +87,7 @@ export default function FinalAssessmentLesson() {
             </h1>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-light">
               A short mixed assessment drawing on every step so far — recognition,
-              root-finding, tone, ordered spelling, and vocabulary. Score{" "}
-              <span className="font-bold text-ink">{Math.round(PASS_THRESHOLD * 100)}%</span>{" "}
-              or higher to unlock your Certificate of Completion.
+              root-finding, tone, ordered spelling, and vocabulary. Score <span className="font-bold text-ink">{Math.round(PASS_THRESHOLD * 100)}%</span> or higher to unlock your Certificate of Completion.
             </p>
             {record.attempts > 0 && (
               <p className="mt-4 text-xs font-bold uppercase tracking-widest text-ink-muted">
@@ -109,7 +99,7 @@ export default function FinalAssessmentLesson() {
           <div className="w-full md:w-72 justify-self-end">
             <div className="mb-3 flex items-center justify-between text-eyebrow">
               <span>Section progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, STEPS.length)} of {STEPS.length} sections</span>
+              <span className="text-brand-dark">{Math.min(unlockedStep, 3)} of 3 sections</span> {/* 🚨 FIXED */}
             </div>
             <div className="h-1.5 w-full bg-border-subtle overflow-hidden">
               <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -119,7 +109,6 @@ export default function FinalAssessmentLesson() {
 
         <div className="space-y-4">
           
-          {/* Step 01: Overview */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">What this capstone covers</h2>
@@ -140,14 +129,11 @@ export default function FinalAssessmentLesson() {
               <Card className="bg-surface-muted flex flex-col justify-center border border-border-strong">
                 <div className="text-eyebrow mb-2">Format</div>
                 <div className="font-serif text-2xl text-ink mb-4">{total} questions · ~20 min</div>
-                <p className="text-[15px] leading-relaxed text-ink-light">
-                  Take your time on each question. You can review your answer before advancing manually. Unlimited retakes — your best score is kept.
-                </p>
+                <p className="text-[15px] leading-relaxed text-ink-light">Take your time on each question. You can review your answer before advancing manually. Unlimited retakes — your best score is kept.</p>
               </Card>
             </div>
           </StepContainer>
 
-          {/* Step 02: Assessment */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">The assessment</h2>
@@ -156,18 +142,10 @@ export default function FinalAssessmentLesson() {
             
             {!inProgress && !lastResult && (
               <div className="border border-brand bg-brand-light/50 p-6 md:p-10 text-center flex flex-col items-center">
-                <div className="inline-flex items-center justify-center size-12 bg-white text-brand mb-4 shadow-sm border border-brand-light">
-                  <Trophy className="size-6" />
-                </div>
-                <h3 className="font-serif text-3xl text-ink mb-3">
-                  {record.attempts > 0 ? "Take it again" : "Begin the assessment"}
-                </h3>
-                <p className="max-w-md text-[15px] text-ink-light mb-8">
-                  Fresh questions are drawn each attempt. Take your time — accuracy matters more than speed.
-                </p>
-                <Button onClick={startTest}>
-                  {record.attempts > 0 ? "Retake assessment" : "Start assessment"} <ChevronRight className="size-5" />
-                </Button>
+                <div className="inline-flex items-center justify-center size-12 bg-white text-brand mb-4 shadow-sm border border-brand-light"><Trophy className="size-6" /></div>
+                <h3 className="font-serif text-3xl text-ink mb-3">{record.attempts > 0 ? "Take it again" : "Begin the assessment"}</h3>
+                <p className="max-w-md text-[15px] text-ink-light mb-8">Fresh questions are drawn each attempt. Take your time — accuracy matters more than speed.</p>
+                <Button onClick={startTest}>{record.attempts > 0 ? "Retake assessment" : "Start assessment"} <ChevronRight className="size-5" /></Button>
               </div>
             )}
 
@@ -195,27 +173,24 @@ export default function FinalAssessmentLesson() {
             )}
           </StepContainer>
 
-          {/* 🚨 FIXED: Step 03: Result - Added onContinue to actually mark it complete */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)} isLast>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">Your result</h2>
               <p className="text-sm text-ink-muted">Pass {Math.round(PASS_THRESHOLD * 100)}% to unlock your certificate.</p>
             </div>
-            
             <ResultPanel result={lastResult} record={record} onRetake={startTest} />
           </StepContainer>
 
         </div>
       </div>
       
-      {/* 🚨 ADDED: Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <Link href="/dashboard/lessons/6" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== STEPS.length - 1 && (
+          {expandedStep !== 2 && ( /* 🚨 FIXED */
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -229,10 +204,6 @@ export default function FinalAssessmentLesson() {
     </div>
   );
 }
-
-/* -------------------------------------------------------------------- */
-/* Quiz Runner & Views                                                  */
-/* -------------------------------------------------------------------- */
 
 function getMCRenderProps(q: any) {
   if (q.promptType === "how-read") return <span>How does <span className="font-tibetan text-3xl text-ink px-2">{q.promptTarget}</span> read?</span>;
@@ -289,11 +260,9 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: any) {
         <span>Question {step + 1} of {total}</span>
         <span className="text-brand-dark">Score {correctCount}</span>
       </div>
-      
       <div className="h-1.5 w-full bg-border-subtle overflow-hidden mb-8">
         <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${Math.round((step / total) * 100)}%` }} />
       </div>
-
       <div className="mt-6">
         {q.kind === "mc" && (
           <>
@@ -311,7 +280,6 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: any) {
             </div>
           </>
         )}
-
         {q.kind === "root" && (
           <>
             <div className="text-xl text-ink mb-2">Tap the <span className="font-bold">root letter</span> of <span className="font-tibetan text-4xl mx-2 text-ink">{q.cluster}</span> <span className="text-ink-muted text-lg font-mono">[{q.translit}]</span></div>
@@ -329,7 +297,6 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: any) {
             </div>
           </>
         )}
-
         {q.kind === "order" && (
           <>
             <div className="text-xl text-ink mb-8">Put the spelling steps in order to build <span className="font-tibetan text-4xl mx-2">{q.cluster}</span> <span className="text-ink-muted text-lg font-mono">[{q.translit}]</span></div>
@@ -358,7 +325,6 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: any) {
             )}
           </>
         )}
-
         {q.kind === "listen" && (
           <>
             <div className="text-xl text-ink mb-2">Listen and pick the matching Tibetan word.</div>
@@ -397,9 +363,7 @@ function Quiz({ questions, playAudio, playingItem, onFinish }: any) {
 }
 
 function ResultPanel({ result, record, onRetake }: any) {
-  if (!result && !record.passed) {
-    return <div className="py-8 text-center text-ink-light italic">Complete the assessment in Section 02 and your result will appear here.</div>;
-  }
+  if (!result && !record.passed) return <div className="py-8 text-center text-ink-light italic">Complete the assessment in Section 02 and your result will appear here.</div>;
 
   const scorePct = Math.round(((result?.score ?? record.bestScore)) * 100);
   const passed = result ? result.score >= PASS_THRESHOLD : record.passed;
@@ -433,26 +397,15 @@ function ResultPanel({ result, record, onRetake }: any) {
         )}
 
         <div className="flex flex-wrap gap-4 pt-6 border-t border-border-strong">
-          <Button variant="outline" onClick={onRetake}>
-            <RotateCcw className="size-4" /> {passed ? "Retake for a better score" : "Try again"}
-          </Button>
+          <Button variant="outline" onClick={onRetake}><RotateCcw className="size-4" /> {passed ? "Retake for a better score" : "Try again"}</Button>
         </div>
       </Card>
-
       <Card className="p-8 bg-surface-muted border-border-strong">
-        <div className="inline-flex items-center gap-2 text-eyebrow mb-6">
-          <Trophy className="size-3.5" /> Progress kept
-        </div>
+        <div className="inline-flex items-center gap-2 text-eyebrow mb-6"><Trophy className="size-3.5" /> Progress kept</div>
         <ul className="space-y-4 text-[15px] text-ink-light">
-          <li className="flex justify-between border-b border-border-strong pb-4">
-            <span>Best score:</span><span className="font-bold text-ink">{Math.round(record.bestScore * 100)}%</span>
-          </li>
-          <li className="flex justify-between border-b border-border-strong pb-4">
-            <span>Attempts:</span><span className="font-bold text-ink">{record.attempts}</span>
-          </li>
-          <li className="flex justify-between">
-            <span>Status:</span><span className={`font-bold ${passed ? "text-emerald-600" : "text-ink"}`}>{passed ? "Passed" : "In progress"}</span>
-          </li>
+          <li className="flex justify-between border-b border-border-strong pb-4"><span>Best score:</span><span className="font-bold text-ink">{Math.round(record.bestScore * 100)}%</span></li>
+          <li className="flex justify-between border-b border-border-strong pb-4"><span>Attempts:</span><span className="font-bold text-ink">{record.attempts}</span></li>
+          <li className="flex justify-between"><span>Status:</span><span className={`font-bold ${passed ? "text-emerald-600" : "text-ink"}`}>{passed ? "Passed" : "In progress"}</span></li>
         </ul>
       </Card>
     </div>

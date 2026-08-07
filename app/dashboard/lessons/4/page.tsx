@@ -23,15 +23,15 @@ import QuizModule from "@/app/components/QuizModule";
 
 export default function SubscriptsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  
+  // 🚨 FIXED: Hardcoded 6 steps
+  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(6);
 
   const [activeTab, setActiveTab] = useState<SubKey>("ya");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   
-  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
   const [isBypassing, setIsBypassing] = useState(false);
 
-  // Map to Generic Practice Suite Format
   const practiceGroups = useMemo(() => [
     {
       name: "Stacks",
@@ -47,12 +47,10 @@ export default function SubscriptsLesson() {
     }
   ], []);
 
-  // Generate dynamic questions for the Cumulative Exercise (Final Step)
   const quizQuestions = useMemo(() => {
     const regularCombos = SUBS.flatMap(s => s.combos);
     const qs = [];
     
-    // Vocab Questions
     const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
     for (const v of vTargets) {
       const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -65,7 +63,6 @@ export default function SubscriptsLesson() {
       });
     }
 
-    // Stack reading questions
     const cTargets = [...regularCombos].sort(() => 0.5 - Math.random()).slice(0, 4);
     for (const c of cTargets) {
       const wrongs = regularCombos.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -79,7 +76,6 @@ export default function SubscriptsLesson() {
       });
     }
 
-    // Triple stack questions
     const tTargets = [...TRIPLE_STACKS].sort(() => 0.5 - Math.random()).slice(0, 2);
     for (const t of tTargets) {
       const wrongs = TRIPLE_STACKS.filter(x => x.read !== t.read).sort(() => 0.5 - Math.random()).slice(0, 3);
@@ -100,15 +96,11 @@ export default function SubscriptsLesson() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
-        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(STEPS.length - 1);
-            // Wait a second to guarantee the network request finishes, then auto-redirect
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 1000);
+            await markComplete(5); // 🚨 FIXED: Hardcoded index 5
+            setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
           className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
@@ -116,7 +108,6 @@ export default function SubscriptsLesson() {
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
 
-        {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
           <ChevronRight size={14} />
@@ -125,7 +116,6 @@ export default function SubscriptsLesson() {
           <span className="text-ink">Subscripts</span>
         </div>
 
-        {/* Hero */}
         <Card className="mb-12 grid gap-8 md:grid-cols-[1fr,auto] md:items-end">
           <div>
             <div className="mb-3 text-eyebrow text-brand-dark">Lesson 04 · Foundations</div>
@@ -144,7 +134,7 @@ export default function SubscriptsLesson() {
           <div className="w-full md:w-72">
             <div className="mb-3 flex items-center justify-between text-eyebrow">
               <span>Lesson progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, STEPS.length)} of {STEPS.length} sections</span>
+              <span className="text-brand-dark">{Math.min(unlockedStep, 6)} of 6 sections</span> {/* 🚨 FIXED */}
             </div>
             <div className="h-1.5 w-full bg-border-subtle overflow-hidden">
               <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -166,9 +156,7 @@ export default function SubscriptsLesson() {
                        <Volume2 size={10} className="text-brand opacity-50 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
-                  <div className="text-[9px] uppercase tracking-widest text-ink-muted">
-                    {s.count}
-                  </div>
+                  <div className="text-[9px] uppercase tracking-widest text-ink-muted">{s.count}</div>
                 </button>
               ))}
             </div>
@@ -177,7 +165,6 @@ export default function SubscriptsLesson() {
 
         <div className="space-y-4">
           
-          {/* Step 01 */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
@@ -211,13 +198,9 @@ export default function SubscriptsLesson() {
                 {SUBS.map((s) => (
                   <button key={s.key} onClick={() => { setActiveTab(s.key); markComplete(0); }} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
-                    <span className="mt-2 font-serif leading-none" style={{ fontSize: "3rem", color: s.accent.hex }}>
-                      <span className="text-black/10">◌</span>{s.mark}
-                    </span>
+                    <span className="mt-2 font-serif leading-none" style={{ fontSize: "3rem", color: s.accent.hex }}><span className="text-black/10">◌</span>{s.mark}</span>
                     <span className="text-sm font-bold text-ink">{s.name}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
-                      {s.count} stacks · <span className="font-serif text-xs ml-1">{s.headLarge}་བཏགས་</span>
-                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{s.count} stacks · <span className="font-serif text-xs ml-1">{s.headLarge}་བཏགས་</span></span>
                   </button>
                 ))}
               </div>
@@ -233,9 +216,7 @@ export default function SubscriptsLesson() {
                   const rule = t === "same" ? "No change — read as the root, same tone." : t === "down" ? "Feminine roots acquire a lower tone." : "Very-feminine / neuter roots acquire a higher tone.";
                   return (
                     <div key={t} className="flex items-start gap-3 border border-border-strong bg-surface p-4 shadow-sm">
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }}>
-                        <M.Icon size={16} strokeWidth={2.5} />
-                      </span>
+                      <span className="grid size-8 shrink-0 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }}><M.Icon size={16} strokeWidth={2.5} /></span>
                       <div>
                         <div className="text-sm font-bold text-ink">{M.label}</div>
                         <div className="mt-1 text-xs text-ink-muted">{rule}</div>
@@ -247,7 +228,6 @@ export default function SubscriptsLesson() {
             </div>
           </StepContainer>
 
-          {/* Step 02 */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[1].title}</h2>
@@ -261,9 +241,7 @@ export default function SubscriptsLesson() {
                 const on = s.key === activeTab;
                 return (
                   <button key={s.key} onClick={() => setActiveTab(s.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-colors ${on ? "border-ink bg-ink text-white" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
-                    <span className="grid size-9 place-items-center font-serif text-xl bg-white/10" style={{ color: on ? '#fff' : s.accent.hex, backgroundColor: on ? 'rgba(255,255,255,0.1)' : `${s.accent.hex}20` }}>
-                      {s.headLarge}
-                    </span>
+                    <span className="grid size-9 place-items-center font-serif text-xl bg-white/10" style={{ color: on ? '#fff' : s.accent.hex, backgroundColor: on ? 'rgba(255,255,255,0.1)' : `${s.accent.hex}20` }}>{s.headLarge}</span>
                     <span className="flex-1">
                       <span className="block text-sm font-bold">{s.name}</span>
                       <span className={`block text-[10px] font-bold uppercase tracking-widest ${on ? "text-ink-muted" : "text-ink-light"}`}>{s.count} stacks</span>
@@ -276,7 +254,6 @@ export default function SubscriptsLesson() {
             <SubPanel sub={SUBS.find(s => s.key === activeTab)!} night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 03 - Triple Stacks */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[2].title}</h2>
@@ -297,9 +274,7 @@ export default function SubscriptsLesson() {
                     <span className="text-[10px] uppercase tracking-widest text-ink-muted font-serif font-bold">{t.parts}</span>
                     <div className="mt-1 flex items-center gap-2">
                       <span className="font-mono text-sm font-bold text-ink">[{t.read}]</span>
-                      <span className="inline-grid size-5 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }} title={M.label}>
-                        <M.Icon size={12} strokeWidth={3} />
-                      </span>
+                      <span className="inline-grid size-5 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
                     </div>
                     {playingItem === t.stack && <Loader2 size={16} className="absolute top-2 right-2 animate-spin text-brand" />}
                   </button>
@@ -318,9 +293,7 @@ export default function SubscriptsLesson() {
                       <span className="text-xs font-bold font-serif text-ink-light">{t.parts}</span>
                       <ArrowRight size={16} className="text-border-strong" />
                       <span className="font-mono text-lg font-bold text-ink">[{t.read}]</span>
-                      <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}>
-                        <M.Icon size={14} strokeWidth={2.5} /> {M.label}
-                      </span>
+                      <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                       <Button variant="outline" onClick={() => playAudio(t.stack)} disabled={playingItem !== null} className="px-3 py-2">
                         {playingItem === t.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
                       </Button>
@@ -331,7 +304,6 @@ export default function SubscriptsLesson() {
             </div>
           </StepContainer>
 
-          {/* Step 04: Vocab */}
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
@@ -340,7 +312,6 @@ export default function SubscriptsLesson() {
             <VocabFilter playAudio={playAudio} playingItem={playingItem} />
           </StepContainer>
 
-          {/* Step 05: Practice */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-3">{STEPS[4].title}</h2>
@@ -351,7 +322,6 @@ export default function SubscriptsLesson() {
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* 🚨 FIXED: Step 06: Cumulative Exercise */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)} isLast>
             <QuizModule 
               title="Cumulative Exercise" 
@@ -369,14 +339,13 @@ export default function SubscriptsLesson() {
         </div>
       </div>
       
-      {/* 🚨 ADDED: Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <Link href="/dashboard/lessons/3" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== STEPS.length - 1 && (
+          {expandedStep !== 5 && ( /* 🚨 FIXED */
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -391,20 +360,13 @@ export default function SubscriptsLesson() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Subcomponents                                                       */
-/* ------------------------------------------------------------------ */
-
 function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className={`relative overflow-hidden border transition-colors duration-500 ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
       <div className="h-1 w-full" style={{ backgroundColor: sub.accent.hex }} />
-
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none" style={{ backgroundColor: night ? `${sub.accent.hex}20` : `${sub.accent.hex}15`, color: sub.accent.hex }}>
-            {sub.headLarge}
-          </div>
+          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none" style={{ backgroundColor: night ? `${sub.accent.hex}20` : `${sub.accent.hex}15`, color: sub.accent.hex }}>{sub.headLarge}</div>
           <div>
             <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Subscript</div>
             <div className="font-serif text-3xl font-bold">{sub.title}</div>
@@ -424,7 +386,6 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
           </div>
         </div>
       </div>
-
       <div className={`grid grid-cols-3 gap-px border-b sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 ${night ? "border-white/10 bg-white/10" : "border-border-strong bg-border-strong"}`}>
         {sub.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
@@ -433,16 +394,13 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
               <span className="absolute left-0 top-0 h-0.5 w-full" style={{ backgroundColor: sub.accent.hex }} />
               <span className="font-serif text-[3rem] leading-none" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.stack}</span>
               <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-400" : "text-ink-muted"}`}>{c.read}</span>
-              <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}>
-                <M.Icon size={12} strokeWidth={3} />
-              </span>
+              <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
               {c.note && <span className={`text-[9px] font-bold uppercase tracking-widest ${night ? "text-amber-400" : "text-amber-600"}`}>exception</span>}
               {playingItem === c.stack && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
             </button>
           )
         })}
       </div>
-
       <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
         <div className={`text-eyebrow mb-6 ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
         <div className="space-y-2">
@@ -451,14 +409,10 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
                 <span className="font-serif text-[2.5rem] leading-none w-12 text-center">{c.stack}</span>
-                <span className={`text-xs font-bold font-serif ${night ? "text-stone-400" : "text-ink-muted"}`}>
-                  {c.root} + {sub.headLarge} + བཏགས་
-                </span>
+                <span className={`text-xs font-bold font-serif ${night ? "text-stone-400" : "text-ink-muted"}`}>{c.root} + {sub.headLarge} + བཏགས་</span>
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
-                <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}>
-                  <M.Icon size={14} strokeWidth={2.5} /> {M.label}
-                </span>
+                <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                 <Button variant="outline" onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
                   {playingItem === c.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
                 </Button>
@@ -467,7 +421,6 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
           })}
         </div>
       </div>
-
       <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: sub.accent.hex }} />
@@ -501,12 +454,8 @@ function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any)
   if (step >= total) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
-        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>
-          Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sub.accent.hex }}>{score}</span> / {total} on {sub.name}.
-        </div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}>
-          <Shuffle size={14} /> Try again
-        </Button>
+        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sub.accent.hex }}>{score}</span> / {total} on {sub.name}.</div>
+        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}><Shuffle size={14} /> Try again</Button>
       </div>
     );
   }
@@ -529,15 +478,7 @@ function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any)
           const right = picked && c.stack === question.answer.stack;
           const wrong = picked === c.stack && c.stack !== question.answer.stack;
           return (
-            <button
-              key={c.stack} disabled={!!picked} onClick={() => pick(c.stack)}
-              className={`flex aspect-square items-center justify-center border-2 font-serif text-[3.5rem] transition-all ${
-                right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" 
-                : wrong ? "border-rose-400 bg-rose-50 text-rose-700" 
-                : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" 
-                : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"
-              }`}
-            >
+            <button key={c.stack} disabled={!!picked} onClick={() => pick(c.stack)} className={`flex aspect-square items-center justify-center border-2 font-serif text-[3.5rem] transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"}`}>
               {c.stack}
             </button>
           );
@@ -548,9 +489,7 @@ function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any)
           <span className={`text-sm font-bold ${picked === question.answer.stack ? "text-emerald-600" : "text-rose-600"}`}>
             {picked === question.answer.stack ? `Correct — ${question.answer.stack} reads [${question.answer.read}].` : `Answer: ${question.answer.stack} reads [${question.answer.read}].`}
           </span>
-          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">
-            Next <ChevronRight size={16} />
-          </Button>
+          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
         </div>
       )}
     </div>
@@ -568,16 +507,8 @@ function VocabFilter({ playAudio, playingItem }: any) {
 
   const chips: { key: VocabGroup | "all"; label: string; hex?: string }[] = [
     { key: "all", label: `All · ${VOCAB.length} words` },
-    ...SUBS.map((s) => ({
-      key: s.key as VocabGroup,
-      label: `${s.name} · ${VOCAB.filter((v) => v.sub === s.key).length}`,
-      hex: s.accent.hex,
-    })),
-    {
-      key: "triple" as VocabGroup,
-      label: `Triple stacks · ${VOCAB.filter((v) => v.sub === "triple").length}`,
-      hex: TRIPLE_ACCENT,
-    },
+    ...SUBS.map((s) => ({ key: s.key as VocabGroup, label: `${s.name} · ${VOCAB.filter((v) => v.sub === s.key).length}`, hex: s.accent.hex })),
+    { key: "triple" as VocabGroup, label: `Triple stacks · ${VOCAB.filter((v) => v.sub === "triple").length}`, hex: TRIPLE_ACCENT },
   ];
 
   return (
@@ -586,13 +517,7 @@ function VocabFilter({ playAudio, playingItem }: any) {
         {chips.map((c) => {
           const active = filter === c.key;
           return (
-            <button
-              key={c.key}
-              onClick={() => setFilter(c.key as any)}
-              className={`inline-flex items-center gap-2 border px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-colors ${
-                active ? "border-ink bg-ink text-white shadow-sm" : "border-border-strong bg-surface text-ink-muted hover:border-ink-muted hover:text-ink"
-              }`}
-            >
+            <button key={c.key} onClick={() => setFilter(c.key as any)} className={`inline-flex items-center gap-2 border px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-colors ${active ? "border-ink bg-ink text-white shadow-sm" : "border-border-strong bg-surface text-ink-muted hover:border-ink-muted hover:text-ink"}`}>
               {c.hex && <span className="size-2.5 rounded-full" style={{ backgroundColor: c.hex }} />}
               {c.label}
             </button>
