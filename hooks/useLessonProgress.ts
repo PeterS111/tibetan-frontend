@@ -4,8 +4,6 @@ import { DEV_BYPASS_LOCKS } from "@/app/config";
 // Safely finds the user auth token across standard and Supabase storage configurations
 function getAuthToken(): string {
   if (typeof window === 'undefined') return '';
-  const t = localStorage.getItem('token');
-  if (t) return t;
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key && key.includes('-auth-token')) {
@@ -15,7 +13,7 @@ function getAuthToken(): string {
       } catch (e) {}
     }
   }
-  return '';
+  return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
 }
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
@@ -24,7 +22,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [lessonId, setLessonId] = useState<number>(1);
 
-  // Fetch progress from Database on mount
+  // Fetch progress on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -33,30 +31,44 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     const id = match ? parseInt(match[1], 10) : 1;
     setLessonId(id);
 
-    const token = getAuthToken();
-    if (!token) return;
+    // 1. Grab local fallback progress instantly
+    const localProgress = parseInt(localStorage.getItem(`tibetan_lesson_${id}_progress`) || '0', 10);
+    
+    const applyProgress = (stepValue: number) => {
+      const finalStep = DEV_BYPASS_LOCKS ? (bypassAmount || totalSteps) : stepValue;
+      setUnlockedStep(finalStep);
+      
+      const completedSet = new Set<number>();
+      for(let i = 0; i < finalStep; i++) completedSet.add(i);
+      setCompleted(completedSet);
+      
+      setExpandedStep(Math.min(finalStep, totalSteps - 1));
+    };
 
+    const token = getAuthToken();
+    if (!token) {
+      applyProgress(localProgress);
+      return;
+    }
+
+    // 2. Fetch server progress and sync
     fetch(`/api/lesson-progress?module_id=${id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
     .then(data => {
-      if (data && typeof data.unlocked_step === 'number') {
-        const step = Math.max(0, data.unlocked_step);
-        const finalStep = DEV_BYPASS_LOCKS ? (bypassAmount || totalSteps) : step;
-        
-        setUnlockedStep(finalStep);
-        
-        // Populate the completed items so earlier sections show as done
-        const completedSet = new Set<number>();
-        for(let i = 0; i < finalStep; i++) completedSet.add(i);
-        setCompleted(completedSet);
-        
-        // Auto-expand the user's current working step
-        setExpandedStep(Math.min(finalStep, totalSteps - 1));
+      const serverProgress = typeof data.unlocked_step === 'number' ? data.unlocked_step : 0;
+      const bestProgress = Math.max(localProgress, serverProgress); // Keep whichever is higher
+      applyProgress(bestProgress);
+      
+      if (serverProgress > localProgress) {
+         localStorage.setItem(`tibetan_lesson_${id}_progress`, serverProgress.toString());
       }
     })
-    .catch(err => console.error("Failed to load progress", err));
+    .catch(err => {
+      console.error("Failed to load progress from server", err);
+      applyProgress(localProgress);
+    });
   }, [totalSteps, bypassAmount]);
 
   const progressPercent = Math.round((completed.size / totalSteps) * 100);
@@ -80,7 +92,12 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     if (nextIndex > unlockedStep) {
       setUnlockedStep(nextIndex);
       
-      // Save progress quietly to the Database
+      // Save locally immediately for a snappy experience on refresh
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, nextIndex.toString());
+      }
+      
+      // Save to database
       const token = getAuthToken();
       if (token) {
         const formData = new FormData();
@@ -91,7 +108,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: formData
-        }).catch(e => console.error("Failed to save progress", e));
+        }).catch(e => console.error("Failed to save progress to server", e));
       }
     }
   }, [unlockedStep, lessonId]);
