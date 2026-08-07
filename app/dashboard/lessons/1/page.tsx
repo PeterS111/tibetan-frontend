@@ -29,6 +29,9 @@ export default function ConsonantsLesson() {
   const [selected, setSelected] = useState<{ c: Consonant, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Tone>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
+  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
+  const [isBypassing, setIsBypassing] = useState(false);
 
   const filtered = useMemo(() => (filter === "all" ? CONSONANTS : CONSONANTS.filter((c) => c.tone === filter)), [filter]);
 
@@ -54,10 +57,18 @@ return (
         
         {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
         <button 
-          onClick={() => markComplete(STEPS.length - 1)} 
-          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg"
+          onClick={async () => {
+            setIsBypassing(true);
+            await markComplete(STEPS.length - 1);
+            // Wait a second to guarantee the network request finishes, then auto-redirect
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 1000);
+          }} 
+          disabled={isBypassing}
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
         >
-          🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE TO DATABASE 🛠️
+          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
 
         {/* Breadcrumb */}
