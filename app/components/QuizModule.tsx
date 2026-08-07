@@ -30,6 +30,9 @@ export default function QuizModule({
   const [picked, setPicked] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
+  // 🚨 ADDED: A flag to prevent the infinite loop
+  const [hasAutoSaved, setHasAutoSaved] = useState(false);
+  
   const questions = useMemo(() => {
     if (providedQuestions) return providedQuestions;
     if (!data) return [];
@@ -63,14 +66,16 @@ export default function QuizModule({
   const total = providedQuestions ? providedQuestions.length : questionCount;
   const currentQ = questions[step];
 
+  // 🚨 FIXED: Now checks if we have already saved to prevent infinite re-renders
   useEffect(() => {
-    if (step >= total) {
+    if (step >= total && !hasAutoSaved) {
       const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
       if (passed && onPass) {
         onPass();
+        setHasAutoSaved(true);
       }
     }
-  }, [step, total, score, onPass]);
+  }, [step, total, score, onPass, hasAutoSaved]);
 
   if (!hasStarted) {
     return (
@@ -125,7 +130,12 @@ export default function QuizModule({
         <p className="text-stone-600 mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {total}.</p>
         
         <div className="flex gap-4">
-          <button onClick={() => { setStep(0); setScore(0); setPicked(null); if(isUnlockTest) setHasStarted(false); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2 disabled:opacity-50" disabled={isSaving}>
+          <button 
+            // 🚨 FIXED: reset `hasAutoSaved` here so you can test again if you click Retake
+            onClick={() => { setStep(0); setScore(0); setPicked(null); setHasAutoSaved(false); if(isUnlockTest) setHasStarted(false); }} 
+            className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2 disabled:opacity-50" 
+            disabled={isSaving}
+          >
             <Shuffle size={18} /> Retake
           </button>
           
