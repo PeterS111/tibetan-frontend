@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
-import { useAuth } from "@clerk/nextjs"; // <-- We bring in Clerk here
+import { useAuth } from "@clerk/nextjs"; 
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
   const [unlockedStep, setUnlockedStep] = useState<number>(DEV_BYPASS_LOCKS ? bypassAmount || totalSteps : 0);
@@ -17,12 +17,12 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    // Auto-detect which lesson we are currently on from the URL
+    // Auto-detect which lesson we are currently on from the URL (e.g., /lessons/2)
     const match = window.location.pathname.match(/lessons\/(\d+)/);
     const id = match ? parseInt(match[1], 10) : 1;
     setLessonId(id);
 
-    // 1. Grab local fallback progress instantly
+    // 1. Grab local fallback progress instantly for a snappy UI
     const localProgress = parseInt(localStorage.getItem(`tibetan_lesson_${id}_progress`) || '0', 10);
     
     const applyProgress = (stepValue: number) => {
@@ -31,13 +31,18 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
       setUnlockedStep(finalStep);
       
       const completedSet = new Set<number>();
+      
+      // Mark actual completed steps
       for(let i = 0; i < stepValue; i++) completedSet.add(i);
       
+      // If DEV_BYPASS_LOCKS is true, visually treat them all as completed so you can click anything
       if (DEV_BYPASS_LOCKS) {
         for(let i = 0; i < finalStep; i++) completedSet.add(i);
       }
       
       setCompleted(completedSet);
+      
+      // Auto-expand the exact step you are truly working on
       setExpandedStep(Math.min(stepValue, totalSteps - 1));
     };
 
@@ -45,10 +50,12 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     if (!isLoaded) return; 
 
     const fetchServerProgress = async () => {
+      // If not signed in, just use local storage
       if (!isSignedIn) {
         applyProgress(localProgress);
         return;
       }
+      
       try {
         const token = await getToken();
         if (!token) {
@@ -62,6 +69,8 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
         const data = await res.json();
         
         const serverProgress = typeof data.unlocked_step === 'number' ? data.unlocked_step : 0;
+        
+        // Keep whichever progress is higher (Server vs Local)
         const bestProgress = Math.max(localProgress, serverProgress); 
         applyProgress(bestProgress);
         
@@ -93,7 +102,12 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     });
 
     const nextIndex = index + 1;
-    setExpandedStep(nextIndex);
+    
+    // Only expand the next step if we aren't at the very end. 
+    // This stops the final quiz from collapsing!
+    if (nextIndex < totalSteps) {
+      setExpandedStep(nextIndex);
+    }
     
     if (nextIndex > unlockedStep) {
       setUnlockedStep(nextIndex);
@@ -103,7 +117,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     if (nextIndex > actualProgress) {
       setActualProgress(nextIndex);
       
-      // Save locally immediately for snappy UI
+      // Save locally immediately for a snappy UI
       if (typeof window !== 'undefined') {
         localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, nextIndex.toString());
       }
@@ -126,7 +140,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
         console.error("Failed to save progress to server", e);
       }
     }
-  }, [unlockedStep, actualProgress, lessonId, getToken, apiUrl]);
+  }, [unlockedStep, actualProgress, lessonId, getToken, apiUrl, totalSteps]);
 
   const statusOf = useCallback((i: number): "done" | "current" | "upcoming" => {
     if (completed.has(i)) return "done";

@@ -1,8 +1,7 @@
 "use client";
 
-
-import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { 
   Loader2, Volume2, ChevronRight, Trophy, Sparkles, 
   Lock, CheckCircle2, XCircle, Shuffle, ArrowRight 
@@ -22,12 +21,14 @@ export default function QuizModule({
   isVocabMatch,
   nextLessonPath,
   isLesson1,
-  onPass // <-- NEW PROP
+  onPass
 }: any) {
+  const router = useRouter();
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   const questions = useMemo(() => {
     if (providedQuestions) return providedQuestions;
@@ -43,7 +44,6 @@ export default function QuizModule({
       qs.push({
         isAudioType,
         answer: answer.tib,
-        // CACHE BUSTER: Checks if it has an audio override property
         audioString: answer.audio || answer.tib,
         answerObj: answer,
         choices: choices.map(c => ({
@@ -62,16 +62,6 @@ export default function QuizModule({
 
   const total = providedQuestions ? providedQuestions.length : questionCount;
   const currentQ = questions[step];
-
-  // NEW: Automatically trigger onPass when the user passes the final test
-  useEffect(() => {
-    if (step >= total && isUnlockTest) {
-      const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
-      if (passed && onPass) {
-        onPass();
-      }
-    }
-  }, [step, total, score, isUnlockTest, onPass]);
 
   if (!hasStarted) {
     return (
@@ -107,6 +97,17 @@ export default function QuizModule({
 
   if (step >= total) {
     const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
+    
+    const handleUnlock = async () => {
+      setIsSaving(true);
+      if (onPass) await onPass();
+      if (nextLessonPath) {
+        router.push(nextLessonPath);
+      } else {
+        setIsSaving(false);
+      }
+    };
+
     return (
       <div className={`flex flex-col items-center justify-center text-center p-8 border ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm border ${passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
@@ -116,17 +117,18 @@ export default function QuizModule({
         <p className="text-stone-600 mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {total}.</p>
         
         <div className="flex gap-4">
-          <button onClick={() => { setStep(0); setScore(0); setPicked(null); if(isUnlockTest) setHasStarted(false); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2">
+          <button onClick={() => { setStep(0); setScore(0); setPicked(null); if(isUnlockTest) setHasStarted(false); }} className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2 disabled:opacity-50" disabled={isSaving}>
             <Shuffle size={18} /> Retake
           </button>
+          
           {passed && isUnlockTest && nextLessonPath && (
-            <Link href={nextLessonPath} className="px-8 py-3 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm">
-              Unlock Next Step <ArrowRight size={18} />
-            </Link>
+            <button onClick={handleUnlock} disabled={isSaving} className="px-8 py-3 bg-stone-900 text-white font-bold hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm disabled:opacity-75">
+              {isSaving ? <Loader2 size={18} className="animate-spin" /> : <>Unlock Next Step <ArrowRight size={18} /></>}
+            </button>
           )}
           {passed && isUnlockTest && !nextLessonPath && (
-            <button className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 border border-amber-600">
-              Unlock Next Step <ArrowRight size={18} />
+            <button onClick={handleUnlock} disabled={isSaving} className="px-8 py-3 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2 border border-amber-600 disabled:opacity-75">
+              {isSaving ? <Loader2 size={18} className="animate-spin" /> : <>Lesson Complete <ArrowRight size={18} /></>}
             </button>
           )}
         </div>
@@ -198,7 +200,7 @@ export default function QuizModule({
         )}
       </div>
 
-<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {currentQ.choices.map((c: any) => {
           const isRight = picked && c.value === currentQ.answer;
           const isWrong = picked === c.value && c.value !== currentQ.answer;
