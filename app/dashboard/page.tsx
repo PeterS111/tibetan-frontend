@@ -27,8 +27,9 @@ export default function DashboardHub() {
             return;
           }
           
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
-            headers: { Authorization: `Bearer ${token}` }
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}&t=${Date.now()}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store"
           });
           const data = await res.json();
           

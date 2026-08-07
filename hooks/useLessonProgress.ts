@@ -103,8 +103,6 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
 
     const nextIndex = index + 1;
     
-    // Only expand the next step if we aren't at the very end. 
-    // This stops the final quiz from collapsing!
     if (nextIndex < totalSteps) {
       setExpandedStep(nextIndex);
     }
@@ -113,32 +111,35 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
       setUnlockedStep(nextIndex);
     }
     
-    // Save to database only if it's a new high-water mark for the user's TRUE progress
     if (nextIndex > actualProgress) {
       setActualProgress(nextIndex);
-      
-      // Save locally immediately for a snappy UI
-      if (typeof window !== 'undefined') {
+    }
+    
+    // ALWAYS update local storage for safety
+    if (typeof window !== 'undefined') {
+      const currentLocal = parseInt(localStorage.getItem(`tibetan_lesson_${lessonId}_progress`) || '0', 10);
+      if (nextIndex > currentLocal) {
         localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, nextIndex.toString());
       }
-      
-      // Securely save to database via Clerk token
-      try {
-        const token = await getToken();
-        if (token) {
-          const formData = new FormData();
-          formData.append('module_id', lessonId.toString());
-          formData.append('unlocked_step', nextIndex.toString());
-          
-          await fetch(`${apiUrl}/api/update-lesson-progress`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-          });
-        }
-      } catch (e) {
-        console.error("Failed to save progress to server", e);
+    }
+    
+    // ALWAYS notify the server of completion. 
+    // The backend is now smart enough to safely ignore it if it's not a new high score.
+    try {
+      const token = await getToken();
+      if (token) {
+        const formData = new FormData();
+        formData.append('module_id', lessonId.toString());
+        formData.append('unlocked_step', nextIndex.toString());
+        
+        await fetch(`${apiUrl}/api/update-lesson-progress`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
       }
+    } catch (e) {
+      console.error("Failed to save progress to server", e);
     }
   }, [unlockedStep, actualProgress, lessonId, getToken, apiUrl, totalSteps]);
 
