@@ -315,7 +315,7 @@ export default function ConsonantsLesson() {
           </StepContainer>
 
           {/* Final Test */}
-          <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => {}} isLast>
+          <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
             <QuizModule 
               title="Final Step Test" 
               intro="Score 80% or higher to unlock the next step: The Four Vowels." 
@@ -327,6 +327,7 @@ export default function ConsonantsLesson() {
               isUnlockTest={true} 
               isLesson1={true}
               nextLessonPath="/dashboard/lessons/2" 
+              onPass={() => markComplete(7)}
             />
           </StepContainer>
         </div>
@@ -341,7 +342,7 @@ export default function ConsonantsLesson() {
           <Link href="/dashboard/lessons" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Syllabus
           </Link>
-          <Button className="flex-1 sm:flex-none">
+          <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
             <CheckCircle2 size={18} /> Mark step complete
           </Button>
           <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-dark transition-colors">

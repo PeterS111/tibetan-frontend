@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { 
   Loader2, Volume2, ChevronRight, Trophy, Sparkles, 
@@ -20,7 +21,8 @@ export default function QuizModule({
   isUnlockTest, 
   isVocabMatch,
   nextLessonPath,
-  isLesson1 
+  isLesson1,
+  onPass // <-- NEW PROP
 }: any) {
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
@@ -60,6 +62,16 @@ export default function QuizModule({
 
   const total = providedQuestions ? providedQuestions.length : questionCount;
   const currentQ = questions[step];
+
+  // NEW: Automatically trigger onPass when the user passes the final test
+  useEffect(() => {
+    if (step >= total && isUnlockTest) {
+      const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
+      if (passed && onPass) {
+        onPass();
+      }
+    }
+  }, [step, total, score, isUnlockTest, onPass]);
 
   if (!hasStarted) {
     return (
