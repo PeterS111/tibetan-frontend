@@ -201,7 +201,7 @@ export default function ConsonantsLesson() {
                       <span className="text-[10px] font-bold uppercase tracking-widest">{m.short}</span>
                     </div>
                     <div className="mt-6 font-serif font-bold text-3xl text-ink">{count} letters</div>
-                    <p className="mt-3 text-[13px] leading-relaxed text-ink-light flex-1">{m.description}</p>
+                    <p className="mt-3 text-[13px] leading-relaxed text-ink-light min-h-[140px]">{m.description}</p>
                     <div className="mt-6 flex flex-wrap gap-2">
                       {CONSONANTS.filter((c) => c.tone === t).map((c) => (
                         <button key={c.tib} onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} className="border border-border-strong bg-surface-muted px-3 py-1.5 font-serif text-xl hover:border-brand hover:bg-surface transition-colors text-ink tibetan">
