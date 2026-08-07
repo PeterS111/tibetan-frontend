@@ -53,11 +53,24 @@ export default function DashboardHub() {
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-brand" /></div>;
 
-  // --- Dynamic Progress Calculations ---
-  const totalCompletedSections = modules.reduce((sum, m) => sum + (m.progress || 0), 0);
-  const totalSections = modules.reduce((sum, m) => sum + (m.lesson_count || 1), 0);
-  const completedModules = modules.filter(m => (m.progress || 0) >= (m.lesson_count || 1));
-  const nextModule = modules.find(m => (m.progress || 0) < (m.lesson_count || 1)) || modules[0] || { module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet.", progress: 0 };
+  // --- Dynamic Progress Calculations (Safely parsing strings to prevent UI glitches) ---
+  const parseNum = (val: any, fallback: number) => {
+    if (val === undefined || val === null) return fallback;
+    // This forcibly strips out text like "LESSONS" and ensures it is a clean number
+    const parsed = parseInt(String(val).replace(/\D/g, ''), 10);
+    return isNaN(parsed) ? fallback : parsed;
+  };
+
+  const totalCompletedSections = modules.reduce((sum, m) => sum + parseNum(m.progress, 0), 0);
+  const totalSections = modules.reduce((sum, m) => sum + parseNum(m.lesson_count, 1), 0);
+  const completedModules = modules.filter(m => parseNum(m.progress, 0) >= parseNum(m.lesson_count, 1));
+  
+  const nextModule = modules.find(m => parseNum(m.progress, 0) < parseNum(m.lesson_count, 1)) || modules[0] || { 
+    module_id: 1, 
+    title: "The 30 Consonants", 
+    description: "The foundation of the Tibetan alphabet.", 
+    progress: 0 
+  };
   
   const progressPercent = totalSections > 0 ? Math.round((totalCompletedSections / totalSections) * 100) : 0; 
   const hoursSpent = profile?.time_spent_mins ? (profile.time_spent_mins / 60).toFixed(1) : "0.0";
@@ -255,7 +268,7 @@ export default function DashboardHub() {
           <Card className="md:col-span-2 p-8 shadow-sm border border-border-strong hover:border-brand transition-colors flex flex-col">
             <div className="mb-4">
               <span className="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-[#FCECD8] text-[#9A5013]">
-                Unit {nextModule.module_id || 1} · Step {(nextModule.progress || 0) + 1}
+                Unit {nextModule.module_id || 1} · Step {parseNum(nextModule.progress, 0) + 1}
               </span>
             </div>
             <h3 className="text-2xl font-serif text-ink mb-3">{nextModule.title}</h3>
