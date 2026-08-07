@@ -68,7 +68,10 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
         });
         const data = await res.json();
         
-        const serverProgress = typeof data.unlocked_step === 'number' ? data.unlocked_step : 0;
+        // 🚨 FIX: Extract purely numerical value even if the DB returned a string
+        const serverProgress = typeof data.unlocked_step === 'number' 
+          ? data.unlocked_step 
+          : (parseInt(String(data.unlocked_step).replace(/\D/g, ''), 10) || 0);
         
         // Keep whichever progress is higher (Server vs Local)
         const bestProgress = Math.max(localProgress, serverProgress); 
