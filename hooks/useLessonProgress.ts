@@ -1,20 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
-
-// Safely finds the user auth token across standard and Supabase storage configurations
-function getAuthToken(): string {
-  if (typeof window === 'undefined') return '';
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.includes('-auth-token')) {
-      try {
-        const data = JSON.parse(localStorage.getItem(key) || '');
-        if (data?.access_token) return data.access_token;
-      } catch (e) {}
-    }
-  }
-  return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-}
+import { useAuth } from "@clerk/nextjs"; // <-- We bring in Clerk here
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
   const [unlockedStep, setUnlockedStep] = useState<number>(DEV_BYPASS_LOCKS ? bypassAmount || totalSteps : 0);
@@ -22,6 +8,10 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
   const [expandedStep, setExpandedStep] = useState<number>(0);
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [lessonId, setLessonId] = useState<number>(1);
+
+  // Use Clerk's secure hook to get the token
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   // Fetch progress on mount
   useEffect(() => {
@@ -41,45 +31,51 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
       setUnlockedStep(finalStep);
       
       const completedSet = new Set<number>();
-      // Mark actual completed steps
       for(let i = 0; i < stepValue; i++) completedSet.add(i);
       
-      // If DEV_BYPASS_LOCKS is true, visually treat them all as completed so you can click anything
       if (DEV_BYPASS_LOCKS) {
         for(let i = 0; i < finalStep; i++) completedSet.add(i);
       }
       
       setCompleted(completedSet);
-      
-      // MOST IMPORTANT: Auto-expand the exact step you are truly working on (not the bypassed limit)
       setExpandedStep(Math.min(stepValue, totalSteps - 1));
     };
 
-    const token = getAuthToken();
-    if (!token) {
-      applyProgress(localProgress);
-      return;
-    }
+    // Wait for Clerk to initialize
+    if (!isLoaded) return; 
 
-    // 2. Fetch server progress and sync
-    fetch(`/api/lesson-progress?module_id=${id}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      const serverProgress = typeof data.unlocked_step === 'number' ? data.unlocked_step : 0;
-      const bestProgress = Math.max(localProgress, serverProgress); 
-      applyProgress(bestProgress);
-      
-      if (serverProgress > localProgress) {
-         localStorage.setItem(`tibetan_lesson_${id}_progress`, serverProgress.toString());
+    const fetchServerProgress = async () => {
+      if (!isSignedIn) {
+        applyProgress(localProgress);
+        return;
       }
-    })
-    .catch(err => {
-      console.error("Failed to load progress from server", err);
-      applyProgress(localProgress);
-    });
-  }, [totalSteps, bypassAmount]);
+      try {
+        const token = await getToken();
+        if (!token) {
+          applyProgress(localProgress);
+          return;
+        }
+        
+        const res = await fetch(`${apiUrl}/api/lesson-progress?module_id=${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const serverProgress = typeof data.unlocked_step === 'number' ? data.unlocked_step : 0;
+        const bestProgress = Math.max(localProgress, serverProgress); 
+        applyProgress(bestProgress);
+        
+        if (serverProgress > localProgress) {
+           localStorage.setItem(`tibetan_lesson_${id}_progress`, serverProgress.toString());
+        }
+      } catch (err) {
+        console.error("Failed to load progress from server", err);
+        applyProgress(localProgress);
+      }
+    };
+
+    fetchServerProgress();
+  }, [totalSteps, bypassAmount, isLoaded, isSignedIn, getToken, apiUrl]);
 
   const progressPercent = Math.round((completed.size / totalSteps) * 100);
 
@@ -89,7 +85,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     }
   }, [unlockedStep, completed]);
 
-  const markComplete = useCallback((index: number) => {
+  const markComplete = useCallback(async (index: number) => {
     setCompleted(prev => {
       const next = new Set(prev);
       next.add(index);
@@ -107,26 +103,30 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     if (nextIndex > actualProgress) {
       setActualProgress(nextIndex);
       
-      // Save locally immediately
+      // Save locally immediately for snappy UI
       if (typeof window !== 'undefined') {
         localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, nextIndex.toString());
       }
       
-      // Save to database
-      const token = getAuthToken();
-      if (token) {
-        const formData = new FormData();
-        formData.append('module_id', lessonId.toString());
-        formData.append('unlocked_step', nextIndex.toString());
-        
-        fetch('/api/update-lesson-progress', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formData
-        }).catch(e => console.error("Failed to save progress to server", e));
+      // Securely save to database via Clerk token
+      try {
+        const token = await getToken();
+        if (token) {
+          const formData = new FormData();
+          formData.append('module_id', lessonId.toString());
+          formData.append('unlocked_step', nextIndex.toString());
+          
+          await fetch(`${apiUrl}/api/update-lesson-progress`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+        }
+      } catch (e) {
+        console.error("Failed to save progress to server", e);
       }
     }
-  }, [unlockedStep, actualProgress, lessonId]);
+  }, [unlockedStep, actualProgress, lessonId, getToken, apiUrl]);
 
   const statusOf = useCallback((i: number): "done" | "current" | "upcoming" => {
     if (completed.has(i)) return "done";
