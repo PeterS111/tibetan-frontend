@@ -1,4 +1,4 @@
-// app/dashboard/lessons/1/page.tsx
+
 
 "use client";
 
@@ -189,20 +189,20 @@ export default function ConsonantsLesson() {
             </div>
           </StepContainer>
 
-          {/* Tone */}
+{/* Tone */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {(Object.keys(TONE_META) as Tone[]).map((t) => {
                 const m = TONE_META[t];
                 const count = CONSONANTS.filter((c) => c.tone === t).length;
                 return (
-                  <div key={t} className={`p-6 border bg-surface ${m.ring}`}>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 border ${m.swatch} ${m.text}`}>
+                  <div key={t} className={`p-6 border bg-surface ${m.ring} flex flex-col`}>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 border ${m.swatch} ${m.text} w-fit`}>
                       <span className="text-[10px] font-bold uppercase tracking-widest">{m.short}</span>
                     </div>
                     <div className="mt-6 font-serif font-bold text-3xl text-ink">{count} letters</div>
-                    <p className="mt-3 text-[13px] leading-relaxed text-ink-light h-20">{m.description}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <p className="mt-3 text-[13px] leading-relaxed text-ink-light flex-1">{m.description}</p>
+                    <div className="mt-6 flex flex-wrap gap-2">
                       {CONSONANTS.filter((c) => c.tone === t).map((c) => (
                         <button key={c.tib} onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} className="border border-border-strong bg-surface-muted px-3 py-1.5 font-serif text-xl hover:border-brand hover:bg-surface transition-colors text-ink tibetan">
                           {c.tib}
