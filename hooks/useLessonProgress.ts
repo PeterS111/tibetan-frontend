@@ -18,6 +18,7 @@ function getAuthToken(): string {
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
   const [unlockedStep, setUnlockedStep] = useState<number>(DEV_BYPASS_LOCKS ? bypassAmount || totalSteps : 0);
+  const [actualProgress, setActualProgress] = useState<number>(0); // NEW: Tracks true DB progress
   const [expandedStep, setExpandedStep] = useState<number>(0);
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [lessonId, setLessonId] = useState<number>(1);
@@ -26,7 +27,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    // Auto-detect which lesson we are currently on from the URL (e.g., /lessons/2)
+    // Auto-detect which lesson we are currently on from the URL
     const match = window.location.pathname.match(/lessons\/(\d+)/);
     const id = match ? parseInt(match[1], 10) : 1;
     setLessonId(id);
@@ -35,11 +36,12 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     const localProgress = parseInt(localStorage.getItem(`tibetan_lesson_${id}_progress`) || '0', 10);
     
     const applyProgress = (stepValue: number) => {
+      setActualProgress(stepValue);
       const finalStep = DEV_BYPASS_LOCKS ? (bypassAmount || totalSteps) : stepValue;
       setUnlockedStep(finalStep);
       
       const completedSet = new Set<number>();
-      for(let i = 0; i < finalStep; i++) completedSet.add(i);
+      for(let i = 0; i < stepValue; i++) completedSet.add(i);
       setCompleted(completedSet);
       
       setExpandedStep(Math.min(finalStep, totalSteps - 1));
@@ -91,8 +93,13 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     
     if (nextIndex > unlockedStep) {
       setUnlockedStep(nextIndex);
+    }
+    
+    // Always save if it's a new high-water mark for the user's TRUE progress
+    if (nextIndex > actualProgress) {
+      setActualProgress(nextIndex);
       
-      // Save locally immediately for a snappy experience on refresh
+      // Save locally immediately
       if (typeof window !== 'undefined') {
         localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, nextIndex.toString());
       }
@@ -111,7 +118,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
         }).catch(e => console.error("Failed to save progress to server", e));
       }
     }
-  }, [unlockedStep, lessonId]);
+  }, [unlockedStep, actualProgress, lessonId]);
 
   const statusOf = useCallback((i: number): "done" | "current" | "upcoming" => {
     if (completed.has(i)) return "done";
