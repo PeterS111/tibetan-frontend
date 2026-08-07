@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -30,6 +28,9 @@ export default function SuperscriptsLesson() {
 
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
+  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
+  const [isBypassing, setIsBypassing] = useState(false);
 
   // Map to Generic Practice Suite Format
   const practiceGroups = useMemo(() => [
@@ -83,9 +84,25 @@ export default function SuperscriptsLesson() {
   }, []);
 
   return (
-    <div className="bg-paper min-h-screen text-ink pb-40">
+    <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
+        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
+        <button 
+          onClick={async () => {
+            setIsBypassing(true);
+            await markComplete(STEPS.length - 1);
+            // Wait a second to guarantee the network request finishes, then auto-redirect
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 1000);
+          }} 
+          disabled={isBypassing}
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+        >
+          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
+        </button>
+
         {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
@@ -146,7 +163,7 @@ export default function SuperscriptsLesson() {
           
           {/* Step 01 */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
-<div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
                   <Layers size={14} /> Stacking
@@ -236,8 +253,8 @@ export default function SuperscriptsLesson() {
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 05 - Final Test */}
-          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => {}} isLast>
+          {/* 🚨 FIXED: Step 05 - Final Test */}
+          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)} isLast>
             <QuizModule 
               title="Final Step Test" 
               intro="Score 80% or higher to unlock the next step: The Four Subscripts." 
@@ -247,9 +264,29 @@ export default function SuperscriptsLesson() {
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/4" 
+              onPass={() => markComplete(4)}
             />
           </StepContainer>
 
+        </div>
+      </div>
+
+      {/* 🚨 ADDED: Sticky Footer */}
+      <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <Link href="/dashboard/lessons/2" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
+            <ChevronLeft size={16} /> Previous
+          </Link>
+          
+          {expandedStep !== STEPS.length - 1 && (
+            <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
+              <CheckCircle2 size={18} /> Mark step complete
+            </Button>
+          )}
+
+          <Link href="/dashboard/lessons/4" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-dark transition-colors">
+            Next: Subscripts <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </div>

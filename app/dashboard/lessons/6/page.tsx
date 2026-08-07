@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Volume2, ChevronRight, ArrowRight, Info, CheckCircle2, 
+  Volume2, ChevronRight, ChevronLeft, ArrowRight, Info, CheckCircle2, 
   Moon, Sun, BookOpen, Loader2, Shuffle, History, Sparkles
 } from "lucide-react";
 
@@ -28,6 +28,9 @@ export default function SuffixesLesson() {
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   const [reveal, setReveal] = useState<null | "ten" | "two">(null);
+  
+  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
+  const [isBypassing, setIsBypassing] = useState(false);
 
   const practiceGroups = useMemo(() => [
     {
@@ -105,7 +108,22 @@ export default function SuffixesLesson() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
-        {/* Breadcrumb & Hero Component Omitted for Brevity - keeping existing implementation intact */}
+        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
+        <button 
+          onClick={async () => {
+            setIsBypassing(true);
+            await markComplete(STEPS.length - 1);
+            // Wait a second to guarantee the network request finishes, then auto-redirect
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 1000);
+          }} 
+          disabled={isBypassing}
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+        >
+          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
+        </button>
+
         {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
@@ -555,7 +573,7 @@ export default function SuffixesLesson() {
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 09: Final Test */}
+          {/* 🚨 FIXED: Step 09: Final Test */}
           <StepContainer index={8} step={STEPS[8]} status={statusOf(8)} isExpanded={expandedStep === 8} onToggle={() => toggleStep(8)} onContinue={() => {}} isLast>
             <QuizModule 
               title="Final Step Test" 
@@ -566,9 +584,29 @@ export default function SuffixesLesson() {
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/7" 
+              onPass={() => markComplete(8)}
             />
           </StepContainer>
 
+        </div>
+      </div>
+      
+      {/* 🚨 ADDED: Sticky Footer */}
+      <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <Link href="/dashboard/lessons/5" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
+            <ChevronLeft size={16} /> Previous
+          </Link>
+          
+          {expandedStep !== STEPS.length - 1 && (
+            <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
+              <CheckCircle2 size={18} /> Mark step complete
+            </Button>
+          )}
+
+          <Link href="/dashboard/lessons/7" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-dark transition-colors">
+            Next: Capstone <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </div>

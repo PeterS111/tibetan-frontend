@@ -1,12 +1,10 @@
-// app/dashboard/lessons/7/page.tsx
-
 "use client";
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Volume2, ChevronRight, ChevronLeft, ArrowUp, ArrowDown, CheckCircle2, 
-  Sparkles, BookOpen, Award, Target, Loader2, XCircle, RotateCcw, Trophy
+  Sparkles, BookOpen, Award, Target, Loader2, XCircle, RotateCcw, Trophy, ArrowRight
 } from "lucide-react";
 
 // --- Custom Hooks ---
@@ -25,12 +23,17 @@ const PASS_THRESHOLD = 0.8;
 
 export default function FinalAssessmentLesson() {
   const { playAudio, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete } = useLessonProgress(STEPS.length);
+  
+  // 🚨 FIXED: Extracted statusOf from the hook to match the rest of the pipeline
+  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
 
   const [attempt, setAttempt] = useState(0);
   const [inProgress, setInProgress] = useState(false);
   const [lastResult, setLastResult] = useState<{ score: number; wrongByConcept: Record<Concept, number> } | null>(null);
   
+  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
+  const [isBypassing, setIsBypassing] = useState(false);
+
   // Simulated DB record for this standalone page
   const [record, setRecord] = useState({ passed: false, bestScore: 0, attempts: 0 });
 
@@ -53,9 +56,25 @@ export default function FinalAssessmentLesson() {
   };
 
   return (
-    <div className="bg-paper min-h-screen text-ink pb-40">
+    <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
+        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
+        <button 
+          onClick={async () => {
+            setIsBypassing(true);
+            await markComplete(STEPS.length - 1);
+            // Wait a second to guarantee the network request finishes, then auto-redirect
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 1000);
+          }} 
+          disabled={isBypassing}
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+        >
+          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
+        </button>
+
         {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
@@ -101,7 +120,7 @@ export default function FinalAssessmentLesson() {
         <div className="space-y-4">
           
           {/* Step 01: Overview */}
-          <StepContainer index={0} step={STEPS[0]} status={unlockedStep >= 0 ? "done" : "upcoming"} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
+          <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">What this capstone covers</h2>
               <p className="text-sm text-ink-muted">Everything from Steps 1–6, mixed together.</p>
@@ -129,7 +148,7 @@ export default function FinalAssessmentLesson() {
           </StepContainer>
 
           {/* Step 02: Assessment */}
-          <StepContainer index={1} step={STEPS[1]} status={unlockedStep >= 1 ? "done" : "upcoming"} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+          <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">The assessment</h2>
               <p className="text-sm text-ink-muted">About {total} questions across six question types (~20 min).</p>
@@ -176,8 +195,8 @@ export default function FinalAssessmentLesson() {
             )}
           </StepContainer>
 
-          {/* Step 03: Result */}
-          <StepContainer index={2} step={STEPS[2]} status={unlockedStep >= 2 ? "done" : "upcoming"} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => {}} isLast>
+          {/* 🚨 FIXED: Step 03: Result - Added onContinue to actually mark it complete */}
+          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)} isLast>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink mb-1">Your result</h2>
               <p className="text-sm text-ink-muted">Pass {Math.round(PASS_THRESHOLD * 100)}% to unlock your certificate.</p>
@@ -187,16 +206,25 @@ export default function FinalAssessmentLesson() {
           </StepContainer>
 
         </div>
-        
-        {/* Footer Navigation */}
-        <nav className="mt-16 flex flex-col justify-between gap-4 border-t border-border-strong pt-8 sm:flex-row">
-          <Link href="/dashboard/lessons/6" className="inline-flex items-center justify-center sm:justify-start gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors px-4 py-2 bg-surface hover:bg-surface-muted">
+      </div>
+      
+      {/* 🚨 ADDED: Sticky Footer */}
+      <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <Link href="/dashboard/lessons/6" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Previous
           </Link>
-          <Link href="/dashboard/lessons" className="inline-flex items-center justify-center sm:justify-end gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors px-4 py-2 bg-surface hover:bg-surface-muted">
-            Back to syllabus <BookOpen size={16} />
+          
+          {expandedStep !== STEPS.length - 1 && (
+            <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
+              <CheckCircle2 size={18} /> Mark step complete
+            </Button>
+          )}
+
+          <Link href="/dashboard" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-dark transition-colors">
+            Return to Dashboard <ArrowRight size={16} />
           </Link>
-        </nav>
+        </div>
       </div>
     </div>
   );
