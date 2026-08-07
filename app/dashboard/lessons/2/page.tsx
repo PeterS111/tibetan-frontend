@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
@@ -30,6 +28,9 @@ export default function VowelsLesson() {
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Position>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
+  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
+  const [isBypassing, setIsBypassing] = useState(false);
 
   const filtered = useMemo(() => (filter === "all" ? VOWELS : VOWELS.filter((v) => v.position === filter)), [filter]);
 
@@ -44,7 +45,6 @@ export default function VowelsLesson() {
     {
       name: "Vocabulary",
       items: VOCAB.map(v => ({
-        // Reverted to clean v.tib without the cache buster
         id: `voc-${v.tib}`, tibetan: v.tib, reading: v.translit, english: v.en, audioTarget: v.tib, emoji: v.emoji
       }))
     }
@@ -54,6 +54,22 @@ export default function VowelsLesson() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto px-6 py-8">
         
+        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
+        <button 
+          onClick={async () => {
+            setIsBypassing(true);
+            await markComplete(STEPS.length - 1);
+            // Wait a second to guarantee the network request finishes, then auto-redirect
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 1000);
+          }} 
+          disabled={isBypassing}
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+        >
+          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
+        </button>
+
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Steps</Link>
@@ -120,9 +136,7 @@ export default function VowelsLesson() {
             <div className={`relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-border-subtle bg-gradient-to-br from-stone-50 to-white"}`}>
               <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
 
-
-
-<div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
+              <div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => {
                   return (
                     <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
@@ -314,7 +328,6 @@ export default function VowelsLesson() {
                     <div className="text-eyebrow mb-3">{v.translit}</div>
                     <div className="flex items-center justify-between border-t border-border-strong pt-3 mt-auto">
                       <span className="text-sm font-bold text-ink">{v.en}</span>
-                      {/* Reverted back to standard v.tib audio lookup */}
                       <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center bg-surface-muted border border-border-strong text-ink-light transition hover:bg-stone-200">
                         {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4" />}
                       </button>
@@ -330,8 +343,8 @@ export default function VowelsLesson() {
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 6: Final Test */}
-          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => {}} isLast>
+          {/* 🚨 FIXED: Step 6 (Index 6) correctly hooked up to markComplete(6) on passing the Quiz */}
+          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
             <QuizModule 
               title="Final Step Test" 
               intro="Score 80% or higher to unlock the next step: The Three Superscripts." 
@@ -343,6 +356,7 @@ export default function VowelsLesson() {
               isUnlockTest={true} 
               isVocabMatch={true} 
               nextLessonPath="/dashboard/lessons/3" 
+              onPass={() => markComplete(6)}
             />
           </StepContainer>
         </div>
@@ -356,9 +370,13 @@ export default function VowelsLesson() {
           <Link href="/dashboard/lessons/1" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Previous
           </Link>
-          <Button className="flex-1 sm:flex-none">
-            <CheckCircle2 size={18} /> Mark step complete
-          </Button>
+          
+          {expandedStep !== STEPS.length - 1 && (
+            <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
+              <CheckCircle2 size={18} /> Mark step complete
+            </Button>
+          )}
+
           <Link href="/dashboard/lessons/3" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-dark transition-colors">
             Next: Superscripts <ArrowRight size={16} />
           </Link>
