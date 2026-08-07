@@ -18,7 +18,7 @@ function getAuthToken(): string {
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
   const [unlockedStep, setUnlockedStep] = useState<number>(DEV_BYPASS_LOCKS ? bypassAmount || totalSteps : 0);
-  const [actualProgress, setActualProgress] = useState<number>(0); // NEW: Tracks true DB progress
+  const [actualProgress, setActualProgress] = useState<number>(0); 
   const [expandedStep, setExpandedStep] = useState<number>(0);
   const [completed, setCompleted] = useState<Set<number>>(new Set());
   const [lessonId, setLessonId] = useState<number>(1);
@@ -41,10 +41,18 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
       setUnlockedStep(finalStep);
       
       const completedSet = new Set<number>();
+      // Mark actual completed steps
       for(let i = 0; i < stepValue; i++) completedSet.add(i);
+      
+      // If DEV_BYPASS_LOCKS is true, visually treat them all as completed so you can click anything
+      if (DEV_BYPASS_LOCKS) {
+        for(let i = 0; i < finalStep; i++) completedSet.add(i);
+      }
+      
       setCompleted(completedSet);
       
-      setExpandedStep(Math.min(finalStep, totalSteps - 1));
+      // MOST IMPORTANT: Auto-expand the exact step you are truly working on (not the bypassed limit)
+      setExpandedStep(Math.min(stepValue, totalSteps - 1));
     };
 
     const token = getAuthToken();
@@ -60,7 +68,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     .then(res => res.json())
     .then(data => {
       const serverProgress = typeof data.unlocked_step === 'number' ? data.unlocked_step : 0;
-      const bestProgress = Math.max(localProgress, serverProgress); // Keep whichever is higher
+      const bestProgress = Math.max(localProgress, serverProgress); 
       applyProgress(bestProgress);
       
       if (serverProgress > localProgress) {
@@ -95,7 +103,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
       setUnlockedStep(nextIndex);
     }
     
-    // Always save if it's a new high-water mark for the user's TRUE progress
+    // Save to database only if it's a new high-water mark for the user's TRUE progress
     if (nextIndex > actualProgress) {
       setActualProgress(nextIndex);
       
