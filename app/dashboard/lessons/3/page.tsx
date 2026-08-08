@@ -110,7 +110,7 @@ export default function SuperscriptsLesson() {
             <h1 className="font-serif text-4xl leading-tight tracking-tight md:text-5xl text-ink">
               The Three Superscripts
             </h1>
-            <p className="mt-2 font-serif text-2xl italic text-ink-light">མགོ་ཅན་གསུམ།</p>
+            <p className="mt-2 font-tibetan text-3xl text-ink-light">མགོ་ཅན་གསུམ།</p>
             <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-light">
               Only three letters — ར, ལ, ས — may sit above another consonant. When they do, they
               fall silent themselves and quietly reshape the tone of the root letter beneath.
@@ -286,7 +286,7 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           <div>
             <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Superscript</div>
             <div className="font-serif text-3xl font-bold">{sup.title}</div>
-            <div className={`mt-1 font-serif text-xl italic ${night ? "text-stone-400" : "text-ink-light"}`}>{sup.nameTib}</div>
+            <div className={`mt-1 font-tibetan text-2xl ${night ? "text-stone-400" : "text-ink-light"}`}>{sup.nameTib}</div>
           </div>
         </div>
         <p className={`text-[15px] leading-relaxed p-5 border ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
