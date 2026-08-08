@@ -171,11 +171,11 @@ export default function VowelsLesson() {
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                     <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>{v.tib}</span>
                     <div className="mt-2 flex items-end justify-between">
-                      <div className="flex flex-col">
-                        <span className={`text-[11px] font-bold uppercase tracking-[0.22em] ${studyMode === "night" ? "text-white/80" : "text-ink"}`}>{v.translit}</span>
-                        <span className={`text-[9px] font-bold tracking-widest ${studyMode === "night" ? "text-white/40" : "text-ink-muted"}`}>{v.markTranslit}</span>
-                      </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className={`text-sm font-bold uppercase tracking-widest ${studyMode === "night" ? "text-white/80" : "text-ink"}`}>{v.translit}</span>
+                      <span className={`text-[11px] sm:text-xs font-bold tracking-wide ${studyMode === "night" ? "text-white/40" : "text-ink-muted"}`}>{v.markTranslit}</span>
                     </div>
+                  </div>
                     {playingItem === v.tib && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
                   </button>
                 ))}
