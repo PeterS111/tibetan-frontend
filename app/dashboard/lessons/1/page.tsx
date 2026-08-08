@@ -247,14 +247,38 @@ return (
                   <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit border ${r.swatch} ${r.text}`}>
                     <span className="text-[10px] font-bold uppercase tracking-widest">{r.label}</span>
                   </div>
-                  <button onClick={() => playAudio(r.tib)} className="mt-8 flex items-baseline gap-4 w-fit hover:opacity-70 transition-opacity">
-                    <span className="font-tibetan text-[5rem] leading-none text-ink">{r.tib}</span>
+                  
+                  {/* Big Root Letter Button */}
+                  <button 
+                    onClick={() => playAudio(r.tib)} 
+                    disabled={playingItem !== null}
+                    className="mt-8 flex items-center gap-4 w-fit group transition-all text-left"
+                  >
+                    <span className="font-tibetan text-[5rem] leading-none text-ink group-hover:text-brand transition-colors">{r.tib}</span>
                     <span className="font-serif text-3xl italic text-ink-muted">{r.translit}</span>
+                    <span className="ml-1 inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
+                      {playingItem === r.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
+                    </span>
                   </button>
+                  
                   <p className="mt-6 text-sm leading-relaxed text-ink-light flex-1">{r.description}</p>
+                  
                   <div className="mt-6 border-t border-border-strong pt-5">
-                    <div className="text-eyebrow mb-2">Family</div>
-                    <div className="font-serif text-xl tracking-[0.2em] text-ink tibetan">{r.members}</div>
+                    <div className="text-eyebrow mb-3">Family</div>
+                    {/* Small Family Member Buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      {r.members.split(" ").map((letter) => (
+                        <button 
+                          key={letter} 
+                          onClick={() => playAudio(letter)}
+                          disabled={playingItem !== null}
+                          className="relative border border-border-strong bg-surface-muted w-10 h-10 flex items-center justify-center font-serif text-xl hover:border-brand hover:text-brand hover:bg-surface transition-colors text-ink tibetan"
+                        >
+                          {letter}
+                          {playingItem === letter && <Loader2 size={12} className="absolute top-1 right-1 animate-spin text-brand" />}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
