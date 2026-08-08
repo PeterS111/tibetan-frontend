@@ -11,13 +11,13 @@ import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 
 const FALLBACK_MODULES = [
-  { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active" },
-  { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked" },
-  { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked" },
-  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked" },
-  { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked" },
-  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked" },
-  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked" }
+  { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active", lesson_count: 8 },
+  { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked", lesson_count: 7 },
+  { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked", lesson_count: 5 },
+  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked", lesson_count: 6 },
+  { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked", lesson_count: 7 },
+  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked", lesson_count: 9 },
+  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked", lesson_count: 3 }
 ];
 
 export default function MyStepsPage() {
@@ -138,21 +138,24 @@ export default function MyStepsPage() {
              )
           }
 
+          const progressVal = Number(module.progress) || 0;
+          const lessonCount = Number(module.lesson_count) || 1;
+          const percentDone = Math.min(100, Math.round((progressVal / lessonCount) * 100));
+
           return (
             <Card 
               key={module.id || module.module_id} 
-              className={`flex flex-col md:flex-row p-6 gap-6 relative overflow-hidden transition-colors border ${module.progress > 0 ? 'border-brand shadow-sm' : 'border-border-subtle hover:border-ink shadow-none'}`}
+              className={`flex flex-col md:flex-row p-6 gap-6 relative overflow-hidden transition-colors border ${progressVal > 0 ? 'border-brand shadow-sm' : 'border-border-subtle hover:border-ink shadow-none'}`}
             >
-              {/* The Number Box - Matched to crop (light gray bg, no visible thick border, serif number) */}
-              <div className={`flex-shrink-0 w-14 h-14 ${module.progress > 0 ? 'bg-brand/10 text-brand-dark' : 'bg-surface-muted text-ink'} font-serif text-xl font-bold flex items-center justify-center`}>
+              {/* The Number Box */}
+              <div className={`flex-shrink-0 w-14 h-14 ${progressVal > 0 ? 'bg-brand/10 text-brand-dark' : 'bg-surface-muted text-ink'} font-serif text-xl font-bold flex items-center justify-center`}>
                 {module.module_id}
               </div>
               
               <div className="flex-1 flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-1.5">
-                  {/* Module Title is serif and bold in the screenshot */}
                   <h3 className="text-xl font-bold font-serif text-ink">{module.title}</h3>
-                  {module.progress > 0 ? (
+                  {progressVal > 0 ? (
                     <Badge variant="brand">In Progress</Badge>
                   ) : (
                     <Badge variant="default">Ready to Start</Badge>
@@ -160,13 +163,13 @@ export default function MyStepsPage() {
                 </div>
                 <p className="text-ink-light text-sm">{module.description}</p>
                 
-                {module.progress > 0 && (
+                {progressVal > 0 && (
                   <div className="flex items-center gap-4 w-full max-w-md mt-4">
                     <div className="flex-1 flex items-center gap-3">
                       <div className="w-full h-1 bg-surface-muted overflow-hidden">
-                        <div className="h-full bg-brand" style={{ width: `${module.progress}%` }}></div>
+                        <div className="h-full bg-brand" style={{ width: `${percentDone}%` }}></div>
                       </div>
-                      <span className="text-[10px] font-bold text-brand-dark shrink-0 tracking-wider uppercase">{module.progress}% DONE</span>
+                      <span className="text-[10px] font-bold text-brand-dark shrink-0 tracking-wider uppercase">{percentDone}% DONE</span>
                     </div>
                   </div>
                 )}
@@ -175,9 +178,9 @@ export default function MyStepsPage() {
               <div className="flex items-center mt-4 md:mt-0">
                 <Link 
                   href={lessonUrl} 
-                  className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-none w-full md:w-auto ${module.progress > 0 ? 'bg-brand text-ink hover:bg-[#E5AC00]' : 'bg-transparent text-ink border border-border-strong hover:border-ink'}`}
+                  className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-none w-full md:w-auto ${progressVal > 0 ? 'bg-brand text-ink hover:bg-[#E5AC00]' : 'bg-transparent text-ink border border-border-strong hover:border-ink'}`}
                 >
-                  {module.progress > 0 ? 'Continue' : 'Start'}
+                  {progressVal > 0 ? 'Continue' : 'Start'}
                 </Link>
               </div>
             </Card>
