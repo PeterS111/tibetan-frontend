@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -34,9 +32,11 @@ interface PracticeSuiteProps {
   isLesson1?: boolean; 
 }
 
+// 🚨 FIXED: Globally strips out all square brackets from any reading string
 const getReading = (item: PracticeItem, isLesson1: boolean) => {
   const preferred = isLesson1 ? (item.translit || item.pron) : (item.pron || item.translit);
-  return preferred || item.reading;
+  const rawReading = preferred || item.reading;
+  return rawReading ? rawReading.replace(/[\[\]]/g, '') : "";
 };
 
 export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
@@ -67,7 +67,7 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
       <div className="p-6 md:p-10 bg-paper">
         {tab === "flash" && <Flashcards groups={groups} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} />}
         {tab === "match" && <MatchGame items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isLesson1={isLesson1} />}
-        {tab === "srs" && <MemoryReview items={allItems} speak={playAudio} playingItem={playingItem} />}
+        {tab === "srs" && <MemoryReview items={allItems} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} />}
       </div>
     </Card>
   );
@@ -106,12 +106,10 @@ function Flashcards({ groups, speak, playingItem, isLesson1 }: any) {
       <button onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-border-strong shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden">
         {!flipped ? (
           <div className="flex flex-col items-center gap-4 group-hover:scale-105 transition-transform">
-            {/* TASK 1: Emojis completely removed from the front of the flashcard */}
             <span className="text-tibetan-display">{card.tibetan}</span>
           </div>
         ) : (
           <div className="max-w-md px-6 text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
-            {/* TASK 1: Emojis moved to the back of the flashcard */}
             {card.emoji && <span className="text-5xl mb-4">{card.emoji}</span>}
             <div className="text-2xl sm:text-3xl font-bold text-ink mb-2 leading-relaxed">{card.english}</div>
             <div className="text-sm sm:text-lg text-ink-light font-bold uppercase tracking-widest">{getReading(card, isLesson1)}</div>
@@ -164,11 +162,13 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
             const active = selectedWord === p.tibetan;
             const paired = pairs[p.tibetan];
             const correct = paired === getReading(p, isLesson1);
+            
+            // 🚨 FIXED: Active items now light up bright green instead of disappearing!
             return (
               <button
                 key={`tib-${p.id}`} onClick={() => !paired && setSelectedWord(p.tibetan)}
                 className={`flex w-full items-center justify-between border px-5 py-4 text-left transition-colors bg-white ${
-                  active ? "border-ink bg-ink text-white shadow-sm" : paired ? (correct ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-rose-400 bg-rose-50 text-rose-700") : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
+                  active ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : paired ? (correct ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-rose-400 bg-rose-50 text-rose-700") : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
                 }`}
               >
                 <span className="font-tibetan text-3xl leading-normal pb-1">{p.tibetan}</span>
@@ -180,11 +180,13 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
         <div className="space-y-3">
           {readings.map((r, idx) => {
             const taken = Object.values(pairs).includes(r);
+            
+            // 🚨 FIXED: Matched items on the right now light up green and stay fully visible!
             return (
               <button
                 key={`read-${r}-${idx}`} onClick={() => pick(r)} disabled={taken || !selectedWord}
                 className={`flex w-full items-center justify-between border px-5 py-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
-                  taken ? "border-border-subtle bg-surface-muted opacity-40 text-ink-muted" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm" : "cursor-not-allowed border-border-strong text-ink-light"
+                  taken ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm cursor-pointer" : "cursor-not-allowed border-border-strong text-ink-light opacity-80"
                 }`}
               >
                 <span>{r}</span>
@@ -207,7 +209,7 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
 }
 
 // --- MEMORY REVIEW (SRS) ---
-function MemoryReview({ items, speak, playingItem }: any) {
+function MemoryReview({ items, speak, playingItem, isLesson1 }: any) {
   const [deck, setDeck] = useState(() => [...items].sort(() => 0.5 - Math.random()));
   const [reviewedCount, setReviewedCount] = useState(0);
   const [rating, setRating] = useState<'Hard' | 'Good' | 'Easy' | null>(null);
@@ -239,7 +241,6 @@ function MemoryReview({ items, speak, playingItem }: any) {
           <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
         </div>
         <div className="bg-white border border-border-strong p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
-          {/* TASK 1: Emojis completely removed from the Tibetan reading display */}
           <div className="text-tibetan-display mb-8 text-center">{deck[0].tibetan}</div>
           <Button variant="outline" onClick={() => speak(deck[0].audioTarget)} disabled={playingItem !== null}>
             {playingItem === deck[0].audioTarget ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand" />} Check Sound
