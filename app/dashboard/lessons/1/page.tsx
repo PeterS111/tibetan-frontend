@@ -397,11 +397,12 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
     const panelWidth = panelRect.width || 384; 
     const panelHeight = panelRect.height || 400; 
     const margin = 16;
+    const horizontalGap = 80; // Large enough gap to leap over the adjacent button
     
-    let startX = rect.right + margin;
+    let startX = rect.right + horizontalGap;
     let startY = rect.top;
 
-    if (startX + panelWidth > window.innerWidth) startX = rect.left - panelWidth - margin;
+    if (startX + panelWidth > window.innerWidth) startX = rect.left - panelWidth - horizontalGap;
     if (startX < margin) {
       startX = Math.max(margin, (window.innerWidth - panelWidth) / 2);
       startY = rect.top - panelHeight - margin;
