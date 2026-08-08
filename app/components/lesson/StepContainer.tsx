@@ -120,13 +120,9 @@ export function StepContainer({
 
             {/* Next / Complete Button */}
             <div>
-              {!isLast ? (
+              {!isLast && (
                 <Button onClick={onContinue} className="px-6 shadow-sm">
                   Mark complete & continue <ChevronRight className="size-4" strokeWidth={2.5} />
-                </Button>
-              ) : (
-                <Button onClick={onContinue} className="px-6 shadow-sm">
-                  Finish Unit <Check className="size-4" strokeWidth={2.5} />
                 </Button>
               )}
             </div>
