@@ -39,7 +39,7 @@ export default function VowelsLesson() {
     {
       name: "Vowels",
       items: VOWELS.map(v => ({
-        id: `v-${v.key}`, tibetan: v.tib, reading: v.markGloss, english: POSITION_META[v.position].label, audioTarget: v.translit
+        id: `v-${v.key}`, tibetan: v.tib, reading: v.markTranslit, english: POSITION_META[v.position].label, audioTarget: v.translit
       }))
     },
     {
@@ -245,14 +245,37 @@ export default function VowelsLesson() {
                       {v.position === "above" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
                       <span className="text-eyebrow">{pm.label}</span>
                     </div>
-                    <div className="mt-6 flex items-baseline gap-4">
-                      <span className="font-tibetan text-[5rem] leading-none text-ink">{v.tib}</span>
+                    
+                    {/* Big Vowel Button */}
+                    <button 
+                      onClick={() => playAudio(v.tib)} 
+                      disabled={playingItem !== null}
+                      className="mt-8 flex items-center gap-4 w-fit group transition-all text-left"
+                    >
+                      <span className="font-tibetan text-[5rem] leading-none text-ink group-hover:text-brand transition-colors">{v.tib}</span>
                       <span className="font-serif text-3xl italic text-ink-muted">{v.translit}</span>
-                    </div>
+                      <span className="ml-1 inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
+                        {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
+                      </span>
+                    </button>
+
                     <div className="mt-6 border-t border-border-strong pt-4 flex-1">
-                      <div className="text-eyebrow mb-1">Mark name</div>
-                      <div className="font-serif text-2xl text-ink tibetan">{v.markTib}</div>
-                      <div className="text-xs italic text-ink-light mt-1">{v.markTranslit} · {v.markGloss}</div>
+                      <div className="text-eyebrow mb-3">Mark name</div>
+                      
+                      {/* Mark Name Button */}
+                      <button 
+                        onClick={() => playAudio(v.markTranslit)}
+                        disabled={playingItem !== null}
+                        className="group flex flex-col text-left transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-serif text-2xl text-ink group-hover:text-brand tibetan">{v.markTib}</span>
+                          <span className="inline-grid size-6 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
+                            {playingItem === v.markTranslit ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
+                          </span>
+                        </div>
+                        <div className="text-sm italic text-ink-light mt-1.5 font-medium">{v.markTranslit}</div>
+                      </button>
                     </div>
                     <p className="mt-4 text-[13px] leading-relaxed text-ink-light bg-surface-muted p-3 border border-border-strong">{v.note}</p>
                   </div>
@@ -451,7 +474,6 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <div className="text-xl font-serif italic text-ink">{v.translit}</div>
-                <div className="text-base font-mono font-bold text-ink-light">{v.markGloss}</div>
               </div>
               <Button variant="primary" onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-4 py-1.5 text-xs">
                 {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Play
