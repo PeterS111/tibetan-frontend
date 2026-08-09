@@ -314,9 +314,9 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
         <div className="space-y-2">
           {sup.combos.map((c: any) => {
             const M = TONE_META[c.tone as Tone];
-            // Convert the subjoined mark back to a standalone base letter
-            // by subtracting 80 (0x50) from its Tibetan Unicode value.
-            const rootTib = c.stack.length > 1 ? String.fromCharCode(c.stack.charCodeAt(1) - 0x50) : "◌";
+            // Explicitly bind the subjoined mark to a single dotted circle (\u25CC).
+            // This forces the browser to combine them into exactly ONE circle with the letter underneath.
+            const rootTib = c.stack.length > 1 ? "\u25CC" + c.stack.charAt(1) : "◌";
             const spellKey = `${c.stack} spelling`;
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
