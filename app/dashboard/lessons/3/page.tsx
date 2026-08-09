@@ -314,9 +314,7 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
         <div className="space-y-2">
           {sup.combos.map((c: any) => {
             const M = TONE_META[c.tone as Tone];
-            // Explicitly bind the subjoined mark to a single dotted circle (\u25CC).
-            // This forces the browser to combine them into exactly ONE circle with the letter underneath.
-            const rootTib = c.stack.length > 1 ? "\u25CC" + c.stack.charAt(1) : "◌";
+            const subMark = c.stack.length > 1 ? c.stack.charAt(1) : "";
             const spellKey = `${c.stack} spelling`;
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
@@ -324,7 +322,18 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
                 <span className={`flex items-center gap-2 md:gap-3 ${night ? "text-stone-400" : "text-ink-light"}`}>
                   <span className="font-tibetan text-2xl sm:text-3xl">{sup.head}</span>
                   <span className="text-lg font-sans opacity-40">+</span>
-                  <span className="font-tibetan text-2xl sm:text-3xl">{rootTib || "◌"}</span>
+                  
+                  {/* Robust clipping hack: Combines ཨ with the subjoined mark to force perfect text-shaping, then hides the ཨ and places a single dotted circle behind it. */}
+                  <span className="relative flex items-center justify-center w-6 sm:w-8">
+                    <span className="absolute font-tibetan text-2xl sm:text-3xl opacity-50 -translate-y-[0.1em]">{"\u25CC"}</span>
+                    <span 
+                      className="relative z-10 font-tibetan text-2xl sm:text-3xl" 
+                      style={{ clipPath: "polygon(0 45%, 100% 45%, 100% 150%, 0 150%)" }}
+                    >
+                      {"ཨ" + subMark}
+                    </span>
+                  </span>
+
                   <span className="text-lg font-sans opacity-40">+</span>
                   <span className="font-tibetan text-2xl sm:text-3xl">བཏགས་</span>
                 </span>
