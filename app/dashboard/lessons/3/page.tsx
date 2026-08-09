@@ -214,13 +214,13 @@ export default function SuperscriptsLesson() {
               {SUPERS.map((s) => {
                 const on = s.key === activeTab;
                 return (
-                  <button key={s.key} onClick={() => setActiveTab(s.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-colors ${on ? "border-ink bg-ink text-white" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
-                    <span className="grid h-11 min-w-11 place-items-center px-1 font-serif text-xl leading-none bg-white/10" style={{ color: on ? '#fff' : s.accent.hex, backgroundColor: on ? 'rgba(255,255,255,0.1)' : `${s.accent.hex}20` }}>
+                  <button key={s.key} onClick={() => setActiveTab(s.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-all ${on ? "border-brand bg-brand text-ink shadow-sm" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
+                    <span className="grid h-11 min-w-11 place-items-center px-1 font-tibetan text-2xl leading-none" style={{ color: on ? '#1c1917' : s.accent.hex, backgroundColor: on ? 'rgba(0,0,0,0.05)' : `${s.accent.hex}20` }}>
                       {s.headLabel}
                     </span>
                     <span className="flex-1">
                       <span className="block text-sm font-bold">{s.name}</span>
-                      <span className={`block text-[10px] font-bold uppercase tracking-widest ${on ? "text-ink-muted" : "text-ink-light"}`}>{s.count} stacks</span>
+                      <span className={`block text-[10px] font-bold uppercase tracking-widest ${on ? "text-ink-light mix-blend-multiply" : "text-ink-light"}`}>{s.count} stacks</span>
                     </span>
                   </button>
                 );
@@ -289,12 +289,16 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
             <div className={`mt-1 font-tibetan text-2xl ${night ? "text-stone-400" : "text-ink-light"}`}>{sup.nameTib}</div>
           </div>
         </div>
-        <p className={`text-[15px] leading-relaxed p-5 border ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
-          {sup.intro}<br /><br />
-          <span className={night ? "text-white font-bold" : "text-ink font-bold"}>
-            <span className="font-serif text-xl">{sup.head}</span> + {sup.rootLetters}
-          </span>
-        </p>
+        
+		<div className={`text-[15px] leading-relaxed p-5 border flex flex-col gap-4 ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
+          <p>{sup.intro}</p>
+          <div className={`flex items-center flex-wrap gap-4 pt-2 ${night ? "text-white" : "text-ink"}`}>
+            <span className="font-tibetan text-3xl sm:text-4xl">{sup.head}</span>
+            <span className="text-xl font-sans opacity-40">+</span>
+            <span className="font-tibetan text-3xl sm:text-4xl leading-relaxed tracking-wider">{sup.rootLetters}</span>
+          </div>
+        </div>
+		
       </div>
       <div className={`grid grid-cols-3 gap-px border-b sm:grid-cols-4 md:grid-cols-6 ${night ? "border-white/10 bg-white/10" : "border-border-strong bg-border-strong"}`}>
         {sup.combos.map((c: any) => {
