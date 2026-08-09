@@ -319,7 +319,13 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
                 <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center">{c.stack}</span>
-                <span className={`text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}><span className="font-serif text-lg">{sup.head}</span> + <span className="font-serif text-lg">{rootTib || "◌"}</span> + བཏགས་</span>
+                <span className={`flex items-center gap-2 md:gap-3 ${night ? "text-stone-400" : "text-ink-light"}`}>
+                  <span className="font-tibetan text-2xl sm:text-3xl">{sup.head}</span>
+                  <span className="text-lg font-sans opacity-40">+</span>
+                  <span className="font-tibetan text-2xl sm:text-3xl">{rootTib || "◌"}</span>
+                  <span className="text-lg font-sans opacity-40">+</span>
+                  <span className="font-tibetan text-2xl sm:text-3xl">བཏགས་</span>
+                </span>
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
