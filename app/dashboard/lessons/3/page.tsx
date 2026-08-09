@@ -323,12 +323,12 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
                   <span className="font-tibetan text-2xl sm:text-3xl">{sup.head}</span>
                   <span className="text-lg font-sans opacity-40">+</span>
                   
-                  {/* Robust clipping hack: Combines ཨ with the subjoined mark to force perfect text-shaping, then hides the ཨ and places a single dotted circle behind it. */}
-                  <span className="relative flex items-center justify-center w-6 sm:w-8">
-                    <span className="absolute font-tibetan text-2xl sm:text-3xl opacity-50 -translate-y-[0.1em]">{"\u25CC"}</span>
+                  {/* Exact clipping solution applied from Lesson 2 (U Vowel hack) */}
+                  <span className="relative flex items-center justify-center font-tibetan text-2xl sm:text-3xl min-w-[1.5em]">
+                    <span className="absolute">{"\u25CC"}</span>
                     <span 
-                      className="relative z-10 font-tibetan text-2xl sm:text-3xl" 
-                      style={{ clipPath: "polygon(0 45%, 100% 45%, 100% 150%, 0 150%)" }}
+                      className="relative z-10 -translate-x-[0.12em]" 
+                      style={{ clipPath: "polygon(0 60%, 100% 60%, 100% 150%, 0 150%)" }}
                     >
                       {"ཨ" + subMark}
                     </span>
