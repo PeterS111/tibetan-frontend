@@ -311,10 +311,14 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
       </div>
       <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
         <div className={`mb-6 text-eyebrow ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
-        <div className="space-y-2">
+        
+		
+		<div className="space-y-2">
           {sup.combos.map((c: any) => {
             const M = TONE_META[c.tone as Tone];
-            const subMark = c.stack.length > 1 ? c.stack.charAt(1) : "";
+            // Convert the subjoined mark back to a standalone base letter
+            // by subtracting 80 (0x50) from its Tibetan Unicode value.
+            const rootTib = c.stack.length > 1 ? String.fromCharCode(c.stack.charCodeAt(1) - 0x50) : "◌";
             const spellKey = `${c.stack} spelling`;
             return (
               <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
@@ -323,21 +327,13 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
                   <span className="font-tibetan text-2xl sm:text-3xl">{sup.head}</span>
                   <span className="text-lg font-sans opacity-40">+</span>
                   
-                  {/* Clean clipping hack: Uses བ (Ba) which has a flat bottom, leaving zero artifacts. 
-                      Removes horizontal shift so it aligns perfectly with the dotted circle. */}
-                  <span className="relative flex items-center justify-center font-tibetan text-2xl sm:text-3xl min-w-[1.2em]">
-                    <span className="absolute opacity-40">{"\u25CC"}</span>
-                    <span 
-                      className="relative z-10" 
-                      style={{ clipPath: "polygon(-50% 65%, 150% 65%, 150% 250%, -50% 250%)" }}
-                    >
-                      {"བ" + subMark}
-                    </span>
-                  </span>
+                  {/* Safely render the standalone letter, ignoring CSS/circles entirely */}
+                  <span className="font-tibetan text-2xl sm:text-3xl">{rootTib}</span>
 
                   <span className="text-lg font-sans opacity-40">+</span>
                   <span className="font-tibetan text-2xl sm:text-3xl">བཏགས་</span>
                 </span>
+		
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
