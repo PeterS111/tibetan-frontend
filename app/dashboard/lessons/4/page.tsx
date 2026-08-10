@@ -241,7 +241,7 @@ export default function SubscriptsLesson() {
                 const on = s.key === activeTab;
                 return (
                   <button key={s.key} onClick={() => setActiveTab(s.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-colors ${on ? "border-ink bg-ink text-white" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
-                    <span className="grid size-9 place-items-center font-serif text-xl bg-white/10" style={{ color: on ? '#fff' : s.accent.hex, backgroundColor: on ? 'rgba(255,255,255,0.1)' : `${s.accent.hex}20` }}>{s.headLarge}</span>
+                    <span className="grid size-9 place-items-center font-tibetan text-2xl leading-none" style={{ color: on ? '#1c1917' : s.accent.hex }}>{s.headLarge}</span>
                     <span className="flex-1">
                       <span className="block text-sm font-bold">{s.name}</span>
                       <span className={`block text-[10px] font-bold uppercase tracking-widest ${on ? "text-ink-muted" : "text-ink-light"}`}>{s.count} stacks</span>
@@ -426,7 +426,7 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
           <CheckCircle2 size={18} style={{ color: sub.accent.hex }} />
           <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · {sub.name}</span>
         </div>
-        <MiniMastery sub={sub} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <MiniMastery key={sub.key} sub={sub} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
@@ -486,9 +486,11 @@ function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any)
       </div>
       {picked && (
         <div className={`mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border shadow-sm ${night ? "bg-white/5 border-white/10" : "bg-surface border-border-strong"}`}>
-          <span className={`text-sm font-bold ${picked === question.answer.stack ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === question.answer.stack ? `Correct — ${question.answer.stack} reads [${question.answer.read}].` : `Answer: ${question.answer.stack} reads [${question.answer.read}].`}
-          </span>
+          <div className={`text-sm font-bold flex items-center flex-wrap gap-2 ${picked === question.answer.stack ? "text-emerald-600" : "text-rose-600"}`}>
+            <span>{picked === question.answer.stack ? "Correct —" : "Answer:"}</span>
+            <span className="font-tibetan text-3xl leading-none pt-1">{question.answer.stack}</span>
+            <span>reads [{question.answer.read}].</span>
+          </div>
           <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
         </div>
       )}
