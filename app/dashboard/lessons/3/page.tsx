@@ -354,7 +354,7 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           <CheckCircle2 size={18} style={{ color: sup.accent.hex }} />
           <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · {sup.name}</span>
         </div>
-        <MiniMastery sup={sup} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <MiniMastery key={sup.key} sup={sup} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
@@ -414,9 +414,11 @@ function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any)
       </div>
       {picked && (
         <div className={`mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border shadow-sm ${night ? "bg-white/5 border-white/10" : "bg-surface border-border-strong"}`}>
-          <span className={`text-sm font-bold ${picked === question.answer.read ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === question.answer.read ? `Correct — ${question.answer.stack} reads [${question.answer.read}].` : `Answer: ${question.answer.stack} reads [${question.answer.read}].`}
-          </span>
+          <div className={`text-sm font-bold flex items-center flex-wrap gap-2 ${picked === question.answer.read ? "text-emerald-600" : "text-rose-600"}`}>
+            <span>{picked === question.answer.read ? "Correct —" : "Answer:"}</span>
+            <span className="font-tibetan text-3xl leading-none pt-1">{question.answer.stack}</span>
+            <span>reads [{question.answer.read}].</span>
+          </div>
           <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
         </div>
       )}
