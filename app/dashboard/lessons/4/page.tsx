@@ -122,7 +122,7 @@ export default function SubscriptsLesson() {
             <h1 className="font-serif text-4xl md:text-5xl text-ink leading-tight tracking-tight">
               The Four Subscripts
             </h1>
-            <p className="mt-2 font-serif text-2xl italic text-ink-light">འདོགས་ཅན་བཞི།</p>
+            <p className="mt-2 font-tibetan text-3xl text-ink-light">འདོགས་ཅན་བཞི།</p>
             <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-light">
               Four consonants — <span className="font-serif text-xl">ཡ ར ལ ཝ</span> — may tuck beneath a root letter
               as a small subjoined mark. Each subscript governs a different family of stacks and its
@@ -370,17 +370,19 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
           <div>
             <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Subscript</div>
             <div className="font-serif text-3xl font-bold">{sub.title}</div>
-            <div className={`mt-1 font-serif text-xl italic ${night ? "text-stone-400" : "text-ink-light"}`}>{sub.nameTib}</div>
+            <div className={`mt-1 font-tibetan text-2xl ${night ? "text-stone-400" : "text-ink-light"}`}>{sub.nameTib}</div>
           </div>
         </div>
-        <div>
-          <p className={`text-[15px] leading-relaxed p-5 border ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
-            {sub.intro}<br /><br />
-            <span className={night ? "text-white font-bold" : "text-ink font-bold"}>
-              <span className="font-serif text-xl">{sub.rootLetters}</span> + <span className="font-serif text-xl">{sub.headLarge}</span>
-            </span>
-          </p>
-          <div className={`mt-4 flex items-start gap-3 border-l-2 px-4 py-3 text-sm ${night ? "bg-white/5 text-stone-300" : sub.accent.bg + " " + sub.accent.text}`} style={{ borderColor: sub.accent.hex }}>
+        <div className="flex flex-col gap-4">
+          <div className={`text-[15px] leading-relaxed p-5 border flex flex-col gap-4 ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
+            <p>{sub.intro}</p>
+            <div className={`flex items-center flex-wrap gap-4 pt-2 ${night ? "text-white" : "text-ink"}`}>
+              <span className="font-tibetan text-3xl sm:text-4xl leading-relaxed tracking-wider">{sub.rootLetters}</span>
+              <span className="text-xl font-sans opacity-40">+</span>
+              <span className="font-tibetan text-3xl sm:text-4xl">{sub.headLarge}</span>
+            </div>
+          </div>
+          <div className={`flex items-start gap-3 border-l-2 px-4 py-3 text-sm ${night ? "bg-white/5 text-stone-300" : sub.accent.bg + " " + sub.accent.text}`} style={{ borderColor: sub.accent.hex }}>
             <Info className="mt-0.5 size-4 shrink-0" style={{ color: sub.accent.hex }} />
             <span className="font-medium leading-relaxed">{sub.usage}</span>
           </div>
