@@ -215,7 +215,7 @@ export default function SuperscriptsLesson() {
                 const on = s.key === activeTab;
                 return (
                   <button key={s.key} onClick={() => setActiveTab(s.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-all ${on ? "border-brand bg-brand text-ink shadow-sm" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
-                    <span className="grid h-11 min-w-11 place-items-center px-1 font-tibetan text-2xl leading-none" style={{ color: on ? '#1c1917' : s.accent.hex, backgroundColor: on ? 'rgba(0,0,0,0.05)' : `${s.accent.hex}20` }}>
+                    <span className="grid h-11 min-w-11 place-items-center px-1 font-tibetan text-2xl leading-none" style={{ color: on ? '#1c1917' : s.accent.hex }}>
                       {s.headLabel}
                     </span>
                     <span className="flex-1">
