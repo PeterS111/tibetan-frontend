@@ -199,9 +199,12 @@ export default function SubscriptsLesson() {
                   <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
                     
-                    {/* Reverted to original structure, just updated colors to be visible */}
-                    <span className="mt-2 font-tibetan text-ink leading-none" style={{ fontSize: "3rem" }}>
-                      <span className="text-ink-muted opacity-50">◌</span>{s.mark}
+                    {/* Lesson 2 clip-path solution applied here! */}
+                    <span className="mt-2 font-tibetan text-ink leading-none relative flex items-center justify-center" style={{ fontSize: "3rem" }}>
+                      <span className="absolute text-ink-muted opacity-50">{"\u25CC"}</span>
+                      <span className="relative z-10 -translate-x-[0.12em]" style={{ clipPath: "polygon(0 60%, 100% 60%, 100% 150%, 0 150%)" }}>
+                        {"ཨ" + s.mark}
+                      </span>
                     </span>
 
                     <span className="text-sm font-bold text-ink">{s.name}</span>
