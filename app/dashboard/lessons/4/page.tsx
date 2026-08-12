@@ -198,9 +198,12 @@ export default function SubscriptsLesson() {
                 {SUBS.map((s) => (
                   <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
+                    
+                    {/* Reverted to original structure, just updated colors to be visible */}
                     <span className="mt-2 font-tibetan text-ink leading-none" style={{ fontSize: "3rem" }}>
-                      {"\u25CC" + s.mark}
+                      <span className="text-ink-muted opacity-50">◌</span>{s.mark}
                     </span>
+
                     <span className="text-sm font-bold text-ink">{s.name}</span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{s.count} stacks · <span className="font-tibetan text-lg ml-1 text-ink-light">{s.headLabel}</span></span>
                   </button>
