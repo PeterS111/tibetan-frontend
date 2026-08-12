@@ -294,8 +294,8 @@ export default function SubscriptsLesson() {
                       <ArrowRight size={16} className="text-border-strong" />
                       <span className="font-mono text-lg font-bold text-ink">[{t.read}]</span>
                       <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                      <Button variant="outline" onClick={() => playAudio(t.stack)} disabled={playingItem !== null} className="px-3 py-2">
-                        {playingItem === t.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                      <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-3 py-2">
+                        {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
                       </Button>
                     </div>
                   );
@@ -420,8 +420,8 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                <Button variant="outline" onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
-                  {playingItem === c.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
+                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
+                  {playingItem === (c.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
                 </Button>
               </div>
             );
