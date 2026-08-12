@@ -200,7 +200,7 @@ export default function SubscriptsLesson() {
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
                     <span className="mt-2 font-serif leading-none text-ink" style={{ fontSize: "3rem" }}>◌{s.mark}</span>
                     <span className="text-sm font-bold text-ink">{s.name}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{s.count} stacks · <span className="font-serif text-xs ml-1">{s.headLarge}་བཏགས་</span></span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-ink-light">{s.count} stacks · <span className="font-serif text-sm ml-1">{s.headLarge}་བཏགས་</span></span>
                   </button>
                 ))}
               </div>
