@@ -137,13 +137,14 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const pool = useMemo(() => [...items].sort(() => 0.5 - Math.random()).slice(0, 6), [seed, items]);
-  const readings = useMemo(() => pool.map(p => getReading(p, isLesson1)).sort(() => 0.5 - Math.random()), [pool, isLesson1]);
+  // 🚨 FIXED: Readings are now objects containing a unique ID so we can track duplicates independently
+  const readings = useMemo(() => pool.map(p => ({ id: p.id, text: getReading(p, isLesson1) })).sort(() => 0.5 - Math.random()), [pool, isLesson1]);
 
-  const pick = (reading: string) => {
+  const pick = (reading: { id: string, text: string }) => {
     if (!selectedWord) return;
     const targetItem = pool.find(p => p.tibetan === selectedWord);
-    if (targetItem && getReading(targetItem, isLesson1) === reading) {
-      setPairs(p => ({ ...p, [selectedWord]: reading }));
+    if (targetItem && getReading(targetItem, isLesson1) === reading.text) {
+      setPairs(p => ({ ...p, [selectedWord]: reading.id }));
       speak(targetItem.audioTarget);
     } else {
       playErrorBeep();
@@ -151,7 +152,7 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
     setSelectedWord(null);
   };
 
-  const solved = pool.every(p => pairs[p.tibetan] === getReading(p, isLesson1));
+  const solved = pool.length > 0 && pool.every(p => !!pairs[p.tibetan]);
 
   return (
     <div className="flex flex-col items-start w-full animate-in fade-in">
@@ -161,34 +162,34 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
         <div className="flex flex-col gap-3 items-start">
           {pool.map((p) => {
             const active = selectedWord === p.tibetan;
-            const paired = pairs[p.tibetan];
-            const correct = paired === getReading(p, isLesson1);
+            const isPaired = !!pairs[p.tibetan];
+            const readingText = getReading(p, isLesson1);
             
             return (
               <button
-                key={`tib-${p.id}`} onClick={() => !paired && setSelectedWord(p.tibetan)}
+                key={`tib-${p.id}`} onClick={() => !isPaired && setSelectedWord(p.tibetan)}
                 className={`flex w-fit h-14 items-center gap-4 border px-4 text-left transition-colors bg-white ${
-                  active ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : paired ? (correct ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-rose-400 bg-rose-50 text-rose-700") : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
+                  active ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isPaired ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
                 }`}
               >
                 <span className="font-tibetan text-3xl leading-none pt-1">{p.tibetan}</span>
-                {paired && <span className="text-xs font-bold font-mono text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-sm">{paired}</span>}
+                {isPaired && <span className="text-xs font-bold font-mono text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-sm">{readingText}</span>}
               </button>
             );
           })}
         </div>
         <div className="flex flex-col gap-3 items-start">
           {readings.map((r, idx) => {
-            const taken = Object.values(pairs).includes(r);
+            const taken = Object.values(pairs).includes(r.id);
             
             return (
               <button
-                key={`read-${r}-${idx}`} onClick={() => pick(r)} disabled={taken || !selectedWord}
+                key={`read-${r.id}-${idx}`} onClick={() => pick(r)} disabled={taken || !selectedWord}
                 className={`flex w-fit h-14 items-center gap-6 border px-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
                   taken ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm cursor-pointer" : "cursor-not-allowed border-border-strong text-ink-light opacity-80"
                 }`}
               >
-                <span>{r}</span>
+                <span>{r.text}</span>
                 <ArrowLeft size={18} className={selectedWord && !taken ? "text-brand" : "text-transparent"} />
               </button>
             );
