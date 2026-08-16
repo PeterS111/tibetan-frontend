@@ -154,9 +154,9 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
 
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in">
-      <p className="text-sm font-bold text-ink-light mb-8 self-start w-full max-w-4xl">Match the Tibetan text with its reading.</p>
+      <p className="text-sm font-bold text-ink-light mb-8 text-center w-full">Match the Tibetan text with its reading.</p>
       
-      <div className="grid gap-6 md:grid-cols-2 w-full max-w-4xl">
+      <div className="grid gap-6 grid-cols-2 w-full max-w-md">
         <div className="space-y-3">
           {pool.map((p) => {
             const active = selectedWord === p.tibetan;
