@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   Layers, Shuffle, BookOpen, CheckCircle2, ArrowRight, ArrowLeft, 
   Play, Loader2, Volume2 
@@ -32,7 +32,6 @@ interface PracticeSuiteProps {
   isLesson1?: boolean; 
 }
 
-// 🚨 FIXED: Globally strips out all square brackets from any reading string
 const getReading = (item: PracticeItem, isLesson1: boolean) => {
   const preferred = isLesson1 ? (item.translit || item.pron) : (item.pron || item.translit);
   const rawReading = preferred || item.reading;
@@ -40,7 +39,7 @@ const getReading = (item: PracticeItem, isLesson1: boolean) => {
 };
 
 export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
-  const [tab, setTab] = useState<"flash" | "match" | "srs">("flash");
+  const [tab, setTab] = useState<"flash" | "match" | "listen" | "srs">("flash");
 
   const allItems = useMemo(() => groups.flatMap(g => g.items), [groups]);
 
@@ -50,6 +49,7 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
         {[
           { k: "flash", label: "Flashcards", Icon: Layers },
           { k: "match", label: "Match Game", Icon: Shuffle },
+          { k: "listen", label: "Listen", Icon: Volume2 },
           { k: "srs", label: "Memory Review", Icon: BookOpen },
         ].map((t) => (
           <button 
@@ -67,6 +67,7 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
       <div className="p-6 md:p-10 bg-paper">
         {tab === "flash" && <Flashcards groups={groups} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} />}
         {tab === "match" && <MatchGame items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isLesson1={isLesson1} />}
+        {tab === "listen" && <ListenSelect items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />}
         {tab === "srs" && <MemoryReview items={allItems} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} />}
       </div>
     </Card>
@@ -153,43 +154,37 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
   const solved = pool.every(p => pairs[p.tibetan] === getReading(p, isLesson1));
 
   return (
-    <div className="flex flex-col items-center w-full animate-in fade-in">
-      <p className="text-sm font-bold text-ink-light mb-8 text-center w-full">Match the Tibetan text with its reading.</p>
+    <div className="flex flex-col items-start w-full animate-in fade-in">
+      <p className="text-sm font-bold text-ink-light mb-8 text-left w-full">Match the Tibetan text with its reading.</p>
       
-      <div className="grid gap-6 grid-cols-2 w-full max-w-md">
-        <div className="space-y-3">
+      <div className="flex flex-wrap gap-8 sm:gap-16 items-start">
+        <div className="flex flex-col gap-3 items-start">
           {pool.map((p) => {
             const active = selectedWord === p.tibetan;
             const paired = pairs[p.tibetan];
             const correct = paired === getReading(p, isLesson1);
             
-            // 🚨 FIXED: Active items now light up bright green instead of disappearing!
-            
-			return (
+            return (
               <button
                 key={`tib-${p.id}`} onClick={() => !paired && setSelectedWord(p.tibetan)}
-                className={`flex w-full h-14 items-center justify-between border px-4 text-left transition-colors bg-white ${
+                className={`flex w-fit h-14 items-center gap-4 border px-4 text-left transition-colors bg-white ${
                   active ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : paired ? (correct ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-rose-400 bg-rose-50 text-rose-700") : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
                 }`}
               >
                 <span className="font-tibetan text-3xl leading-none pt-1">{p.tibetan}</span>
-                {paired && <span className="text-xs font-bold font-mono">{paired}</span>}
+                {paired && <span className="text-xs font-bold font-mono text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-sm">{paired}</span>}
               </button>
             );
-			
           })}
         </div>
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3 items-start">
           {readings.map((r, idx) => {
             const taken = Object.values(pairs).includes(r);
             
-            // 🚨 FIXED: Matched items on the right now light up green and stay fully visible!
-           
-		   
-		   return (
+            return (
               <button
                 key={`read-${r}-${idx}`} onClick={() => pick(r)} disabled={taken || !selectedWord}
-                className={`flex w-full h-14 items-center justify-between border px-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
+                className={`flex w-fit h-14 items-center gap-6 border px-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
                   taken ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm cursor-pointer" : "cursor-not-allowed border-border-strong text-ink-light opacity-80"
                 }`}
               >
@@ -197,8 +192,6 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
                 <ArrowLeft size={18} className={selectedWord && !taken ? "text-brand" : "text-transparent"} />
               </button>
             );
-		   
-		   
           })}
         </div>
       </div>
@@ -210,6 +203,98 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+// --- NEW: LISTEN & SELECT ---
+function ListenSelect({ items, speak, playingItem, playErrorBeep }: any) {
+  const [seed, setSeed] = useState(0);
+  const [picked, setPicked] = useState<string | null>(null);
+
+  const pool = useMemo(() => {
+    return [...items].sort(() => 0.5 - Math.random()).slice(0, 4);
+  }, [seed, items]);
+
+  const target = useMemo(() => {
+    return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }, [pool]);
+
+  useEffect(() => {
+    if (target) {
+      // Small timeout to allow render to complete before attempting to play
+      const t = setTimeout(() => speak(target.audioTarget), 300);
+      return () => clearTimeout(t);
+    }
+  }, [target, seed]);
+
+  if (!target) return null;
+
+  const pick = (val: string) => {
+    if (picked) return;
+    setPicked(val);
+    if (val === target.tibetan) {
+      speak(target.audioTarget);
+    } else {
+      playErrorBeep();
+    }
+  };
+
+  const nextRound = () => {
+    setPicked(null);
+    setSeed(s => s + 1);
+  };
+
+  return (
+    <div className="flex flex-col items-center w-full animate-in fade-in">
+      <p className="text-sm font-bold text-ink-light mb-8 self-start w-full">Listen to the audio and select the matching Tibetan text.</p>
+      
+      <div className="flex flex-col items-center gap-8 w-full max-w-xl">
+        <button 
+          onClick={() => speak(target.audioTarget)}
+          disabled={playingItem !== null}
+          className="group relative flex flex-col items-center justify-center w-32 h-32 rounded-full border-4 border-brand-light bg-brand/10 hover:bg-brand/20 transition-colors shadow-sm"
+        >
+          {playingItem === target.audioTarget ? (
+            <Loader2 size={48} className="animate-spin text-brand" />
+          ) : (
+            <Volume2 size={48} className="text-brand group-hover:scale-110 transition-transform" />
+          )}
+        </button>
+
+        <div className="grid grid-cols-2 gap-4 w-full">
+          {pool.map((p) => {
+            const isRight = picked && p.tibetan === target.tibetan;
+            const isWrong = picked === p.tibetan && p.tibetan !== target.tibetan;
+            let stateClass = "bg-white border-border-strong hover:border-brand hover:bg-surface-muted text-ink";
+            if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400";
+            else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400 opacity-60";
+            else if (picked) stateClass = "bg-stone-50 text-stone-300 opacity-60 border-border-subtle";
+
+            return (
+              <button
+                key={`listen-${p.id}`} 
+                disabled={!!picked}
+                onClick={() => pick(p.tibetan)}
+                className={`flex items-center justify-center h-24 border text-center transition-all shadow-sm ${stateClass}`}
+              >
+                <span className="font-tibetan text-4xl leading-none">{p.tibetan}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {picked && (
+          <div className="w-full mt-4 flex items-center justify-between p-4 border bg-stone-50 border-stone-200 shadow-sm animate-in fade-in slide-in-from-bottom-4">
+            <span className={`text-sm font-bold ${picked === target.tibetan ? "text-emerald-600" : "text-rose-600"}`}>
+              {picked === target.tibetan ? "Correct!" : "Incorrect."}
+            </span>
+            <Button onClick={nextRound}>
+              Next Round <ArrowRight size={16} />
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
