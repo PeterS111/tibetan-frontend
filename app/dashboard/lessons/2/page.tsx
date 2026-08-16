@@ -306,11 +306,15 @@ export default function VowelsLesson() {
                         {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand-dark" />}
                       </Button>
                     </div>
+
+                    <div className="mt-3 text-sm font-mono font-bold text-ink-light tracking-wide">
+                      [a + {v.markTranslit}] ⇒ [{v.markGloss}] ⇒ {v.translit}
+                    </div>
                     
                     {/* Render out all individual spellings using v.spellings data */}
                     {v.spellings && v.spellings.length > 0 && (
                       <div className="mt-8 border-t border-border-strong pt-5">
-                        <div className="text-eyebrow mb-4 text-ink-muted">Spelling Walkthrough</div>
+                        <div className="text-eyebrow mb-4 text-ink-muted">Try it with other consonants</div>
                         <div className="grid gap-3">
                           {v.spellings.map((s) => (
                             <button 

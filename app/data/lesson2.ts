@@ -35,21 +35,26 @@ export const VOWELS: Vowel[] = [
     key: "u", tib: "ཨུ", mark: "\u0F74", translit: "U", markTib: "ཞབས་ཀྱུ", markTranslit: "shab-kyu", markGloss: "shab kyu / tyu", position: "below", english: "As in “bush”, “push”, “put”.", examples: ["སུ", "ཆུ", "ཕུ"], 
     spellings: [
       { word: "སུ", spell: "ས་ཞབས་ཀྱུ་སུ", roman: "sa shab-kyu su", audio: "སུ spelling" },
-      { word: "ཆུ", spell: "ཆ་ཞབས་ཀྱུ་ཆུ", roman: "cha shab-kyu chu", audio: "ཆུ spelling" }
+      { word: "ཆུ", spell: "ཆ་ཞབས་ཀྱུ་ཆུ", roman: "cha shab-kyu chu", audio: "ཆུ spelling" },
+      { word: "ཕུ", spell: "ཕ་ཞབས་ཀྱུ་ཕུ", roman: "pha shab-kyu phu", audio: "ཕུ spelling" }
     ],
     note: "A small curl drawn beneath the root letter. Back, close-rounded vowel — round the lips as in English ‘oo’ in ‘put’." 
   },
   { 
     key: "e", tib: "ཨེ", mark: "\u0F7A", translit: "E", markTib: "འགྲེང་བུ", markTranslit: "dreng-bu", markGloss: "ng’dreng po", position: "above", english: "As in “pay”, “say”, “may”.", examples: ["མེ", "སེ", "ཏེ"], 
     spellings: [
-      { word: "མེ", spell: "མ་འགྲེང་བུ་མེ", roman: "ma dreng-bu me", audio: "མེ spelling" }
+      { word: "མེ", spell: "མ་འགྲེང་བུ་མེ", roman: "ma dreng-bu me", audio: "མེ spelling" },
+      { word: "སེ", spell: "ས་འགྲེང་བུ་སེ", roman: "sa dreng-bu se", audio: "སེ spelling" },
+      { word: "ཏེ", spell: "ཏ་འགྲེང་བུ་ཏེ", roman: "ta dreng-bu te", audio: "ཏེ spelling" }
     ],
     note: "A short slanted stroke drawn above the root letter. Front, mid vowel — brighter and higher than English ‘e’ in ‘bed’." 
   },
   { 
     key: "o", tib: "ཨོ", mark: "\u0F7C", translit: "O", markTib: "ན་རོ", markTranslit: "na-ro", markGloss: "na ro", position: "above", english: "As in “more”, “door”, “orange”.", examples: ["མོ", "ཇོ", "ཤོ"], 
     spellings: [
-      { word: "མོ", spell: "མ་ན་རོ་མོ", roman: "ma na-ro mo", audio: "མོ spelling" }
+      { word: "མོ", spell: "མ་ན་རོ་མོ", roman: "ma na-ro mo", audio: "མོ spelling" },
+      { word: "ཇོ", spell: "ཇ་ན་རོ་ཇོ", roman: "ja na-ro jo", audio: "ཇོ spelling" },
+      { word: "ཤོ", spell: "ཤ་ན་རོ་ཤོ", roman: "sha na-ro sho", audio: "ཤོ spelling" }
     ],
     note: "A small circle drawn above the root letter. Back, mid-rounded vowel — round the lips as in English ‘oh’." 
   },
