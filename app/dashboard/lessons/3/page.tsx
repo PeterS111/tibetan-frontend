@@ -339,7 +339,11 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
                 </span>
 		
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
-                <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: sup.accent.hex }}>{c.stack}</span>
+                  <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
+                </div>
+				
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                 <Button variant="outline" onClick={() => playAudio(spellKey)} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
                   {playingItem === spellKey ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
