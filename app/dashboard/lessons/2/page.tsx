@@ -302,13 +302,15 @@ export default function VowelsLesson() {
                       <span className="font-tibetan text-5xl text-brand-dark">{v.tib}</span>
                       <span className="text-2xl text-ink-muted">⇒</span>
                       <span className="font-serif text-4xl italic text-ink">{v.translit}</span>
-                      <Button variant="outline" onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="ml-2 px-3 py-2">
-                        {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand-dark" />}
-                      </Button>
                     </div>
 
-                    <div className="mt-3 text-sm font-mono font-bold text-ink-light tracking-wide">
-                      [a + {v.markTranslit}] ⇒ [{v.markGloss}] ⇒ {v.translit}
+                    <div className="mt-4 flex flex-wrap items-center gap-4">
+                      <Button variant="outline" onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="px-3 py-2 shrink-0">
+                        {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand-dark" />}
+                      </Button>
+                      <div className="text-sm font-mono font-bold text-ink-light tracking-wide">
+                        [a + {v.markTranslit}] ⇒ [{v.markGloss}] ⇒ {v.translit}
+                      </div>
                     </div>
                     
                     {/* Render out all individual spellings using v.spellings data */}
