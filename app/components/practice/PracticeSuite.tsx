@@ -220,14 +220,6 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep }: any) {
     return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null;
   }, [pool]);
 
-  useEffect(() => {
-    if (target) {
-      // Small timeout to allow render to complete before attempting to play
-      const t = setTimeout(() => speak(target.audioTarget), 300);
-      return () => clearTimeout(t);
-    }
-  }, [target, seed]);
-
   if (!target) return null;
 
   const pick = (val: string) => {
