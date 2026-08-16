@@ -164,17 +164,19 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
             const correct = paired === getReading(p, isLesson1);
             
             // 🚨 FIXED: Active items now light up bright green instead of disappearing!
-            return (
+            
+			return (
               <button
                 key={`tib-${p.id}`} onClick={() => !paired && setSelectedWord(p.tibetan)}
-                className={`flex w-full items-center justify-between border px-5 py-4 text-left transition-colors bg-white ${
+                className={`flex w-full h-14 items-center justify-between border px-4 text-left transition-colors bg-white ${
                   active ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : paired ? (correct ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-rose-400 bg-rose-50 text-rose-700") : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
                 }`}
               >
-                <span className="font-tibetan text-3xl leading-normal pb-1">{p.tibetan}</span>
+                <span className="font-tibetan text-3xl leading-none pt-1">{p.tibetan}</span>
                 {paired && <span className="text-xs font-bold font-mono">{paired}</span>}
               </button>
             );
+			
           })}
         </div>
         <div className="space-y-3">
@@ -182,10 +184,12 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
             const taken = Object.values(pairs).includes(r);
             
             // 🚨 FIXED: Matched items on the right now light up green and stay fully visible!
-            return (
+           
+		   
+		   return (
               <button
                 key={`read-${r}-${idx}`} onClick={() => pick(r)} disabled={taken || !selectedWord}
-                className={`flex w-full items-center justify-between border px-5 py-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
+                className={`flex w-full h-14 items-center justify-between border px-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
                   taken ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm cursor-pointer" : "cursor-not-allowed border-border-strong text-ink-light opacity-80"
                 }`}
               >
@@ -193,6 +197,8 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
                 <ArrowLeft size={18} className={selectedWord && !taken ? "text-brand" : "text-transparent"} />
               </button>
             );
+		   
+		   
           })}
         </div>
       </div>
