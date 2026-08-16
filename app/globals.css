@@ -6,9 +6,10 @@
 
 @theme inline {
   /* Fonts */
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
-  /* Enforce Jomolhari strictly for Tibetan text */
+  /* Jomolhari is appended to base fonts so Tibetan characters automatically fall back to it globally */
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Jomolhari";
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif, "Jomolhari";
+  /* Keeping the explicit variable for legacy classes, but it's no longer strictly needed */
   --font-tibetan: var(--font-tibetan), "Jomolhari", serif;
 
   /* Global App Palette - Scholar's Edition */
