@@ -52,17 +52,17 @@ export default function SuperscriptsLesson() {
     }
   ], []);
 
-  const vocabQuestions = useMemo(() => {
+ const vocabQuestions = useMemo(() => {
     const qs = [];
     for (const v of VOCAB) {
       const isAudioType = Math.random() > 0.5;
       const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
       qs.push({
         isAudioType,
-        type: 'vocab',
-        questionText: isAudioType ? undefined : `What is the Tibetan word for "${v.en}"?`,
+        type: isAudioType ? 'base' : 'vocab',
         answer: v.tib,
         audioString: v.tib,
+        answerObj: v,
         choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
       });
     }
