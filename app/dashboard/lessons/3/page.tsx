@@ -31,17 +31,11 @@ export default function SuperscriptsLesson() {
   
   const [isBypassing, setIsBypassing] = useState(false);
 
-  const practiceGroups = useMemo(() => [
+const practiceGroups = useMemo(() => [
     {
       name: "Stacks",
       items: SUPERS.flatMap(s => s.combos.map(c => ({
         id: `c-${c.stack}`, tibetan: c.stack, reading: c.read, english: TONE_META[c.tone].label, audioTarget: c.stack
-      })))
-    },
-    {
-      name: "Spelling Audio",
-      items: SUPERS.flatMap(s => s.combos.map(c => ({
-        id: `s-${c.stack}`, tibetan: c.stack, reading: `Spell ${c.stack}`, english: `Listen to spelling`, audioTarget: `${c.stack} spelling`
       })))
     },
     {
