@@ -84,6 +84,54 @@ export default function VowelsLesson() {
     return qs.sort(() => 0.5 - Math.random());
   }, []);
 
+  const finalQuizQuestions = useMemo(() => {
+    const qs = [];
+    const shuffledVocab = [...VOCAB].sort(() => 0.5 - Math.random());
+    const shuffledSpellings = [...VOWELS.flatMap(v => v.spellings || [])].sort(() => 0.5 - Math.random());
+
+    // 1. Vocabulary Matching (4 questions)
+    const vocabTargets = shuffledVocab.slice(0, 4);
+    for (const v of vocabTargets) {
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        type: 'vocab',
+        questionText: `What is the Tibetan word for "${v.en}"?`,
+        answer: v.tib,
+        audioString: v.tib,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+
+    // 2. Listening / Audio Recognition (3 questions)
+    // We slice from 4 to 7 to guarantee these words are DIFFERENT from the vocab questions above!
+    const listenTargets = shuffledVocab.slice(4, 7);
+    for (const v of listenTargets) {
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType: true,
+        type: 'base',
+        answer: v.tib,
+        audioString: v.tib,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+
+    // 3. Spelling Math - Audio Only (3 questions)
+    const spellTargets = shuffledSpellings.slice(0, 3);
+    for (const s of spellTargets) {
+      const wrongs = shuffledSpellings.filter(x => x.word !== s.word).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType: true,
+        type: 'base',
+        answer: s.word,
+        audioString: s.audio || s.word,
+        choices: [s, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.word, value: x.word }))
+      });
+    }
+
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
+
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto px-6 py-8">
@@ -428,18 +476,16 @@ export default function VowelsLesson() {
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* 🚨 FIXED: Step 6 (Index 6) correctly hooked up to markComplete(6) on passing the Quiz */}
+{/* 🚨 FIXED: Step 6 (Index 6) correctly hooked up to markComplete(6) on passing the Quiz */}
           <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
             <QuizModule 
               title="Final Step Test" 
               intro="Score 80% or higher to unlock the next step: The Three Superscripts." 
-              data={VOCAB} 
+              questions={finalQuizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
-              questionCount={10} 
               isUnlockTest={true} 
-              isVocabMatch={true} 
               nextLessonPath="/dashboard/lessons/3" 
               onPass={() => markComplete(6)}
             />
