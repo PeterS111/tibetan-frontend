@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Volume2, ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown,
-  Info, Layers, CheckCircle2, Moon, Sun, BookOpen, Loader2, Shuffle, X
+  Info, Layers, CheckCircle2, Moon, Sun, Loader2, X
 } from "lucide-react";
 
 // --- Custom Hooks ---
@@ -16,7 +16,6 @@ import { SUPERS, VOCAB, STEPS, TONE_META, type SuperKey, type Tone } from "@/app
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
-import { Badge } from "@/app/components/ui/Badge";
 import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
@@ -25,7 +24,6 @@ import QuizModule from "@/app/components/QuizModule";
 export default function SuperscriptsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   
-  // 🚨 FIXED: Hardcoded 5 steps
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(5);
 
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
@@ -52,8 +50,12 @@ export default function SuperscriptsLesson() {
     const allCombos = SUPERS.flatMap(s => s.combos);
     const qs = [];
     
-    const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
-    for (const v of vTargets) {
+    const shuffledVocab = [...VOCAB].sort(() => 0.5 - Math.random());
+    const shuffledCombos = [...allCombos].sort(() => 0.5 - Math.random());
+
+    // 1. Vocab Matching (3 questions)
+    const vocabMatch = shuffledVocab.slice(0, 3);
+    for (const v of vocabMatch) {
       const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
       qs.push({
         type: 'vocab',
@@ -64,8 +66,22 @@ export default function SuperscriptsLesson() {
       });
     }
 
-    const cTargets = [...allCombos].sort(() => 0.5 - Math.random()).slice(0, 6);
-    for (const c of cTargets) {
+    // 2. Vocab Listening (2 questions)
+    const vocabListen = shuffledVocab.slice(3, 5);
+    for (const v of vocabListen) {
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType: true,
+        type: 'base',
+        answer: v.tib,
+        audioString: v.tib,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+
+    // 3. Stack Spelling/Reading (2 questions)
+    const comboMatch = shuffledCombos.slice(0, 2);
+    for (const c of comboMatch) {
       const wrongs = allCombos.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
       qs.push({
         type: 'combo',
@@ -74,6 +90,19 @@ export default function SuperscriptsLesson() {
         answer: c.read,
         audioString: c.stack,
         choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
+      });
+    }
+
+    // 4. Stack Spelling Audio (3 questions)
+    const comboListen = shuffledCombos.slice(2, 5);
+    for (const c of comboListen) {
+      const wrongs = allCombos.filter(x => x.stack !== c.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType: true,
+        type: 'base',
+        answer: c.stack,
+        audioString: `${c.stack} spelling`,
+        choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.stack, value: x.stack }))
       });
     }
 
@@ -87,7 +116,7 @@ export default function SuperscriptsLesson() {
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(4); // 🚨 FIXED: Hardcoded index 4
+            await markComplete(4); 
             setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
@@ -119,7 +148,7 @@ export default function SuperscriptsLesson() {
           <div className="w-full md:w-72">
             <div className="mb-3 flex items-center justify-between text-eyebrow">
               <span>Lesson progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, 5)} of 5 sections</span> {/* 🚨 FIXED */}
+              <span className="text-brand-dark">{Math.min(unlockedStep, 5)} of 5 sections</span>
             </div>
             <div className="h-1.5 w-full bg-border-subtle overflow-hidden">
               <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -134,7 +163,7 @@ export default function SuperscriptsLesson() {
                   className="group flex flex-col items-center gap-1 border border-border-strong p-3 text-center transition hover:bg-surface-muted hover:border-brand"
                 >
                   <div className="flex items-center gap-1">
-                    <span className="font-serif text-2xl text-ink">{s.headLabel}</span>
+                    <span className="font-tibetan text-2xl text-ink">{s.headLabel}</span>
                     {playingItem === s.headLabel ? (
                        <Loader2 size={12} className="animate-spin text-brand" />
                     ) : (
@@ -157,7 +186,7 @@ export default function SuperscriptsLesson() {
                   <Layers size={14} /> Stacking
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">
-                  A superscript is a small consonant written <span className="font-bold text-ink">on top of</span> a root letter. Only three consonants — <span className="font-serif text-lg">ར ལ ས</span> — are permitted.
+                  A superscript is a small consonant written <span className="font-bold text-ink">on top of</span> a root letter. Only three consonants — <span className="font-tibetan text-2xl">ར ལ ས</span> — are permitted.
                 </p>
               </Card>
               <Card className="p-6 bg-surface">
@@ -231,7 +260,19 @@ export default function SuperscriptsLesson() {
           </StepContainer>
 
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
-            <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+            <div className="mb-10">
+              <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+            </div>
+            <QuizModule 
+              title="Vocabulary Mastery" 
+              intro="Check your memory of the new superscript words before moving on." 
+              data={VOCAB} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+              questionCount={6} 
+              isVocabMatch 
+            />
           </StepContainer>
 
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
@@ -261,7 +302,7 @@ export default function SuperscriptsLesson() {
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== 4 && ( /* 🚨 FIXED */
+          {expandedStep !== 4 && (
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -276,13 +317,31 @@ export default function SuperscriptsLesson() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Subcomponents                                                      */
+/* ------------------------------------------------------------------ */
+
 function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) {
+  const masteryQuestions = useMemo(() => {
+    return [...sup.combos].sort(() => 0.5 - Math.random()).map((c: any) => {
+      const wrongs = sup.combos.filter((x: any) => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
+      return {
+        type: 'combo',
+        questionText: "What does this stack read?",
+        prominentTibetan: c.stack,
+        answer: c.read,
+        audioString: c.stack,
+        choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map((x: any) => ({ label: `[${x.read}]`, value: x.read }))
+      };
+    });
+  }, [sup]);
+
   return (
     <div className={`relative overflow-hidden border transition-colors duration-500 ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
       <div className="h-1 w-full" style={{ backgroundColor: sup.accent.hex }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none" style={{ backgroundColor: night ? `${sup.accent.hex}20` : `${sup.accent.hex}15`, color: sup.accent.hex }}>{sup.head}</div>
+          <div className="grid size-28 place-items-center font-tibetan text-[4.5rem] leading-none pt-2" style={{ backgroundColor: night ? `${sup.accent.hex}20` : `${sup.accent.hex}15`, color: sup.accent.hex }}>{sup.head}</div>
           <div>
             <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Superscript</div>
             <div className="font-serif text-3xl font-bold">{sup.title}</div>
@@ -316,7 +375,6 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
       <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
         <div className={`mb-6 text-eyebrow ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
         
-		
 		<div className="space-y-2">
           {sup.combos.map((c: any) => {
             const M = TONE_META[c.tone as Tone];
@@ -343,7 +401,6 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
                   <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: sup.accent.hex }}>{c.stack}</span>
                   <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
                 </div>
-				
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                 <Button variant="outline" onClick={() => playAudio(spellKey)} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
                   {playingItem === spellKey ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
@@ -353,79 +410,16 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           })}
         </div>
       </div>
-      <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
-        <div className="mb-6 flex items-center gap-2">
-          <CheckCircle2 size={18} style={{ color: sup.accent.hex }} />
-          <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · {sup.name}</span>
-        </div>
-        <MiniMastery key={sup.key} sup={sup} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+      <div className={`p-6 md:p-8 ${night ? "bg-[#0f0d0a]" : "bg-surface-muted"}`}>
+        <QuizModule 
+          title={`Mastery check · ${sup.name}`}
+          intro={`Test your knowledge of all ${sup.count} stacks for ${sup.nameTib}`}
+          questions={masteryQuestions}
+          playAudio={playAudio}
+          playingItem={playingItem}
+          playErrorBeep={playErrorBeep}
+        />
       </div>
-    </div>
-  );
-}
-
-function MiniMastery({ sup, night, playAudio, playingItem, playErrorBeep }: any) {
-  const [step, setStep] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
-
-  const question = useMemo(() => {
-    const answer = sup.combos[step % sup.combos.length];
-    const wrongs = sup.combos.filter((c: any) => c.read !== answer.read).sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [...wrongs, answer].sort(() => 0.5 - Math.random());
-    return { answer, choices };
-  }, [sup, step]);
-
-  const total = Math.min(5, sup.combos.length);
-  const pick = (read: string) => {
-    if (picked) return;
-    setPicked(read);
-    if (read === question.answer.read) { setScore(s => s + 1); playAudio(question.answer.stack); } else { playErrorBeep(); }
-  };
-
-  if (step >= total) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
-        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sup.accent.hex }}>{score}</span> / {total} on {sup.name}.</div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}><Shuffle size={14} /> Try again</Button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="mb-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-        <span className={night ? "text-stone-400" : "text-ink-light"}>Question {step + 1} of {total}</span>
-        <span style={{ color: sup.accent.hex }}>Score {score}</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <span className={`text-[15px] font-bold ${night ? "text-stone-300" : "text-ink-light"}`}>Which stack reads</span>
-        <span className={`font-mono text-2xl font-bold border px-3 py-1 ${night ? "bg-white/10 border-white/20 text-white" : "bg-surface border-border-strong text-ink"}`}>[{question.answer.read}]</span>
-        <Button variant="outline" onClick={() => playAudio(question.answer.stack)} disabled={playingItem !== null} className={`px-3 py-2 ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : ""}`}>
-          {playingItem === question.answer.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "" : "text-brand"} />}
-        </Button>
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {question.choices.map((c: any) => {
-          const right = picked && c.read === question.answer.read;
-          const wrong = picked === c.read && c.read !== question.answer.read;
-          return (
-            <button key={c.stack} disabled={!!picked} onClick={() => pick(c.read)} className={`flex aspect-square items-center justify-center border-2 font-tibetan text-[3.5rem] leading-normal pb-2 transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"}`}>
-              {c.stack}
-            </button>
-          );
-        })}
-      </div>
-      {picked && (
-        <div className={`mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border shadow-sm ${night ? "bg-white/5 border-white/10" : "bg-surface border-border-strong"}`}>
-          <div className={`text-sm font-bold flex items-center flex-wrap gap-2 ${picked === question.answer.read ? "text-emerald-600" : "text-rose-600"}`}>
-            <span>{picked === question.answer.read ? "Correct —" : "Answer:"}</span>
-            <span className="font-tibetan text-3xl leading-none pt-1">{question.answer.stack}</span>
-            <span>reads [{question.answer.read}].</span>
-          </div>
-          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
-        </div>
-      )}
     </div>
   );
 }
