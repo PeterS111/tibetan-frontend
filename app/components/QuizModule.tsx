@@ -243,11 +243,11 @@ export default function QuizModule({
                 </div>
               )}
               {c.label ? (
-                <div className={`text-xl font-bold ${currentQ.type === 'vocab' ? 'font-serif' : 'font-mono'}`}>{c.label}</div>
+                <div className={`text-lg md:text-xl font-bold ${currentQ.type === 'combo' ? 'font-mono tracking-widest' : 'font-sans'}`}>{c.label}</div>
               ) : (
                 <>
                   {c.emoji && !isVocab && <span className="text-3xl mb-2">{c.emoji}</span>}
-                  <span className="font-serif text-[3rem] leading-normal pb-2 tibetan">{c.tib || c.value}</span>
+                  <span className="font-tibetan text-[3rem] leading-normal pb-2">{c.tib || c.value}</span>
                 </>
               )}
             </button>

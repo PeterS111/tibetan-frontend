@@ -35,7 +35,7 @@ export default function ConsonantsLesson() {
 
   const filtered = useMemo(() => (filter === "all" ? CONSONANTS : CONSONANTS.filter((c) => c.tone === filter)), [filter]);
 
-  // Map our data to the generic Practice Suite format
+ // Map our data to the generic Practice Suite format
   const practiceGroups = useMemo(() => [
     {
       name: "Consonants",
@@ -50,6 +50,76 @@ export default function ConsonantsLesson() {
       }))
     }
   ], []);
+
+  const quizQuestions = useMemo(() => {
+    const qs = [];
+    
+    // 1. Vocabulary Questions (3 questions)
+    const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 3);
+    for (const v of vTargets) {
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        type: 'vocab',
+        questionText: `What is the Tibetan word for "${v.en}"?`,
+        answer: v.tib,
+        audioString: v.tib,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+
+    // 2. Tone Questions (3 questions)
+    const toneTargets = [...CONSONANTS].sort(() => 0.5 - Math.random()).slice(0, 3);
+    for (const c of toneTargets) {
+      const answerLabel = TONE_META[c.tone as Tone].short;
+      const wrongs = (Object.keys(TONE_META) as Tone[]).filter(k => k !== c.tone).sort(() => 0.5 - Math.random()).slice(0, 3).map(k => TONE_META[k].short);
+      qs.push({
+        type: 'tone',
+        questionText: "What is the tone of this root letter?",
+        prominentTibetan: c.tib,
+        answer: answerLabel,
+        audioString: c.tib,
+        choices: [answerLabel, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: x, value: x }))
+      });
+    }
+
+    // 3. Gender Questions (2 questions)
+    const genderTargets = [...CONSONANTS].sort(() => 0.5 - Math.random()).slice(0, 2);
+    for (const c of genderTargets) {
+      const answerLabel = GENDER_META[c.gender as Gender].label;
+      const wrongs = (Object.keys(GENDER_META) as Gender[]).filter(k => k !== c.gender).sort(() => 0.5 - Math.random()).slice(0, 3).map(k => GENDER_META[k].label);
+      qs.push({
+        type: 'gender',
+        questionText: "What is the traditional gender of this letter?",
+        prominentTibetan: c.tib,
+        answer: answerLabel,
+        audioString: c.tib,
+        choices: [answerLabel, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: x, value: x }))
+      });
+    }
+
+    // 4. Basic Recognition Questions (2 questions)
+    const baseTargets = [...CONSONANTS].sort(() => 0.5 - Math.random()).slice(0, 2);
+    for (const c of baseTargets) {
+      const isAudioType = Math.random() > 0.5;
+      const wrongs = CONSONANTS.filter(x => x.tib !== c.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const choices = [c, ...wrongs].sort(() => 0.5 - Math.random());
+      qs.push({
+        isAudioType,
+        type: 'base',
+        answer: c.tib,
+        audioString: c.tib,
+        answerObj: c,
+        choices: choices.map(ch => ({
+          value: ch.tib,
+          tib: ch.tib,
+          translit: ch.translit, 
+          pron: ch.pron
+        }))
+      });
+    }
+
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
 
 return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
@@ -360,11 +430,10 @@ return (
             <QuizModule 
               title="Final Step Test" 
               intro="Score 80% or higher to unlock the next step: The Four Vowels." 
-              data={CONSONANTS} 
+              questions={quizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
-              questionCount={10} 
               isUnlockTest={true} 
               isLesson1={true}
               nextLessonPath="/dashboard/lessons/2" 
