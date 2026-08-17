@@ -39,12 +39,35 @@ export default function SuperscriptsLesson() {
       })))
     },
     {
+      name: "Spelling Audio",
+      items: SUPERS.flatMap(s => s.combos.map(c => ({
+        id: `s-${c.stack}`, tibetan: c.stack, reading: `Spell ${c.stack}`, english: `Listen to spelling`, audioTarget: `${c.stack} spelling`
+      })))
+    },
+    {
       name: "Vocabulary",
       items: VOCAB.map(v => ({
         id: `v-${v.tib}`, tibetan: v.tib, reading: v.translit, english: v.en, audioTarget: v.tib, emoji: v.emoji
       }))
     }
   ], []);
+
+  const vocabQuestions = useMemo(() => {
+    const qs = [];
+    for (const v of VOCAB) {
+      const isAudioType = Math.random() > 0.5;
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType,
+        type: 'vocab',
+        questionText: isAudioType ? undefined : `What is the Tibetan word for "${v.en}"?`,
+        answer: v.tib,
+        audioString: v.tib,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
 
   const quizQuestions = useMemo(() => {
     const allCombos = SUPERS.flatMap(s => s.combos);
@@ -265,13 +288,11 @@ export default function SuperscriptsLesson() {
             </div>
             <QuizModule 
               title="Vocabulary Mastery" 
-              intro="Check your memory of the new superscript words before moving on." 
-              data={VOCAB} 
+              intro="Check your memory of the new superscript words before moving on. This check tests all vocabulary words." 
+              questions={vocabQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
-              questionCount={6} 
-              isVocabMatch 
             />
           </StepContainer>
 
@@ -323,17 +344,33 @@ export default function SuperscriptsLesson() {
 
 function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) {
   const masteryQuestions = useMemo(() => {
-    return [...sup.combos].sort(() => 0.5 - Math.random()).map((c: any) => {
-      const wrongs = sup.combos.filter((x: any) => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
-      return {
-        type: 'combo',
-        questionText: "What does this stack read?",
-        prominentTibetan: c.stack,
-        answer: c.read,
-        audioString: c.stack,
-        choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map((x: any) => ({ label: `[${x.read}]`, value: x.read }))
-      };
+    const qs: any[] = [];
+    [...sup.combos].sort(() => 0.5 - Math.random()).forEach((c: any, index: number) => {
+      // Alternate question types to add variety and consistency with previous lessons
+      if (index % 2 === 0) {
+        // Recognition: What does it read?
+        const wrongs = sup.combos.filter((x: any) => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
+        qs.push({
+          type: 'combo',
+          questionText: "What does this stack read?",
+          prominentTibetan: c.stack,
+          answer: c.read,
+          audioString: c.stack,
+          choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map((x: any) => ({ label: `[${x.read}]`, value: x.read }))
+        });
+      } else {
+        // Audio: Listen and select the spelling math
+        const wrongs = sup.combos.filter((x: any) => x.stack !== c.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
+        qs.push({
+          isAudioType: true,
+          type: 'base',
+          answer: c.stack,
+          audioString: `${c.stack} spelling`,
+          choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map((x: any) => ({ tib: x.stack, value: x.stack }))
+        });
+      }
     });
+    return qs.sort(() => 0.5 - Math.random());
   }, [sup]);
 
   return (
