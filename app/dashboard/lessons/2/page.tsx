@@ -66,15 +66,15 @@ export default function VowelsLesson() {
       });
     }
 
-    // 2. Spelling Math (4 questions)
+    // 2. Spelling Math (4 questions) - Audio Only
     const allSpellings = VOWELS.flatMap(v => v.spellings || []);
     const spellTargets = [...allSpellings].sort(() => 0.5 - Math.random()).slice(0, 4);
     for (const s of spellTargets) {
       const wrongs = allSpellings.filter(x => x.word !== s.word).sort(() => 0.5 - Math.random()).slice(0, 3);
       qs.push({
+        isAudioType: true,
         type: 'base',
-        questionText: "What does this spelling produce?",
-        prominentTibetan: s.spell,
+        // We omit questionText and prominentTibetan to trigger the Audio-Only UI
         answer: s.word,
         audioString: s.audio || s.word,
         choices: [s, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.word, value: x.word }))
