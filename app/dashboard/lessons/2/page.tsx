@@ -193,8 +193,58 @@ export default function VowelsLesson() {
             </div>
           </StepContainer>
 
-          {/* Step 1: Pronunciation */}
+         {/* Step 1: Marks */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {VOWELS.map((v) => {
+                const pm = POSITION_META[v.position];
+                return (
+                  <div key={v.key} className={`p-6 border bg-surface ${pm.ring} shadow-sm flex flex-col`}>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit ${pm.swatch} ${pm.text}`}>
+                      {v.position === "above" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
+                      <span className="text-eyebrow">{pm.label}</span>
+                    </div>
+                    
+                    {/* Big Vowel Button */}
+                    <button 
+                      onClick={() => playAudio(v.tib)} 
+                      disabled={playingItem !== null}
+                      className="mt-8 flex items-center gap-4 w-fit group transition-all text-left"
+                    >
+                      <span className="font-tibetan text-[5rem] leading-none text-ink group-hover:text-brand transition-colors">{v.tib}</span>
+                      <span className="font-serif text-3xl italic text-ink-muted">{v.translit}</span>
+                      <span className="ml-1 inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
+                        {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
+                      </span>
+                    </button>
+
+                    <div className="mt-6 border-t border-border-strong pt-4 flex-1">
+                      <div className="text-eyebrow mb-3">Mark name</div>
+                      
+                      {/* Mark Name Button */}
+                      <button 
+                        onClick={() => playAudio(v.markTranslit)}
+                        disabled={playingItem !== null}
+                        className="group flex flex-col text-left transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-tibetan text-3xl text-ink group-hover:text-brand">{v.markTib}</span>
+                          <span className="inline-grid size-6 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
+                            {playingItem === v.markTranslit ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
+                          </span>
+                        </div>
+                        <div className="text-sm italic text-ink-light mt-1.5 font-medium">{v.markTranslit}</div>
+                      </button>
+                    </div>
+                    <p className="mt-4 text-[13px] leading-relaxed text-ink-light bg-surface-muted p-3 border border-border-strong">{v.note}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </StepContainer>
+
+          {/* Step 2: Pronunciation */}
+          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="overflow-hidden border border-border-subtle shadow-sm mb-8">
               <table className="w-full text-sm">
                 <thead className="bg-surface-muted text-eyebrow border-b border-border-subtle">
@@ -231,56 +281,6 @@ export default function VowelsLesson() {
               <div className="text-sm font-bold leading-relaxed text-ink-light">
                 The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="text-ink">‘a’</span> — for example ཀ is read <em>ka</em>, not <em>k</em>. The four diacritics replace that inherent ‘a’.
               </div>
-            </div>
-          </StepContainer>
-
-          {/* Step 2: Marks */}
-          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {VOWELS.map((v) => {
-                const pm = POSITION_META[v.position];
-                return (
-                  <div key={v.key} className={`p-6 border bg-surface ${pm.ring} shadow-sm flex flex-col`}>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit ${pm.swatch} ${pm.text}`}>
-                      {v.position === "above" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-                      <span className="text-eyebrow">{pm.label}</span>
-                    </div>
-                    
-                    {/* Big Vowel Button */}
-                    <button 
-                      onClick={() => playAudio(v.tib)} 
-                      disabled={playingItem !== null}
-                      className="mt-8 flex items-center gap-4 w-fit group transition-all text-left"
-                    >
-                      <span className="font-tibetan text-[5rem] leading-none text-ink group-hover:text-brand transition-colors">{v.tib}</span>
-                      <span className="font-serif text-3xl italic text-ink-muted">{v.translit}</span>
-                      <span className="ml-1 inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
-                        {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
-                      </span>
-                    </button>
-
-                    <div className="mt-6 border-t border-border-strong pt-4 flex-1">
-                      <div className="text-eyebrow mb-3">Mark name</div>
-                      
-                      {/* Mark Name Button */}
-                      <button 
-                        onClick={() => playAudio(v.markTranslit)}
-                        disabled={playingItem !== null}
-                        className="group flex flex-col text-left transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-serif text-2xl text-ink group-hover:text-brand tibetan">{v.markTib}</span>
-                          <span className="inline-grid size-6 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
-                            {playingItem === v.markTranslit ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
-                          </span>
-                        </div>
-                        <div className="text-sm italic text-ink-light mt-1.5 font-medium">{v.markTranslit}</div>
-                      </button>
-                    </div>
-                    <p className="mt-4 text-[13px] leading-relaxed text-ink-light bg-surface-muted p-3 border border-border-strong">{v.note}</p>
-                  </div>
-                );
-              })}
             </div>
           </StepContainer>
 

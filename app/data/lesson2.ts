@@ -81,8 +81,8 @@ export const VOCAB = [
 
 export const STEPS = [
   { id: "grid", eyebrow: "Step 01", title: "The four vowels, as a type specimen", description: "Tap each mark to hear and inspect it." },
-  { id: "pronunciation", eyebrow: "Step 02", title: "Pronouncing the four vowels", description: "Map each vowel to a familiar English sound." },
-  { id: "marks", eyebrow: "Step 03", title: "The four diacritic marks", description: "Names, positions, and how each mark is written." },
+  { id: "marks", eyebrow: "Step 02", title: "The four diacritic marks", description: "Names, positions, and how each mark is written." },
+  { id: "pronunciation", eyebrow: "Step 03", title: "Pronouncing the four vowels", description: "Map each vowel to a familiar English sound." },
   { id: "spelling", eyebrow: "Step 04", title: "Spelling — root letter + vowel mark", description: "Combine any consonant with the four vowel marks." },
   { id: "vocab", eyebrow: "Step 05", title: "Nouns formed with the four vowels", description: "Read and hear real words using vowels only." },
   { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
