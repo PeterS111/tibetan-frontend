@@ -205,10 +205,9 @@ export default function SubscriptsLesson() {
                         className="relative z-10 font-tibetan text-ink" 
                         style={{ fontSize: "3.2rem", clipPath: "polygon(-10% 60%, 110% 60%, 110% 150%, -10% 150%)", marginTop: "-0.4em" }}
                       >
-                        {s.key === "ya" ? "\u0F56\u0FB1" : s.key === "ra" ? "\u0F56\u0FB2" : s.key === "la" ? "\u0F56\u0FB3" : "\u0F56\u0FAD"}
+                        {s.key === "ya" ? "\u0F40\u0FB1" : s.key === "ra" ? "\u0F40\u0FB2" : s.key === "la" ? "\u0F40\u0FB3" : "\u0F40\u0FAD"}
                       </span>
                     </span>
-
                     <span className="text-sm font-bold text-ink">{s.name}</span>
                     <span className="text-xs font-bold uppercase tracking-widest text-ink-light items-center inline-flex">{s.count} stacks · <span className="font-serif text-lg ml-1.5">{s.headLarge}་བཏགས་</span></span>
                   </button>
