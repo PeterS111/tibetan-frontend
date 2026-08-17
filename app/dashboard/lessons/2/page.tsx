@@ -34,7 +34,7 @@ export default function VowelsLesson() {
 
   const filtered = useMemo(() => (filter === "all" ? VOWELS : VOWELS.filter((v) => v.position === filter)), [filter]);
 
-  // Map to Generic Practice Suite Format
+ // Map to Generic Practice Suite Format
   const practiceGroups = useMemo(() => [
     {
       name: "Vowels",
@@ -49,6 +49,40 @@ export default function VowelsLesson() {
       }))
     }
   ], []);
+
+  const spellingQuestions = useMemo(() => {
+    const qs = [];
+    
+    // 1. Mark Recognition (2 questions)
+    const vTargets = [...VOWELS].sort(() => 0.5 - Math.random()).slice(0, 2);
+    for (const v of vTargets) {
+      const wrongs = VOWELS.filter(x => x.key !== v.key).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        type: 'base',
+        questionText: `Which vowel mark is called ${v.markTib} (${v.markTranslit})?`,
+        answer: v.tib,
+        audioString: v.markTranslit,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib }))
+      });
+    }
+
+    // 2. Spelling Math (4 questions)
+    const allSpellings = VOWELS.flatMap(v => v.spellings || []);
+    const spellTargets = [...allSpellings].sort(() => 0.5 - Math.random()).slice(0, 4);
+    for (const s of spellTargets) {
+      const wrongs = allSpellings.filter(x => x.word !== s.word).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        type: 'base',
+        questionText: "What does this spelling produce?",
+        prominentTibetan: s.spell,
+        answer: s.word,
+        audioString: s.audio || s.word,
+        choices: [s, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.word, value: x.word }))
+      });
+    }
+
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
@@ -339,12 +373,21 @@ export default function VowelsLesson() {
                 ))}
               </div>
             </div>
-            <QuizModule title="Mastery check" intro="Quick check-in before you move on." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={6} isVocabMatch />
+            <QuizModule 
+              title="Spelling Mastery" 
+              intro="Check your spelling and pronunciation before moving to vocabulary." 
+              questions={spellingQuestions} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+            />
           </StepContainer>
+					
+					
 
-          {/* Step 4: Vocabulary */}
+         {/* Step 4: Vocabulary */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 mb-10">
               {VOCAB.map((v) => {
                 const pm = POSITION_META[VOWELS.find((x) => x.key === v.vowel)!.position];
                 return (
@@ -365,7 +408,20 @@ export default function VowelsLesson() {
                 );
               })}
             </div>
+            
+            <QuizModule 
+              title="Vocabulary Mastery" 
+              intro="Check your memory of the new words before moving on." 
+              data={VOCAB} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+              questionCount={6} 
+              isVocabMatch 
+            />
           </StepContainer>
+		 
+		 
 
           {/* Step 5: Practice */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
