@@ -200,7 +200,7 @@ export default function SubscriptsLesson() {
                   <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
                     
-                   <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
+                  <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
                       {/* 1. Gray SVG Circle */}
                       <svg 
                         className="absolute text-border-strong" 
@@ -208,21 +208,23 @@ export default function SubscriptsLesson() {
                         height="38" 
                         viewBox="0 0 100 100" 
                         style={{ 
-                          transform: s.key === "ya" ? "translate(-2px, -14px)" : 
-                                     s.key === "ra" ? "translate(-2px, -14px)" : 
-                                     s.key === "la" ? "translate(-4px, -14px)" : 
-                                                      "translate(-4px, -14px)" 
+                          transform: s.key === "ya" ? "translate(-2px, 8px)" : 
+                                     s.key === "ra" ? "translate(-2px, 8px)" : 
+                                     s.key === "la" ? "translate(-4px, 8px)" : 
+                                                      "translate(-4px, 8px)" 
                         }}
                       >
                         <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
                       </svg>
                       
                       {/* 2. Black Font Subscript (Anchored to an invisible space) */}
-                      <span className="relative z-10 font-tibetan text-ink leading-none" style={{ fontSize: "3.5rem" }}>
+                      <span 
+                        className="relative z-10 text-ink leading-none" 
+                        style={{ fontSize: "4.2rem", fontFamily: "'Jomolhari', serif" }}
+                      >
                         {s.key === "ya" ? "\u00A0\u0FB1" : s.key === "ra" ? "\u00A0\u0FB2" : s.key === "la" ? "\u00A0\u0FB3" : "\u00A0\u0FAD"}
                       </span>
                     </span>
-				   
 				   
 				   
                     <span className="text-sm font-bold text-ink">{s.name}</span>
