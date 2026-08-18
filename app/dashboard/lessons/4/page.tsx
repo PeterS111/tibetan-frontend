@@ -200,32 +200,30 @@ export default function SubscriptsLesson() {
                   <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
                     
-                   
-				   
-				   <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
-                      <span 
-                        className="absolute font-sans text-ink/20" 
+                   <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
+                      {/* 1. Gray SVG Circle */}
+                      <svg 
+                        className="absolute text-border-strong" 
+                        width="38" 
+                        height="38" 
+                        viewBox="0 0 100 100" 
                         style={{ 
-                          fontSize: "3.5rem",
-                          transform: s.key === "ya" ? "translate(0.12em, 0.2em)" :
-                                     s.key === "ra" ? "translate(0.12em, 0.35em)" :
-                                     s.key === "la" ? "translate(0.2em, 0.25em)" :
-                                                      "translate(0.2em, 0.25em)"
+                          transform: s.key === "ya" ? "translate(-2px, -14px)" : 
+                                     s.key === "ra" ? "translate(-2px, -14px)" : 
+                                     s.key === "la" ? "translate(-4px, -14px)" : 
+                                                      "translate(-4px, -14px)" 
                         }}
                       >
-                        {"\u25CC"}
-                      </span>
-                      <span 
-                        className="relative z-10 font-tibetan text-ink" 
-                        style={{ 
-                          fontSize: "3.5rem", 
-                          clipPath: "polygon(-10% 60%, 110% 60%, 110% 150%, -10% 150%)", 
-                          marginTop: "-0.5em" 
-                        }}
-                      >
-                        {s.key === "ya" ? "\u0F68\u0FB1" : s.key === "ra" ? "\u0F68\u0FB2" : s.key === "la" ? "\u0F68\u0FB3" : "\u0F68\u0FAD"}
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
+                      </svg>
+                      
+                      {/* 2. Black Font Subscript (Anchored to an invisible space) */}
+                      <span className="relative z-10 font-tibetan text-ink leading-none" style={{ fontSize: "3.5rem" }}>
+                        {s.key === "ya" ? "\u00A0\u0FB1" : s.key === "ra" ? "\u00A0\u0FB2" : s.key === "la" ? "\u00A0\u0FB3" : "\u00A0\u0FAD"}
                       </span>
                     </span>
+				   
+				   
 				   
                     <span className="text-sm font-bold text-ink">{s.name}</span>
                     <span className="text-xs font-bold uppercase tracking-widest text-ink-light items-center inline-flex">{s.count} stacks · <span className="font-serif text-lg ml-1.5">{s.headLarge}་བཏགས་</span></span>
