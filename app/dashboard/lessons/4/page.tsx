@@ -16,6 +16,7 @@ import { useLessonProgress } from "@/hooks/useLessonProgress";
 import { SUBS, VOCAB, TRIPLE_STACKS, TRIPLE_ACCENT, STEPS, TONE_META, type SubKey, type Tone, type VocabGroup } from "@/app/data/lesson4";
 
 // --- UI Components ---
+// --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
