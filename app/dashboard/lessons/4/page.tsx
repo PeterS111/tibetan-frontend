@@ -227,8 +227,9 @@ export default function SubscriptsLesson() {
                     </span>
 				   
 				   
-                    <span className="text-sm font-bold text-ink">{s.name}</span>
-                    <span className="text-xs font-bold uppercase tracking-widest text-ink-light items-center inline-flex">{s.count} stacks · <span className="font-serif text-lg ml-1.5">{s.headLarge}་བཏགས་</span></span>
+                   <span className="text-sm font-bold text-ink">{s.name}</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-ink-light items-center inline-flex">{s.count} stacks · <span className="font-serif text-lg ml-1.5">{s.key === 'wa' ? 'ཝ་ཟུར་' : s.headLarge + '་བཏགས་'}</span></span>
+				   
                   </button>
                 ))}
               </div>
