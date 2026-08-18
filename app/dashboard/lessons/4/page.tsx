@@ -201,13 +201,29 @@ export default function SubscriptsLesson() {
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
                     
                    
-				 <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
-                      <span className="absolute font-sans text-ink/20" style={{ fontSize: "3.5rem" }}>{"\u25CC"}</span>
+				   
+				   <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
+                      <span 
+                        className="absolute font-sans text-ink/20" 
+                        style={{ 
+                          fontSize: "3.5rem",
+                          transform: s.key === "ya" ? "translate(0.12em, 0.2em)" :
+                                     s.key === "ra" ? "translate(0.12em, 0.35em)" :
+                                     s.key === "la" ? "translate(0.2em, 0.25em)" :
+                                                      "translate(0.2em, 0.25em)"
+                        }}
+                      >
+                        {"\u25CC"}
+                      </span>
                       <span 
                         className="relative z-10 font-tibetan text-ink" 
-                        style={{ fontSize: "3.8rem", marginTop: "-0.2em" }}
+                        style={{ 
+                          fontSize: "3.5rem", 
+                          clipPath: "polygon(-10% 60%, 110% 60%, 110% 150%, -10% 150%)", 
+                          marginTop: "-0.5em" 
+                        }}
                       >
-                        {s.key === "ya" ? "\u200D\u0FB1" : s.key === "ra" ? "\u200D\u0FB2" : s.key === "la" ? "\u200D\u0FB3" : "\u200D\u0FAD"}
+                        {s.key === "ya" ? "\u0F68\u0FB1" : s.key === "ra" ? "\u0F68\u0FB2" : s.key === "la" ? "\u0F68\u0FB3" : "\u0F68\u0FAD"}
                       </span>
                     </span>
 				   
