@@ -202,8 +202,8 @@ export default function SubscriptsLesson() {
                     <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
                       <span className="absolute font-sans text-ink/20" style={{ fontSize: "3.5rem" }}>{"\u25CC"}</span>
                       <span 
-                        className="relative z-10 font-tibetan text-ink" 
-                        style={{ fontSize: "3.2rem", clipPath: "polygon(-10% 60%, 110% 60%, 110% 150%, -10% 150%)", marginTop: "-0.4em" }}
+                        className={`relative z-10 font-tibetan text-ink ${(s.key === 'la' || s.key === 'wa') ? '-translate-x-[0.25em]' : ''}`} 
+                        style={{ fontSize: "3.2rem", clipPath: "polygon(-10% 55%, 110% 55%, 110% 150%, -10% 150%)", marginTop: "-0.3em" }}
                       >
                         {s.key === "ya" ? "\u0F40\u0FB1" : s.key === "ra" ? "\u0F40\u0FB2" : s.key === "la" ? "\u0F40\u0FB3" : "\u0F40\u0FAD"}
                       </span>
