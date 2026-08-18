@@ -199,9 +199,10 @@ export default function SubscriptsLesson() {
                 
 				
 				
-				{SUBS.map((s) => (
+				
+			{SUBS.map((s) => (
                   <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group relative flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
-                    <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
+                    <span className="absolute inset-x-6 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
                     
                   <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
                       {/* 1. Gray SVG Circle */}
@@ -213,10 +214,11 @@ export default function SubscriptsLesson() {
                         style={{ 
                           transform: s.key === "ya" ? "translate(-2px, 8px)" : 
                                      s.key === "ra" ? "translate(-2px, 8px)" : 
-                                     s.key === "la" ? "translate(-14px, 8px)" : 
+                                     s.key === "la" ? "translate(-9px, 8px)" : 
                                                       "translate(-4px, 8px)" 
                         }}
-                      >
+                      >	
+				
 				
                         <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
                       </svg>
