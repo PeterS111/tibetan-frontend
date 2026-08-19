@@ -311,33 +311,74 @@ export default function SubscriptsLesson() {
             <div className="mt-8 border border-border-strong bg-surface p-6 md:p-8">
               <div className="text-eyebrow mb-6">Spelling walkthrough</div>
               <div className="space-y-2">
-                {TRIPLE_STACKS.map((t) => {
+                
+				
+				{TRIPLE_STACKS.map((t) => {
                   const M = TONE_META[t.tone];
                   const [superL, rootL, subL] = t.parts.split(' + ');
+                  
+                  // Helper to determine the intermediate stack (e.g. ར + ཀ = རྐ [ka])
+                  const intMap: Record<string, { tib: string, read: string }> = {
+                    "ར_ཀ": { tib: "རྐ", read: "ka" }, "ས_ཀ": { tib: "སྐ", read: "ka" },
+                    "ར_ག": { tib: "རྒ", read: "ga" }, "ས_ག": { tib: "སྒ", read: "ga" },
+                    "ས_པ": { tib: "སྤ", read: "pa" }, "ས_བ": { tib: "སྦ", read: "ba" },
+                    "ར_མ": { tib: "རྨ", read: "ma" }, "ས_མ": { tib: "སྨ", read: "ma" },
+                    "ས_ན": { tib: "སྣ", read: "na" }
+                  };
+                  const intermediate = intMap[`${superL}_${rootL}`] || { tib: "◌", read: "?" };
+
                   return (
-                    <div key={"spell-" + t.stack + t.parts} className="flex flex-wrap items-center gap-x-6 gap-y-3 border border-border-strong bg-surface px-5 py-4 shadow-sm">
+                    <div key={"spell-" + t.stack + t.parts} className="flex flex-wrap items-center gap-x-4 gap-y-3 border border-border-strong bg-surface px-5 py-4 shadow-sm">
+                      
+                      {/* The prominent target stack on the far left */}
                       <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{t.stack}</span>
-                      <span className="flex items-center gap-2 md:gap-3 text-ink-light">
+                      
+                      {/* Stage 1: Superscript + Root + Tak */}
+                      <span className="flex items-center gap-2 text-ink-light">
                         <span className="font-tibetan text-2xl sm:text-3xl">{superL}</span>
                         <span className="text-lg font-sans opacity-40">+</span>
                         <span className="font-tibetan text-2xl sm:text-3xl">{rootL}</span>
                         <span className="text-lg font-sans opacity-40">+</span>
+                        <span className="font-tibetan text-xl sm:text-2xl">བཏགས་</span>
+                      </span>
+                      
+                      <ArrowRight size={16} className="text-border-strong" />
+                      
+                      {/* Intermediate Result */}
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-tibetan text-2xl sm:text-3xl leading-none pt-1 text-ink">{intermediate.tib}</span>
+                        <span className="font-mono text-sm sm:text-base font-bold text-ink-muted">[{intermediate.read}]</span>
+                      </div>
+                      
+                      <span className="text-lg font-sans opacity-40 text-ink-light mx-1">+</span>
+
+                      {/* Stage 2: Subscript + Tak */}
+                      <span className="flex items-center gap-2 text-ink-light">
                         <span className="font-tibetan text-2xl sm:text-3xl">{subL}</span>
                         <span className="text-lg font-sans opacity-40">+</span>
-                        <span className="font-tibetan text-2xl sm:text-3xl">བཏགས་</span>
+                        <span className="font-tibetan text-xl sm:text-2xl">བཏགས་</span>
                       </span>
+
                       <ArrowRight size={16} className="text-border-strong" />
+                      
+                      {/* Final Result */}
                       <div className="flex items-center gap-2">
                         <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: TRIPLE_ACCENT }}>{t.stack}</span>
                         <span className="font-mono text-lg font-bold text-ink">[{t.read}]</span>
                       </div>
-                      <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                      <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-3 py-2">
-                        {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
-                      </Button>
+
+                      {/* Tone and Play Button */}
+                      <div className="ml-auto flex items-center gap-3">
+                        <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
+                        <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-3 py-2">
+                          {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                        </Button>
+                      </div>
+
                     </div>
                   );
                 })}
+				
               </div>
             </div>
           </StepContainer>
