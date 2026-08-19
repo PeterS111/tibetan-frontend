@@ -291,14 +291,17 @@ export default function SubscriptsLesson() {
             </p>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {TRIPLE_STACKS.map((t) => {
+             
+			 {TRIPLE_STACKS.map((t) => {
                 const M = TONE_META[t.tone];
                 return (
                   <button key={t.stack + t.parts} onClick={() => playAudio(t.stack)} disabled={playingItem !== null} className="group flex flex-col items-center gap-3 border border-border-strong bg-surface p-5 transition hover:-translate-y-1 hover:shadow-md relative">
                     <span className="absolute inset-x-0 top-0 h-0.5" style={{ backgroundColor: TRIPLE_ACCENT }} />
                     <span className="font-tibetan text-[3rem] leading-normal pb-2 mt-2 text-ink">{t.stack}</span>
-                    <span className="text-xl font-tibetan tracking-widest text-ink-muted opacity-80">{t.parts}</span>
+                    <span className="text-xl font-tibetan tracking-widest text-ink-light">{t.parts}</span>
                     <div className="mt-1 flex items-center gap-2">
+			 
+			 
                       <span className="font-mono text-sm font-bold text-ink">[{t.read}]</span>
                       <span className="inline-grid size-5 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
                     </div>
@@ -368,7 +371,9 @@ export default function SubscriptsLesson() {
                       </div>
 
                       {/* Tone and Play Button */}
-                      <div className="ml-auto flex items-center gap-3">
+                      
+					  
+					  <div className="ml-auto flex items-center gap-3">
                         <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                         <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-3 py-2">
                           {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
@@ -378,10 +383,28 @@ export default function SubscriptsLesson() {
                     </div>
                   );
                 })}
-				
               </div>
             </div>
+
+            <div className={`mt-8 p-6 md:p-8 border border-border-strong ${studyMode === "night" ? "bg-black/40" : "bg-surface-muted"}`}>
+              <div className="mb-6 flex items-center gap-2">
+                <CheckCircle2 size={18} style={{ color: TRIPLE_ACCENT }} />
+                <span className={`text-[11px] font-bold uppercase tracking-widest ${studyMode === "night" ? "text-stone-200" : "text-ink"}`}>Mastery check · Triple Stacks</span>
+              </div>
+              <MiniMastery 
+                sub={{
+                  name: "Triple Stacks",
+                  accent: { hex: TRIPLE_ACCENT },
+                  combos: TRIPLE_STACKS
+                }} 
+                night={studyMode === "night"} 
+                playAudio={playAudio} 
+                playingItem={playingItem} 
+                playErrorBeep={playErrorBeep} 
+              />
+            </div>
           </StepContainer>
+					  
 
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
