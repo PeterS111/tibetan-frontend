@@ -31,7 +31,9 @@ export default function SubscriptsLesson() {
   
   const [isBypassing, setIsBypassing] = useState(false);
 
-  const practiceGroups = useMemo(() => [
+  
+  
+const practiceGroups = useMemo(() => [
     {
       name: "Stacks",
       items: SUBS.flatMap(s => s.combos.map(c => ({
@@ -80,6 +82,26 @@ export default function SubscriptsLesson() {
   }, []);
 
   const quizQuestions = useMemo(() => {
+
+
+    const qs = [];
+    for (const v of VOCAB) {
+      const isAudioType = Math.random() > 0.5;
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType,
+        type: isAudioType ? 'base' : 'vocab',
+        answer: v.tib,
+        audioString: v.tib,
+        answerObj: v,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
+
+  const quizQuestions = useMemo(() => {
+  
     const regularCombos = SUBS.flatMap(s => s.combos);
     const qs = [];
     
@@ -324,7 +346,8 @@ export default function SubscriptsLesson() {
             </p>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-             {TRIPLE_STACKS.map((t) => {
+             
+			 {TRIPLE_STACKS.map((t) => {
                 const M = TONE_META[t.tone];
                 return (
                   <button key={t.stack + t.parts} onClick={() => playAudio(t.stack)} disabled={playingItem !== null} className="group flex flex-col items-center gap-3 border border-border-strong bg-surface p-5 transition hover:-translate-y-1 hover:shadow-md relative">
@@ -332,6 +355,8 @@ export default function SubscriptsLesson() {
                     <span className="font-tibetan text-[3rem] leading-normal pb-2 mt-2 text-ink">{t.stack}</span>
                     <span className="text-xl font-tibetan tracking-widest text-ink-light">{t.parts}</span>
                     <div className="mt-1 flex items-center gap-2">
+			 
+			 
                       <span className="font-mono text-sm font-bold text-ink">[{t.read}]</span>
                       <span className="inline-grid size-5 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
                     </div>
@@ -344,6 +369,8 @@ export default function SubscriptsLesson() {
             <div className="mt-8 border border-border-strong bg-surface p-6 md:p-8">
               <div className="text-eyebrow mb-6">Spelling walkthrough</div>
               <div className="space-y-2">
+                
+				
 				{TRIPLE_STACKS.map((t) => {
                   const M = TONE_META[t.tone];
                   const [superL, rootL, subL] = t.parts.split(' + ');
@@ -399,6 +426,8 @@ export default function SubscriptsLesson() {
                       </div>
 
                       {/* Tone and Play Button */}
+                      
+					  
 					  <div className="ml-auto flex items-center gap-3">
                         <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
                         <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-3 py-2">
@@ -431,7 +460,8 @@ export default function SubscriptsLesson() {
             </div>
           </StepContainer>
 					  
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+
+<StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong">{VOCAB.length} words</span>
