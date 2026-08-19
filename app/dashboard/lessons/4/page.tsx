@@ -31,6 +31,8 @@ export default function SubscriptsLesson() {
   
   const [isBypassing, setIsBypassing] = useState(false);
 
+  
+  
   const practiceGroups = useMemo(() => [
     {
       name: "Stacks",
@@ -46,7 +48,25 @@ export default function SubscriptsLesson() {
     }
   ], []);
 
+  const vocabQuestions = useMemo(() => {
+    const qs = [];
+    for (const v of VOCAB) {
+      const isAudioType = Math.random() > 0.5;
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      qs.push({
+        isAudioType,
+        type: isAudioType ? 'base' : 'vocab',
+        answer: v.tib,
+        audioString: v.tib,
+        answerObj: v,
+        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
+      });
+    }
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
+
   const quizQuestions = useMemo(() => {
+  
     const regularCombos = SUBS.flatMap(s => s.combos);
     const qs = [];
     
@@ -406,12 +426,24 @@ export default function SubscriptsLesson() {
           </StepContainer>
 					  
 
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+<StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong">{VOCAB.length} words</span>
             </div>
-            <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+            
+            <div className="mb-10">
+              <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+            </div>
+
+            <QuizModule 
+              title="Vocabulary Mastery" 
+              intro="Check your memory of the new subscript words before moving on. This check tests all vocabulary words." 
+              questions={vocabQuestions} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+            />
           </StepContainer>
 
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
