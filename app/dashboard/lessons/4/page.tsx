@@ -548,26 +548,37 @@ function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any)
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const [seed, setSeed] = useState(0);
 
-  const question = useMemo(() => {
-    const answer = sub.combos[step % sub.combos.length];
-    const wrongs = sub.combos.filter((c: any) => c.stack !== answer.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [...wrongs, answer].sort(() => 0.5 - Math.random());
-    return { answer, choices };
-  }, [sub, step]);
+  // Generate all questions for this round once so they don't reshuffle on click
+  const questions = useMemo(() => {
+    const shuffledCombos = [...sub.combos].sort(() => 0.5 - Math.random());
+    return shuffledCombos.map((answer: any) => {
+      const wrongs = sub.combos.filter((c: any) => c.stack !== answer.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random());
+      return { answer, choices };
+    });
+  }, [sub.name, seed]);
 
-  const total = sub.combos.length;
+  const total = questions.length;
+  const question = questions[step] || questions[0];
+
   const pick = (stack: string) => {
     if (picked) return;
     setPicked(stack);
-    if (stack === question.answer.stack) { setScore(s => s + 1); playAudio(question.answer.stack); } else { playErrorBeep(); }
+    if (stack === question.answer.stack) { 
+      setScore(s => s + 1); 
+      playAudio(question.answer.stack); 
+    } else { 
+      playErrorBeep(); 
+    }
   };
 
   if (step >= total) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
         <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sub.accent.hex }}>{score}</span> / {total} on {sub.name}.</div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}><Shuffle size={14} /> Try again</Button>
+        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); setSeed(s => s + 1); }}><Shuffle size={14} /> Try again</Button>
       </div>
     );
   }
