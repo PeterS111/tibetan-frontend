@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -15,7 +14,6 @@ import { useLessonProgress } from "@/hooks/useLessonProgress";
 // --- Data ---
 import { SUBS, VOCAB, TRIPLE_STACKS, TRIPLE_ACCENT, STEPS, TONE_META, type SubKey, type Tone, type VocabGroup } from "@/app/data/lesson4";
 
-// --- UI Components ---
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
@@ -196,11 +194,7 @@ export default function SubscriptsLesson() {
 
            <div className="mt-6 border border-border-strong bg-surface overflow-hidden">
               <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
-                
-				
-				
-				
-			{SUBS.map((s) => (
+                {SUBS.map((s) => (
                   <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group relative flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="absolute inset-x-6 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
                     
@@ -217,9 +211,7 @@ export default function SubscriptsLesson() {
                                      s.key === "la" ? "translate(-9px, 8px)" : 
                                                       "translate(-4px, 8px)" 
                         }}
-                      >	
-				
-				
+                      >
                         <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
                       </svg>
                       
@@ -233,9 +225,8 @@ export default function SubscriptsLesson() {
                     </span>
 				   
 				   
-                   <span className="text-sm font-bold text-ink">{s.name}</span>
+                    <span className="text-sm font-bold text-ink">{s.name}</span>
                     <span className="text-xs font-bold uppercase tracking-widest text-ink-light items-center inline-flex">{s.count} stacks · <span className="font-serif text-lg ml-1.5">{s.key === 'wa' ? 'ཝ་ཟུར་' : s.headLarge + '་བཏགས་'}</span></span>
-				   
                   </button>
                 ))}
               </div>
@@ -305,8 +296,8 @@ export default function SubscriptsLesson() {
                 return (
                   <button key={t.stack + t.parts} onClick={() => playAudio(t.stack)} disabled={playingItem !== null} className="group flex flex-col items-center gap-3 border border-border-strong bg-surface p-5 transition hover:-translate-y-1 hover:shadow-md relative">
                     <span className="absolute inset-x-0 top-0 h-0.5" style={{ backgroundColor: TRIPLE_ACCENT }} />
-                    <span className="font-tibetan leading-none mt-2 text-ink" style={{ fontSize: "2.5rem" }}>{t.stack}</span>
-                    <span className="text-[10px] uppercase tracking-widest text-ink-muted font-serif font-bold">{t.parts}</span>
+                    <span className="font-tibetan text-[3rem] leading-normal pb-2 mt-2 text-ink">{t.stack}</span>
+                    <span className="text-xl font-tibetan tracking-widest text-ink-muted opacity-80">{t.parts}</span>
                     <div className="mt-1 flex items-center gap-2">
                       <span className="font-mono text-sm font-bold text-ink">[{t.read}]</span>
                       <span className="inline-grid size-5 place-items-center rounded-full text-white" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
@@ -322,10 +313,19 @@ export default function SubscriptsLesson() {
               <div className="space-y-2">
                 {TRIPLE_STACKS.map((t) => {
                   const M = TONE_META[t.tone];
+                  const [superL, rootL, subL] = t.parts.split(' + ');
                   return (
                     <div key={"spell-" + t.stack + t.parts} className="flex flex-wrap items-center gap-x-6 gap-y-3 border border-border-strong bg-surface px-5 py-4 shadow-sm">
-                      <span className="font-tibetan text-[2.5rem] leading-none w-12 text-center text-ink">{t.stack}</span>
-                      <span className="text-xs font-bold font-serif text-ink-light">{t.parts}</span>
+                      <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{t.stack}</span>
+                      <span className="flex items-center gap-2 md:gap-3 text-ink-light">
+                        <span className="font-tibetan text-2xl sm:text-3xl">{superL}</span>
+                        <span className="text-lg font-sans opacity-40">+</span>
+                        <span className="font-tibetan text-2xl sm:text-3xl">{rootL}</span>
+                        <span className="text-lg font-sans opacity-40">+</span>
+                        <span className="font-tibetan text-2xl sm:text-3xl">{subL}</span>
+                        <span className="text-lg font-sans opacity-40">+</span>
+                        <span className="font-tibetan text-2xl sm:text-3xl">བཏགས་</span>
+                      </span>
                       <ArrowRight size={16} className="text-border-strong" />
                       <div className="flex items-center gap-2">
                         <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: TRIPLE_ACCENT }}>{t.stack}</span>
@@ -455,14 +455,12 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
                   <span className="text-lg font-sans opacity-40">+</span>
                   <span className="font-tibetan text-2xl sm:text-3xl">བཏགས་</span>
                 </span>
-                
-				<ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
+                <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 <div className="flex items-center gap-2">
                   <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: sub.accent.hex }}>{c.stack}</span>
                   <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
                 </div>
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-				
                 <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} disabled={playingItem !== null} className={`px-3 py-1.5 ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
                   {playingItem === (c.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
                 </Button>
@@ -494,7 +492,7 @@ function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any)
     return { answer, choices };
   }, [sub, step]);
 
-const total = sub.combos.length;
+  const total = sub.combos.length;
   const pick = (stack: string) => {
     if (picked) return;
     setPicked(stack);
