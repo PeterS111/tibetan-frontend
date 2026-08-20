@@ -145,7 +145,7 @@ export default function PrefixesLesson() {
           
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink mb-1">How a Tibetan word is built <span className="font-serif italic text-ink-muted ml-2">ཚིག་གི་གྲུབ་སྟངས།</span></h2>
+              <h2 className="font-serif text-2xl text-ink mb-1">How a Tibetan word is built <span className="font-tibetan not-italic text-ink-light ml-2">ཚིག་གི་གྲུབ་སྟངས།</span></h2>
             </div>
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">A Tibetan syllable is built from up to <span className="font-bold text-ink">seven slots</span> arranged around a single <span className="font-bold text-ink">root letter</span>. Each slot has a name, a position, and a job. The <span className="font-bold text-brand-dark">prefix</span> is the leftmost of them.</p>
 
@@ -157,25 +157,40 @@ export default function PrefixesLesson() {
                 <div className="mt-6 text-[15px] italic text-ink-light"><span className="not-italic font-bold text-ink">bsgrims</span> — “concentrated” · read <span className="not-italic font-bold text-ink">drim</span></div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-border-strong">
+            
+			<div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-border-strong text-center items-stretch">
                 {[
                   { letter: "བ", role: "Prefix", tib: "སྔོན་འཇུག", pos: "Before root", accent: "#c2410c", highlight: true },
                   { letter: "ས", role: "Superscript", tib: "མགོ་ཅན", pos: "Above root", accent: "#7c3aed" },
                   { letter: "ག", role: "Root letter", tib: "མིང་གཞི", pos: "The heart", accent: "#111827" },
-                  { letter: "ྲ", role: "Subscript", tib: "འདོགས་ཅན", pos: "Below root", accent: "#0284c7" },
-                  { letter: "ི", role: "Vowel", tib: "དབྱངས", pos: "Above / below", accent: "#059669" },
+                  { letter: "ྲ", role: "Subscript", tib: "འདོགས་ཅན", pos: "Below root", accent: "#0284c7", combining: true },
+                  { letter: "ི", role: "Vowel", tib: "དབྱངས", pos: "Above / below", accent: "#059669", combining: true },
                   { letter: "མ", role: "Suffix", tib: "རྗེས་འཇུག", pos: "After root", accent: "#b45309" },
                   { letter: "ས", role: "Post-suffix", tib: "ཡང་འཇུག", pos: "Far right", accent: "#9333ea" },
                 ].map((s) => (
-                  <div key={s.role} className={`relative p-5 text-center flex flex-col items-center justify-center ${s.highlight ? "bg-brand-light" : "bg-surface"}`}>
-                    {s.highlight && <span className="absolute top-2 right-2 bg-amber-200 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-brand-dark">This lesson</span>}
-                    <div className="grid size-14 place-items-center font-serif text-[2.5rem] leading-normal mb-3" style={{ color: s.accent }}>{s.letter}</div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: s.accent }}>{s.role}</div>
-                    <div className="mt-1 font-serif text-xs italic text-ink-muted">{s.tib}</div>
-                    <div className="mt-1 text-[10px] text-ink-light font-bold uppercase tracking-widest">{s.pos}</div>
+                  <div key={s.role} className={`relative p-5 flex flex-col items-center justify-start ${s.highlight ? "bg-brand-light" : "bg-surface"}`}>
+                    {s.highlight && <span className="absolute top-2 right-2 bg-amber-200 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-brand-dark shadow-sm">This lesson</span>}
+                    
+                    <div className="relative flex items-center justify-center h-16 w-full mb-3 mt-2">
+                      {s.combining && (
+                        <svg className="absolute text-border-strong" width="38" height="38" viewBox="0 0 100 100" style={{ transform: "translate(-2px, 8px)" }}>
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
+                        </svg>
+                      )}
+                      <span className="relative z-10 font-tibetan text-[2.5rem] leading-none flex items-center justify-center" style={{ color: s.accent }}>
+                        {s.combining ? "\u00A0" + s.letter : s.letter}
+                      </span>
+                    </div>
+
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5" style={{ color: s.accent }}>{s.role}</div>
+                    <div className="font-tibetan text-[15px] font-medium text-ink not-italic mb-1.5 leading-tight">{s.tib}</div>
+                    <div className="mt-auto text-[10px] text-ink-light font-bold uppercase tracking-widest">{s.pos}</div>
                   </div>
                 ))}
               </div>
+			
+			
+			
             </Card>
           </StepContainer>
 
