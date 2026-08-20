@@ -163,8 +163,8 @@ export default function PrefixesLesson() {
                   { letter: "བ", role: "Prefix", tib: "སྔོན་འཇུག", pos: "Before root", accent: "#c2410c", highlight: true },
                   { letter: "ས", role: "Superscript", tib: "མགོ་ཅན", pos: "Above root", accent: "#7c3aed" },
                   { letter: "ག", role: "Root letter", tib: "མིང་གཞི", pos: "The heart", accent: "#111827" },
-                  { letter: "ྲ", role: "Subscript", tib: "འདོགས་ཅན", pos: "Below root", accent: "#0284c7", combining: true },
-                  { letter: "ི", role: "Vowel", tib: "དབྱངས", pos: "Above / below", accent: "#059669", combining: true },
+                  { letter: "ྲ", role: "Subscript", tib: "འདོགས་ཅན", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)" },
+                  { letter: "ི", role: "Vowel", tib: "དབྱངས", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-6px, 6px)" },
                   { letter: "མ", role: "Suffix", tib: "རྗེས་འཇུག", pos: "After root", accent: "#b45309" },
                   { letter: "ས", role: "Post-suffix", tib: "ཡང་འཇུག", pos: "Far right", accent: "#9333ea" },
                 ].map((s) => (
@@ -173,11 +173,11 @@ export default function PrefixesLesson() {
                     
                     <div className="relative flex items-center justify-center h-16 w-full mb-3 mt-2">
                       {s.combining && (
-                        <svg className="absolute text-border-strong" width="38" height="38" viewBox="0 0 100 100" style={{ transform: "translate(-2px, 8px)" }}>
+                        <svg className="absolute text-border-strong" width="42" height="42" viewBox="0 0 100 100" style={{ transform: s.svgTrans }}>
                           <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
                         </svg>
                       )}
-                      <span className="relative z-10 font-tibetan text-[2.5rem] leading-none flex items-center justify-center" style={{ color: s.accent }}>
+                      <span className="relative z-10 leading-none flex items-center justify-center font-tibetan" style={{ color: s.accent, fontSize: s.combining ? "4rem" : "2.5rem" }}>
                         {s.combining ? "\u00A0" + s.letter : s.letter}
                       </span>
                     </div>
