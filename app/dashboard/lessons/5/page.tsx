@@ -159,23 +159,19 @@ export default function PrefixesLesson() {
 
             
 			<div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-border-strong text-center items-stretch">
-               
-			   
-			   {[
-                  { letter: "བ", role: "Prefix", tib: "སྔོན་འཇུག", pos: "Before root", accent: "#c2410c", highlight: true },
-                  { letter: "ས", role: "Superscript", tib: "མགོ་ཅན", pos: "Above root", accent: "#7c3aed" },
-                  { letter: "ག", role: "Root letter", tib: "མིང་གཞི", pos: "The heart", accent: "#111827" },
-                  { letter: "ྲ", role: "Subscript", tib: "འདོགས་ཅན", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)" },
-                  { letter: "ི", role: "Vowel", tib: "དབྱངས", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)" },
-                  { letter: "མ", role: "Suffix", tib: "རྗེས་འཇུག", pos: "After root", accent: "#b45309" },
-                  { letter: "ས", role: "Post-suffix", tib: "ཡང་འཇུག", pos: "Far right", accent: "#9333ea" },
+                {[
+                  { letter: "བ", role: "Prefix", pos: "Before root", accent: "#c2410c", highlight: true, tib: "སྔོན་འཇུག" },
+                  { letter: "ས", role: "Superscript", pos: "Above root", accent: "#7c3aed", tib: "མགོ་ཅན" },
+                  { letter: "ག", role: "Root letter", pos: "The heart", accent: "#111827", tib: "མིང་གཞི" },
+                  { letter: "ྲ", role: "Subscript", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)", yOffset: "translateY(0px)", tib: "འདོགས་ཅན" },
+                  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-14px)", tib: "དབྱངས" },
+                  { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309", tib: "རྗེས་འཇུག" },
+                  { letter: "ས", role: "Post-suffix", pos: "Far right", accent: "#9333ea", tib: "ཡང་འཇུག" },
                 ].map((s) => (
-			   
-			   
                   <div key={s.role} className={`relative p-5 flex flex-col items-center justify-start ${s.highlight ? "bg-brand-light" : "bg-surface"}`}>
                     {s.highlight && <span className="absolute top-2 right-2 bg-amber-200 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-brand-dark shadow-sm">This lesson</span>}
                     
-                    <div className="relative flex items-center justify-center h-16 w-full mb-3 mt-2">
+                    <div className="relative flex items-center justify-center h-16 w-full mb-3 mt-2" style={s.yOffset ? { transform: s.yOffset } : undefined}>
                       {s.combining && (
                         <svg className="absolute text-border-strong" width="42" height="42" viewBox="0 0 100 100" style={{ transform: s.svgTrans }}>
                           <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
