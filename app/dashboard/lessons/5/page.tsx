@@ -164,7 +164,10 @@ export default function PrefixesLesson() {
                   { letter: "ས", role: "Superscript", pos: "Above root", accent: "#7c3aed", tib: "མགོ་ཅན" },
                   { letter: "ག", role: "Root letter", pos: "The heart", accent: "#111827", tib: "མིང་གཞི" },
                   { letter: "ྲ", role: "Subscript", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)", yOffset: "translateY(0px)", tib: "འདོགས་ཅན" },
-                  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-14px)", tib: "དབྱངས" },
+                  
+				  
+				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-32px)", tib: "དབྱངས" },
+				  
                   { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309", tib: "རྗེས་འཇུག" },
                   { letter: "ས", role: "Post-suffix", pos: "Far right", accent: "#9333ea", tib: "ཡང་འཇུག" },
                 ].map((s) => (
