@@ -166,7 +166,7 @@ export default function PrefixesLesson() {
                   { letter: "ྲ", role: "Subscript", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)", yOffset: "translateY(0px)", tib: "འདོགས་ཅན" },
                   
 				  
-				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-32px)", tib: "དབྱངས" },
+				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-28px)", tib: "དབྱངས" },
 				  
                   { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309", tib: "རྗེས་འཇུག" },
                   { letter: "ས", role: "Post-suffix", pos: "Far right", accent: "#9333ea", tib: "ཡང་འཇུག" },
