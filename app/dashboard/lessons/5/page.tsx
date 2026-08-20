@@ -166,7 +166,7 @@ export default function PrefixesLesson() {
                   { letter: "ྲ", role: "Subscript", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)", yOffset: "translateY(0px)", tib: "འདོགས་ཅན" },
                   
 				  
-				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-28px)", tib: "དབྱངས" },
+				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-26px)", tib: "དབྱངས" },
 				  
                   { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309", tib: "རྗེས་འཇུག" },
                   { letter: "ས", role: "Post-suffix", pos: "Far right", accent: "#9333ea", tib: "ཡང་འཇུག" },
@@ -222,10 +222,17 @@ export default function PrefixesLesson() {
             <div className="mt-6 border border-border-strong bg-surface overflow-hidden">
               <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
                 {PREFIXES.map((s) => (
-                  <button key={s.key} onClick={() => { setActiveTab(s.key); markComplete(1); }} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
+                  <button key={s.key} onClick={() => playAudio(s.nameTib)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
                     <span className="mt-2 font-serif leading-none" style={{ fontSize: "3rem", color: s.accent.hex }}>{s.head}</span>
-                    <span className="text-sm font-bold text-ink">{s.latin}</span>
+                    <div className="flex items-center gap-1.5 text-sm font-bold text-ink">
+                      {s.latin}
+                      {playingItem === s.nameTib ? (
+                        <Loader2 size={12} className="animate-spin text-brand" />
+                      ) : (
+                        <Volume2 size={12} className="text-brand opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{s.count} · {s.family === "nasal" ? "nasalising" : "silent"}</span>
                   </button>
                 ))}
