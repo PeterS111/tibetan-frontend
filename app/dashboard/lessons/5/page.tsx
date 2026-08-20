@@ -166,7 +166,7 @@ export default function PrefixesLesson() {
                   { letter: "ྲ", role: "Subscript", pos: "Below root", accent: "#0284c7", combining: true, svgTrans: "translate(-2px, 0px)", yOffset: "translateY(0px)", tib: "འདོགས་ཅན" },
                   
 				  
-				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-26px)", tib: "དབྱངས" },
+				  { letter: "ི", role: "Vowel", pos: "Above / below", accent: "#059669", combining: true, svgTrans: "translate(-4px, 18px)", yOffset: "translateY(-24px)", tib: "དབྱངས" },
 				  
                   { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309", tib: "རྗེས་འཇུག" },
                   { letter: "ས", role: "Post-suffix", pos: "Far right", accent: "#9333ea", tib: "ཡང་འཇུག" },
@@ -243,7 +243,7 @@ export default function PrefixesLesson() {
               <div className="mb-4 flex items-center gap-2 text-eyebrow"><Info size={14} className="text-brand" /> Two rules of writing</div>
               <ol className="space-y-4 text-[15px] text-ink-light font-bold">
                 <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded bg-surface-muted border border-border-strong text-[11px] text-ink-light">1</span><span>Only five letters — <span className="font-serif text-xl text-ink mx-1 px-2 py-0.5 bg-surface-muted border border-border-strong">{NEVER_TAKE}</span> — <em>never</em> take a prefix.</span></li>
-                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded bg-surface-muted border border-border-strong text-[11px] text-ink-light">2</span><span>A root that follows a prefix must carry <em>at least</em> a vowel, superscript, or subscript.</span></li>
+                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded bg-surface-muted border border-border-strong text-[11px] text-ink-light">2</span><span>A root that follows a prefix must carry <em>at least</em> a vowel, superscript, subscript, or suffix.</span></li>
               </ol>
             </div>
           </StepContainer>
