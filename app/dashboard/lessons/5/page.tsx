@@ -105,14 +105,18 @@ export default function PrefixesLesson() {
 
         <Card className="mb-12 grid gap-8 md:grid-cols-[1fr,auto] md:items-end">
           <div>
-            <div className="mb-3 text-eyebrow text-brand-dark">Lesson 05 · Foundations</div>
+           
+		   
+		  <div className="mb-3 text-eyebrow text-brand-dark">Lesson 05 · Foundations</div>
             <h1 className="font-serif text-4xl md:text-5xl text-ink leading-tight tracking-tight">
               The Five Prefixes
             </h1>
-            <p className="mt-2 font-serif text-2xl italic text-ink-light">སྔོན་འཇུག་ལྔ།</p>
+            <p className="mt-2 font-tibetan text-3xl text-ink-light">སྔོན་འཇུག་ལྔ།</p>
             <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-light">
-              Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter. They shape both <span className="font-bold text-ink">spelling</span> and <span className="font-bold text-ink">pronunciation</span> (deepening feminine roots, adding a nasal onset with མ and འ).
-            </p>
+              Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter. They shape both <span className="font-bold text-ink">spelling</span> and <span className="font-bold text-ink">pronunciation</span> (deepening feminine roots, adding a nasal onset with <span className="font-serif text-xl">མ</span> and <span className="font-serif text-xl">འ</span>).
+            </p> 
+		   
+		   
           </div>
           <div className="w-full md:w-72">
             <div className="mb-3 flex items-center justify-between text-eyebrow">
