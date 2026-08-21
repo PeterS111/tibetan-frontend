@@ -281,31 +281,49 @@ export default function PrefixesLesson() {
           </StepContainer>
 
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <div className="grid gap-4 md:grid-cols-3">
+            
+			
+	
+	<div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface flex flex-col h-full">
-                <div className="mb-4 inline-flex items-center gap-2 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-700 self-start">
-                  <AlertTriangle size={14} /> ད + བ → [wa]
+                <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100">
+                  <AlertTriangle size={18} /> <span className="font-tibetan text-2xl font-normal normal-case leading-none pt-1">ད + བ</span> <ArrowRight size={16} /> [WA]
                 </div>
-                <div className="font-tibetan text-[2.5rem] leading-normal pb-2 text-ink mb-4">དབུ་ · དབྱེ་ · དབྲ་</div>
+                <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                  <button onClick={() => playAudio('དབུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">དབུ་</button>
+                  <button onClick={() => playAudio('དབྱེ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">དབྱེ་</button>
+                  <button onClick={() => playAudio('དབྲ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">དབྲ་</button>
+                </div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">When ད precedes root བ, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [ra].</p>
               </Card>
 
               <Card className="p-6 bg-surface flex flex-col h-full">
-                <div className="mb-4 inline-flex items-center gap-2 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-700 self-start">
-                  <AlertTriangle size={14} /> འ + བ → [ba]
+                <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100">
+                  <AlertTriangle size={18} /> <span className="font-tibetan text-2xl font-normal normal-case leading-none pt-1">འ + བ</span> <ArrowRight size={16} /> [BA]
                 </div>
-                <div className="font-tibetan text-[2.5rem] leading-normal pb-2 text-ink mb-4">འབུ་ · འབྲི་ · འབྲུ་</div>
+                <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                  <button onClick={() => playAudio('འབུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">འབུ་</button>
+                  <button onClick={() => playAudio('འབྲི་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">འབྲི་</button>
+                  <button onClick={() => playAudio('འབྲུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">འབྲུ་</button>
+                </div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">With prefix འ the root བ retains its [b-] onset in a low nasal tone: [ng’bu], [ng’dri].</p>
               </Card>
 
               <Card className="p-6 bg-surface flex flex-col h-full">
-                <div className="mb-4 inline-flex items-center gap-2 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-700 self-start">
-                  <AlertTriangle size={14} /> ག + ཡ → [yo]
+                <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100">
+                  <AlertTriangle size={18} /> <span className="font-tibetan text-2xl font-normal normal-case leading-none pt-1">ག + ཡ</span> <ArrowRight size={16} /> [YO]
                 </div>
-                <div className="font-tibetan text-[2.5rem] leading-normal pb-2 text-ink mb-4">གཡོ་ · གཡུ་ · གཡི་</div>
+                <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                  <button onClick={() => playAudio('གཡོ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">གཡོ་</button>
+                  <button onClick={() => playAudio('གཡུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">གཡུ་</button>
+                  <button onClick={() => playAudio('གཡི་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem]">གཡི་</button>
+                </div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">Prefix ག lifts the feminine ཡ to a <span className="font-bold text-ink">high</span> tone.</p>
               </Card>
             </div>
+	
+			
+			
           </StepContainer>
 
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
@@ -363,14 +381,17 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
     <div className={`relative overflow-hidden border transition-colors duration-500 ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
       <div className="h-1 w-full" style={{ backgroundColor: p.accent.hex }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
-        <div className="flex items-center gap-6">
+        
+		
+		<div className="flex items-center gap-6">
           <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none" style={{ backgroundColor: night ? `${p.accent.hex}20` : `${p.accent.hex}15`, color: p.accent.hex }}>{p.head}</div>
           <div>
             <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Prefix · {p.family === "nasal" ? "Nasalising" : "Silent"}</div>
             <div className="font-serif text-3xl font-bold">{p.title}</div>
-            <div className={`mt-1 font-serif text-xl italic ${night ? "text-stone-400" : "text-ink-light"}`}>{p.nameTib}</div>
+            <div className={`mt-1 font-tibetan text-2xl ${night ? "text-stone-400" : "text-ink-light"}`}>{p.nameTib}</div>
           </div>
         </div>
+		
         <div>
           <p className={`text-[15px] leading-relaxed p-5 border ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
             {p.intro}<br /><br />
@@ -411,7 +432,9 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
                 {/* 1. Target word */}
                 <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{c.word}</span>
                 
-                {/* 2. Spelling Math */}
+
+
+{/* 2. Spelling Math */}
                 <span className={`flex items-center gap-2 md:gap-3 ${night ? "text-stone-400" : "text-ink-light"}`}>
                   {c.parts.split(' + ').map((part: string, idx: number) => {
                     const isCombining = ['ི', 'ུ', 'ེ', 'ོ', 'ྱ', 'ྲ', 'ླ', 'ྭ'].includes(part);
@@ -419,25 +442,16 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
                       <div key={idx} className="flex items-center gap-2 md:gap-3">
                         {idx > 0 && <span className="text-lg font-sans opacity-40">+</span>}
                         <span className="relative flex items-center justify-center min-w-[20px]">
-                          {isCombining && (
-                            <svg className="absolute text-border-strong" width="30" height="30" viewBox="0 0 100 100" style={{ transform: part === 'ུ' ? "translate(0px, 12px)" : "translateY(0px)" }}>
-                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
-                            </svg>
-                          )}
                           <span className={`relative z-10 leading-none ${isCombining ? 'font-tibetan text-3xl' : 'font-tibetan text-2xl sm:text-3xl pt-1'}`}>
                             {isCombining ? "\u00A0" + part : part}
                           </span>
                         </span>
-                        {idx === 0 && (
-                          <>
-                            <span className="text-lg font-sans opacity-40">+</span>
-                            <span className="font-tibetan text-xl sm:text-2xl pt-1">སྔོན་འཇུག་</span>
-                          </>
-                        )}
                       </div>
                     );
                   })}
                 </span>
+
+
                 
                 <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
                 
@@ -471,33 +485,46 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
   );
 }
 
+
 function MiniMastery({ p, night, playAudio, playingItem, playErrorBeep }: any) {
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const [seed, setSeed] = useState(0);
 
-  const question = useMemo(() => {
-    const answer = p.combos[step % p.combos.length];
-    const others = p.combos.filter((c: any) => c.word !== answer.word).sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [...others, answer].sort(() => 0.5 - Math.random());
-    return { answer, choices };
-  }, [p, step]);
+  // Generate all questions for this round once so they don't reshuffle on click
+  const questions = useMemo(() => {
+    const shuffledCombos = [...p.combos].sort(() => 0.5 - Math.random());
+    return shuffledCombos.map((answer: any) => {
+      const wrongs = p.combos.filter((c: any) => c.word !== answer.word).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random());
+      return { answer, choices };
+    });
+  }, [p.key, seed]);
 
-  const total = Math.min(5, p.combos.length);
+  const total = questions.length;
+  const question = questions[step] || questions[0];
+
   const pick = (word: string) => {
     if (picked) return;
     setPicked(word);
-    if (word === question.answer.word) { setScore(s => s + 1); playAudio(question.answer.word); } else { playErrorBeep(); }
+    if (word === question.answer.word) { 
+      setScore(s => s + 1); 
+      playAudio(question.answer.word); 
+    } else { 
+      playErrorBeep(); 
+    }
   };
 
   if (step >= total) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
         <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: p.accent.hex }}>{score}</span> / {total} on prefix {p.latin}.</div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); }}><Shuffle size={14} /> Try again</Button>
+        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); setSeed(s => s + 1); }}><Shuffle size={14} /> Try again</Button>
       </div>
     );
   }
+
 
   return (
     <div>
