@@ -39,7 +39,10 @@ export default function PrefixesLesson() {
         id: `c-${c.word}`, tibetan: c.word, reading: c.read, english: c.gloss ?? TONE_META[c.tone].label, audioTarget: c.word
       })))
     },
-    {
+
+
+
+{
       name: "Vocabulary",
       items: VOCAB.map(v => ({
         id: `v-${v.tib}`, tibetan: v.tib, reading: v.translit, english: v.en, audioTarget: v.tib, emoji: v.emoji
@@ -47,7 +50,42 @@ export default function PrefixesLesson() {
     }
   ], []);
 
+  const vocabQuestions = useMemo(() => {
+    const qs = [];
+    for (const v of VOCAB) {
+      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
+      
+      if (Math.random() > 0.5) {
+        // Option 1: Audio Prompt
+        qs.push({
+          isAudioType: true,
+          type: 'base',
+          questionText: "Listen and select the matching option.",
+          answer: v.tib,
+          audioString: v.tib,
+          answerObj: v,
+          choices
+        });
+      } else {
+        // Option 2: Text Translation Prompt
+        qs.push({
+          isAudioType: false,
+          type: 'vocab',
+          questionText: `Which word means "${v.en}"?`,
+          answer: v.tib,
+          audioString: v.tib,
+          answerObj: v,
+          choices
+        });
+      }
+    }
+    return qs.sort(() => 0.5 - Math.random());
+  }, []);
+
   const quizQuestions = useMemo(() => {
+
+
     const allCombos = PREFIXES.flatMap(s => s.combos);
     const qs = [];
     
@@ -326,13 +364,28 @@ export default function PrefixesLesson() {
 			
           </StepContainer>
 
-          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
+ 
+ <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[4].title}</h2>
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong">{VOCAB.length} words</span>
             </div>
-            <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+            
+            <div className="mb-10">
+              <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+            </div>
+
+            <QuizModule 
+              title="Vocabulary Mastery" 
+              intro="Check your memory of the new prefix words before moving on. This check tests all vocabulary words." 
+              questions={vocabQuestions} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+            />
           </StepContainer>
+ 
+ 
 
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />

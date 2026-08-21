@@ -41,7 +41,18 @@ const getReading = (item: PracticeItem, isLesson1: boolean) => {
 export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
   const [tab, setTab] = useState<"flash" | "match" | "listen" | "srs">("flash");
 
-  const allItems = useMemo(() => groups.flatMap(g => g.items), [groups]);
+  const allItems = useMemo(() => {
+    const flat = groups.flatMap(g => g.items);
+    const unique = [];
+    const seen = new Set();
+    for (const item of flat) {
+      if (!seen.has(item.tibetan)) {
+        seen.add(item.tibetan);
+        unique.push(item);
+      }
+    }
+    return unique;
+  }, [groups]);
 
   return (
     <Card className="p-0 border-border-subtle shadow-sm overflow-hidden">
