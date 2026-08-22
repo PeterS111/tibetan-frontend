@@ -4,6 +4,7 @@ export type SuffixKey = "ga" | "nga" | "da" | "na" | "ba" | "ma" | "a" | "ra" | 
 
 export interface SuffixExample {
   word: string;
+  parts: string;
   read: string;
   gloss?: string;
 }
@@ -40,9 +41,9 @@ export const SUFFIXES: Suffix[] = [
     family: "silent",
     accent: "#b45309",
     examples: [
-      { word: "དག་", read: "thak'", gloss: "pure" },
-      { word: "རིག་", read: "rik'", gloss: "awareness" },
-      { word: "ཐུག་", read: "thuk'", gloss: "to meet" },
+      { word: "དག་", parts: "ད + ག", read: "thak'", gloss: "pure" },
+      { word: "རིག་", parts: "ར + ི + ག", read: "rik'", gloss: "awareness" },
+      { word: "ཐུག་", parts: "ཐ + ུ + ག", read: "thuk'", gloss: "to meet" },
     ],
     note: "The vowel is preserved; only a light closure is felt at the end.",
   },
@@ -55,9 +56,9 @@ export const SUFFIXES: Suffix[] = [
     family: "nasal",
     accent: "#b91c1c",
     examples: [
-      { word: "དང་", read: "thang", gloss: "and" },
-      { word: "རང་", read: "rang", gloss: "self" },
-      { word: "ལུང་", read: "lung", gloss: "valley" },
+      { word: "དང་", parts: "ད + ང", read: "thang", gloss: "and" },
+      { word: "རང་", parts: "ར + ང", read: "rang", gloss: "self" },
+      { word: "ལུང་", parts: "ལ + ུ + ང", read: "lung", gloss: "valley" },
     ],
   },
   {
@@ -69,9 +70,9 @@ export const SUFFIXES: Suffix[] = [
     family: "up",
     accent: "#b45309",
     examples: [
-      { word: "རབ་", read: "rap", gloss: "excellent" },
-      { word: "ཐུབ་", read: "thup", gloss: "able" },
-      { word: "ཁབ་", read: "khap", gloss: "needle" },
+      { word: "རབ་", parts: "ར + བ", read: "rap", gloss: "excellent" },
+      { word: "ཐུབ་", parts: "ཐ + ུ + བ", read: "thup", gloss: "able" },
+      { word: "ཁབ་", parts: "ཁ + བ", read: "khap", gloss: "needle" },
     ],
   },
   {
@@ -83,9 +84,9 @@ export const SUFFIXES: Suffix[] = [
     family: "up",
     accent: "#b45309",
     examples: [
-      { word: "ལམ་", read: "lam", gloss: "path" },
-      { word: "རིམ་", read: "rim", gloss: "order, sequence" },
-      { word: "ཁྱིམ་", read: "khyim", gloss: "home" },
+      { word: "ལམ་", parts: "ལ + མ", read: "lam", gloss: "path" },
+      { word: "རིམ་", parts: "ར + ི + མ", read: "rim", gloss: "order, sequence" },
+      { word: "ཁྱིམ་", parts: "ཁ + ྱ + ི + མ", read: "khyim", gloss: "home" },
     ],
   },
   {
@@ -97,9 +98,9 @@ export const SUFFIXES: Suffix[] = [
     family: "r-scot",
     accent: "#c026d3",
     examples: [
-      { word: "མར་", read: "mar", gloss: "butter" },
-      { word: "དཀར་", read: "kar", gloss: "white" },
-      { word: "སྐར་", read: "kar", gloss: "star" },
+      { word: "མར་", parts: "མ + ར", read: "mar", gloss: "butter" },
+      { word: "དཀར་", parts: "ད + ཀ + ར", read: "kar", gloss: "white" },
+      { word: "སྐར་", parts: "ས + ྐ + ར", read: "kar", gloss: "star" },
     ],
   },
   {
@@ -111,8 +112,8 @@ export const SUFFIXES: Suffix[] = [
     family: "silent",
     accent: "#6b7280",
     examples: [
-      { word: "མཐའ་", read: "m'tha", gloss: "end, edge" },
-      { word: "རྒྱའ་", read: "gya", gloss: "China / vast" },
+      { word: "མཐའ་", parts: "མ + ཐ + འ", read: "m'tha", gloss: "end, edge" },
+      { word: "མཁའ་", parts: "མ + ཁ + འ", read: "m'kha", gloss: "sky, space" },
     ],
     note: "འ as a suffix is a writing-only sign. Its main use is licensing an ‘a-suffix root to also take a post-suffix ས.",
   },
@@ -126,9 +127,9 @@ export const SUFFIXES: Suffix[] = [
     accent: "#7c3aed",
     vowelShift: "Attached to a bare root: pronounced as [el]. After a vowel, the vowel colour is kept and softened — e.g. [i] + la → [il], [u] + la → [ül], [o] + la → [öl].",
     examples: [
-      { word: "གསལ་", read: "sel", gloss: "clear" },
-      { word: "ཡུལ་", read: "yül", gloss: "country" },
-      { word: "འོལ་", read: "öl", gloss: "vague" },
+      { word: "གསལ་", parts: "ག + ས + ལ", read: "sel", gloss: "clear" },
+      { word: "ཡུལ་", parts: "ཡ + ུ + ལ", read: "yül", gloss: "country" },
+      { word: "འོལ་", parts: "འ + ོ + ལ", read: "öl", gloss: "vague" },
     ],
   },
   {
@@ -141,9 +142,9 @@ export const SUFFIXES: Suffix[] = [
     accent: "#0369a1",
     vowelShift: "After a vowel, ན keeps that vowel and closes with [n]: [i] + na → [in], [u] + na → [ün], [o] + na → [ön].",
     examples: [
-      { word: "མན་", read: "men", gloss: "inferior" },
-      { word: "རྒྱུན་", read: "gyün", gloss: "continuous" },
-      { word: "སྤྱོན་", read: "chön", gloss: "arrival (hon.)" },
+      { word: "མན་", parts: "མ + ན", read: "men", gloss: "inferior" },
+      { word: "རྒྱུན་", parts: "ར + ྒ + ྱ + ུ + ན", read: "gyün", gloss: "continuous" },
+      { word: "སྤྱོན་", parts: "ས + ྤ + ྱ + ོ + ན", read: "chön", gloss: "arrival (hon.)" },
     ],
   },
   {
@@ -156,9 +157,9 @@ export const SUFFIXES: Suffix[] = [
     accent: "#0369a1",
     vowelShift: "ད closes without a real consonant; the syllable ends on the fronted vowel: [i] → [i], [u] → [ü], [o] → [ö].",
     examples: [
-      { word: "ནད་", read: "ne", gloss: "illness" },
-      { word: "རྒྱུད་", read: "gyü", gloss: "continuum" },
-      { word: "སྐད་", read: "ke", gloss: "voice, language" },
+      { word: "ནད་", parts: "ན + ད", read: "ne", gloss: "illness" },
+      { word: "རྒྱུད་", parts: "ར + ྒ + ྱ + ུ + ད", read: "gyü", gloss: "continuum" },
+      { word: "སྐད་", parts: "ས + ྐ + ད", read: "ke", gloss: "voice, language" },
     ],
   },
   {
@@ -171,46 +172,37 @@ export const SUFFIXES: Suffix[] = [
     accent: "#0369a1",
     vowelShift: "Same colouring as ད: [i] → [i], [u] → [ü], [e] → [e], [o] → [ö].",
     examples: [
-      { word: "ལས་", read: "le", gloss: "karma, action" },
-      { word: "རུས་", read: "rü", gloss: "bone, lineage" },
-      { word: "སོས་", read: "sö", gloss: "revived" },
+      { word: "ལས་", parts: "ལ + ས", read: "le", gloss: "karma, action" },
+      { word: "རུས་", parts: "ར + ུ + ས", read: "rü", gloss: "bone, lineage" },
+      { word: "སོས་", parts: "ས + ོ + ས", read: "sö", gloss: "revived" },
     ],
   },
 ];
 
-// TASK 3: Added spelling walkthrough data
-export const SPELLINGS = [
-  { word: "ལག་", spell: "ལ་ག་ལག", roman: "la ga lak", en: "hand (part of lak-pa)" },
-  { word: "ནད་", spell: "ན་ད་ནད", roman: "na da ne", en: "illness" },
-  { word: "ལམ་", spell: "ལ་མ་ལམ", roman: "la ma lam", en: "path" },
-  { word: "རང་", spell: "ར་ང་རང", roman: "ra nga rang", en: "self" }
-];
-
-// TASK 3: Updated to use actual Tibetan words for Vowel Shifts
 export const VOWEL_SHIFTS = [
-  { vowel: "ི", label: "[i]", cells: [
-    { word: "རིལ་", read: "ril", en: "pill / round" },
-    { word: "རིན་", read: "rin", en: "price" },
-    { word: "ཡིད་", read: "yi", en: "mind" },
-    { word: "རིས་", read: "ri", en: "figure" }
+  { vowel: "ཨི", label: "[i]", audioTarget: "I", cells: [
+    { word: "ཨིལ་", read: "il" },
+    { word: "ཨིན་", read: "in" },
+    { word: "ཨིད་", read: "i" },
+    { word: "ཨིས་", read: "i" }
   ]},
-  { vowel: "ུ", label: "[u]", cells: [
-    { word: "ཡུལ་", read: "yül", en: "country" },
-    { word: "ཐུན་", read: "thün", en: "session" },
-    { word: "བུད་", read: "pü", en: "blown" },
-    { word: "དུས་", read: "tü", en: "time" }
+  { vowel: "ཨུ", label: "[u]", audioTarget: "U", cells: [
+    { word: "ཨུལ་", read: "ül" },
+    { word: "ཨུན་", read: "ün" },
+    { word: "ཨུད་", read: "ü" },
+    { word: "ཨུས་", read: "ü" }
   ]},
-  { vowel: "ེ", label: "[e]", cells: [
-    { word: "སེལ་", read: "sel", en: "remove" },
-    { word: "ལེན་", read: "len", en: "take" },
-    { word: "མེད་", read: "me", en: "without" },
-    { word: "ཤེས་", read: "she", en: "know" }
+  { vowel: "ཨེ", label: "[e]", audioTarget: "E", cells: [
+    { word: "ཨེལ་", read: "el" },
+    { word: "ཨེན་", read: "en" },
+    { word: "ཨེད་", read: "e" },
+    { word: "ཨེས་", read: "e" }
   ]},
-  { vowel: "ོ", label: "[o]", cells: [
-    { word: "སོལ་", read: "söl", en: "coal" },
-    { word: "དོན་", read: "tön", en: "meaning" },
-    { word: "བོད་", read: "phö", en: "Tibet" },
-    { word: "ཆོས་", read: "chö", en: "dharma" }
+  { vowel: "ཨོ", label: "[o]", audioTarget: "O", cells: [
+    { word: "ཨོལ་", read: "öl" },
+    { word: "ཨོན་", read: "ön" },
+    { word: "ཨོད་", read: "ö" },
+    { word: "ཨོས་", read: "ö" }
   ]},
 ];
 
@@ -259,15 +251,14 @@ export const QUIZ: QuizItem[] = [
   { word: "ཁམས་", read: "kham", suffix: "ma", post: "sa" },
 ];
 
-// TASK 3: Reorganized STEPS to include the new Spelling step (now exactly 9 steps)
+// Redesigned to 8 steps since Spelling is now integrated into the Suffix panel
 export const STEPS = [
   { id: "intro", eyebrow: "Step 01", title: "What is a suffix?", description: "The ten suffixes and the two post-suffixes." },
   { id: "suffixes", eyebrow: "Step 02", title: "Meet the ten suffixes", description: "Study each suffix and its spelling." },
-  { id: "spelling", eyebrow: "Step 03", title: "Spelling walkthrough", description: "How to spell words with a suffix." },
-  { id: "vowel", eyebrow: "Step 04", title: "When the vowel meets the suffix", description: "How suffixes reshape the preceding vowel." },
-  { id: "post", eyebrow: "Step 05", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical vs modern." },
-  { id: "root", eyebrow: "Step 06", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
-  { id: "vocab", eyebrow: "Step 07", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
-  { id: "practice", eyebrow: "Step 08", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
-  { id: "test", eyebrow: "Step 09", title: "Step complete", description: "Pass to unlock the next lesson." }
+  { id: "vowel", eyebrow: "Step 03", title: "When the vowel meets the suffix", description: "How suffixes reshape the preceding vowel." },
+  { id: "post", eyebrow: "Step 04", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical vs modern." },
+  { id: "root", eyebrow: "Step 05", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
+  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
+  { id: "practice", eyebrow: "Step 07", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
+  { id: "test", eyebrow: "Step 08", title: "Step complete", description: "Pass to unlock the next lesson." }
 ];
