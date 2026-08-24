@@ -216,7 +216,7 @@ export interface Vocab {
 
 export const VOCAB: Vocab[] = [
   { tib: "བོད་", read: "phö", en: "Tibet", emoji: "🏔️", suffix: "da" },
-  { tib: "ཁང་", read: "khang", en: "house", emoji: "🏠", suffix: "nga" },
+  { tib: "ཁང་པ་", read: "khang-pa", en: "house", emoji: "🏠", suffix: "nga" },
   { tib: "མེ་མདའ་", read: "me-da", en: "gun", emoji: "🔫", suffix: "a" },
   { tib: "རྒྱལ་ཁབ་", read: "gyal-khap", en: "country / world", emoji: "🌍", suffix: "ba" },
   { tib: "ལམ་", read: "lam", en: "path", emoji: "🛤️", suffix: "ma" },

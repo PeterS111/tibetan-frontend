@@ -24,7 +24,6 @@ import QuizModule from "@/app/components/QuizModule";
 export default function SuffixesLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   
-  // 🚨 FIXED: Hardcoded to 8 steps for the redesigned flow
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(8);
 
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
@@ -83,6 +82,26 @@ export default function SuffixesLesson() {
     { promptText: "Which post-suffix is still used in modern spelling?", answer: "sa", choices: [{label: "ད", value: "da", isTibetan: true}, {label: "ས", value: "sa", isTibetan: true}], explanation: "The post-suffix ས (sa) is still written today to distinguish homophones, while ད (da) is historical." },
   ], []);
 
+
+const rootLetterQuestions = useMemo(() => [
+    { promptText: "Identify the root letter in", promptHighlight: "དགེ་", promptAudio: "དགེ་", answer: "ག", audioTarget: "ག", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}], explanation: "Rule 1: It carries a vowel, so ག is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "བཞི་", promptAudio: "བཞི་", answer: "ཞ", audioTarget: "ཞ", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ཞ", value: "ཞ", isTibetan: true}], explanation: "Rule 1: It carries a vowel, so ཞ is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "འགྲོ་", promptAudio: "འགྲོ་", answer: "ག", audioTarget: "ག", choices: [{label: "འ", value: "འ", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}], explanation: "Rule 1: It carries the subscript and vowel, so ག is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "བསྒྲིམས་", promptAudio: "བསྒྲིམས་", answer: "ག", audioTarget: "ག", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}], explanation: "Rule 1: ག carries the vowel and subscript, making it the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "ཁང་", promptAudio: "ཁང་", answer: "ཁ", audioTarget: "ཁ", choices: [{label: "ཁ", value: "ཁ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ཁ) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "ནད་", promptAudio: "ནད་", answer: "ན", audioTarget: "ན", choices: [{label: "ན", value: "ན", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ན) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "ལམ་", promptAudio: "ལམ་", answer: "ལ", audioTarget: "ལ", choices: [{label: "ལ", value: "ལ", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ལ) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "རབ་", promptAudio: "རབ་", answer: "ར", audioTarget: "ར", choices: [{label: "ར", value: "ར", isTibetan: true}, {label: "བ", value: "བ", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ར) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "གསལ་", promptAudio: "གསལ་", answer: "ས", audioTarget: "ས", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ལ", value: "ལ", isTibetan: true}], explanation: "Rule 3: Three bare letters (not ending in ད/ས). The middle (ས) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "དཀར་", promptAudio: "དཀར་", answer: "ཀ", audioTarget: "ཀ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "ཀ", value: "ཀ", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}], explanation: "Rule 3: Three bare letters (not ending in ད/ས). The middle (ཀ) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "ཁམས་", promptAudio: "ཁམས་", answer: "ཁ", audioTarget: "ཁ", choices: [{label: "ཁ", value: "ཁ", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 3: Three bare letters ending in ས. The first (ཁ) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "གངས་", promptAudio: "གངས་", answer: "ག", audioTarget: "ག", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 3: Three bare letters ending in ས. The first (ག) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "མངགས་", promptAudio: "མངགས་", answer: "ང", audioTarget: "ང", choices: [{label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (ང) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "བདགས་", promptAudio: "བདགས་", answer: "ད", audioTarget: "ད", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (ད) is the root." },
+    { promptText: "Identify the root letter in", promptHighlight: "དམངས་", promptAudio: "དམངས་", answer: "མ", audioTarget: "མ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (མ) is the root." },
+  ], []);
+
+
   const vocabQuestions = useMemo(() => {
     const qs = [];
     for (const v of VOCAB) {
@@ -121,7 +140,7 @@ export default function SuffixesLesson() {
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(7); // 🚨 FIXED: Hardcoded index 7 (for 8 steps)
+            await markComplete(7);
             setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
@@ -186,7 +205,7 @@ export default function SuffixesLesson() {
           <div className="w-full md:w-72">
             <div className="mb-3 flex items-center justify-between text-eyebrow">
               <span>Lesson progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, 8)} of 8 sections</span> {/* 🚨 FIXED */}
+              <span className="text-brand-dark">{Math.min(unlockedStep, 8)} of 8 sections</span>
             </div>
             <div className="h-1.5 w-full bg-border-subtle overflow-hidden mb-6">
               <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -305,10 +324,7 @@ export default function SuffixesLesson() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-strong">
-                    
-					
-					
-					{VOWEL_SHIFTS.map((r) => (
+                    {VOWEL_SHIFTS.map((r) => (
                       <tr key={r.label} className="hover:bg-surface-muted transition-colors">
                         <td className="px-5 py-5 border-r border-border-strong">
                           <div className="flex items-center gap-4">
@@ -319,8 +335,6 @@ export default function SuffixesLesson() {
                             <span className="text-[15px] font-bold text-ink">{r.label}</span>
                           </div>
                         </td>
-					
-					
                         {r.cells.map((cell, i) => (
                           <td key={i} className="border-l border-border-strong px-4 py-5 text-center">
                             <button onClick={() => playAudio(cell.word)} className="flex w-full flex-col items-center justify-center gap-1 hover:opacity-80 transition-opacity">
@@ -363,9 +377,7 @@ export default function SuffixesLesson() {
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">Meaning</th>
                         </tr>
                       </thead>
-                      
-					  
-					  <tbody className="divide-y divide-border-strong">
+                      <tbody className="divide-y divide-border-strong">
                         {[
                           ["སྒྱུརད་", "སྒྱུར་", "to change / translate"], 
                           ["ཕྱིནད་", "ཕྱིན་", "went"], 
@@ -388,8 +400,6 @@ export default function SuffixesLesson() {
                           </tr>
                         ))}
                       </tbody>
-					  
-					  
                     </table>
                   </div>
                 </div>
@@ -414,9 +424,7 @@ export default function SuffixesLesson() {
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">Meaning</th>
                         </tr>
                       </thead>
-                      
-					  
-					  <tbody className="divide-y divide-border-strong">
+                      <tbody className="divide-y divide-border-strong">
                         {[
                           ["མངག་", "མངགས་", "dispatches → dispatched"], 
                           ["གང་", "གངས་", "what(ever) → snow"], 
@@ -439,8 +447,6 @@ export default function SuffixesLesson() {
                           </tr>
                         ))}
                       </tbody>
-					  
-					  
                     </table>
                   </div>
                 </div>
@@ -461,22 +467,41 @@ export default function SuffixesLesson() {
               <h2 className="font-serif text-2xl text-ink">{STEPS[4].title}</h2>
             </div>
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">Now that words can stretch to four horizontal letters, the eye needs a strategy. With practice, finding the root becomes automatic.</p>
-            <div className="grid gap-4 md:grid-cols-2">
+            
+			
+		
+<div className="grid gap-4 md:grid-cols-2">
               {[
-                { n: "1", rule: "If a letter carries a vowel, superscript, or subscript — it is the root.", ex: "དགུ · བསྐུལ · བཟུང · བསྒྲིགས" },
-                { n: "2", rule: "Two bare letters (no vowel, super-/subscript) — the first is the root.", ex: "ཁང · ནག · གར · ཞབ · ལམ" },
-                { n: "3", rule: "Three bare letters — the middle is the root, unless the third is post-suffix ད / ས, in which case the first is the root.", ex: "གསལ · གཡག · དཀར · ཁམས · ནགས · ཆགས" },
-                { n: "4", rule: "Four letters — the second is always the root.", ex: "བདགས · བཙུགས · དམངས" },
+                { n: "1", rule: "If a letter carries a vowel, superscript, or subscript — it is the root.", words: ["དགེ་", "བཞི་", "འགྲོ་", "བསྒྲིམས་"] },
+                { n: "2", rule: "Two bare letters (no vowel, super-/subscript) — the first is the root.", words: ["ཁང་", "ནད་", "ལམ་", "རབ་"] },
+                { n: "3", rule: "Three bare letters — the middle is the root, unless the third is post-suffix ད / ས, in which case the first is the root.", words: ["གསལ་", "དཀར་", "ཁམས་", "གངས་"] },
+                { n: "4", rule: "Four letters — the second is always the root.", words: ["མངགས་", "བདགས་", "དམངས་"] },
               ].map((r) => (
-                <Card key={r.n} className="p-6 flex flex-col">
-                  <div className="mb-4 flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
-                    <span className="grid size-6 place-items-center rounded bg-brand-light text-brand-dark">{r.n}</span>
+                <Card key={r.n} className="p-6 bg-surface flex flex-col h-full">
+                  <div className="mb-6 inline-flex items-center gap-3 bg-brand-light/50 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-brand-dark self-start shadow-sm border border-amber-200">
+                    <span className="grid size-5 place-items-center rounded bg-brand text-white">{r.n}</span>
                     Rule {r.n}
                   </div>
-                  <p className="text-[13px] font-bold leading-relaxed text-ink-light flex-1">{r.rule}</p>
-                  <div className="mt-6 font-serif text-[2rem] leading-none text-ink pt-4 border-t border-border-strong">{r.ex}</div>
+                  <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                    {r.words.map((w) => (
+                      <button key={w} onClick={() => playAudio(w)} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] shadow-sm bg-white">
+                        {w}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-auto text-[13px] font-bold leading-relaxed text-ink-light border-t border-border-strong pt-4">{r.rule}</p>
                 </Card>
               ))}
+            </div>
+
+		
+
+            <div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
+              <div className="flex items-center gap-2 mb-6">
+                <CheckCircle2 className="size-5 text-brand-dark" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Root Letter Mastery Check</span>
+              </div>
+              <MiniMastery questions={rootLetterQuestions} playAudio={playAudio} playErrorBeep={playErrorBeep} title="Root Letter ID" />
             </div>
           </StepContainer>
 
@@ -538,7 +563,7 @@ export default function SuffixesLesson() {
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== 7 && ( /* 🚨 FIXED */
+          {expandedStep !== 7 && (
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -598,14 +623,11 @@ function SuffixPanel({ s, night, playAudio, playingItem, playErrorBeep }: any) {
       <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
         <div className={`text-eyebrow mb-6 ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
         
-		
-		
 		<div className="space-y-2">
           {s.examples.map((ex: any) => (
             <div key={ex.word} className={`flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
               <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-20 sm:w-24 shrink-0 text-left text-ink" style={{ color: night ? '#fff' : '#1c1917' }}>{ex.word}</span>
 		
-              
               <span className={`flex items-center gap-2 md:gap-3 ${night ? "text-stone-400" : "text-ink-light"}`}>
                 {ex.parts.split(' + ').map((part: string, idx: number) => {
                   const isCombining = ['ི', 'ུ', 'ེ', 'ོ', 'ྱ', 'ྲ', 'ླ', 'ྭ', 'ྐ', 'ྒ', 'ྤ', 'ྩ'].includes(part);
@@ -639,15 +661,13 @@ function SuffixPanel({ s, night, playAudio, playingItem, playErrorBeep }: any) {
         </div>
       </div>
 
-  
-  <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
+      <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: s.accent }} />
           <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · Suffix {s.latin}</span>
         </div>
         <SuffixMiniMastery key={s.key} s={s} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
-  
     </div>
   );
 }
@@ -728,7 +748,7 @@ function SuffixMiniMastery({ s, night, playAudio, playingItem, playErrorBeep }: 
   );
 }
 
-function MiniMastery({ questions: initialQuestions, playAudio, playErrorBeep, title = "Mastery Check" }: any) {
+function MiniMastery({ questions: initialQuestions, playAudio, playErrorBeep, playingItem, title = "Mastery Check" }: any) {
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
@@ -767,7 +787,18 @@ function MiniMastery({ questions: initialQuestions, playAudio, playErrorBeep, ti
       </div>
       <div className="flex flex-wrap items-center gap-4 mb-6">
         <span className="text-[15px] font-bold text-ink-light">{question.promptText}</span>
-        {question.promptHighlight && <span className="font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink">{question.promptHighlight}</span>}
+        {question.promptHighlight && (
+          question.promptAudio ? (
+            <button onClick={() => playAudio(question.promptAudio)} disabled={playingItem !== null} className="group relative font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink hover:text-brand hover:border-brand transition-colors flex items-center gap-3 shadow-sm">
+              <span className="pt-1">{question.promptHighlight}</span>
+              {playingItem === question.promptAudio ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-ink-muted group-hover:text-brand transition-colors" />}
+            </button>
+          ) : (
+            <span className="font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink">
+              <span className="pt-1">{question.promptHighlight}</span>
+            </span>
+          )
+        )}
         {question.promptEnd && <span className="text-[15px] font-bold text-ink-light">{question.promptEnd}</span>}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4">
@@ -775,7 +806,7 @@ function MiniMastery({ questions: initialQuestions, playAudio, playErrorBeep, ti
           const right = picked && c.value === question.answer;
           const wrong = picked === c.value && c.value !== question.answer;
           return (
-            <button key={c.value} disabled={!!picked} onClick={() => pick(c.value)} className={`flex items-center justify-center border-2 font-bold text-xl py-6 px-4 text-center transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"} ${c.isTibetan ? 'font-tibetan text-[2rem]' : 'font-mono'}`}>
+            <button key={c.value} disabled={!!picked} onClick={() => pick(c.value)} className={`flex items-center justify-center border-2 font-bold text-xl py-6 px-4 text-center transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"} ${c.isTibetan ? 'font-tibetan text-[2rem] pt-2' : 'font-mono'}`}>
               {c.label}
             </button>
           );
