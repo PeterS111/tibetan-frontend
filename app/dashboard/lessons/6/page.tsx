@@ -47,34 +47,160 @@ export default function SuffixesLesson() {
     }
   ], []);
 
-  const quizQuestions = useMemo(() => {
-    const qs = [];
-    const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
-    for (const v of vTargets) {
-      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        type: 'vocab',
-        questionText: `What is the Tibetan word for "${v.en}"?`,
-        answer: v.tib,
-        audioString: v.tib,
-        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji }))
-      });
-    }
 
-    const cTargets = [...QUIZ].sort(() => 0.5 - Math.random()).slice(0, 6);
-    for (const c of cTargets) {
-      const wrongs = QUIZ.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
+
+const quizQuestions = useMemo(() => {
+    const qs: any[] = [];
+    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
+
+    const ALL_SUF_EXAMPLES = SUFFIXES.flatMap(s => s.examples.map(e => ({ ...e, sufKey: s.key, head: s.head, latin: s.latin, family: s.family, reads: s.reads })));
+    const GLOSSED_EXAMPLES = ALL_SUF_EXAMPLES.filter(e => !!e.gloss);
+
+    // 1. listenWordQs (take 3)
+    shuffle(VOCAB).slice(0, 3).forEach(v => {
       qs.push({
-        type: 'combo',
-        questionText: "What does this word read?",
-        prominentTibetan: c.word,
-        answer: c.read,
-        audioString: c.word,
-        choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
+        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
+        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
       });
-    }
-    return qs.sort(() => 0.5 - Math.random());
+    });
+
+    // 2. listenMeanQs (take 2)
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      qs.push({
+        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 3. readQs (take 4)
+    shuffle(ALL_SUF_EXAMPLES).slice(0, 4).forEach(e => {
+      qs.push({
+        questionText: `How is ${e.word} pronounced?`, prominentTibetan: e.word, answer: e.read, audioString: e.word,
+        choices: shuffle([e.read, ...pickWrongs(ALL_SUF_EXAMPLES.map(x => x.read), e.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+      });
+    });
+
+// 4. whichSuffixQs (take 3)
+    shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
+      qs.push({
+        questionText: `Which suffix closes the syllable ${e.word}?`, prominentTibetan: e.word, answer: e.latin, audioString: e.word,
+        // CHANGED: Removed the Tibetan character so they must rely on the phonetic
+        choices: shuffle([e.latin, ...pickWrongs(SUFFIXES.map(s => s.latin), e.latin, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 5. familyQs (take 3)
+    shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
+      const answerLabel = FAMILY_META[e.family as Family].label;
+      const wrongs = Object.keys(FAMILY_META).filter(k => k !== e.family).map(k => FAMILY_META[k as Family].label);
+      qs.push({
+        questionText: `What does the suffix do at the end of ${e.word}?`, prominentTibetan: e.word, answer: answerLabel, audioString: e.word,
+        choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 6. soundOfSuffixQs (take 3)
+    shuffle(SUFFIXES).slice(0, 3).forEach(s => {
+      qs.push({
+        questionText: `How does the suffix ${s.head} sound at the end of a syllable?`, prominentTibetan: s.head, answer: s.reads, audioString: s.head,
+        choices: shuffle([s.reads, ...pickWrongs(SUFFIXES.map(x => x.reads), s.reads, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 7. suffixFamilyQs (take 3)
+    shuffle(SUFFIXES).slice(0, 3).forEach(s => {
+      const answerLabel = FAMILY_META[s.family as Family].label;
+      const wrongs = Object.keys(FAMILY_META).filter(k => k !== s.family).map(k => FAMILY_META[k as Family].label);
+      qs.push({
+        questionText: `Which group does the suffix ${s.head} belong to?`, prominentTibetan: s.head, answer: answerLabel, audioString: s.head,
+        choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 8. glossQs (take 3)
+    shuffle(GLOSSED_EXAMPLES).slice(0, 3).forEach(e => {
+      qs.push({
+        questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: e.gloss, audioString: e.word,
+        choices: shuffle([e.gloss, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.gloss), e.gloss, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 9. glossWordQs (take 2)
+    shuffle(GLOSSED_EXAMPLES).slice(0, 2).forEach(e => {
+      qs.push({
+        questionText: `Which syllable means "${e.gloss}"?`, answer: e.word, audioString: e.word,
+        choices: shuffle([e.word, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.word), e.word, 3)]).map(x => ({ value: x, tib: x }))
+      });
+    });
+
+    // 10. oddQs (take 2) - Filter to only suffixes with 3+ examples to prevent empty box glitch
+    shuffle(SUFFIXES.filter(s => s.examples.length >= 3)).slice(0, 2).forEach(suf => {
+      const members = ALL_SUF_EXAMPLES.filter(e => e.sufKey === suf.key);
+      const oddOne = shuffle(ALL_SUF_EXAMPLES.filter(e => e.sufKey !== suf.key))[0];
+      qs.push({
+        questionText: `Which word does NOT use the suffix ${suf.head}?`, answer: oddOne.word,
+        choices: shuffle([...shuffle(members).slice(0, 3).map(m => m.word), oddOne.word]).map(x => ({ value: x, tib: x }))
+      });
+    });
+
+    // 11. vocabReadQs (take 3)
+    shuffle(VOCAB).slice(0, 3).forEach(v => {
+      qs.push({
+        questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.read, audioString: v.tib,
+        choices: shuffle([v.read, ...pickWrongs(VOCAB.map(x => x.read), v.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+      });
+    });
+
+    // 12. vocabMeanQs (take 4)
+    shuffle(VOCAB).slice(0, 4).forEach(v => {
+      qs.push({
+        questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
+        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 13. vocabWordQs (take 2)
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      qs.push({
+        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
+        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+      });
+    });
+
+    // 14. vocabSuffixQs (take 2)
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      const suffixName = SUFFIXES.find(s => s.key === v.suffix)?.latin || v.suffix;
+      qs.push({
+        questionText: `Which suffix ends ${v.tib}?`, prominentTibetan: v.tib, answer: suffixName, audioString: v.tib,
+        choices: shuffle([suffixName, ...pickWrongs(SUFFIXES.map(s => s.latin), suffixName, 3)]).map(x => {
+           const s = SUFFIXES.find(suf => suf.latin === x);
+           return { value: x, label: s ? `${s.head} ${s.latin}` : x };
+        })
+      });
+    });
+
+    // 15. ruleQs (take 4)
+    const allRules = [
+      { q: "How many letters can serve as suffixes?", a: "10", w: ["5", "8", "12"] },
+      { q: "Where does a suffix sit in the syllable?", a: "After the root letter, closing the syllable", w: ["Before the root letter", "Beneath the root letter", "Above the root letter"] },
+      { q: "Which two suffixes colour the vowel toward [e]?", a: "ད  ས", w: ["ག  ང", "ན  མ", "ར  ལ"] },
+      { q: "With the suffix ས, the vowel [u] is pronounced how?", a: "[ü]", w: ["[u] unchanged", "[o]", "[i]"] },
+      { q: "Which suffixes give a nasal ending?", a: "ང  ན  མ", w: ["ག  ད  ས", "ར  ལ  འ", "བ  མ  ས"] },
+      { q: "How is the suffix ག heard in speech?", a: "As a light glottal closure — almost silent", w: ["As a clear hard [g]", "As a nasal [ng]", "It lengthens the vowel"] },
+      { q: "How does the suffix ལ behave?", a: "It is largely silent, colouring the syllable toward [el]", w: ["It is pronounced as a strong [l]", "It nasalises the vowel", "It makes the syllable high tone"] }
+    ];
+    shuffle(allRules).slice(0, 4).forEach(r => {
+      qs.push({
+        questionText: r.q, answer: r.a,
+        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
+      });
+    });
+
+    // Return exactly 40 shuffled questions
+    return shuffle(qs).slice(0, 40);
   }, []);
+
 
   const postSuffixQuestions = useMemo(() => [
     { promptText: "Which two letters can act as post-suffixes?", answer: "da-sa", choices: [{label: "ད and ས", value: "da-sa", isTibetan: true}, {label: "ག and ང", value: "ga-nga", isTibetan: true}, {label: "བ and མ", value: "ba-ma", isTibetan: true}, {label: "ན and ལ", value: "na-la", isTibetan: true}], explanation: "Only ད (da) and ས (sa) can be used as post-suffixes." },

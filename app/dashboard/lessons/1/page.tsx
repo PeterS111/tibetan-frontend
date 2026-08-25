@@ -51,74 +51,158 @@ export default function ConsonantsLesson() {
     }
   ], []);
 
-  const quizQuestions = useMemo(() => {
-    const qs = [];
-    
-    // 1. Vocabulary Questions (3 questions)
-    const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 3);
-    for (const v of vTargets) {
-      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        type: 'vocab',
-        questionText: `What is the Tibetan word for "${v.en}"?`,
-        answer: v.tib,
-        audioString: v.tib,
-        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
-      });
-    }
+const quizQuestions = useMemo(() => {
+    const qs: any[] = [];
+    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
 
-    // 2. Tone Questions (3 questions)
-    const toneTargets = [...CONSONANTS].sort(() => 0.5 - Math.random()).slice(0, 3);
-    for (const c of toneTargets) {
-      const answerLabel = TONE_META[c.tone as Tone].short;
-      const wrongs = (Object.keys(TONE_META) as Tone[]).filter(k => k !== c.tone).sort(() => 0.5 - Math.random()).slice(0, 3).map(k => TONE_META[k].short);
+   
+   
+   // 1. listenWordQs (take 3)
+    shuffle(VOCAB).slice(0, 3).forEach(v => {
       qs.push({
-        type: 'tone',
-        questionText: "What is the tone of this root letter?",
-        prominentTibetan: c.tib,
-        answer: answerLabel,
-        audioString: c.tib,
-        choices: [answerLabel, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: x, value: x }))
+        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
+        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
       });
-    }
+    });
 
-    // 3. Gender Questions (2 questions)
-    const genderTargets = [...CONSONANTS].sort(() => 0.5 - Math.random()).slice(0, 2);
-    for (const c of genderTargets) {
-      const answerLabel = GENDER_META[c.gender as Gender].label;
-      const wrongs = (Object.keys(GENDER_META) as Gender[]).filter(k => k !== c.gender).sort(() => 0.5 - Math.random()).slice(0, 3).map(k => GENDER_META[k].label);
+    // 2. listenMeanQs (take 2)
+   
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
       qs.push({
-        type: 'gender',
-        questionText: "What is the traditional gender of this letter?",
-        prominentTibetan: c.tib,
-        answer: answerLabel,
-        audioString: c.tib,
-        choices: [answerLabel, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: x, value: x }))
+        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
       });
-    }
+    });
 
-    // 4. Basic Recognition Questions (2 questions)
-    const baseTargets = [...CONSONANTS].sort(() => 0.5 - Math.random()).slice(0, 2);
-    for (const c of baseTargets) {
-      const isAudioType = Math.random() > 0.5;
-      const wrongs = CONSONANTS.filter(x => x.tib !== c.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      const choices = [c, ...wrongs].sort(() => 0.5 - Math.random());
+    // 3. listenLetterQs (take 3)
+    shuffle(CONSONANTS).slice(0, 3).forEach(c => {
       qs.push({
-        isAudioType,
-        type: 'base',
-        answer: c.tib,
-        audioString: c.tib,
-        answerObj: c,
-        choices: choices.map(ch => ({
-          value: ch.tib,
-          tib: ch.tib,
-          translit: ch.translit, 
-          pron: ch.pron
-        }))
+        isAudioType: true, questionText: "Listen, then select the letter you hear.", answer: c.tib, audioString: c.tib,
+        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
       });
-    }
+    });
 
-    return qs.sort(() => 0.5 - Math.random());
+    // 4. readQs (take 4)
+    shuffle(CONSONANTS).slice(0, 4).forEach(c => {
+      qs.push({
+        questionText: `How does ${c.tib} read?`, prominentTibetan: c.tib, answer: c.pron, audioString: c.tib,
+        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3)]).map(x => ({ value: x.pron, label: x.pron }))
+      });
+    });
+
+    // 5. letterQs (take 3)
+    shuffle(CONSONANTS).slice(0, 3).forEach(c => {
+      qs.push({
+        questionText: `Which letter is transliterated '${c.translit}'?`, answer: c.tib, audioString: c.tib,
+        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
+      });
+    });
+
+    // 6. toneQs (take 5)
+    shuffle(CONSONANTS).slice(0, 5).forEach(c => {
+      const answerLabel = TONE_META[c.tone].label;
+      const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
+      qs.push({
+        questionText: `Which tone class does ${c.tib} belong to?`, prominentTibetan: c.tib, answer: answerLabel, audioString: c.tib,
+        choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 7. genderQs (take 5)
+    shuffle(CONSONANTS).slice(0, 5).forEach(c => {
+      const answerLabel = GENDER_META[c.gender].label;
+      const wrongs = Object.keys(GENDER_META).filter(k => k !== c.gender).map(k => GENDER_META[k as Gender].label);
+      qs.push({
+        questionText: `What is the traditional gender of ${c.tib}?`, prominentTibetan: c.tib, answer: answerLabel, audioString: c.tib,
+        choices: shuffle([answerLabel, ...shuffle(wrongs).slice(0, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 8. genderPickQs (take 2)
+    shuffle(CONSONANTS).slice(0, 2).forEach(c => {
+      qs.push({
+        questionText: `Which letter is classified as ${GENDER_META[c.gender].label}?`, answer: c.tib, audioString: c.tib,
+        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3, (x) => x.gender !== c.gender)]).map(x => ({ value: x.tib, tib: x.tib }))
+      });
+    });
+
+    // 9. tonePickQs (take 2)
+    shuffle(CONSONANTS).slice(0, 2).forEach(c => {
+      qs.push({
+        questionText: `Which letter is pronounced with a ${TONE_META[c.tone].label}?`, answer: c.tib, audioString: c.tib,
+        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3, (x) => x.tone !== c.tone)]).map(x => ({ value: x.tib, tib: x.tib }))
+      });
+    });
+
+    // 10. oddToneQs (take 2)
+    shuffle(Object.keys(TONE_META)).slice(0, 2).forEach(toneKey => {
+      const members = CONSONANTS.filter(c => c.tone === toneKey);
+      if (members.length >= 3) {
+         const oddOne = shuffle(CONSONANTS.filter(c => c.tone !== toneKey))[0];
+         qs.push({
+           questionText: `Which letter does NOT belong to the ${TONE_META[toneKey as Tone].label} class?`, answer: oddOne.tib,
+           choices: shuffle([...shuffle(members).slice(0, 3), oddOne]).map(x => ({ value: x.tib, tib: x.tib }))
+         });
+      }
+    });
+
+    // 11. oddGenderQs (take 2)
+    shuffle(Object.keys(GENDER_META)).slice(0, 2).forEach(genderKey => {
+      const members = CONSONANTS.filter(c => c.gender === genderKey);
+      if (members.length >= 3) {
+         const oddOne = shuffle(CONSONANTS.filter(c => c.gender !== genderKey))[0];
+         qs.push({
+           questionText: `Which letter does NOT belong to the ${GENDER_META[genderKey as Gender].label} class?`, answer: oddOne.tib,
+           choices: shuffle([...shuffle(members).slice(0, 3), oddOne]).map(x => ({ value: x.tib, tib: x.tib }))
+         });
+      }
+    });
+
+    // 12. vocabMeaningQs (take 3)
+    shuffle(VOCAB).slice(0, 3).forEach(v => {
+      qs.push({
+        questionText: `What does the word ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
+        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
+      });
+    });
+
+
+// 13. vocabWordQs (take 2)
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      qs.push({
+        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
+        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
+      });
+    });
+
+    // 14. vocabReadQs (take 2)
+
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      qs.push({
+        questionText: `How is the word ${v.tib} pronounced?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
+        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.translit, label: x.translit }))
+      });
+    });
+
+    // 15. ruleQs (take 3)
+    const allRules = [
+      { q: "How many root consonants does the Tibetan alphabet have?", a: "30", w: ["24", "26", "34"] },
+      { q: "Which set contains only the four true nasals?", a: "ང ཉ ན མ", w: ["ཀ ཁ ག ང", "ན མ ར ལ", "ཙ ཚ ཛ ཝ"] },
+      { q: "In the traditional grid, what does each column of a row share?", a: "Tone & gender", w: ["The same vowel sound", "The same strokes", "Place of articulation"] },
+      { q: "What does “aspirated” mean when describing a consonant?", a: "Released with a puff of air", w: ["Voiced through the nose", "Held longer", "Whispered"] },
+      { q: "Which pair of letters is classed as Sub-Feminine?", a: "ར ལ", w: ["ཀ ཁ", "ང མ", "ས ཧ"] },
+      { q: "ག and ཀ differ mainly in which way?", a: "Tone — ཀ is high, ག is low", w: ["Gender only", "Nothing", "ག is nasal"] }
+    ];
+    shuffle(allRules).slice(0, 3).forEach(r => {
+      qs.push({
+        questionText: r.q, answer: r.a,
+        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
+      });
+    });
+
+    // The designer explicitly restricted this to exactly 40 questions at the end
+    return shuffle(qs).slice(0, 40);
   }, []);
 
 return (
@@ -261,7 +345,8 @@ return (
               ))}
             </div>
             
-            <div className="mt-10">
+     
+	 <div className="mt-10">
                <QuizModule 
                  title="Mastery check" 
                  intro="Test your listening before you move on." 
@@ -269,11 +354,12 @@ return (
                  playAudio={playAudio} 
                  playingItem={playingItem} 
                  playErrorBeep={playErrorBeep} 
-                 questionCount={8} 
+                 questionCount={30} 
                  isUnlockTest={false} 
                  isLesson1={true}
                />
             </div>
+	 
           </StepContainer>
 
 {/* Tone */}
@@ -395,7 +481,9 @@ return (
             </div>
           </StepContainer>
 
-          {/* Vocab */}
+          
+		  
+		  {/* Vocab */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {VOCAB.map((v) => (
@@ -411,6 +499,19 @@ return (
                   </div>
                 </div>
               ))}
+            </div>
+            
+            <div className="mt-10">
+              <QuizModule 
+                title="Vocabulary Mastery" 
+                intro="Check your memory of the new words before moving on." 
+                data={VOCAB} 
+                playAudio={playAudio} 
+                playingItem={playingItem} 
+                playErrorBeep={playErrorBeep} 
+                questionCount={18} 
+                isVocabMatch={true} 
+              />
             </div>
           </StepContainer>
 

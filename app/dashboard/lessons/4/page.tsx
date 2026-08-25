@@ -79,50 +79,161 @@ export default function SubscriptsLesson() {
     return qs.sort(() => 0.5 - Math.random());
   }, []);
 
-  const quizQuestions = useMemo(() => {
-    const regularCombos = SUBS.flatMap(s => s.combos);
-    const qs = [];
-    
-    const vTargets = [...VOCAB].sort(() => 0.5 - Math.random()).slice(0, 4);
-    for (const v of vTargets) {
-      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        type: 'vocab',
-        questionText: `What is the Tibetan word for "${v.en}"?`,
-        answer: v.tib,
-        audioString: v.tib,
-        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji }))
-      });
-    }
+  
+  
+ const quizQuestions = useMemo(() => {
+    const qs: any[] = [];
+    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
 
-    const cTargets = [...regularCombos].sort(() => 0.5 - Math.random()).slice(0, 4);
-    for (const c of cTargets) {
-      const wrongs = regularCombos.filter(x => x.read !== c.read).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        type: 'combo',
-        questionText: "What does this stack read?",
-        prominentTibetan: c.stack,
-        answer: c.read,
-        audioString: c.stack,
-        choices: [c, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
-      });
-    }
+    const ALL_COMBOS = SUBS.flatMap(s => s.combos.map(c => ({ ...c, subKey: s.key, subName: s.name, mark: s.mark })));
+    const EXCEPTIONS = ALL_COMBOS.filter(c => !!c.note);
 
-    const tTargets = [...TRIPLE_STACKS].sort(() => 0.5 - Math.random()).slice(0, 2);
-    for (const t of tTargets) {
-      const wrongs = TRIPLE_STACKS.filter(x => x.read !== t.read).sort(() => 0.5 - Math.random()).slice(0, 3);
+    // 1. listenWordQs (take 3)
+    shuffle(VOCAB).slice(0, 3).forEach(v => {
       qs.push({
-        type: 'combo',
-        questionText: "What does this triple stack read?",
-        prominentTibetan: t.stack,
-        answer: t.read,
-        audioString: t.stack,
-        choices: [t, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ label: `[${x.read}]`, value: x.read }))
+        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
+        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
       });
-    }
+    });
 
-    return qs.sort(() => 0.5 - Math.random());
-  }, []);
+    // 2. listenMeanQs (take 2)
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      qs.push({
+        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 3. readQs (take 4)
+    shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
+      qs.push({
+        questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack,
+        choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+      });
+    });
+
+    // 4. whichSubQs (take 3)
+    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
+      qs.push({
+        questionText: `Which subscript is tucked under ${c.stack}?`, prominentTibetan: c.stack, answer: c.subName, audioString: c.stack,
+        choices: shuffle([c.subName, ...pickWrongs(SUBS.map(s => s.name), c.subName, 2)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 5. rootQs (take 3)
+    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
+      qs.push({
+        questionText: `Which root letter carries the subscript in ${c.stack}?`, prominentTibetan: c.stack, answer: c.root, audioString: c.stack,
+        choices: shuffle([c.root, ...pickWrongs(ALL_COMBOS.map(x => x.root), c.root, 3)]).map(x => ({ value: x, tib: x }))
+      });
+    });
+
+    // 6. toneQs (take 4)
+    shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
+      const answerLabel = TONE_META[c.tone as Tone].label;
+      const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
+      qs.push({
+        questionText: `What tone does ${c.stack} take?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack,
+        choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 7. buildQs (take 3)
+    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
+      qs.push({
+        questionText: `${c.root} with ${c.subName} gives which stack?`, answer: c.stack,
+        choices: shuffle([c.stack, ...pickWrongs(ALL_COMBOS.map(x => x.stack), c.stack, 3)]).map(x => ({ value: x, tib: x }))
+      });
+    });
+
+    // 8. exceptionQs (take 3)
+    shuffle(EXCEPTIONS).slice(0, 3).forEach(c => {
+      qs.push({
+        questionText: `In the Lhasa accent, ${c.stack} is an exception. How is it pronounced?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack,
+        choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+      });
+    });
+
+    // 9. tripleReadQs (take 3)
+    shuffle(TRIPLE_STACKS).slice(0, 3).forEach(t => {
+      qs.push({
+        questionText: `How does the combined stack ${t.stack} read?`, prominentTibetan: t.stack, answer: t.read, audioString: t.stack,
+        choices: shuffle([t.read, ...pickWrongs(TRIPLE_STACKS.map(x => x.read), t.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+      });
+    });
+
+    // 10. tripleParsQs (take 2)
+    shuffle(TRIPLE_STACKS).slice(0, 2).forEach(t => {
+      qs.push({
+        questionText: `Which letters build the stack ${t.stack}?`, prominentTibetan: t.stack, answer: t.parts, audioString: t.stack,
+        choices: shuffle([t.parts, ...pickWrongs(TRIPLE_STACKS.map(x => x.parts), t.parts, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 11. oddQs (take 2)
+    shuffle(SUBS).slice(0, 2).forEach(sup => {
+      const members = ALL_COMBOS.filter(c => c.subKey === sup.key);
+      const oddOne = shuffle(ALL_COMBOS.filter(c => c.subKey !== sup.key))[0];
+      qs.push({
+        questionText: `Which stack does NOT use the subscript ${sup.name}?`, answer: oddOne.stack,
+        choices: shuffle([...shuffle(members).slice(0, 3).map(m => m.stack), oddOne.stack]).map(x => ({ value: x, tib: x }))
+      });
+    });
+
+    // 12. vocabReadQs (take 3)
+    shuffle(VOCAB).slice(0, 3).forEach(v => {
+      qs.push({
+        questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
+        choices: shuffle([v.translit, ...pickWrongs(VOCAB.map(x => x.translit), v.translit, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 13. vocabMeanQs (take 4)
+    shuffle(VOCAB).slice(0, 4).forEach(v => {
+      qs.push({
+        questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
+        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 14. vocabWordQs (take 2)
+    shuffle(VOCAB).slice(0, 2).forEach(v => {
+      qs.push({
+        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
+        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+      });
+    });
+
+    // 15. vocabSubQs (take 2)
+    const subVocabs = VOCAB.filter(v => ["ya", "ra", "la", "wa"].includes(v.sub));
+    shuffle(subVocabs).slice(0, 2).forEach(v => {
+      const subName = SUBS.find(s => s.key === v.sub)?.name || v.sub;
+      qs.push({
+        questionText: `Which subscript appears in ${v.tib}?`, prominentTibetan: v.tib, answer: subName, audioString: v.tib,
+        choices: shuffle([subName, ...pickWrongs(SUBS.map(s => s.name), subName, 2)]).map(x => ({ value: x, label: x }))
+      });
+    });
+
+    // 16. ruleQs (take 3)
+    const allRules = [
+      { q: "Where is a subscript written?", a: "Beneath the root letter", w: ["Above the root letter", "Before the root letter", "After the syllable marker"] },
+      { q: "Which four letters can be subscripts?", a: "ཡ ར ལ ཝ", w: ["ར ལ ས ཝ", "ཡ ར ལ ས", "ག ད བ མ"] },
+      { q: "What does Wa-zur do to the sound of the root letter?", a: "Nothing — it is silent and only marks the spelling", w: ["It adds a [w] sound after the root", "It always raises the tone", "It replaces the root consonant"] },
+      { q: "How do the La-tak stacks such as ཟླ and བླ read?", a: "As [la] — the root letter is not pronounced", w: ["As [za] and [ba] — the ལ is silent", "Both consonants are pronounced in sequence", "As [lha] with a breathy start"] },
+      { q: "How many root letters take Ya-tak?", a: "7", w: ["4", "6", "12"] },
+      { q: "In a three-part stack, what is the correct top-to-bottom order?", a: "Superscript, root letter, subscript", w: ["Root letter, superscript, subscript", "Subscript, root letter, superscript", "Superscript, subscript, root letter"] }
+    ];
+    shuffle(allRules).slice(0, 3).forEach(r => {
+      qs.push({
+        questionText: r.q, answer: r.a,
+        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
+      });
+    });
+
+    // Return exactly 40 shuffled questions
+    return shuffle(qs).slice(0, 40);
+  }, []); 
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative">

@@ -33,14 +33,20 @@ export default function QuizModule({
   // 🚨 ADDED: A flag to prevent the infinite loop
   const [hasAutoSaved, setHasAutoSaved] = useState(false);
   
-  const questions = useMemo(() => {
+
+
+const questions = useMemo(() => {
     if (providedQuestions) return providedQuestions;
     if (!data) return [];
     
     const qs = [];
+    // Shuffle the deck so we draw unique questions without replacement
+    const shuffledData = [...data].sort(() => 0.5 - Math.random());
+    
     for (let i = 0; i < questionCount; i++) {
       const isAudioType = !isVocabMatch && Math.random() > 0.5;
-      const answer = data[Math.floor(Math.random() * data.length)];
+      // Draw the next unique item (loops back around safely if count > data length)
+      const answer = shuffledData[i % shuffledData.length];
       const wrongs = data.filter((x: any) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
       const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
       
@@ -168,7 +174,15 @@ export default function QuizModule({
     }
   };
 
-  const isVocab = isVocabMatch || currentQ.type === 'vocab' || (currentQ.questionText && currentQ.questionText.includes("Tibetan word for"));
+ 
+ const isVocab = isVocabMatch || 
+                  currentQ.type === 'vocab' || 
+                  (currentQ.questionText && (
+                    currentQ.questionText.includes("Tibetan word for") || 
+                    currentQ.questionText.includes("Which word means") || 
+                    currentQ.questionText.includes("matching Tibetan word")
+                  ));
+ 
   const readingToDisplay = isLesson1 ? (currentQ.answerObj?.translit || currentQ.answerObj?.pron) : (currentQ.answerObj?.pron || currentQ.answerObj?.translit);
 
   return (
