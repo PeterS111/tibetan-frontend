@@ -28,7 +28,7 @@ export interface QuizDataRow {
   emoji?: string;
   label?: string;
   audio?: string;
-  [key: string]: unknown;
+  
 }
 
 export interface QuizQuestion {
