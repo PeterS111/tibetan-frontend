@@ -12,7 +12,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 
 // --- Data ---
-import { VOWELS, VOCAB, STEPS, POSITION_META, type Vowel, type Position } from "@/app/data/lesson2";
+import { VOWELS, VOCAB, STEPS, POSITION_META, generateSpellingQuiz, generateFinalQuiz, type Vowel, type Position } from "@/app/data/lesson2";
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
@@ -20,6 +20,10 @@ import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
+import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
+import { VocabGrid } from "@/app/components/lesson/VocabGrid";
+
+
 
 export default function VowelsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
@@ -52,160 +56,8 @@ export default function VowelsLesson() {
 
 
 
-const spellingQuestions = useMemo(() => {
-    const qs: any[] = [];
-    
-    // 1. Mark Recognition (4 questions - tests all 4 vowels)
-    const vTargets = [...VOWELS].sort(() => 0.5 - Math.random());
-    for (const v of vTargets) {
-      const wrongs = VOWELS.filter(x => x.key !== v.key).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        type: 'base',
-        questionText: `Which vowel mark is called ${v.markTib} (${v.markTranslit})?`,
-        answer: v.tib,
-        audioString: v.markTranslit,
-        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib }))
-      });
-    }
-
-    // 2. Spelling Math (12 questions - tests every single spelling audio) - Audio Only
-    const allSpellings = VOWELS.flatMap(v => v.spellings || []);
-    const spellTargets = [...allSpellings].sort(() => 0.5 - Math.random());
-    for (const s of spellTargets) {
-      const wrongs = allSpellings.filter(x => x.word !== s.word).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        isAudioType: true,
-        type: 'base',
-        answer: s.word,
-        audioString: s.audio || s.word,
-        choices: [s, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.word, value: x.word }))
-      });
-    }
-
-    return qs.sort(() => 0.5 - Math.random());
-  }, []);
-
-
-
-const finalQuizQuestions = useMemo(() => {
-    const qs: any[] = [];
-    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
-
-    // 1. listenWordQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 2. listenMeanQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
-      });
-    });
-
-    // 3. markQs (take 3)
-    shuffle(VOWELS).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `Which vowel is ${v.markTib} (${v.markTranslit})?`, answer: v.tib, audioString: v.translit,
-        choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 4. nameQs (take 3)
-    shuffle(VOWELS).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `What is the name of the vowel mark in ${v.tib}?`, prominentTibetan: v.tib, answer: v.markTranslit, audioString: v.translit,
-        choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTranslit, label: `${x.markTib} (${x.markTranslit})` }))
-      });
-    });
-
-    // 5. positionQs (take 3)
-    shuffle(VOWELS).slice(0, 3).forEach(v => {
-      const answerLabel = POSITION_META[v.position as Position].label;
-      const wrongs = Object.keys(POSITION_META).filter(k => k !== v.position).map(k => POSITION_META[k as Position].label);
-      qs.push({
-        questionText: `Where is the mark ${v.mark} of ${v.markTranslit} written?`, prominentTibetan: v.mark, answer: answerLabel, audioString: v.translit,
-        choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 6. soundQs (take 3)
-    shuffle(VOWELS).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `Which vowel sounds ${v.english.replace(/^As in /i, "as in ")}`, answer: v.tib, audioString: v.translit,
-        choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 7. combineQs (take 5)
-    const BASE_LETTERS = ["ཀ", "མ", "ས", "ལ", "ཆ", "པ", "ར", "ཏ"];
-    const combinations = BASE_LETTERS.flatMap(base => VOWELS.map(v => ({ base, v })));
-    shuffle(combinations).slice(0, 5).forEach(({ base, v }) => {
-      const answerTib = base + v.mark;
-      qs.push({
-        questionText: `${base} + ${v.markTranslit} ${v.mark} = ?`, prominentTibetan: `${base} + ${v.mark}`, answer: answerTib, audioString: v.translit,
-        choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: base + x.mark, tib: base + x.mark }))
-      });
-    });
-
-    // 8. vocabReadQs (take 4)
-    shuffle(VOCAB).slice(0, 4).forEach(v => {
-      qs.push({
-        questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.translit, label: x.translit }))
-      });
-    });
-
-    // 9. vocabMeanQs (take 4)
-    shuffle(VOCAB).slice(0, 4).forEach(v => {
-      qs.push({
-        questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
-      });
-    });
-
-    // 10. vocabWordQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 11. whichVowelQs (take 4)
-    const nonParticleVocab = VOCAB.filter(w => !w.tib.includes("་"));
-    shuffle(nonParticleVocab).slice(0, 4).forEach(w => {
-      const v = VOWELS.find(x => x.key === w.vowel)!;
-      qs.push({
-        questionText: `Which vowel is written in ${w.tib}?`, prominentTibetan: w.tib, answer: v.markTranslit, audioString: w.tib,
-        choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTranslit, label: `${x.mark} ${x.markTranslit}` }))
-      });
-    });
-
-    // 12. ruleQs (take 3)
-    const allRules = [
-      { q: "A root letter written with no vowel mark carries which inherent vowel?", a: "[a]", w: ["[i]", "[u]", "no vowel at all"] },
-      { q: "Which of the four vowel marks is written below the root letter?", a: "zhabs-kyu ུ", w: ["gi-gu ི", "'dreng-bu ེ", "na-ro ོ"] },
-      { q: "How many vowel marks does written Tibetan use?", a: "Four", w: ["Three", "Five", "Seven"] },
-      { q: "Which letter is used as the neutral carrier when a vowel stands on its own?", a: "ཨ", w: ["འ", "ཡ", "ཧ"] },
-      { q: "When you spell aloud, which comes first?", a: "The root letter, then the vowel", w: ["The vowel, then the root letter", "Whichever is written higher", "The order changes"] }
-    ];
-    shuffle(allRules).slice(0, 3).forEach(r => {
-      qs.push({
-        questionText: r.q, answer: r.a,
-        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
-      });
-    });
-
-    // Return exactly 40 shuffled questions
-    return shuffle(qs).slice(0, 40);
-  }, []);
-
+const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
+  const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
@@ -507,34 +359,26 @@ const finalQuizQuestions = useMemo(() => {
           </StepContainer>
 					
 					
-
-         {/* Step 4: Vocabulary */}
+{/* Step 4: Vocabulary */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 mb-10">
-              {VOCAB.map((v) => {
-                const pm = POSITION_META[VOWELS.find((x) => x.key === v.vowel)!.position];
-                return (
-                  <div key={v.tib + v.translit} className="bg-surface border border-border-subtle flex flex-col p-5 transition-all hover:-translate-y-1 hover:border-brand hover:shadow-md relative group">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-3xl opacity-90">{v.emoji}</div>
-                      <span className="border px-2 py-1 text-[9px] font-bold uppercase tracking-widest" style={{ backgroundColor: pm.hex + "15", color: pm.hex, borderColor: pm.hex + "40" }}>{v.vowel}</span>
-                    </div>
-                    <div className="text-tibetan-card mb-1">{v.tib}</div>
-                    <div className="text-eyebrow mb-3">{v.translit}</div>
-                    <div className="flex items-center justify-between border-t border-border-strong pt-3 mt-auto">
-                      <span className="text-sm font-bold text-ink">{v.en}</span>
-                      <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center bg-surface-muted border border-border-strong text-ink-light transition hover:bg-stone-200">
-                        {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4" />}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="mb-10">
+              <VocabGrid 
+                items={VOCAB.map(v => {
+                  const pm = POSITION_META[VOWELS.find((x) => x.key === v.vowel)!.position];
+                  return {
+                    tib: v.tib, pron: v.translit, en: v.en, emoji: v.emoji,
+                    badge: { text: v.vowel, hex: pm.hex, bg: pm.hex + "15", border: pm.hex + "40" }
+                  };
+                })}
+                playAudio={playAudio}
+                playingItem={playingItem}
+              />
             </div>
             
         
 		
-		<QuizModule 
+		<QuizModule
+          
               title="Vocabulary Mastery" 
               intro="Check your memory of the new words before moving on." 
               data={VOCAB} 
@@ -598,63 +442,20 @@ const finalQuizQuestions = useMemo(() => {
 /* Subcomponents                                                       */
 /* ------------------------------------------------------------------ */
 
-function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
+interface DetailPanelProps {
+  data: { v: any, rect: DOMRect };
+  onClose: () => void;
+  onSpeak: (text: string) => void;
+  playingItem: string | null;
+}
+
+function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) {
   const { v, rect } = data;
   const pm = POSITION_META[v.position as Position];
-  
-  const [position, setPosition] = useState({ x: -9999, y: -9999 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-  useIsoLayoutEffect(() => {
-    if (!rect || !panelRef.current) return;
-    const panelRect = panelRef.current.getBoundingClientRect();
-    const panelWidth = panelRect.width || 384; 
-    const panelHeight = panelRect.height || 400; 
-    const margin = 16;
-    const horizontalGap = 80; // Large enough gap to leap over the adjacent button
-    
-    let startX = rect.right + horizontalGap;
-    let startY = rect.top;
-
-    if (startX + panelWidth > window.innerWidth) startX = rect.left - panelWidth - horizontalGap;
-    if (startX < margin) {
-      startX = Math.max(margin, (window.innerWidth - panelWidth) / 2);
-      startY = rect.top - panelHeight - margin;
-      if (startY < margin) startY = rect.bottom + margin;
-    }
-    if (startY + panelHeight > window.innerHeight) startY = window.innerHeight - panelHeight - margin;
-    if (startY < margin) startY = margin;
-
-    setPosition({ x: startX, y: startY });
-  }, [rect]);
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
-      <div 
-        ref={panelRef}
-        className="absolute pointer-events-auto flex flex-col sm:w-[24rem] w-[calc(100%-2rem)] max-h-[70vh] bg-paper shadow-2xl border border-border-subtle rounded-none overflow-hidden"
-        style={{ 
-          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-          opacity: position.x === -9999 ? 0 : 1,
-          transition: isDragging ? 'none' : 'opacity 0.2s ease-in-out'
-        }}
-      >
-        <div 
-          className="px-4 py-3 border-b border-border-subtle flex items-center justify-between bg-surface shrink-0 cursor-move select-none"
-          onPointerDown={(e) => { setIsDragging(true); dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y }; e.currentTarget.setPointerCapture(e.pointerId); }}
-          onPointerMove={(e) => { if (!isDragging || !dragRef.current) return; setPosition({ x: dragRef.current.initX + (e.clientX - dragRef.current.startX), y: dragRef.current.initY + (e.clientY - dragRef.current.startY) }); }}
-          onPointerUp={(e) => { setIsDragging(false); e.currentTarget.releasePointerCapture(e.pointerId); }}
-        >
-          <span className="text-eyebrow pointer-events-none">Vowel · {v.translit}</span>
-          <button onClick={(e) => { e.stopPropagation(); onClose(); }} onPointerDown={(e) => e.stopPropagation()} className="p-1.5 -mr-1.5 text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors"><X size={18} /></button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
-          <div className="flex items-center gap-5 mb-6">
+    <DraggablePanel rect={rect} title={`Vowel · ${v.translit}`} onClose={onClose}>
+      <div className="flex items-center gap-5 mb-6">
             <div className="text-tibetan-display">{v.tib}</div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
@@ -684,12 +485,10 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
             <p className="text-sm text-ink-light font-bold leading-relaxed">{v.english}</p>
           </div>
 
-          <div className="border-t border-border-strong pt-4">
+<div className="border-t border-border-strong pt-4">
             <div className="text-eyebrow mb-1">Notes from the textbook</div>
             <p className="text-sm text-ink-light leading-relaxed italic">{v.note}</p>
           </div>
-        </div>
-      </div>
-    </div>
+    </DraggablePanel>
   );
-}
+}         

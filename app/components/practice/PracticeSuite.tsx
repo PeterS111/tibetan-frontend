@@ -63,10 +63,12 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
           { k: "listen", label: "Listen", Icon: Volume2 },
           { k: "srs", label: "Memory Review", Icon: BookOpen },
         ].map((t) => (
-          <button 
+          
+		  <button 
             key={t.k} 
-            onClick={() => setTab(t.k as any)} 
+            onClick={() => setTab(t.k as "flash" | "match" | "listen" | "srs")} 
             className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-widest transition-colors ${
+		  
               tab === t.k ? "bg-ink text-white" : "text-ink-muted hover:bg-white hover:text-ink"
             }`}
           >
@@ -86,8 +88,19 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
 }
 
 // --- FLASHCARDS ---
-function Flashcards({ groups, speak, playingItem, isLesson1 }: any) {
+
+// --- FLASHCARDS ---
+interface FlashcardsProps {
+  groups: PracticeGroup[];
+  speak: (text: string) => void;
+  playingItem: string | null;
+  isLesson1: boolean;
+}
+
+function Flashcards({ groups, speak, playingItem, isLesson1 }: FlashcardsProps) {
   const [activeGroupIdx, setActiveGroupIdx] = useState(0);
+
+
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
@@ -101,10 +114,12 @@ function Flashcards({ groups, speak, playingItem, isLesson1 }: any) {
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in">
       <div className="w-full max-w-2xl flex flex-col sm:flex-row justify-between items-center mb-6 text-eyebrow gap-4">
-        <div className="flex flex-wrap gap-2">
-          {groups.map((g: any, i: number) => (
+        
+		<div className="flex flex-wrap gap-2">
+          {groups.map((g: PracticeGroup, i: number) => (
             <button 
-              key={g.name} 
+              key={g.name}
+		
               onClick={() => { setActiveGroupIdx(i); setIdx(0); setFlipped(false); }} 
               className={`px-4 py-2 border transition-colors ${activeGroupIdx === i ? "bg-ink text-white border-ink" : "bg-white border-border-strong text-ink-muted hover:bg-surface-muted"}`}
             >
@@ -141,8 +156,17 @@ function Flashcards({ groups, speak, playingItem, isLesson1 }: any) {
   );
 }
 
+
 // --- MATCH GAME ---
-function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any) {
+interface MatchGameProps {
+  items: PracticeItem[];
+  speak: (text: string) => void;
+  playingItem: string | null;
+  playErrorBeep: () => void;
+  isLesson1: boolean;
+}
+
+function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: MatchGameProps) {
   const [seed, setSeed] = useState(0);
   const [pairs, setPairs] = useState<Record<string, string>>({});
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -219,9 +243,18 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: any)
   );
 }
 
+
 // --- NEW: LISTEN & SELECT ---
-function ListenSelect({ items, speak, playingItem, playErrorBeep }: any) {
+interface ListenSelectProps {
+  items: PracticeItem[];
+  speak: (text: string) => void;
+  playingItem: string | null;
+  playErrorBeep: () => void;
+}
+
+function ListenSelect({ items, speak, playingItem, playErrorBeep }: ListenSelectProps) {
   const [seed, setSeed] = useState(0);
+
   const [picked, setPicked] = useState<string | null>(null);
 
   const pool = useMemo(() => {
@@ -303,9 +336,18 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep }: any) {
   );
 }
 
+
 // --- MEMORY REVIEW (SRS) ---
-function MemoryReview({ items, speak, playingItem, isLesson1 }: any) {
+interface MemoryReviewProps {
+  items: PracticeItem[];
+  speak: (text: string) => void;
+  playingItem: string | null;
+  isLesson1: boolean;
+}
+
+function MemoryReview({ items, speak, playingItem, isLesson1 }: MemoryReviewProps) {
   const [deck, setDeck] = useState(() => [...items].sort(() => 0.5 - Math.random()));
+
   const [reviewedCount, setReviewedCount] = useState(0);
   const [rating, setRating] = useState<'Hard' | 'Good' | 'Easy' | null>(null);
 

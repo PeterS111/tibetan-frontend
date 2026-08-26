@@ -12,15 +12,18 @@ import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 
 // --- Data ---
-import { CONSONANTS, VOCAB, STEPS, TONE_META, TONE_HEX, GENDER_META, type Consonant, type Tone, type Gender } from "@/app/data/lesson1";
+import { CONSONANTS, VOCAB, STEPS, TONE_META, TONE_HEX, GENDER_META, generateFinalQuiz, type Consonant, type Tone, type Gender } from "@/app/data/lesson1";
 
 // --- UI & Layout Components ---
 import { Card } from "@/app/components/ui/Card";
 import { Badge } from "@/app/components/ui/Badge";
 import { Button } from "@/app/components/ui/Button";
+
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
+import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
+import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export default function ConsonantsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
@@ -51,159 +54,7 @@ export default function ConsonantsLesson() {
     }
   ], []);
 
-const quizQuestions = useMemo(() => {
-    const qs: any[] = [];
-    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
-
-   
-   
-   // 1. listenWordQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 2. listenMeanQs (take 2)
-   
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
-      });
-    });
-
-    // 3. listenLetterQs (take 3)
-    shuffle(CONSONANTS).slice(0, 3).forEach(c => {
-      qs.push({
-        isAudioType: true, questionText: "Listen, then select the letter you hear.", answer: c.tib, audioString: c.tib,
-        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 4. readQs (take 4)
-    shuffle(CONSONANTS).slice(0, 4).forEach(c => {
-      qs.push({
-        questionText: `How does ${c.tib} read?`, prominentTibetan: c.tib, answer: c.pron, audioString: c.tib,
-        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3)]).map(x => ({ value: x.pron, label: x.pron }))
-      });
-    });
-
-    // 5. letterQs (take 3)
-    shuffle(CONSONANTS).slice(0, 3).forEach(c => {
-      qs.push({
-        questionText: `Which letter is transliterated '${c.translit}'?`, answer: c.tib, audioString: c.tib,
-        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 6. toneQs (take 5)
-    shuffle(CONSONANTS).slice(0, 5).forEach(c => {
-      const answerLabel = TONE_META[c.tone].label;
-      const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
-      qs.push({
-        questionText: `Which tone class does ${c.tib} belong to?`, prominentTibetan: c.tib, answer: answerLabel, audioString: c.tib,
-        choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 7. genderQs (take 5)
-    shuffle(CONSONANTS).slice(0, 5).forEach(c => {
-      const answerLabel = GENDER_META[c.gender].label;
-      const wrongs = Object.keys(GENDER_META).filter(k => k !== c.gender).map(k => GENDER_META[k as Gender].label);
-      qs.push({
-        questionText: `What is the traditional gender of ${c.tib}?`, prominentTibetan: c.tib, answer: answerLabel, audioString: c.tib,
-        choices: shuffle([answerLabel, ...shuffle(wrongs).slice(0, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 8. genderPickQs (take 2)
-    shuffle(CONSONANTS).slice(0, 2).forEach(c => {
-      qs.push({
-        questionText: `Which letter is classified as ${GENDER_META[c.gender].label}?`, answer: c.tib, audioString: c.tib,
-        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3, (x) => x.gender !== c.gender)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 9. tonePickQs (take 2)
-    shuffle(CONSONANTS).slice(0, 2).forEach(c => {
-      qs.push({
-        questionText: `Which letter is pronounced with a ${TONE_META[c.tone].label}?`, answer: c.tib, audioString: c.tib,
-        choices: shuffle([c, ...pickWrongs(CONSONANTS, c, 3, (x) => x.tone !== c.tone)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 10. oddToneQs (take 2)
-    shuffle(Object.keys(TONE_META)).slice(0, 2).forEach(toneKey => {
-      const members = CONSONANTS.filter(c => c.tone === toneKey);
-      if (members.length >= 3) {
-         const oddOne = shuffle(CONSONANTS.filter(c => c.tone !== toneKey))[0];
-         qs.push({
-           questionText: `Which letter does NOT belong to the ${TONE_META[toneKey as Tone].label} class?`, answer: oddOne.tib,
-           choices: shuffle([...shuffle(members).slice(0, 3), oddOne]).map(x => ({ value: x.tib, tib: x.tib }))
-         });
-      }
-    });
-
-    // 11. oddGenderQs (take 2)
-    shuffle(Object.keys(GENDER_META)).slice(0, 2).forEach(genderKey => {
-      const members = CONSONANTS.filter(c => c.gender === genderKey);
-      if (members.length >= 3) {
-         const oddOne = shuffle(CONSONANTS.filter(c => c.gender !== genderKey))[0];
-         qs.push({
-           questionText: `Which letter does NOT belong to the ${GENDER_META[genderKey as Gender].label} class?`, answer: oddOne.tib,
-           choices: shuffle([...shuffle(members).slice(0, 3), oddOne]).map(x => ({ value: x.tib, tib: x.tib }))
-         });
-      }
-    });
-
-    // 12. vocabMeaningQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `What does the word ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
-      });
-    });
-
-
-// 13. vocabWordQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
-      });
-    });
-
-    // 14. vocabReadQs (take 2)
-
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        questionText: `How is the word ${v.tib} pronounced?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.translit, label: x.translit }))
-      });
-    });
-
-    // 15. ruleQs (take 3)
-    const allRules = [
-      { q: "How many root consonants does the Tibetan alphabet have?", a: "30", w: ["24", "26", "34"] },
-      { q: "Which set contains only the four true nasals?", a: "ང ཉ ན མ", w: ["ཀ ཁ ག ང", "ན མ ར ལ", "ཙ ཚ ཛ ཝ"] },
-      { q: "In the traditional grid, what does each column of a row share?", a: "Tone & gender", w: ["The same vowel sound", "The same strokes", "Place of articulation"] },
-      { q: "What does “aspirated” mean when describing a consonant?", a: "Released with a puff of air", w: ["Voiced through the nose", "Held longer", "Whispered"] },
-      { q: "Which pair of letters is classed as Sub-Feminine?", a: "ར ལ", w: ["ཀ ཁ", "ང མ", "ས ཧ"] },
-      { q: "ག and ཀ differ mainly in which way?", a: "Tone — ཀ is high, ག is low", w: ["Gender only", "Nothing", "ག is nasal"] }
-    ];
-    shuffle(allRules).slice(0, 3).forEach(r => {
-      qs.push({
-        questionText: r.q, answer: r.a,
-        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
-      });
-    });
-
-    // The designer explicitly restricted this to exactly 40 questions at the end
-    return shuffle(qs).slice(0, 40);
-  }, []);
+const quizQuestions = useMemo(() => generateFinalQuiz(), []);
 
 return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
@@ -483,26 +334,21 @@ return (
 
           
 		  
-		  {/* Vocab */}
+		  
+
+{/* Vocab */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {VOCAB.map((v) => (
-                <div key={v.tib + v.translit} className="bg-surface border border-border-subtle flex flex-col p-5 transition-all hover:-translate-y-1 hover:border-brand hover:shadow-md relative group">
-                  <div className="text-3xl mb-4">{v.emoji}</div>
-                  <div className="text-tibetan-card mb-1">{v.tib}</div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-3">{v.translit}</div>
-                  <div className="flex items-center justify-between border-t border-border-strong pt-3 mt-auto">
-                    <span className="text-sm font-bold text-ink-light">{v.en}</span>
-                    <button onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="grid size-8 place-items-center bg-surface-muted border border-border-strong text-ink-light transition hover:bg-stone-200">
-                      {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4" />}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <VocabGrid 
+              items={VOCAB.map(v => ({
+                tib: v.tib, pron: v.translit, en: v.en, emoji: v.emoji
+              }))}
+              playAudio={playAudio}
+              playingItem={playingItem}
+            />
             
             <div className="mt-10">
-              <QuizModule 
+              <QuizModule
+		  
                 title="Vocabulary Mastery" 
                 intro="Check your memory of the new words before moving on." 
                 data={VOCAB} 
@@ -573,64 +419,24 @@ return (
 /* Subcomponents                                                       */
 /* ------------------------------------------------------------------ */
 
-function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
+
+interface DetailPanelProps {
+  data: { c: any, rect: DOMRect };
+  onClose: () => void;
+  onSpeak: (text: string) => void;
+  playingItem: string | null;
+}
+
+function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) {
   const { c, rect } = data;
   const tone = TONE_META[c.tone as Tone];
   const gender = GENDER_META[c.gender as Gender];
-  
-  const [position, setPosition] = useState({ x: -9999, y: -9999 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number } | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  
-  const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-  useIsoLayoutEffect(() => {
-    if (!rect || !panelRef.current) return;
-    const panelRect = panelRef.current.getBoundingClientRect();
-    const panelWidth = panelRect.width || 384; 
-    const panelHeight = panelRect.height || 400; 
-    const margin = 16;
-    const horizontalGap = 80; // Large enough gap to leap over the adjacent button
-    
-    let startX = rect.right + horizontalGap;
-    let startY = rect.top;
-
-    if (startX + panelWidth > window.innerWidth) startX = rect.left - panelWidth - horizontalGap;
-    if (startX < margin) {
-      startX = Math.max(margin, (window.innerWidth - panelWidth) / 2);
-      startY = rect.top - panelHeight - margin;
-      if (startY < margin) startY = rect.bottom + margin;
-    }
-    if (startY + panelHeight > window.innerHeight) startY = window.innerHeight - panelHeight - margin;
-    if (startY < margin) startY = margin;
-
-    setPosition({ x: startX, y: startY });
-  }, [rect]);
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
-      <div 
-        ref={panelRef}
-        className="absolute pointer-events-auto flex flex-col sm:w-[24rem] w-[calc(100%-2rem)] max-h-[70vh] bg-paper shadow-2xl border border-border-subtle rounded-none overflow-hidden"
-        style={{ 
-          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-          opacity: position.x === -9999 ? 0 : 1,
-          transition: isDragging ? 'none' : 'opacity 0.2s ease-in-out'
-        }}
-      >
-        <div 
-          className="px-4 py-3 border-b border-border-subtle flex items-center justify-between bg-surface shrink-0 cursor-move select-none"
-          onPointerDown={(e) => { setIsDragging(true); dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y }; e.currentTarget.setPointerCapture(e.pointerId); }}
-          onPointerMove={(e) => { if (!isDragging || !dragRef.current) return; setPosition({ x: dragRef.current.initX + (e.clientX - dragRef.current.startX), y: dragRef.current.initY + (e.clientY - dragRef.current.startY) }); }}
-          onPointerUp={(e) => { setIsDragging(false); e.currentTarget.releasePointerCapture(e.pointerId); }}
-        >
-          <span className="text-eyebrow pointer-events-none">Consonant · {c.translit}</span>
-          <button onClick={(e) => { e.stopPropagation(); onClose(); }} onPointerDown={(e) => e.stopPropagation()} className="p-1.5 -mr-1.5 text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors"><X size={18} /></button>
-        </div>
+    <DraggablePanel rect={rect} title={`Consonant · ${c.translit}`} onClose={onClose}>
+      <div className="flex items-center gap-5 mb-6">
 
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
-          <div className="flex items-center gap-5 mb-6">
+
             <div className="text-tibetan-display">{c.tib}</div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
@@ -663,12 +469,10 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: any) {
             <p className="text-sm text-ink-light leading-relaxed">{tone.description}</p>
           </div>
 
-          <div className="border-t border-border-strong pt-4">
+<div className="border-t border-border-strong pt-4">
             <div className="text-eyebrow mb-1">Notes from the textbook</div>
             <p className="text-sm text-ink-light leading-relaxed italic">{c.note}</p>
           </div>
-        </div>
-      </div>
-    </div>
+    </DraggablePanel>
   );
 }

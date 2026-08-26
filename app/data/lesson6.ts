@@ -1,3 +1,5 @@
+import { QuizQuestion } from "@/app/components/QuizModule";
+
 export type Family = "silent" | "nasal" | "up" | "e-shift" | "el" | "r-scot";
 
 export type SuffixKey = "ga" | "nga" | "da" | "na" | "ba" | "ma" | "a" | "ra" | "la" | "sa";
@@ -262,3 +264,208 @@ export const STEPS = [
   { id: "practice", eyebrow: "Step 07", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
   { id: "test", eyebrow: "Step 08", title: "Step complete", description: "Pass to unlock the next lesson." }
 ];
+
+export const POST_SUFFIX_QUESTIONS: QuizQuestion[] = [
+  { promptText: "Which two letters can act as post-suffixes?", answer: "da-sa", choices: [{label: "ད and ས", value: "da-sa", isTibetan: true}, {label: "ག and ང", value: "ga-nga", isTibetan: true}, {label: "བ and མ", value: "ba-ma", isTibetan: true}, {label: "ན and ལ", value: "na-la", isTibetan: true}], explanation: "Only ད (da) and ས (sa) can be used as post-suffixes." },
+  { promptText: "Do post-suffixes change how a word is pronounced?", answer: "no", choices: [{label: "Yes", value: "yes"}, {label: "No", value: "no"}], explanation: "Post-suffixes are completely silent and do not alter the pronunciation." },
+  { promptText: "Which post-suffix is still used in modern spelling?", answer: "sa", choices: [{label: "ད", value: "da", isTibetan: true}, {label: "ས", value: "sa", isTibetan: true}], explanation: "The post-suffix ས (sa) is still written today to distinguish homophones, while ད (da) is historical." },
+];
+
+export const ROOT_LETTER_QUESTIONS: QuizQuestion[] = [
+  { promptText: "Identify the root letter in", promptHighlight: "དགེ་", promptAudio: "དགེ་", answer: "ག", audioTarget: "ག", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}], explanation: "Rule 1: It carries a vowel, so ག is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "བཞི་", promptAudio: "བཞི་", answer: "ཞ", audioTarget: "ཞ", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ཞ", value: "ཞ", isTibetan: true}], explanation: "Rule 1: It carries a vowel, so ཞ is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "འགྲོ་", promptAudio: "འགྲོ་", answer: "ག", audioTarget: "ག", choices: [{label: "འ", value: "འ", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}], explanation: "Rule 1: It carries the subscript and vowel, so ག is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "བསྒྲིམས་", promptAudio: "བསྒྲིམས་", answer: "ག", audioTarget: "ག", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}], explanation: "Rule 1: ག carries the vowel and subscript, making it the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "ཁང་", promptAudio: "ཁང་", answer: "ཁ", audioTarget: "ཁ", choices: [{label: "ཁ", value: "ཁ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ཁ) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "ནད་", promptAudio: "ནད་", answer: "ན", audioTarget: "ན", choices: [{label: "ན", value: "ན", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ན) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "ལམ་", promptAudio: "ལམ་", answer: "ལ", audioTarget: "ལ", choices: [{label: "ལ", value: "ལ", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ལ) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "རབ་", promptAudio: "རབ་", answer: "ར", audioTarget: "ར", choices: [{label: "ར", value: "ར", isTibetan: true}, {label: "བ", value: "བ", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ར) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "གསལ་", promptAudio: "གསལ་", answer: "ས", audioTarget: "ས", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ལ", value: "ལ", isTibetan: true}], explanation: "Rule 3: Three bare letters (not ending in ད/ས). The middle (ས) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "དཀར་", promptAudio: "དཀར་", answer: "ཀ", audioTarget: "ཀ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "ཀ", value: "ཀ", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}], explanation: "Rule 3: Three bare letters (not ending in ད/ས). The middle (ཀ) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "ཁམས་", promptAudio: "ཁམས་", answer: "ཁ", audioTarget: "ཁ", choices: [{label: "ཁ", value: "ཁ", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 3: Three bare letters ending in ས. The first (ཁ) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "གངས་", promptAudio: "གངས་", answer: "ག", audioTarget: "ག", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 3: Three bare letters ending in ས. The first (ག) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "མངགས་", promptAudio: "མངགས་", answer: "ང", audioTarget: "ང", choices: [{label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (ང) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "བདགས་", promptAudio: "བདགས་", answer: "ད", audioTarget: "ད", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (ད) is the root." },
+  { promptText: "Identify the root letter in", promptHighlight: "དམངས་", promptAudio: "དམངས་", answer: "མ", audioTarget: "མ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (མ) is the root." },
+];
+
+export function generateVocabQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  for (const v of VOCAB) {
+    const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+    const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
+    
+    if (Math.random() > 0.5) {
+      qs.push({
+        isAudioType: true,
+        type: 'base',
+        questionText: "Listen and select the matching option.",
+        answer: v.tib,
+        audioString: v.tib,
+        answerObj: v,
+        choices
+      });
+    } else {
+      qs.push({
+        isAudioType: false,
+        type: 'vocab',
+        questionText: `Which word means "${v.en}"?`,
+        answer: v.tib,
+        audioString: v.tib,
+        answerObj: v,
+        choices
+      });
+    }
+  }
+  return qs.sort(() => 0.5 - Math.random());
+}
+
+export function generateFinalQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+  const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
+
+  const ALL_SUF_EXAMPLES = SUFFIXES.flatMap(s => s.examples.map(e => ({ ...e, sufKey: s.key, head: s.head, latin: s.latin, family: s.family, reads: s.reads })));
+  const GLOSSED_EXAMPLES = ALL_SUF_EXAMPLES.filter(e => !!e.gloss);
+
+  // 1. listenWordQs (take 3)
+  shuffle(VOCAB).slice(0, 3).forEach(v => {
+    qs.push({
+      isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
+      choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+    });
+  });
+
+  // 2. listenMeanQs (take 2)
+  shuffle(VOCAB).slice(0, 2).forEach(v => {
+    qs.push({
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+      choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 3. readQs (take 4)
+  shuffle(ALL_SUF_EXAMPLES).slice(0, 4).forEach(e => {
+    qs.push({
+      questionText: `How is ${e.word} pronounced?`, prominentTibetan: e.word, answer: e.read, audioString: e.word,
+      choices: shuffle([e.read, ...pickWrongs(ALL_SUF_EXAMPLES.map(x => x.read), e.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+  });
+
+  // 4. whichSuffixQs (take 3)
+  shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
+    qs.push({
+      questionText: `Which suffix closes the syllable ${e.word}?`, prominentTibetan: e.word, answer: e.latin, audioString: e.word,
+      choices: shuffle([e.latin, ...pickWrongs(SUFFIXES.map(s => s.latin), e.latin, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 5. familyQs (take 3)
+  shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
+    const answerLabel = FAMILY_META[e.family as Family].label;
+    const wrongs = Object.keys(FAMILY_META).filter(k => k !== e.family).map(k => FAMILY_META[k as Family].label);
+    qs.push({
+      questionText: `What does the suffix do at the end of ${e.word}?`, prominentTibetan: e.word, answer: answerLabel, audioString: e.word,
+      choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 6. soundOfSuffixQs (take 3)
+  shuffle(SUFFIXES).slice(0, 3).forEach(s => {
+    qs.push({
+      questionText: `How does the suffix ${s.head} sound at the end of a syllable?`, prominentTibetan: s.head, answer: s.reads, audioString: s.head,
+      choices: shuffle([s.reads, ...pickWrongs(SUFFIXES.map(x => x.reads), s.reads, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 7. suffixFamilyQs (take 3)
+  shuffle(SUFFIXES).slice(0, 3).forEach(s => {
+    const answerLabel = FAMILY_META[s.family as Family].label;
+    const wrongs = Object.keys(FAMILY_META).filter(k => k !== s.family).map(k => FAMILY_META[k as Family].label);
+    qs.push({
+      questionText: `Which group does the suffix ${s.head} belong to?`, prominentTibetan: s.head, answer: answerLabel, audioString: s.head,
+      choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 8. glossQs (take 3)
+  shuffle(GLOSSED_EXAMPLES).slice(0, 3).forEach(e => {
+    qs.push({
+      questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: e.gloss, audioString: e.word,
+      choices: shuffle([e.gloss, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.gloss), e.gloss, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 9. glossWordQs (take 2)
+  shuffle(GLOSSED_EXAMPLES).slice(0, 2).forEach(e => {
+    qs.push({
+      questionText: `Which syllable means "${e.gloss}"?`, answer: e.word, audioString: e.word,
+      choices: shuffle([e.word, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.word), e.word, 3)]).map(x => ({ value: x, tib: x }))
+    });
+  });
+
+  // 10. oddQs (take 2)
+  shuffle(SUFFIXES.filter(s => s.examples.length >= 3)).slice(0, 2).forEach(suf => {
+    const members = ALL_SUF_EXAMPLES.filter(e => e.sufKey === suf.key);
+    const oddOne = shuffle(ALL_SUF_EXAMPLES.filter(e => e.sufKey !== suf.key))[0];
+    qs.push({
+      questionText: `Which word does NOT use the suffix ${suf.head}?`, answer: oddOne.word,
+      choices: shuffle([...shuffle(members).slice(0, 3).map(m => m.word), oddOne.word]).map(x => ({ value: x, tib: x }))
+    });
+  });
+
+  // 11. vocabReadQs (take 3)
+  shuffle(VOCAB).slice(0, 3).forEach(v => {
+    qs.push({
+      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.read, audioString: v.tib,
+      choices: shuffle([v.read, ...pickWrongs(VOCAB.map(x => x.read), v.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+  });
+
+  // 12. vocabMeanQs (take 4)
+  shuffle(VOCAB).slice(0, 4).forEach(v => {
+    qs.push({
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
+      choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 13. vocabWordQs (take 2)
+  shuffle(VOCAB).slice(0, 2).forEach(v => {
+    qs.push({
+      questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
+      choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+    });
+  });
+
+  // 14. vocabSuffixQs (take 2)
+  shuffle(VOCAB).slice(0, 2).forEach(v => {
+    const suffixName = SUFFIXES.find(s => s.key === v.suffix)?.latin || v.suffix;
+    qs.push({
+      questionText: `Which suffix ends ${v.tib}?`, prominentTibetan: v.tib, answer: suffixName, audioString: v.tib,
+      choices: shuffle([suffixName, ...pickWrongs(SUFFIXES.map(s => s.latin), suffixName, 3)]).map(x => {
+         const s = SUFFIXES.find(suf => suf.latin === x);
+         return { value: x, label: s ? `${s.head} ${s.latin}` : x };
+      })
+    });
+  });
+
+  // 15. ruleQs (take 4)
+  const allRules = [
+    { q: "How many letters can serve as suffixes?", a: "10", w: ["5", "8", "12"] },
+    { q: "Where does a suffix sit in the syllable?", a: "After the root letter, closing the syllable", w: ["Before the root letter", "Beneath the root letter", "Above the root letter"] },
+    { q: "Which two suffixes colour the vowel toward [e]?", a: "ད  ས", w: ["ག  ང", "ན  མ", "ར  ལ"] },
+    { q: "With the suffix ས, the vowel [u] is pronounced how?", a: "[ü]", w: ["[u] unchanged", "[o]", "[i]"] },
+    { q: "Which suffixes give a nasal ending?", a: "ང  ན  མ", w: ["ག  ད  ས", "ར  ལ  འ", "བ  མ  ས"] },
+    { q: "How is the suffix ག heard in speech?", a: "As a light glottal closure — almost silent", w: ["As a clear hard [g]", "As a nasal [ng]", "It lengthens the vowel"] },
+    { q: "How does the suffix ལ behave?", a: "It is largely silent, colouring the syllable toward [el]", w: ["It is pronounced as a strong [l]", "It nasalises the vowel", "It makes the syllable high tone"] }
+  ];
+  shuffle(allRules).slice(0, 4).forEach(r => {
+    qs.push({
+      questionText: r.q, answer: r.a,
+      choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
+    });
+  });
+
+  return shuffle(qs).slice(0, 40);
+}

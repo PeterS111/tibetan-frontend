@@ -1,3 +1,5 @@
+import { QuizQuestion } from "@/app/components/QuizModule";
+
 export type VowelKey = "i" | "u" | "e" | "o";
 export type Position = "above" | "below";
 
@@ -88,3 +90,154 @@ export const STEPS = [
   { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
   { id: "complete", eyebrow: "Final test", title: "Step test — unlock the next step", description: "Score 80% or higher to unlock Superscripts." },
 ];
+
+export function generateSpellingQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  
+  // 1. Mark Recognition (4 questions - tests all 4 vowels)
+  const vTargets = [...VOWELS].sort(() => 0.5 - Math.random());
+  for (const v of vTargets) {
+    const wrongs = VOWELS.filter(x => x.key !== v.key).sort(() => 0.5 - Math.random()).slice(0, 3);
+    qs.push({
+      type: 'base',
+      questionText: `Which vowel mark is called ${v.markTib} (${v.markTranslit})?`,
+      answer: v.tib,
+      audioString: v.markTranslit,
+      choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib }))
+    });
+  }
+
+  // 2. Spelling Math (12 questions - tests every single spelling audio) - Audio Only
+  const allSpellings = VOWELS.flatMap(v => v.spellings || []);
+  const spellTargets = [...allSpellings].sort(() => 0.5 - Math.random());
+  for (const s of spellTargets) {
+    const wrongs = allSpellings.filter(x => x.word !== s.word).sort(() => 0.5 - Math.random()).slice(0, 3);
+    qs.push({
+      isAudioType: true,
+      type: 'base',
+      answer: s.word,
+      audioString: s.audio || s.word,
+      choices: [s, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.word, value: x.word }))
+    });
+  }
+
+  return qs.sort(() => 0.5 - Math.random());
+}
+
+export function generateFinalQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+  const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
+
+  // 1. listenWordQs (take 3)
+  shuffle(VOCAB).slice(0, 3).forEach(v => {
+    qs.push({
+      isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
+      choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
+    });
+  });
+
+  // 2. listenMeanQs (take 2)
+  shuffle(VOCAB).slice(0, 2).forEach(v => {
+    qs.push({
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+      choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
+    });
+  });
+
+  // 3. markQs (take 3)
+  shuffle(VOWELS).slice(0, 3).forEach(v => {
+    qs.push({
+      questionText: `Which vowel is ${v.markTib} (${v.markTranslit})?`, answer: v.tib, audioString: v.translit,
+      choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
+    });
+  });
+
+  // 4. nameQs (take 3)
+  shuffle(VOWELS).slice(0, 3).forEach(v => {
+    qs.push({
+      questionText: `What is the name of the vowel mark in ${v.tib}?`, prominentTibetan: v.tib, answer: v.markTranslit, audioString: v.translit,
+      choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTranslit, label: `${x.markTib} (${x.markTranslit})` }))
+    });
+  });
+
+  // 5. positionQs (take 3)
+  shuffle(VOWELS).slice(0, 3).forEach(v => {
+    const answerLabel = POSITION_META[v.position as Position].label;
+    const wrongs = Object.keys(POSITION_META).filter(k => k !== v.position).map(k => POSITION_META[k as Position].label);
+    qs.push({
+      questionText: `Where is the mark ${v.mark} of ${v.markTranslit} written?`, prominentTibetan: v.mark, answer: answerLabel, audioString: v.translit,
+      choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 6. soundQs (take 3)
+  shuffle(VOWELS).slice(0, 3).forEach(v => {
+    qs.push({
+      questionText: `Which vowel sounds ${v.english.replace(/^As in /i, "as in ")}`, answer: v.tib, audioString: v.translit,
+      choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
+    });
+  });
+
+  // 7. combineQs (take 5)
+  const BASE_LETTERS = ["ཀ", "མ", "ས", "ལ", "ཆ", "པ", "ར", "ཏ"];
+  const combinations = BASE_LETTERS.flatMap(base => VOWELS.map(v => ({ base, v })));
+  shuffle(combinations).slice(0, 5).forEach(({ base, v }) => {
+    const answerTib = base + v.mark;
+    qs.push({
+      questionText: `${base} + ${v.markTranslit} ${v.mark} = ?`, prominentTibetan: `${base} + ${v.mark}`, answer: answerTib, audioString: v.translit,
+      choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: base + x.mark, tib: base + x.mark }))
+    });
+  });
+
+  // 8. vocabReadQs (take 4)
+  shuffle(VOCAB).slice(0, 4).forEach(v => {
+    qs.push({
+      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
+      choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.translit, label: x.translit }))
+    });
+  });
+
+  // 9. vocabMeanQs (take 4)
+  shuffle(VOCAB).slice(0, 4).forEach(v => {
+    qs.push({
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
+      choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
+    });
+  });
+
+  // 10. vocabWordQs (take 3)
+  shuffle(VOCAB).slice(0, 3).forEach(v => {
+    qs.push({
+      questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
+      choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
+    });
+  });
+
+  // 11. whichVowelQs (take 4)
+  const nonParticleVocab = VOCAB.filter(w => !w.tib.includes("་"));
+  shuffle(nonParticleVocab).slice(0, 4).forEach(w => {
+    const v = VOWELS.find(x => x.key === w.vowel)!;
+    qs.push({
+      questionText: `Which vowel is written in ${w.tib}?`, prominentTibetan: w.tib, answer: v.markTranslit, audioString: w.tib,
+      choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTranslit, label: `${x.mark} ${x.markTranslit}` }))
+    });
+  });
+
+  // 12. ruleQs (take 3)
+  const allRules = [
+    { q: "A root letter written with no vowel mark carries which inherent vowel?", a: "[a]", w: ["[i]", "[u]", "no vowel at all"] },
+    { q: "Which of the four vowel marks is written below the root letter?", a: "zhabs-kyu ུ", w: ["gi-gu ི", "'dreng-bu ེ", "na-ro ོ"] },
+    { q: "How many vowel marks does written Tibetan use?", a: "Four", w: ["Three", "Five", "Seven"] },
+    { q: "Which letter is used as the neutral carrier when a vowel stands on its own?", a: "ཨ", w: ["འ", "ཡ", "ཧ"] },
+    { q: "When you spell aloud, which comes first?", a: "The root letter, then the vowel", w: ["The vowel, then the root letter", "Whichever is written higher", "The order changes"] }
+  ];
+  shuffle(allRules).slice(0, 3).forEach(r => {
+    qs.push({
+      questionText: r.q, answer: r.a,
+      choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
+    });
+  });
+
+  return shuffle(qs).slice(0, 40);
+}

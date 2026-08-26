@@ -1,3 +1,4 @@
+// app/components/QuizModule.tsx
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -7,6 +8,64 @@ import {
   Lock, CheckCircle2, XCircle, Shuffle, ArrowRight 
 } from "lucide-react";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
+
+export interface QuizChoice {
+  value: string;
+  tib?: string;
+  translit?: string;
+  pron?: string;
+  en?: string;
+  emoji?: string;
+  label?: string;
+  isTibetan?: boolean;
+}
+
+export interface QuizDataRow {
+  tib: string;
+  translit?: string;
+  pron?: string;
+  en?: string;
+  emoji?: string;
+  label?: string;
+  audio?: string;
+  [key: string]: unknown;
+}
+
+export interface QuizQuestion {
+  isAudioType?: boolean;
+  type?: string;
+  questionText?: string;
+  promptText?: string;
+  promptHighlight?: string;
+  promptAudio?: string;
+  promptEnd?: string;
+  explanation?: string;
+  prominentTibetan?: string;
+  answer: string;
+  audioString?: string;
+  audioTarget?: string;
+  answerObj?: QuizDataRow;
+  choices: QuizChoice[];
+}
+
+interface QuizModuleProps {
+  title: string;
+  intro?: string;
+  data?: QuizDataRow[];
+  questions?: QuizQuestion[];
+  playAudio: (text: string) => void;
+  playingItem: string | null;
+  playErrorBeep: () => void;
+  questionCount?: number;
+  isUnlockTest?: boolean;
+  isVocabMatch?: boolean;
+  nextLessonPath?: string;
+  isLesson1?: boolean;
+  onPass?: () => void;
+  variant?: "default" | "panel";
+  accentColor?: string;
+  isNightMode?: boolean;
+}
 
 export default function QuizModule({ 
   title, 
@@ -21,25 +80,25 @@ export default function QuizModule({
   isVocabMatch,
   nextLessonPath,
   isLesson1,
-  onPass
-}: any) {
+  onPass,
+  variant = "default",
+  accentColor,
+  isNightMode = false
+}: QuizModuleProps) {
+
   const router = useRouter();
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  
-  // 🚨 ADDED: A flag to prevent the infinite loop
   const [hasAutoSaved, setHasAutoSaved] = useState(false);
   
-
-
-const questions = useMemo(() => {
+  const questions = useMemo(() => {
     if (providedQuestions) return providedQuestions;
     if (!data) return [];
     
-    const qs = [];
+    const qs: QuizQuestion[] = [];
     // Shuffle the deck so we draw unique questions without replacement
     const shuffledData = [...data].sort(() => 0.5 - Math.random());
     
@@ -47,7 +106,7 @@ const questions = useMemo(() => {
       const isAudioType = !isVocabMatch && Math.random() > 0.5;
       // Draw the next unique item (loops back around safely if count > data length)
       const answer = shuffledData[i % shuffledData.length];
-      const wrongs = data.filter((x: any) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const wrongs = data.filter((x: QuizDataRow) => x.tib !== answer.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
       const choices = [answer, ...wrongs].sort(() => 0.5 - Math.random());
       
       qs.push({
@@ -55,7 +114,7 @@ const questions = useMemo(() => {
         answer: answer.tib,
         audioString: answer.audio || answer.tib,
         answerObj: answer,
-        choices: choices.map(c => ({
+        choices: choices.map((c: QuizDataRow) => ({
           value: c.tib,
           tib: c.tib,
           translit: c.translit, 
@@ -72,7 +131,7 @@ const questions = useMemo(() => {
   const total = providedQuestions ? providedQuestions.length : questionCount;
   const currentQ = questions[step];
 
-  // 🚨 FIXED: Now checks if we have already saved to prevent infinite re-renders
+  // Checks if we have already saved to prevent infinite re-renders
   useEffect(() => {
     if (step >= total && !hasAutoSaved) {
       const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
@@ -116,6 +175,26 @@ const questions = useMemo(() => {
   }
 
   if (step >= total) {
+    // Render compact panel finish screen if using the panel variant
+    if (variant === 'panel') {
+      return (
+        <div 
+          className="flex flex-wrap items-center justify-between gap-4 p-5 border bg-surface"
+          style={isNightMode ? { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' } : { borderColor: 'var(--color-border-strong)' }}
+        >
+          <div className={`text-[15px] font-bold ${isNightMode ? "text-stone-200" : "text-ink"}`}>
+            Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: accentColor || 'var(--color-brand)' }}>{score}</span> / {total}.
+          </div>
+          <button 
+            onClick={() => { setStep(0); setScore(0); setPicked(null); setHasAutoSaved(false); }} 
+            className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium border transition-colors ${isNightMode ? "bg-white/10 text-white border-white/20 hover:bg-white/20" : "bg-transparent text-ink border-border-strong hover:bg-surface-muted"}`}
+          >
+            <Shuffle size={14} /> Try again
+          </button>
+        </div>
+      );
+    }
+
     const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
     
     const handleUnlock = async () => {
@@ -137,7 +216,6 @@ const questions = useMemo(() => {
         
         <div className="flex gap-4">
           <button 
-            // 🚨 FIXED: reset `hasAutoSaved` here so you can test again if you click Retake
             onClick={() => { setStep(0); setScore(0); setPicked(null); setHasAutoSaved(false); if(isUnlockTest) setHasStarted(false); }} 
             className="px-6 py-3 bg-white border border-stone-200 font-bold hover:bg-stone-50 transition-colors text-stone-700 flex items-center gap-2 disabled:opacity-50" 
             disabled={isSaving}
@@ -174,8 +252,7 @@ const questions = useMemo(() => {
     }
   };
 
- 
- const isVocab = isVocabMatch || 
+  const isVocab = isVocabMatch || 
                   currentQ.type === 'vocab' || 
                   (currentQ.questionText && (
                     currentQ.questionText.includes("Tibetan word for") || 
@@ -185,61 +262,101 @@ const questions = useMemo(() => {
  
   const readingToDisplay = isLesson1 ? (currentQ.answerObj?.translit || currentQ.answerObj?.pron) : (currentQ.answerObj?.pron || currentQ.answerObj?.translit);
 
+  let containerClass = `border ${variant === 'panel' ? '' : 'p-6 md:p-8'} `;
+  if (variant === 'default') {
+    containerClass += isUnlockTest ? 'bg-white border-stone-200 shadow-sm ' : 'bg-[#fffdf5] border-[#fde68a] ';
+  }
+  
+  const textInkClass = isNightMode ? 'text-stone-200' : 'text-stone-900';
+  const textMutedClass = isNightMode ? 'text-stone-400' : 'text-stone-500';
+  const textLightClass = isNightMode ? 'text-stone-300' : 'text-stone-600';
+  const borderClass = isNightMode ? 'border-white/10' : 'border-stone-200';
+
   return (
-    <div className={`border p-6 md:p-8 ${isUnlockTest ? 'bg-white border-stone-200 shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
-      {!isUnlockTest && (
+    <div className={containerClass}>
+      {variant === 'default' && !isUnlockTest && (
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
           <Sparkles size={14} /> Checkpoint
         </div>
       )}
-      <h3 className="text-xl font-serif text-stone-900 mb-2">{title}</h3>
-      {intro && <p className="text-sm text-stone-600 mb-6">{intro}</p>}
+      
+      {variant === 'default' && (
+        <>
+          <h3 className={`text-xl font-serif mb-2 ${textInkClass}`}>{title}</h3>
+          {intro && <p className={`text-sm mb-6 ${textLightClass}`}>{intro}</p>}
+        </>
+      )}
 
-      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400 border-b border-stone-200 pb-3 mb-6">
-        <span>Question {step + 1} of {total}</span>
-        <span className="text-amber-500">Score {score}</span>
+      <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-widest border-b pb-3 mb-6 ${textMutedClass} ${borderClass}`}>
+        <span>{variant === 'panel' && title ? `${title} · ` : ''}Question {step + 1} of {total}</span>
+        <span style={{ color: accentColor || '#f59e0b' }}>Score {score}</span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-        <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2">Prompt</div>
-          {currentQ.questionText ? (
-            <span className="text-xl text-stone-800">{currentQ.questionText}</span>
-          ) : isVocab ? (
-            <span className="text-xl text-stone-800">Which word means <span className="font-bold">"{currentQ.answerObj?.en}"</span>?</span>
-          ) : currentQ.isAudioType ? (
-            <span className="text-xl text-stone-800">Listen and select the matching option.</span>
-          ) : (
-            <span className="text-xl text-stone-800">Which option reads <span className="font-mono bg-stone-100 px-2 py-0.5 border border-stone-200">{readingToDisplay}</span>?</span>
+      {currentQ.promptText ? (
+        // NEW MINI-MASTERY PROMPT STYLE
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <span className={`text-[15px] font-bold ${textLightClass}`}>{currentQ.promptText}</span>
+          {currentQ.promptHighlight && (
+            currentQ.promptAudio ? (
+              <button onClick={() => playAudio(currentQ.promptAudio!)} disabled={playingItem !== null} className={`group relative font-tibetan text-3xl font-bold border px-4 py-2 flex items-center gap-3 shadow-sm transition-colors ${isNightMode ? 'bg-white/10 border-white/20 text-white hover:border-white/40' : 'border-border-strong bg-surface text-ink hover:text-brand hover:border-brand'}`}>
+                <span className="pt-1">{currentQ.promptHighlight}</span>
+                {playingItem === currentQ.promptAudio ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className={`text-ink-muted group-hover:text-brand transition-colors ${isNightMode && !playingItem ? 'text-stone-400' : ''}`} />}
+              </button>
+            ) : (
+              <span className={`font-tibetan text-3xl font-bold border px-4 py-2 ${isNightMode ? 'bg-white/10 border-white/20 text-white' : 'border-border-strong bg-surface text-ink'}`}>
+                <span className="pt-1">{currentQ.promptHighlight}</span>
+              </span>
+            )
+          )}
+          {currentQ.promptEnd && <span className={`text-[15px] font-bold ${textLightClass}`}>{currentQ.promptEnd}</span>}
+        </div>
+      ) : (
+        // STANDARD PROMPT STYLE
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <div className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${textMutedClass}`}>Prompt</div>
+            {currentQ.questionText ? (
+              <span className={`text-xl ${textInkClass}`}>{currentQ.questionText}</span>
+            ) : isVocab ? (
+              <span className={`text-xl ${textInkClass}`}>Which word means <span className="font-bold">"{currentQ.answerObj?.en}"</span>?</span>
+            ) : currentQ.isAudioType ? (
+              <span className={`text-xl ${textInkClass}`}>Listen and select the matching option.</span>
+            ) : (
+              <span className={`text-xl ${textInkClass}`}>Which option reads <span className={`font-mono px-2 py-0.5 border ${isNightMode ? 'bg-white/10 border-white/20' : 'bg-stone-100 border-stone-200'}`}>{readingToDisplay}</span>?</span>
+            )}
+            
+            {currentQ.prominentTibetan && (
+              <div className="mt-4"><span className={`font-serif leading-[1.4] pb-4 block ${textInkClass}`} style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span></div>
+            )}
+          </div>
+          
+          {(!isVocab && !currentQ.questionText) && !currentQ.prominentTibetan && (
+            <button onClick={() => playAudio(currentQ.audioString || currentQ.answer)} disabled={playingItem !== null} className={`inline-flex items-center justify-center gap-2 border px-5 py-2 font-bold transition-colors shrink-0 ${isNightMode ? 'bg-white/10 text-white border-white/20 hover:bg-white/20' : currentQ.isAudioType ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
+               {playingItem === (currentQ.audioString || currentQ.answer) ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} 
+               {currentQ.isAudioType ? "PLAY AUDIO" : "Play Hint"}
+            </button>
           )}
           
-          {currentQ.prominentTibetan && (
-            <div className="mt-4"><span className="font-serif leading-[1.4] pb-4 block text-stone-900" style={{ fontSize: "7rem" }}>{currentQ.prominentTibetan}</span></div>
+          {currentQ.audioString && !currentQ.prominentTibetan && currentQ.questionText && (
+            <button onClick={() => playAudio(currentQ.audioString!)} disabled={playingItem !== null} className={`inline-flex items-center gap-2 border px-6 py-2.5 text-sm font-bold transition-colors shadow-sm mt-4 sm:mt-0 shrink-0 ${isNightMode ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' : 'border-black/10 bg-white text-stone-700 hover:bg-stone-100'}`}>
+              {playingItem === currentQ.audioString ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className={isNightMode ? "" : "text-amber-500"} />} Hear Sound
+            </button>
           )}
         </div>
-        
-        {(!isVocab && !currentQ.questionText) && !currentQ.prominentTibetan && (
-          <button onClick={() => playAudio(currentQ.audioString || currentQ.answer)} disabled={playingItem !== null} className={`inline-flex items-center justify-center gap-2 border px-5 py-2 font-bold transition-colors shrink-0 ${currentQ.isAudioType ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}>
-             {playingItem === (currentQ.audioString || currentQ.answer) ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} 
-             {currentQ.isAudioType ? "PLAY AUDIO" : "Play Hint"}
-          </button>
-        )}
-        
-        {currentQ.audioString && !currentQ.prominentTibetan && currentQ.questionText && (
-          <button onClick={() => playAudio(currentQ.audioString)} disabled={playingItem !== null} className="inline-flex items-center gap-2 border border-black/10 bg-white px-6 py-2.5 text-sm font-bold text-stone-700 hover:bg-stone-100 transition-colors shadow-sm mt-4 sm:mt-0 shrink-0">
-            {playingItem === currentQ.audioString ? <Loader2 size={16} className="animate-spin text-amber-500" /> : <Volume2 size={16} className="text-amber-500" />} Hear Sound
-          </button>
-        )}
-      </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {currentQ.choices.map((c: any) => {
+        {currentQ.choices.map((c: QuizChoice) => {
           const isRight = picked && c.value === currentQ.answer;
           const isWrong = picked === c.value && c.value !== currentQ.answer;
-          let stateClass = "bg-white border-stone-200 hover:border-amber-400 text-stone-900 hover:shadow-sm";
-          if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400 cursor-pointer hover:bg-emerald-100";
-          else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400 opacity-60";
-          else if (picked) stateClass = "bg-stone-50 text-stone-300 opacity-60 border-stone-200";
+          
+          let stateClass = isNightMode 
+            ? "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 text-white" 
+            : "bg-white border-stone-200 hover:border-brand hover:bg-brand-light text-stone-900 hover:shadow-sm";
+            
+          if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-500 cursor-pointer hover:bg-emerald-100 shadow-sm";
+          else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400 opacity-80";
+          else if (picked) stateClass = isNightMode ? "bg-white/5 border-white/5 text-stone-500 opacity-50" : "bg-stone-50 text-stone-300 opacity-60 border-stone-200";
 
           return (
             <button
@@ -247,21 +364,21 @@ const questions = useMemo(() => {
               disabled={!!picked && !isRight} 
               onClick={() => {
                 if (!picked) pick(c.value);
-                else if (isRight) playAudio(currentQ.audioString || currentQ.answer);
+                else if (isRight) playAudio(currentQ.audioTarget || currentQ.audioString || currentQ.answer);
               }}
-              className={`relative py-6 px-4 text-center transition-all flex flex-col items-center justify-center border ${stateClass}`}
+              className={`relative ${variant === 'panel' ? 'py-4 md:py-6' : 'py-6'} px-4 text-center transition-all flex flex-col items-center justify-center border-2 ${stateClass}`}
             >
               {isRight && (
-                <div className="absolute top-3 right-3 text-emerald-600 opacity-70">
-                  {playingItem === (currentQ.audioString || currentQ.answer) ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />}
+                <div className="absolute top-2 right-2 text-emerald-600 opacity-70">
+                  {playingItem === (currentQ.audioTarget || currentQ.audioString || currentQ.answer) ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
                 </div>
               )}
               {c.label ? (
-                <div className={`text-lg md:text-xl font-bold ${currentQ.type === 'combo' ? 'font-mono tracking-widest' : 'font-sans'}`}>{c.label}</div>
+                <div className={`text-lg md:text-xl font-bold ${c.isTibetan ? 'font-tibetan text-[2rem] pt-2' : currentQ.type === 'combo' ? 'font-mono tracking-widest' : 'font-sans'}`}>{c.label}</div>
               ) : (
                 <>
                   {c.emoji && !isVocab && <span className="text-3xl mb-2">{c.emoji}</span>}
-                  <span className="font-tibetan text-[3rem] leading-normal pb-2">{c.tib || c.value}</span>
+                  <span className="font-tibetan text-[3rem] sm:text-[3.5rem] leading-normal pb-2">{c.tib || c.value}</span>
                 </>
               )}
             </button>
@@ -270,11 +387,11 @@ const questions = useMemo(() => {
       </div>
 
       {picked && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border bg-stone-50 border-stone-200 shadow-sm">
+        <div className={`mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border shadow-sm ${isNightMode ? 'bg-white/5 border-white/10' : 'bg-stone-50 border-stone-200'}`}>
           <span className={`text-sm font-bold ${picked === currentQ.answer ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === currentQ.answer ? "Correct!" : `Incorrect.`}
+            {picked === currentQ.answer ? "Correct!" : currentQ.explanation || `Incorrect.`}
           </span>
-          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 px-6 py-2.5 text-sm font-bold text-white hover:bg-stone-800 transition shadow-sm">
+          <button onClick={() => { setPicked(null); setStep((s) => s + 1); }} className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold transition shadow-sm ${isNightMode ? 'bg-white text-stone-900 hover:bg-stone-200' : 'bg-stone-900 text-white hover:bg-stone-800'}`}>
             {step + 1 === total ? 'See Results' : 'Next'} <ArrowRight size={16} />
           </button>
         </div>

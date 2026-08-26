@@ -12,7 +12,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 
 // --- Data ---
-import { SUFFIXES, VOCAB, QUIZ, STEPS, FAMILY_META, VOWEL_SHIFTS, type SuffixKey, type Family } from "@/app/data/lesson6";
+import { SUFFIXES, VOCAB, QUIZ, STEPS, FAMILY_META, VOWEL_SHIFTS, generateVocabQuiz, generateFinalQuiz, POST_SUFFIX_QUESTIONS, ROOT_LETTER_QUESTIONS, type SuffixKey, type Family } from "@/app/data/lesson6";
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
@@ -20,6 +20,7 @@ import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
+import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export default function SuffixesLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
@@ -49,215 +50,10 @@ export default function SuffixesLesson() {
 
 
 
-const quizQuestions = useMemo(() => {
-    const qs: any[] = [];
-    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
-
-    const ALL_SUF_EXAMPLES = SUFFIXES.flatMap(s => s.examples.map(e => ({ ...e, sufKey: s.key, head: s.head, latin: s.latin, family: s.family, reads: s.reads })));
-    const GLOSSED_EXAMPLES = ALL_SUF_EXAMPLES.filter(e => !!e.gloss);
-
-    // 1. listenWordQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
-        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
-      });
-    });
-
-    // 2. listenMeanQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
-        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 3. readQs (take 4)
-    shuffle(ALL_SUF_EXAMPLES).slice(0, 4).forEach(e => {
-      qs.push({
-        questionText: `How is ${e.word} pronounced?`, prominentTibetan: e.word, answer: e.read, audioString: e.word,
-        choices: shuffle([e.read, ...pickWrongs(ALL_SUF_EXAMPLES.map(x => x.read), e.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
-      });
-    });
-
-// 4. whichSuffixQs (take 3)
-    shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
-      qs.push({
-        questionText: `Which suffix closes the syllable ${e.word}?`, prominentTibetan: e.word, answer: e.latin, audioString: e.word,
-        // CHANGED: Removed the Tibetan character so they must rely on the phonetic
-        choices: shuffle([e.latin, ...pickWrongs(SUFFIXES.map(s => s.latin), e.latin, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 5. familyQs (take 3)
-    shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
-      const answerLabel = FAMILY_META[e.family as Family].label;
-      const wrongs = Object.keys(FAMILY_META).filter(k => k !== e.family).map(k => FAMILY_META[k as Family].label);
-      qs.push({
-        questionText: `What does the suffix do at the end of ${e.word}?`, prominentTibetan: e.word, answer: answerLabel, audioString: e.word,
-        choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 6. soundOfSuffixQs (take 3)
-    shuffle(SUFFIXES).slice(0, 3).forEach(s => {
-      qs.push({
-        questionText: `How does the suffix ${s.head} sound at the end of a syllable?`, prominentTibetan: s.head, answer: s.reads, audioString: s.head,
-        choices: shuffle([s.reads, ...pickWrongs(SUFFIXES.map(x => x.reads), s.reads, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 7. suffixFamilyQs (take 3)
-    shuffle(SUFFIXES).slice(0, 3).forEach(s => {
-      const answerLabel = FAMILY_META[s.family as Family].label;
-      const wrongs = Object.keys(FAMILY_META).filter(k => k !== s.family).map(k => FAMILY_META[k as Family].label);
-      qs.push({
-        questionText: `Which group does the suffix ${s.head} belong to?`, prominentTibetan: s.head, answer: answerLabel, audioString: s.head,
-        choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 8. glossQs (take 3)
-    shuffle(GLOSSED_EXAMPLES).slice(0, 3).forEach(e => {
-      qs.push({
-        questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: e.gloss, audioString: e.word,
-        choices: shuffle([e.gloss, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.gloss), e.gloss, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 9. glossWordQs (take 2)
-    shuffle(GLOSSED_EXAMPLES).slice(0, 2).forEach(e => {
-      qs.push({
-        questionText: `Which syllable means "${e.gloss}"?`, answer: e.word, audioString: e.word,
-        choices: shuffle([e.word, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.word), e.word, 3)]).map(x => ({ value: x, tib: x }))
-      });
-    });
-
-    // 10. oddQs (take 2) - Filter to only suffixes with 3+ examples to prevent empty box glitch
-    shuffle(SUFFIXES.filter(s => s.examples.length >= 3)).slice(0, 2).forEach(suf => {
-      const members = ALL_SUF_EXAMPLES.filter(e => e.sufKey === suf.key);
-      const oddOne = shuffle(ALL_SUF_EXAMPLES.filter(e => e.sufKey !== suf.key))[0];
-      qs.push({
-        questionText: `Which word does NOT use the suffix ${suf.head}?`, answer: oddOne.word,
-        choices: shuffle([...shuffle(members).slice(0, 3).map(m => m.word), oddOne.word]).map(x => ({ value: x, tib: x }))
-      });
-    });
-
-    // 11. vocabReadQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.read, audioString: v.tib,
-        choices: shuffle([v.read, ...pickWrongs(VOCAB.map(x => x.read), v.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
-      });
-    });
-
-    // 12. vocabMeanQs (take 4)
-    shuffle(VOCAB).slice(0, 4).forEach(v => {
-      qs.push({
-        questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
-        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 13. vocabWordQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
-        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
-      });
-    });
-
-    // 14. vocabSuffixQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      const suffixName = SUFFIXES.find(s => s.key === v.suffix)?.latin || v.suffix;
-      qs.push({
-        questionText: `Which suffix ends ${v.tib}?`, prominentTibetan: v.tib, answer: suffixName, audioString: v.tib,
-        choices: shuffle([suffixName, ...pickWrongs(SUFFIXES.map(s => s.latin), suffixName, 3)]).map(x => {
-           const s = SUFFIXES.find(suf => suf.latin === x);
-           return { value: x, label: s ? `${s.head} ${s.latin}` : x };
-        })
-      });
-    });
-
-    // 15. ruleQs (take 4)
-    const allRules = [
-      { q: "How many letters can serve as suffixes?", a: "10", w: ["5", "8", "12"] },
-      { q: "Where does a suffix sit in the syllable?", a: "After the root letter, closing the syllable", w: ["Before the root letter", "Beneath the root letter", "Above the root letter"] },
-      { q: "Which two suffixes colour the vowel toward [e]?", a: "ད  ས", w: ["ག  ང", "ན  མ", "ར  ལ"] },
-      { q: "With the suffix ས, the vowel [u] is pronounced how?", a: "[ü]", w: ["[u] unchanged", "[o]", "[i]"] },
-      { q: "Which suffixes give a nasal ending?", a: "ང  ན  མ", w: ["ག  ད  ས", "ར  ལ  འ", "བ  མ  ས"] },
-      { q: "How is the suffix ག heard in speech?", a: "As a light glottal closure — almost silent", w: ["As a clear hard [g]", "As a nasal [ng]", "It lengthens the vowel"] },
-      { q: "How does the suffix ལ behave?", a: "It is largely silent, colouring the syllable toward [el]", w: ["It is pronounced as a strong [l]", "It nasalises the vowel", "It makes the syllable high tone"] }
-    ];
-    shuffle(allRules).slice(0, 4).forEach(r => {
-      qs.push({
-        questionText: r.q, answer: r.a,
-        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
-      });
-    });
-
-    // Return exactly 40 shuffled questions
-    return shuffle(qs).slice(0, 40);
-  }, []);
-
-
-  const postSuffixQuestions = useMemo(() => [
-    { promptText: "Which two letters can act as post-suffixes?", answer: "da-sa", choices: [{label: "ད and ས", value: "da-sa", isTibetan: true}, {label: "ག and ང", value: "ga-nga", isTibetan: true}, {label: "བ and མ", value: "ba-ma", isTibetan: true}, {label: "ན and ལ", value: "na-la", isTibetan: true}], explanation: "Only ད (da) and ས (sa) can be used as post-suffixes." },
-    { promptText: "Do post-suffixes change how a word is pronounced?", answer: "no", choices: [{label: "Yes", value: "yes"}, {label: "No", value: "no"}], explanation: "Post-suffixes are completely silent and do not alter the pronunciation." },
-    { promptText: "Which post-suffix is still used in modern spelling?", answer: "sa", choices: [{label: "ད", value: "da", isTibetan: true}, {label: "ས", value: "sa", isTibetan: true}], explanation: "The post-suffix ས (sa) is still written today to distinguish homophones, while ད (da) is historical." },
-  ], []);
-
-
-const rootLetterQuestions = useMemo(() => [
-    { promptText: "Identify the root letter in", promptHighlight: "དགེ་", promptAudio: "དགེ་", answer: "ག", audioTarget: "ག", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}], explanation: "Rule 1: It carries a vowel, so ག is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "བཞི་", promptAudio: "བཞི་", answer: "ཞ", audioTarget: "ཞ", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ཞ", value: "ཞ", isTibetan: true}], explanation: "Rule 1: It carries a vowel, so ཞ is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "འགྲོ་", promptAudio: "འགྲོ་", answer: "ག", audioTarget: "ག", choices: [{label: "འ", value: "འ", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}], explanation: "Rule 1: It carries the subscript and vowel, so ག is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "བསྒྲིམས་", promptAudio: "བསྒྲིམས་", answer: "ག", audioTarget: "ག", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}], explanation: "Rule 1: ག carries the vowel and subscript, making it the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "ཁང་", promptAudio: "ཁང་", answer: "ཁ", audioTarget: "ཁ", choices: [{label: "ཁ", value: "ཁ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ཁ) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "ནད་", promptAudio: "ནད་", answer: "ན", audioTarget: "ན", choices: [{label: "ན", value: "ན", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ན) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "ལམ་", promptAudio: "ལམ་", answer: "ལ", audioTarget: "ལ", choices: [{label: "ལ", value: "ལ", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ལ) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "རབ་", promptAudio: "རབ་", answer: "ར", audioTarget: "ར", choices: [{label: "ར", value: "ར", isTibetan: true}, {label: "བ", value: "བ", isTibetan: true}], explanation: "Rule 2: Two bare letters. The first (ར) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "གསལ་", promptAudio: "གསལ་", answer: "ས", audioTarget: "ས", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}, {label: "ལ", value: "ལ", isTibetan: true}], explanation: "Rule 3: Three bare letters (not ending in ད/ས). The middle (ས) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "དཀར་", promptAudio: "དཀར་", answer: "ཀ", audioTarget: "ཀ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "ཀ", value: "ཀ", isTibetan: true}, {label: "ར", value: "ར", isTibetan: true}], explanation: "Rule 3: Three bare letters (not ending in ད/ས). The middle (ཀ) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "ཁམས་", promptAudio: "ཁམས་", answer: "ཁ", audioTarget: "ཁ", choices: [{label: "ཁ", value: "ཁ", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 3: Three bare letters ending in ས. The first (ཁ) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "གངས་", promptAudio: "གངས་", answer: "ག", audioTarget: "ག", choices: [{label: "ག", value: "ག", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 3: Three bare letters ending in ས. The first (ག) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "མངགས་", promptAudio: "མངགས་", answer: "ང", audioTarget: "ང", choices: [{label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (ང) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "བདགས་", promptAudio: "བདགས་", answer: "ད", audioTarget: "ད", choices: [{label: "བ", value: "བ", isTibetan: true}, {label: "ད", value: "ད", isTibetan: true}, {label: "ག", value: "ག", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (ད) is the root." },
-    { promptText: "Identify the root letter in", promptHighlight: "དམངས་", promptAudio: "དམངས་", answer: "མ", audioTarget: "མ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (མ) is the root." },
-  ], []);
-
-
-  const vocabQuestions = useMemo(() => {
-    const qs = [];
-    for (const v of VOCAB) {
-      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
-      
-      if (Math.random() > 0.5) {
-        qs.push({
-          isAudioType: true,
-          type: 'base',
-          questionText: "Listen and select the matching option.",
-          answer: v.tib,
-          audioString: v.tib,
-          answerObj: v,
-          choices
-        });
-      } else {
-        qs.push({
-          isAudioType: false,
-          type: 'vocab',
-          questionText: `Which word means "${v.en}"?`,
-          answer: v.tib,
-          audioString: v.tib,
-          answerObj: v,
-          choices
-        });
-      }
-    }
-    return qs.sort(() => 0.5 - Math.random());
-  }, []);
+const quizQuestions = useMemo(() => generateFinalQuiz(), []);
+  const postSuffixQuestions = POST_SUFFIX_QUESTIONS;
+  const rootLetterQuestions = ROOT_LETTER_QUESTIONS;
+  const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
@@ -579,14 +375,24 @@ const rootLetterQuestions = useMemo(() => [
               </Card>
             </div>
 
-            <div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
+            
+			<div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
               <div className="flex items-center gap-2 mb-6">
                 <CheckCircle2 className="size-5 text-sky-700" />
                 <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Post-Suffix Mastery Check</span>
               </div>
-              <MiniMastery questions={postSuffixQuestions} playAudio={playAudio} playErrorBeep={playErrorBeep} title="Post-Suffixes" />
+              <QuizModule 
+                title="Post-Suffixes"
+                variant="panel"
+                accentColor="#0369a1"
+                questions={postSuffixQuestions} 
+                playAudio={playAudio} 
+                playingItem={playingItem}
+                playErrorBeep={playErrorBeep} 
+              />
             </div>
           </StepContainer>
+			
 
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
              <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
@@ -622,14 +428,24 @@ const rootLetterQuestions = useMemo(() => [
 
 		
 
-            <div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
+            
+			<div className="mt-12 border border-border-strong bg-surface-muted p-6 md:p-8">
               <div className="flex items-center gap-2 mb-6">
                 <CheckCircle2 className="size-5 text-brand-dark" />
                 <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Root Letter Mastery Check</span>
               </div>
-              <MiniMastery questions={rootLetterQuestions} playAudio={playAudio} playErrorBeep={playErrorBeep} title="Root Letter ID" />
+              <QuizModule 
+                title="Root Letter ID"
+                variant="panel"
+                accentColor="var(--color-brand-dark)"
+                questions={rootLetterQuestions} 
+                playAudio={playAudio} 
+                playingItem={playingItem}
+                playErrorBeep={playErrorBeep} 
+              />
             </div>
           </StepContainer>
+			
 
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
@@ -637,22 +453,22 @@ const rootLetterQuestions = useMemo(() => [
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong">{VOCAB.length} words</span>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mb-10">
-              {VOCAB.map((v) => (
-                <button key={v.tib} onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-3 border border-border-strong bg-surface p-5 text-left transition hover:-translate-y-1 hover:shadow-md">
-                  <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: SUFFIXES.find(s => s.key === v.suffix)?.accent || "#000" }} />
-                  <div className="flex w-full items-start justify-between">
-                    <span className="text-3xl">{v.emoji}</span>
-                    {playingItem === v.tib ? <Loader2 size={14} className="animate-spin text-brand" /> : <Volume2 size={14} className="text-ink-muted group-hover:text-brand transition-colors" />}
-                  </div>
-                  <div className="font-tibetan text-[2rem] leading-none text-ink mt-2">{v.tib}</div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">[{v.read}]</div>
-                  <div className="text-sm font-bold text-ink-light mt-1 border-t border-border-strong pt-3 w-full">{v.en}</div>
-                </button>
-              ))}
+            <div className="mb-10">
+              <VocabGrid 
+                items={VOCAB.map(v => ({
+                  tib: v.tib, pron: `[${v.read}]`, en: v.en, emoji: v.emoji, groupId: v.suffix,
+                  accentHex: SUFFIXES.find(s => s.key === v.suffix)?.accent
+                }))}
+                groups={SUFFIXES.filter(s => VOCAB.some(v => v.suffix === s.key)).map(s => ({ 
+                  id: s.key, label: s.latin, hex: s.accent 
+                }))}
+                playAudio={playAudio}
+                playingItem={playingItem}
+              />
             </div>
 
-            <QuizModule 
+            <QuizModule
+		  
               title="Vocabulary Mastery Check" 
               intro="Check your memory of the new suffix words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
@@ -792,16 +608,13 @@ function SuffixPanel({ s, night, playAudio, playingItem, playErrorBeep }: any) {
           <CheckCircle2 size={18} style={{ color: s.accent }} />
           <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · Suffix {s.latin}</span>
         </div>
-        <SuffixMiniMastery key={s.key} s={s} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SuffixMiniMasteryLoader key={s.key} s={s} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function SuffixMiniMastery({ s, night, playAudio, playingItem, playErrorBeep }: any) {
-  const [step, setStep] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
+function SuffixMiniMasteryLoader({ s, night, playAudio, playingItem, playErrorBeep }: any) {
   const [seed, setSeed] = useState(0);
 
   const questions = useMemo(() => {
@@ -809,143 +622,34 @@ function SuffixMiniMastery({ s, night, playAudio, playingItem, playErrorBeep }: 
     return shuffled.map((answer: any) => {
       const allOtherExamples = SUFFIXES.flatMap(x => x.examples).filter(x => x.word !== answer.word);
       const wrongs = allOtherExamples.sort(() => 0.5 - Math.random()).slice(0, 3);
-      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random());
-      return { answer, choices };
+      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random()).map((x: any) => ({
+        value: x.word,
+        tib: x.word
+      }));
+      
+      return {
+        answer: answer.word,
+        promptText: "Which word reads",
+        promptHighlight: `[${answer.read}]`,
+        promptEnd: answer.gloss ? `“${answer.gloss}”` : undefined,
+        audioTarget: answer.word,
+        explanation: `${answer.word} reads [${answer.read}].`,
+        choices
+      };
     });
   }, [s.key, seed]);
 
-  const total = questions.length;
-  const question = questions[step] || questions[0];
-
-  const pick = (word: string) => {
-    if (picked) return;
-    setPicked(word);
-    if (word === question.answer.word) { 
-      setScore(sc => sc + 1); 
-      playAudio(question.answer.word); 
-    } else { 
-      playErrorBeep(); 
-    }
-  };
-
-  if (step >= total) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
-        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: s.accent }}>{score}</span> / {total} on suffix {s.latin}.</div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); setSeed(sd => sd + 1); }}><Shuffle size={14} /> Try again</Button>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-        <span className={night ? "text-stone-400" : "text-ink-muted"}>Question {step + 1} of {total}</span>
-        <span style={{ color: s.accent }}>Score {score}</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <span className={`text-[15px] font-bold ${night ? "text-stone-300" : "text-ink-light"}`}>Which word reads</span>
-        <span className={`font-mono text-2xl font-bold border px-3 py-1 ${night ? "bg-white/10 border-white/20 text-white" : "bg-surface border-border-strong text-ink"}`}>[{question.answer.read}]</span>
-        {question.answer.gloss && <span className={`italic font-bold ${night ? "text-stone-400" : "text-ink-light"}`}>“{question.answer.gloss}”</span>}
-        <Button variant="outline" onClick={() => playAudio(question.answer.word)} disabled={playingItem !== null} className={`px-3 py-2 ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : ""}`}>
-          {playingItem === question.answer.word ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "" : "text-brand"} />}
-        </Button>
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {question.choices.map((c: any) => {
-          const right = picked && c.word === question.answer.word;
-          const wrong = picked === c.word && c.word !== question.answer.word;
-          return (
-            <button key={c.word} disabled={!!picked} onClick={() => pick(c.word)} className={`flex aspect-[3/2] items-center justify-center border-2 font-tibetan text-3xl leading-normal pb-2 transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"}`}>
-              {c.word}
-            </button>
-          );
-        })}
-      </div>
-      {picked && (
-        <div className={`mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border shadow-sm ${night ? "bg-white/5 border-white/10" : "bg-surface border-border-strong"}`}>
-          <span className={`text-sm font-bold ${picked === question.answer.word ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === question.answer.word ? `Correct — ${question.answer.word} reads [${question.answer.read}].` : `Answer: ${question.answer.word} reads [${question.answer.read}].`}
-          </span>
-          <Button variant="primary" onClick={() => { setPicked(null); setStep(st => st + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MiniMastery({ questions: initialQuestions, playAudio, playErrorBeep, playingItem, title = "Mastery Check" }: any) {
-  const [step, setStep] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
-  const [seed, setSeed] = useState(0);
-
-  const questions = useMemo(() => {
-    return [...initialQuestions].sort(() => 0.5 - Math.random());
-  }, [initialQuestions, seed]);
-
-  const question = questions[step % questions.length];
-  const total = questions.length;
-
-  const pick = (val: string) => {
-    if (picked) return;
-    setPicked(val);
-    if (val === question.answer) {
-      setScore(s => s + 1);
-      if (question.audioTarget) playAudio(question.audioTarget);
-    } else { playErrorBeep(); }
-  };
-
-  if (step >= total) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
-        <div className="text-[15px] font-bold text-ink">Nicely done. You scored <span className="font-serif text-2xl mx-1 text-brand-dark">{score}</span> / {total}.</div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); setSeed(s => s + 1); }}><Shuffle size={14} /> Try again</Button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="mb-6 flex items-center justify-between text-eyebrow text-ink-muted">
-        <span>{title} · Question {step + 1} of {total}</span>
-        <span className="text-brand-dark">Score {score}</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <span className="text-[15px] font-bold text-ink-light">{question.promptText}</span>
-        {question.promptHighlight && (
-          question.promptAudio ? (
-            <button onClick={() => playAudio(question.promptAudio)} disabled={playingItem !== null} className="group relative font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink hover:text-brand hover:border-brand transition-colors flex items-center gap-3 shadow-sm">
-              <span className="pt-1">{question.promptHighlight}</span>
-              {playingItem === question.promptAudio ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-ink-muted group-hover:text-brand transition-colors" />}
-            </button>
-          ) : (
-            <span className="font-tibetan text-3xl font-bold border border-border-strong bg-surface px-4 py-2 text-ink">
-              <span className="pt-1">{question.promptHighlight}</span>
-            </span>
-          )
-        )}
-        {question.promptEnd && <span className="text-[15px] font-bold text-ink-light">{question.promptEnd}</span>}
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4">
-        {question.choices.map((c: any) => {
-          const right = picked && c.value === question.answer;
-          const wrong = picked === c.value && c.value !== question.answer;
-          return (
-            <button key={c.value} disabled={!!picked} onClick={() => pick(c.value)} className={`flex items-center justify-center border-2 font-bold text-xl py-6 px-4 text-center transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700 opacity-60" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"} ${c.isTibetan ? 'font-tibetan text-[2rem] pt-2' : 'font-mono'}`}>
-              {c.label}
-            </button>
-          );
-        })}
-      </div>
-      {picked && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border border-border-strong bg-surface shadow-sm">
-          <span className={`text-sm font-bold ${picked === question.answer ? "text-emerald-600" : "text-rose-600"}`}>
-            {picked === question.answer ? `Correct!` : question.explanation || `Incorrect.`}
-          </span>
-          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
-        </div>
-      )}
-    </div>
+    <QuizModule 
+      key={`suffix-quiz-${seed}`}
+      title=""
+      variant="panel"
+      isNightMode={night}
+      accentColor={s.accent}
+      questions={questions}
+      playAudio={playAudio}
+      playingItem={playingItem}
+      playErrorBeep={playErrorBeep}
+    />
   );
 }

@@ -12,7 +12,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 
 // --- Data ---
-import { SUBS, VOCAB, TRIPLE_STACKS, TRIPLE_ACCENT, STEPS, TONE_META, type SubKey, type Tone, type VocabGroup } from "@/app/data/lesson4";
+import { SUBS, VOCAB, TRIPLE_STACKS, TRIPLE_ACCENT, STEPS, TONE_META, generateVocabQuiz, generateFinalQuiz, type SubKey, type Tone, type VocabGroup } from "@/app/data/lesson4";
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
@@ -20,6 +20,7 @@ import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
+import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export default function SubscriptsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
@@ -46,194 +47,8 @@ export default function SubscriptsLesson() {
     }
   ], []);
 
-  const vocabQuestions = useMemo(() => {
-    const qs = [];
-    for (const v of VOCAB) {
-      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
-      
-      if (Math.random() > 0.5) {
-        // Option 1: Audio Prompt
-        qs.push({
-          isAudioType: true,
-          type: 'base',
-          questionText: "Listen and select the matching option.",
-          answer: v.tib,
-          audioString: v.tib,
-          answerObj: v,
-          choices
-        });
-      } else {
-        // Option 2: Text Translation Prompt
-        qs.push({
-          isAudioType: false,
-          type: 'vocab',
-          questionText: `Which word means "${v.en}"?`,
-          answer: v.tib,
-          audioString: v.tib,
-          answerObj: v,
-          choices
-        });
-      }
-    }
-    return qs.sort(() => 0.5 - Math.random());
-  }, []);
-
-  
-  
- const quizQuestions = useMemo(() => {
-    const qs: any[] = [];
-    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
-
-    const ALL_COMBOS = SUBS.flatMap(s => s.combos.map(c => ({ ...c, subKey: s.key, subName: s.name, mark: s.mark })));
-    const EXCEPTIONS = ALL_COMBOS.filter(c => !!c.note);
-
-    // 1. listenWordQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
-        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
-      });
-    });
-
-    // 2. listenMeanQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
-        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 3. readQs (take 4)
-    shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
-      qs.push({
-        questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack,
-        choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
-      });
-    });
-
-    // 4. whichSubQs (take 3)
-    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-      qs.push({
-        questionText: `Which subscript is tucked under ${c.stack}?`, prominentTibetan: c.stack, answer: c.subName, audioString: c.stack,
-        choices: shuffle([c.subName, ...pickWrongs(SUBS.map(s => s.name), c.subName, 2)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 5. rootQs (take 3)
-    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-      qs.push({
-        questionText: `Which root letter carries the subscript in ${c.stack}?`, prominentTibetan: c.stack, answer: c.root, audioString: c.stack,
-        choices: shuffle([c.root, ...pickWrongs(ALL_COMBOS.map(x => x.root), c.root, 3)]).map(x => ({ value: x, tib: x }))
-      });
-    });
-
-    // 6. toneQs (take 4)
-    shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
-      const answerLabel = TONE_META[c.tone as Tone].label;
-      const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
-      qs.push({
-        questionText: `What tone does ${c.stack} take?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack,
-        choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 7. buildQs (take 3)
-    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-      qs.push({
-        questionText: `${c.root} with ${c.subName} gives which stack?`, answer: c.stack,
-        choices: shuffle([c.stack, ...pickWrongs(ALL_COMBOS.map(x => x.stack), c.stack, 3)]).map(x => ({ value: x, tib: x }))
-      });
-    });
-
-    // 8. exceptionQs (take 3)
-    shuffle(EXCEPTIONS).slice(0, 3).forEach(c => {
-      qs.push({
-        questionText: `In the Lhasa accent, ${c.stack} is an exception. How is it pronounced?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack,
-        choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
-      });
-    });
-
-    // 9. tripleReadQs (take 3)
-    shuffle(TRIPLE_STACKS).slice(0, 3).forEach(t => {
-      qs.push({
-        questionText: `How does the combined stack ${t.stack} read?`, prominentTibetan: t.stack, answer: t.read, audioString: t.stack,
-        choices: shuffle([t.read, ...pickWrongs(TRIPLE_STACKS.map(x => x.read), t.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
-      });
-    });
-
-    // 10. tripleParsQs (take 2)
-    shuffle(TRIPLE_STACKS).slice(0, 2).forEach(t => {
-      qs.push({
-        questionText: `Which letters build the stack ${t.stack}?`, prominentTibetan: t.stack, answer: t.parts, audioString: t.stack,
-        choices: shuffle([t.parts, ...pickWrongs(TRIPLE_STACKS.map(x => x.parts), t.parts, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 11. oddQs (take 2)
-    shuffle(SUBS).slice(0, 2).forEach(sup => {
-      const members = ALL_COMBOS.filter(c => c.subKey === sup.key);
-      const oddOne = shuffle(ALL_COMBOS.filter(c => c.subKey !== sup.key))[0];
-      qs.push({
-        questionText: `Which stack does NOT use the subscript ${sup.name}?`, answer: oddOne.stack,
-        choices: shuffle([...shuffle(members).slice(0, 3).map(m => m.stack), oddOne.stack]).map(x => ({ value: x, tib: x }))
-      });
-    });
-
-    // 12. vocabReadQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
-        choices: shuffle([v.translit, ...pickWrongs(VOCAB.map(x => x.translit), v.translit, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 13. vocabMeanQs (take 4)
-    shuffle(VOCAB).slice(0, 4).forEach(v => {
-      qs.push({
-        questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
-        choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 14. vocabWordQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
-        choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
-      });
-    });
-
-    // 15. vocabSubQs (take 2)
-    const subVocabs = VOCAB.filter(v => ["ya", "ra", "la", "wa"].includes(v.sub));
-    shuffle(subVocabs).slice(0, 2).forEach(v => {
-      const subName = SUBS.find(s => s.key === v.sub)?.name || v.sub;
-      qs.push({
-        questionText: `Which subscript appears in ${v.tib}?`, prominentTibetan: v.tib, answer: subName, audioString: v.tib,
-        choices: shuffle([subName, ...pickWrongs(SUBS.map(s => s.name), subName, 2)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 16. ruleQs (take 3)
-    const allRules = [
-      { q: "Where is a subscript written?", a: "Beneath the root letter", w: ["Above the root letter", "Before the root letter", "After the syllable marker"] },
-      { q: "Which four letters can be subscripts?", a: "ཡ ར ལ ཝ", w: ["ར ལ ས ཝ", "ཡ ར ལ ས", "ག ད བ མ"] },
-      { q: "What does Wa-zur do to the sound of the root letter?", a: "Nothing — it is silent and only marks the spelling", w: ["It adds a [w] sound after the root", "It always raises the tone", "It replaces the root consonant"] },
-      { q: "How do the La-tak stacks such as ཟླ and བླ read?", a: "As [la] — the root letter is not pronounced", w: ["As [za] and [ba] — the ལ is silent", "Both consonants are pronounced in sequence", "As [lha] with a breathy start"] },
-      { q: "How many root letters take Ya-tak?", a: "7", w: ["4", "6", "12"] },
-      { q: "In a three-part stack, what is the correct top-to-bottom order?", a: "Superscript, root letter, subscript", w: ["Root letter, superscript, subscript", "Subscript, root letter, superscript", "Superscript, subscript, root letter"] }
-    ];
-    shuffle(allRules).slice(0, 3).forEach(r => {
-      qs.push({
-        questionText: r.q, answer: r.a,
-        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
-      });
-    });
-
-    // Return exactly 40 shuffled questions
-    return shuffle(qs).slice(0, 40);
-  }, []); 
+const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
+  const quizQuestions = useMemo(() => generateFinalQuiz(), []);
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
@@ -528,31 +343,41 @@ export default function SubscriptsLesson() {
                 <CheckCircle2 size={18} style={{ color: TRIPLE_ACCENT }} />
                 <span className={`text-[11px] font-bold uppercase tracking-widest ${studyMode === "night" ? "text-stone-200" : "text-ink"}`}>Mastery check · Triple Stacks</span>
               </div>
-              <MiniMastery 
-                sub={{
-                  name: "Triple Stacks",
-                  accent: { hex: TRIPLE_ACCENT },
-                  combos: TRIPLE_STACKS
-                }} 
-                night={studyMode === "night"} 
-                playAudio={playAudio} 
-                playingItem={playingItem} 
-                playErrorBeep={playErrorBeep} 
-              />
+              
+			  
+			  <TripleMiniMasteryLoader
+  night={studyMode === "night"} 
+  playAudio={playAudio} 
+  playingItem={playingItem} 
+  playErrorBeep={playErrorBeep} 
+/>
+			  
+			  
             </div>
           </StepContainer>
-					  
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+			<StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong">{VOCAB.length} words</span>
             </div>
             
             <div className="mb-10">
-              <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+              <VocabGrid 
+                items={VOCAB.map(v => ({
+                  tib: v.tib, pron: `[${v.translit}]`, en: v.en, emoji: v.emoji, groupId: v.sub,
+                  accentHex: v.sub === "triple" ? TRIPLE_ACCENT : SUBS.find(s => s.key === v.sub)?.accent.hex
+                }))}
+                groups={[
+                  ...SUBS.map(s => ({ id: s.key, label: s.name, hex: s.accent.hex })),
+                  { id: "triple", label: "Triple stacks", hex: TRIPLE_ACCENT }
+                ]}
+                playAudio={playAudio}
+                playingItem={playingItem}
+              />
             </div>
 
-            <QuizModule 
+            <QuizModule		  
+           
               title="Vocabulary Mastery" 
               intro="Check your memory of the new subscript words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
@@ -681,143 +506,113 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
           })}
         </div>
       </div>
-      <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
+      
+	  
+	  
+	  <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: sub.accent.hex }} />
           <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · {sub.name}</span>
         </div>
-        <MiniMastery key={sub.key} sub={sub} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SubMiniMasteryLoader sub={sub} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function MiniMastery({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
-  const [step, setStep] = useState(0);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
+function SubMiniMasteryLoader({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
   const [seed, setSeed] = useState(0);
 
-  // Generate all questions for this round once so they don't reshuffle on click
   const questions = useMemo(() => {
     const shuffledCombos = [...sub.combos].sort(() => 0.5 - Math.random());
     return shuffledCombos.map((answer: any) => {
       const wrongs = sub.combos.filter((c: any) => c.stack !== answer.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
-      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random());
-      return { answer, choices };
+      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random()).map(x => ({
+        value: x.stack,
+        tib: x.stack
+      }));
+      
+      return { 
+        answer: answer.stack,
+        promptText: "Which stack reads",
+        promptHighlight: `[${answer.read}]`,
+        audioTarget: answer.stack,
+        explanation: `${answer.stack} reads [${answer.read}].`,
+        choices 
+      };
     });
   }, [sub.name, seed]);
 
-  const total = questions.length;
-  const question = questions[step] || questions[0];
-
-  const pick = (stack: string) => {
-    if (picked) return;
-    setPicked(stack);
-    if (stack === question.answer.stack) { 
-      setScore(s => s + 1); 
-      playAudio(question.answer.stack); 
-    } else { 
-      playErrorBeep(); 
-    }
-  };
-
-  if (step >= total) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-4 p-5 border border-border-strong bg-surface">
-        <div className={`text-[15px] font-bold ${night ? "text-stone-800" : "text-ink"}`}>Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: sub.accent.hex }}>{score}</span> / {total} on {sub.name}.</div>
-        <Button variant="outline" onClick={() => { setStep(0); setScore(0); setPicked(null); setSeed(s => s + 1); }}><Shuffle size={14} /> Try again</Button>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-        <span className={night ? "text-stone-400" : "text-ink-muted"}>Question {step + 1} of {total}</span>
-        <span style={{ color: sub.accent.hex }}>Score {score}</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <span className={`text-[15px] font-bold ${night ? "text-stone-300" : "text-ink-light"}`}>Which stack reads</span>
-        <span className={`font-mono text-2xl font-bold border px-3 py-1 ${night ? "bg-white/10 border-white/20 text-white" : "bg-surface border-border-strong text-ink"}`}>[{question.answer.read}]</span>
-        <Button variant="outline" onClick={() => playAudio(question.answer.stack)} disabled={playingItem !== null} className={`px-3 py-2 ${night ? "bg-amber-500/20 border-amber-500/30 hover:bg-amber-500/30 text-amber-400" : ""}`}>
-          {playingItem === question.answer.stack ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "" : "text-brand"} />}
-        </Button>
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {question.choices.map((c: any) => {
-          const right = picked && c.stack === question.answer.stack;
-          const wrong = picked === c.stack && c.stack !== question.answer.stack;
-          return (
-            <button key={c.stack} disabled={!!picked} onClick={() => pick(c.stack)} className={`flex aspect-square items-center justify-center border-2 font-tibetan text-[3.5rem] leading-normal pb-2 transition-all ${right ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : wrong ? "border-rose-400 bg-rose-50 text-rose-700" : night ? "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white" : "border-border-strong bg-surface hover:border-brand hover:bg-brand-light text-ink hover:shadow-md"}`}>
-              {c.stack}
-            </button>
-          );
-        })}
-      </div>
-      {picked && (
-        <div className={`mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border shadow-sm ${night ? "bg-white/5 border-white/10" : "bg-surface border-border-strong"}`}>
-          <div className={`text-sm font-bold flex items-center flex-wrap gap-2 ${picked === question.answer.stack ? "text-emerald-600" : "text-rose-600"}`}>
-            <span>{picked === question.answer.stack ? "Correct —" : "Answer:"}</span>
-            <span className="font-tibetan text-3xl leading-none pt-1">{question.answer.stack}</span>
-            <span>reads [{question.answer.read}].</span>
-          </div>
-          <Button variant="primary" onClick={() => { setPicked(null); setStep(s => s + 1); }} className="w-full sm:w-auto">Next <ChevronRight size={16} /></Button>
-        </div>
-      )}
-    </div>
+    <QuizModule 
+      key={`sub-quiz-${seed}`}
+      title=""
+      variant="panel"
+      isNightMode={night}
+      accentColor={sub.accent.hex}
+      questions={questions}
+      playAudio={playAudio}
+      playingItem={playingItem}
+      playErrorBeep={playErrorBeep}
+    />
   );
 }
 
-function accentFor(g: VocabGroup): string {
-  if (g === "triple") return TRIPLE_ACCENT;
-  return SUBS.find((s) => s.key === g)!.accent.hex;
+// ADD THIS AT THE VERY BOTTOM OF THE FILE
+
+interface TripleMiniMasteryProps {
+  night: boolean;
+  playAudio: (text: string) => void;
+  playingItem: string | null;
+  playErrorBeep: () => void;
 }
 
-function VocabFilter({ playAudio, playingItem }: any) {
-  const [filter, setFilter] = useState<VocabGroup | "all">("all");
-  const items = filter === "all" ? VOCAB : VOCAB.filter((v) => v.sub === filter);
+function TripleMiniMasteryLoader({ 
+  night, 
+  playAudio, 
+  playingItem, 
+  playErrorBeep 
+}: TripleMiniMasteryProps) {
+  const [seed, setSeed] = useState(0);
 
-  const chips: { key: VocabGroup | "all"; label: string; hex?: string }[] = [
-    { key: "all", label: `All · ${VOCAB.length} words` },
-    ...SUBS.map((s) => ({ key: s.key as VocabGroup, label: `${s.name} · ${VOCAB.filter((v) => v.sub === s.key).length}`, hex: s.accent.hex })),
-    { key: "triple" as VocabGroup, label: `Triple stacks · ${VOCAB.filter((v) => v.sub === "triple").length}`, hex: TRIPLE_ACCENT },
-  ];
+  const questions = useMemo(() => {
+    const shuffledCombos = [...TRIPLE_STACKS].sort(() => 0.5 - Math.random());
+    
+    return shuffledCombos.map((answer) => {
+      const wrongs = TRIPLE_STACKS.filter((c) => c.stack !== answer.stack)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3);
+        
+      const choices = [...wrongs, answer]
+        .sort(() => 0.5 - Math.random())
+        .map(x => ({
+          value: x.stack,
+          tib: x.stack
+        }));
+      
+      return { 
+        answer: answer.stack,
+        promptText: "Which stack reads",
+        promptHighlight: `[${answer.read}]`,
+        audioTarget: answer.stack,
+        explanation: `${answer.stack} reads [${answer.read}].`,
+        choices 
+      };
+    });
+  }, [seed]);
 
   return (
-    <>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {chips.map((c) => {
-          const active = filter === c.key;
-          return (
-            <button key={c.key} onClick={() => setFilter(c.key as any)} className={`inline-flex items-center gap-2 border px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-colors ${active ? "border-ink bg-ink text-white shadow-sm" : "border-border-strong bg-surface text-ink-muted hover:border-ink-muted hover:text-ink"}`}>
-              {c.hex && <span className="size-2.5 rounded-full" style={{ backgroundColor: c.hex }} />}
-              {c.label}
-            </button>
-          );
-        })}
-      </div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {items.map((v) => {
-          const hex = accentFor(v.sub);
-          return (
-            <button key={v.tib + v.translit} onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-4 border border-border-strong bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md">
-              <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: hex }} />
-              <div className="flex w-full items-start justify-between">
-                <span className="text-3xl">{v.emoji}</span>
-                <span className="inline-grid size-8 place-items-center bg-surface-muted border border-border-strong text-brand transition-colors group-hover:bg-brand-light group-hover:border-amber-200">
-                  {playingItem === v.tib ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />}
-                </span>
-              </div>
-              <div className="w-full border-b border-border-strong pb-3">
-                <div className="text-tibetan-card mb-1">{v.tib}</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">[{v.translit}]</div>
-              </div>
-              <div className="text-sm font-bold text-ink-light">{v.en}</div>
-            </button>
-          );
-        })}
-      </div>
-    </>
+    <QuizModule 
+      key={`triple-quiz-${seed}`}
+      title=""
+      variant="panel"
+      isNightMode={night}
+      accentColor={TRIPLE_ACCENT}
+      questions={questions}
+      playAudio={playAudio}
+      playingItem={playingItem}
+      playErrorBeep={playErrorBeep}
+    />
   );
 }
+	  

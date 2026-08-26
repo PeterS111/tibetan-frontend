@@ -12,7 +12,7 @@ import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 
 // --- Data ---
-import { SUPERS, VOCAB, STEPS, TONE_META, type SuperKey, type Tone } from "@/app/data/lesson3";
+import { SUPERS, VOCAB, STEPS, TONE_META, generateVocabQuiz, generateFinalQuiz, type SuperKey, type Tone } from "@/app/data/lesson3";
 
 // --- UI Components ---
 import { Card } from "@/app/components/ui/Card";
@@ -20,6 +20,7 @@ import { Button } from "@/app/components/ui/Button";
 import { StepContainer } from "@/app/components/lesson/StepContainer";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
+import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export default function SuperscriptsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
@@ -46,157 +47,8 @@ const practiceGroups = useMemo(() => [
     }
   ], []);
 
- const vocabQuestions = useMemo(() => {
-    const qs = [];
-    for (const v of VOCAB) {
-      const isAudioType = Math.random() > 0.5;
-      const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
-      qs.push({
-        isAudioType,
-        type: isAudioType ? 'base' : 'vocab',
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices: [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }))
-      });
-    }
-    return qs.sort(() => 0.5 - Math.random());
-  }, []);
-
-  
-  
-  
-  const quizQuestions = useMemo(() => {
-    const qs: any[] = [];
-    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-    const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
-
-    const ALL_COMBOS = SUPERS.flatMap(s => s.combos.map(c => ({ ...c, supKey: s.key, head: s.head, headLabel: s.headLabel, name: s.name })));
-    const getRoot = (stack: string) => stack.length > 1 ? String.fromCharCode(stack.charCodeAt(1) - 0x50) : stack;
-
-    // 1. listenWordQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib })) // No emojis
-      });
-    });
-
-    // 2. listenMeanQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
-      });
-    });
-
-    // 3. readQs (take 4)
-    shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
-      qs.push({
-        questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack,
-        choices: shuffle([c, ...pickWrongs(ALL_COMBOS, c, 3, x => x.read !== c.read)]).map(x => ({ value: x.read, label: `[${x.read}]` }))
-      });
-    });
-
-    // 4. headQs (take 3)
-    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-      qs.push({
-        questionText: `Which superscript heads the stack ${c.stack}?`, prominentTibetan: c.stack, answer: c.name, audioString: c.stack,
-        choices: shuffle([c.name, ...pickWrongs(SUPERS.map(s => s.name), c.name, 2)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 5. toneQs (take 5)
-    shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
-      const answerLabel = TONE_META[c.tone as Tone].label;
-      const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
-      qs.push({
-        questionText: `What happens to the tone of the root letter in ${c.stack}?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack,
-        choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 6. rootQs (take 4)
-    shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
-      const rootTib = getRoot(c.stack);
-      qs.push({
-        questionText: `Which root letter sits beneath the superscript in ${c.stack}?`, prominentTibetan: c.stack, answer: rootTib, audioString: c.stack,
-        choices: shuffle([rootTib, ...pickWrongs(ALL_COMBOS.map(x => getRoot(x.stack)), rootTib, 3)]).map(x => ({ value: x, tib: x }))
-      });
-    });
-
-    // 7. buildQs (take 3)
-    shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-      const root = getRoot(c.stack);
-      qs.push({
-        questionText: `Superscript ${c.head} written over ${root} gives which stack?`, answer: c.stack, audioString: c.stack,
-        choices: shuffle([c, ...pickWrongs(ALL_COMBOS, c, 3)]).map(x => ({ value: x.stack, tib: x.stack }))
-      });
-    });
-
-    // 8. oddQs (take 2)
-    shuffle(SUPERS).slice(0, 2).forEach(sup => {
-      const members = ALL_COMBOS.filter(c => c.supKey === sup.key);
-      const oddOne = shuffle(ALL_COMBOS.filter(c => c.supKey !== sup.key))[0];
-      qs.push({
-        questionText: `Which stack does NOT use the superscript ${sup.name}?`, answer: oddOne.stack,
-        choices: shuffle([...shuffle(members).slice(0, 3), oddOne]).map(x => ({ value: x.stack, tib: x.stack }))
-      });
-    });
-
-    // 9. vocabReadQs (take 3)
-    shuffle(VOCAB).slice(0, 3).forEach(v => {
-      qs.push({
-        questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.translit, label: x.translit }))
-      });
-    });
-
-    // 10. vocabMeanQs (take 4)
-    shuffle(VOCAB).slice(0, 4).forEach(v => {
-      qs.push({
-        questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
-      });
-    });
-
-    // 11. vocabWordQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      qs.push({
-        questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
-        choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.tib, tib: x.tib })) // No emojis
-      });
-    });
-
-    // 12. vocabSupQs (take 2)
-    shuffle(VOCAB).slice(0, 2).forEach(v => {
-      const supName = SUPERS.find(s => s.key === v.sup)!.name;
-      qs.push({
-        questionText: `Which superscript appears in ${v.tib}?`, prominentTibetan: v.tib, answer: supName, audioString: v.tib,
-        choices: shuffle([supName, ...pickWrongs(SUPERS.map(s => s.name), supName, 2)]).map(x => ({ value: x, label: x }))
-      });
-    });
-
-    // 13. ruleQs (take 3)
-    const allRules = [
-      { q: "How is a superscript letter pronounced?", a: "It is silent — it only re-tunes the tone", w: ["It replaces the root letter’s sound", "It doubles the length of the vowel", "It is pronounced before the root letter"] },
-      { q: "Which three letters can act as superscripts?", a: "ར ལ ས", w: ["ག ད བ", "ཡ ར ལ", "མ འ ས"] },
-      { q: "How many root letters take the superscript ར (Ra-go)?", a: "12", w: ["10", "11", "13"] },
-      { q: "How many root letters take the superscript ལ (La-go)?", a: "10", w: ["6", "11", "12"] },
-      { q: "How many root letters take the superscript ས (Sa-go)?", a: "11", w: ["9", "10", "13"] },
-      { q: "How is ལྷ pronounced?", a: "[lha] — a high-tone breathy ‘l’", w: ["[la] — low tone", "[ha] — the ལ is dropped", "[hla] — the ཧ comes first"] },
-      { q: "Where is the superscript written?", a: "Above the root letter", w: ["Below the root letter", "Before it on the line", "After it on the line"] }
-    ];
-    shuffle(allRules).slice(0, 3).forEach(r => {
-      qs.push({
-        questionText: r.q, answer: r.a,
-        choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
-      });
-    });
-
-    // Return exactly 40 shuffled questions
-    return shuffle(qs).slice(0, 40);
-  }, []);
+ const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
+  const quizQuestions = useMemo(() => generateFinalQuiz(), []);
   
 
   return (
@@ -349,11 +201,21 @@ const practiceGroups = useMemo(() => [
             <SuperPanel sup={SUPERS.find(s => s.key === activeTab)!} night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+          
+<StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="mb-10">
-              <VocabFilter playAudio={playAudio} playingItem={playingItem} />
+              <VocabGrid 
+                items={VOCAB.map(v => ({
+                  tib: v.tib, pron: v.translit, en: v.en, emoji: v.emoji, groupId: v.sup,
+                  accentHex: SUPERS.find(s => s.key === v.sup)?.accent.hex
+                }))}
+                groups={SUPERS.map(s => ({ id: s.key, label: s.name, hex: s.accent.hex }))}
+                playAudio={playAudio}
+                playingItem={playingItem}
+              />
             </div>
-            <QuizModule 
+            <QuizModule
+		  
               title="Vocabulary Mastery" 
               intro="Check your memory of the new superscript words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
@@ -514,58 +376,28 @@ function SuperPanel({ sup, night, playAudio, playingItem, playErrorBeep }: any) 
           })}
         </div>
       </div>
-      <div className={`p-6 md:p-8 ${night ? "bg-[#0f0d0a]" : "bg-surface-muted"}`}>
+      
+	  
+	  <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
+        <div className="mb-6 flex items-center gap-2">
+          <CheckCircle2 size={18} style={{ color: sup.accent.hex }} />
+          <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>
+            Mastery check · {sup.name}
+          </span>
+        </div>
         <QuizModule 
-          title={`Mastery check · ${sup.name}`}
-          intro={`Test your knowledge of all ${sup.count} stacks for ${sup.nameTib}`}
+          title=""
+          variant="panel"
+          isNightMode={night}
+          accentColor={sup.accent.hex}
           questions={masteryQuestions}
           playAudio={playAudio}
           playingItem={playingItem}
           playErrorBeep={playErrorBeep}
         />
       </div>
+	  
     </div>
   );
 }
 
-function VocabFilter({ playAudio, playingItem }: any) {
-  const [filter, setFilter] = useState<SuperKey | "all">("all");
-  const items = filter === "all" ? VOCAB : VOCAB.filter((v) => v.sup === filter);
-
-  return (
-    <>
-      <div className="mb-6 flex flex-wrap gap-2">
-        {[{ key: "all", label: "All", count: VOCAB.length, hex: undefined }, ...SUPERS.map(s => ({ key: s.key, label: s.name, count: VOCAB.filter(v => v.sup === s.key).length, hex: s.accent.hex }))].map((c) => {
-          const active = filter === c.key;
-          return (
-            <button key={c.key} onClick={() => setFilter(c.key as any)} className={`inline-flex items-center gap-2 border px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-colors ${active ? "border-ink bg-ink text-white shadow-sm" : "border-border-strong bg-surface text-ink-light hover:border-ink-muted hover:text-ink"}`}>
-              {c.hex && <span className="size-2.5 rounded-full" style={{ backgroundColor: c.hex }} />}
-              {c.label} · {c.count}
-            </button>
-          );
-        })}
-      </div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {items.map((v) => {
-          const s = SUPERS.find((x) => x.key === v.sup)!;
-          return (
-            <button key={v.tib + v.translit} onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="group relative flex flex-col items-start gap-4 border border-border-strong bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md">
-              <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
-              <div className="flex w-full items-start justify-between">
-                <span className="text-3xl">{v.emoji}</span>
-                <span className="inline-grid size-8 place-items-center bg-surface-muted border border-border-strong text-brand transition-colors group-hover:bg-brand-light group-hover:border-amber-200">
-                  {playingItem === v.tib ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />}
-                </span>
-              </div>
-              <div className="w-full border-b border-border-strong pb-3">
-                <div className="text-tibetan-card mb-1">{v.tib}</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{v.translit}</div>
-              </div>
-              <div className="text-sm font-bold text-ink-light">{v.en}</div>
-            </button>
-          );
-        })}
-      </div>
-    </>
-  );
-}
