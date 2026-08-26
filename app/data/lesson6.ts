@@ -388,18 +388,21 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 8. glossQs (take 3)
+
+// 8. glossQs (take 3)
   shuffle(GLOSSED_EXAMPLES).slice(0, 3).forEach(e => {
+    const gloss = e.gloss || "";
     qs.push({
-      questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: e.gloss, audioString: e.word,
-      choices: shuffle([e.gloss, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.gloss), e.gloss, 3)]).map(x => ({ value: x, label: x }))
+      questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: gloss, audioString: e.word,
+      choices: shuffle([gloss, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.gloss || ""), gloss, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
   // 9. glossWordQs (take 2)
   shuffle(GLOSSED_EXAMPLES).slice(0, 2).forEach(e => {
+    const gloss = e.gloss || "";
     qs.push({
-      questionText: `Which syllable means "${e.gloss}"?`, answer: e.word, audioString: e.word,
+      questionText: `Which syllable means "${gloss}"?`, answer: e.word, audioString: e.word,
       choices: shuffle([e.word, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.word), e.word, 3)]).map(x => ({ value: x, tib: x }))
     });
   });

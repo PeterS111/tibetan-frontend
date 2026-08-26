@@ -297,9 +297,10 @@ export function generateFinalQuiz(): QuizQuestion[] {
 
   // 9. glossQs (take 3)
   shuffle(GLOSSED_COMBOS).slice(0, 3).forEach(c => {
+    const gloss = c.gloss || "";
     qs.push({
-      questionText: `What does ${c.word} mean?`, prominentTibetan: c.word, answer: c.gloss, audioString: c.word,
-      choices: shuffle([c.gloss, ...pickWrongs(GLOSSED_COMBOS.map(x => x.gloss), c.gloss, 3)]).map(x => ({ value: x, label: x }))
+      questionText: `What does ${c.word} mean?`, prominentTibetan: c.word, answer: gloss, audioString: c.word,
+      choices: shuffle([gloss, ...pickWrongs(GLOSSED_COMBOS.map(x => x.gloss || ""), gloss, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
