@@ -291,14 +291,18 @@ const quizQuestions = useMemo(() => generateFinalQuiz(), []);
                 <div className="p-6 flex-1 flex flex-col">
                   <p className="text-[13px] font-bold leading-relaxed text-ink-light mb-6"><span className="font-serif text-lg">ད</span> is <span className="text-ink">no longer written</span> in modern Tibetan spelling. Grammatically, words still behave <em>as if</em> the ད were present.</p>
                   <div className="mt-auto border border-border-strong overflow-hidden">
-                    <table className="w-full text-xs">
+                    
+					
+					<table className="w-full text-xs">
                       <thead className="bg-surface-muted border-b border-border-strong">
                         <tr>
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest">Former</th>
-                          <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">Modern</th>
+                          <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">Current</th>
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">Meaning</th>
                         </tr>
                       </thead>
+					
+					
                       <tbody className="divide-y divide-border-strong">
                         {[
                           ["སྒྱུརད་", "སྒྱུར་", "to change / translate"], 
@@ -327,15 +331,21 @@ const quizQuestions = useMemo(() => generateFinalQuiz(), []);
                 </div>
               </Card>
 
-              <Card className="p-0 flex flex-col h-full">
+              
+			  <Card className="p-0 flex flex-col h-full">
                 <div className="flex items-center gap-4 border-b border-border-strong bg-surface-muted px-6 py-5">
                   <CheckCircle2 className="size-5 text-sky-700" />
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-sky-700">Modern</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-sky-700">Still in use</div>
                     <div className="font-serif text-xl font-bold">Post-suffix <span className="text-3xl text-sky-600 ml-1">ས</span></div>
                   </div>
                 </div>
+			  
+			  
+			  
                 <div className="p-6 flex-1 flex flex-col">
+			  
+			  
                   <p className="text-[13px] font-bold leading-relaxed text-ink-light mb-6"><span className="font-serif text-lg">ས</span> is <span className="text-ink">still written</span> today. Its role is to differentiate near-identical words. The pronunciation is <span className="text-ink">the same</span> with or without it.</p>
                   <div className="mt-auto border border-border-strong overflow-hidden">
                     <table className="w-full text-xs">

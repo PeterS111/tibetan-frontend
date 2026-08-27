@@ -238,30 +238,28 @@ export const STEPS = [
 export function generateVocabQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   for (const v of VOCAB) {
-    const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+    // 🚨 BUG FIX: Filter out homophones so there are no duplicate readings/translations
+    const pool = VOCAB.filter(x => x.tib !== v.tib && x.translit !== v.translit && x.en !== v.en).sort(() => 0.5 - Math.random());
+    const wrongs: Vocab[] = [];
+    const seenTranslit = new Set<string>([v.translit]);
+    for (const candidate of pool) {
+      if (!seenTranslit.has(candidate.translit)) {
+        seenTranslit.add(candidate.translit);
+        wrongs.push(candidate);
+        if (wrongs.length === 3) break;
+      }
+    }
     const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
     
     if (Math.random() > 0.5) {
-      // Option 1: Audio Prompt
       qs.push({
-        isAudioType: true,
-        type: 'base',
-        questionText: "Listen and select the matching option.",
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices
+        isAudioType: true, type: 'base', questionText: "Listen and select the matching option.",
+        answer: v.tib, audioString: v.tib, answerObj: v, choices
       });
     } else {
-      // Option 2: Text Translation Prompt
       qs.push({
-        isAudioType: false,
-        type: 'vocab',
-        questionText: `Which word means "${v.en}"?`,
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices
+        isAudioType: false, type: 'vocab', questionText: `Which word means "${v.en}"?`,
+        answer: v.tib, audioString: v.tib, answerObj: v, choices
       });
     }
   }
@@ -271,7 +269,9 @@ export function generateVocabQuiz(): QuizQuestion[] {
 export function generateFinalQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-  const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
+  
+  // 🚨 BUG FIX: Use a Set to ensure all generated wrong options are completely unique
+  const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
 
   const ALL_COMBOS = SUBS.flatMap(s => s.combos.map(c => ({ ...c, subKey: s.key, subName: s.name, mark: s.mark })));
   const EXCEPTIONS = ALL_COMBOS.filter(c => !!c.note);

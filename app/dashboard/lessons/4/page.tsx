@@ -520,24 +520,42 @@ function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
   );
 }
 
+
+
 function SubMiniMasteryLoader({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
   const [seed, setSeed] = useState(0);
 
   const questions = useMemo(() => {
     const shuffledCombos = [...sub.combos].sort(() => 0.5 - Math.random());
     return shuffledCombos.map((answer: any) => {
-      const wrongs = sub.combos.filter((c: any) => c.stack !== answer.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
-      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random()).map(x => ({
+      
+      // 🚨 BUG FIX: Ensure we don't present identical-sounding words (like multiple 'tra' in Ratak) as wrong choices
+      const strictWrongs = sub.combos.filter((c: any) => c.stack !== answer.stack && c.read !== answer.read).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const fallbackWrongs = sub.combos.filter((c: any) => c.stack !== answer.stack).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const wrongs = strictWrongs.length === 3 ? strictWrongs : fallbackWrongs;
+
+      const choices = [...wrongs, answer].sort(() => 0.5 - Math.random()).map((x: any) => ({
         value: x.stack,
         tib: x.stack
       }));
       
+      let promptText = "Which stack reads";
+      let promptHighlight = `[${answer.read}]`;
+      let explanation = `${answer.stack} reads [${answer.read}].`;
+
+      // 🚨 BUG FIX: LA-TAK makes everything sound identical. Force it to be a visual spelling quiz!
+      if (sub.key === "la") {
+         promptText = "Which stack is spelled";
+         promptHighlight = `${answer.root} + ལ + བཏགས་`;
+         explanation = `${answer.root} + ལ + བཏགས་ makes ${answer.stack}.`;
+      }
+      
       return { 
         answer: answer.stack,
-        promptText: "Which stack reads",
-        promptHighlight: `[${answer.read}]`,
+        promptText,
+        promptHighlight,
         audioTarget: answer.stack,
-        explanation: `${answer.stack} reads [${answer.read}].`,
+        explanation,
         choices 
       };
     });
@@ -557,6 +575,7 @@ function SubMiniMasteryLoader({ sub, night, playAudio, playingItem, playErrorBee
     />
   );
 }
+
 
 // ADD THIS AT THE VERY BOTTOM OF THE FILE
 

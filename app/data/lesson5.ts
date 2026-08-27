@@ -153,19 +153,19 @@ export interface Vocab {
 }
 
 export const VOCAB: Vocab[] = [
-  { tib: "དགེ་", translit: "ge", en: "virtue", emoji: "🌱", prefix: "ga" },
-  { tib: "གཙོ་", translit: "tso", en: "chief, main", emoji: "👑", prefix: "ga" },
+  { tib: "དགེ་བ་", translit: "ge-wa", en: "virtue", emoji: "🌱", prefix: "da" },
+  { tib: "གཙོ་བོ་", translit: "tso-wo", en: "chief, main", emoji: "👑", prefix: "ga" },
   { tib: "གཡུ་", translit: "yu", en: "turquoise", emoji: "🔷", prefix: "ga" },
   { tib: "གཞི་", translit: "zhi", en: "basis, ground", emoji: "🧱", prefix: "ga" },
   { tib: "དབུ་", translit: "wu", en: "head (H)", emoji: "🧠", prefix: "da" },
-  { tib: "དཔེ་", translit: "pe", en: "example", emoji: "📖", prefix: "da" },
+  { tib: "དཔེ་ཆ་", translit: "pe-cha", en: "book (pecha)", emoji: "📖", prefix: "da" },
   { tib: "དབྲ་", translit: "dra", en: "lineage", emoji: "🌳", prefix: "da" },
   { tib: "བཞི་", translit: "zhi", en: "four", emoji: "4️⃣", prefix: "ba" },
   { tib: "བཅུ་", translit: "chu", en: "ten", emoji: "🔟", prefix: "ba" },
-  { tib: "བདེ་", translit: "de", en: "at ease", emoji: "🧘", prefix: "ba" },
+  { tib: "བདེ་བ་", translit: "de-wa", en: "at ease, bliss", emoji: "🧘", prefix: "ba" },
   { tib: "བཟོ་", translit: "zo", en: "to make, craft", emoji: "🔨", prefix: "ba" },
   { tib: "མགོ་", translit: "m'go", en: "head", emoji: "🗿", prefix: "ma" },
-  { tib: "མཐོ་", translit: "m'tho", en: "high, tall", emoji: "📈", prefix: "ma" },
+  { tib: "མཐོ་པོ་", translit: "m'tho-po", en: "high, tall", emoji: "📈", prefix: "ma" },
   { tib: "མཚོ་", translit: "m'tsho", en: "lake", emoji: "🏞️", prefix: "ma" },
   { tib: "མཁོ་", translit: "m'kho", en: "needed", emoji: "📌", prefix: "ma" },
   { tib: "མནོ་", translit: "m'no", en: "to think", emoji: "🤔", prefix: "ma" },
@@ -187,31 +187,33 @@ export const STEPS = [
   { id: "complete", eyebrow: "Finish", title: "Lesson complete" }
 ];
 
+
+
 export function generateVocabQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   for (const v of VOCAB) {
-    const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+    // 🚨 BUG FIX: Filter out homophones so there are no duplicate readings/translations
+    const pool = VOCAB.filter(x => x.tib !== v.tib && x.translit !== v.translit && x.en !== v.en).sort(() => 0.5 - Math.random());
+    const wrongs: Vocab[] = [];
+    const seenTranslit = new Set<string>([v.translit]);
+    for (const candidate of pool) {
+      if (!seenTranslit.has(candidate.translit)) {
+        seenTranslit.add(candidate.translit);
+        wrongs.push(candidate);
+        if (wrongs.length === 3) break;
+      }
+    }
     const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
     
     if (Math.random() > 0.5) {
       qs.push({
-        isAudioType: true,
-        type: 'base',
-        questionText: "Listen and select the matching option.",
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices
+        isAudioType: true, type: 'base', questionText: "Listen and select the matching option.",
+        answer: v.tib, audioString: v.tib, answerObj: v, choices
       });
     } else {
       qs.push({
-        isAudioType: false,
-        type: 'vocab',
-        questionText: `Which word means "${v.en}"?`,
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices
+        isAudioType: false, type: 'vocab', questionText: `Which word means "${v.en}"?`,
+        answer: v.tib, audioString: v.tib, answerObj: v, choices
       });
     }
   }
@@ -221,10 +223,14 @@ export function generateVocabQuiz(): QuizQuestion[] {
 export function generateFinalQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-  const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
+  
+  // 🚨 BUG FIX: Use a Set to ensure all generated wrong options are completely unique
+  const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
 
   const ALL_COMBOS = PREFIXES.flatMap(p => p.combos.map(c => ({ ...c, prefKey: p.key, head: p.head, latin: p.latin, family: p.family })));
   const GLOSSED_COMBOS = ALL_COMBOS.filter(c => !!c.gloss);
+
+
 
   // 1. listenWordQs (take 3)
   shuffle(VOCAB).slice(0, 3).forEach(v => {

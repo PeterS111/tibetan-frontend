@@ -114,9 +114,10 @@ export const SUFFIXES: Suffix[] = [
     family: "silent",
     accent: "#6b7280",
     examples: [
-      { word: "མཐའ་", parts: "མ + ཐ + འ", read: "m'tha", gloss: "end, edge" },
-      { word: "མཁའ་", parts: "མ + ཁ + འ", read: "m'kha", gloss: "sky, space" },
-    ],
+        { word: "མཐའ་", parts: "མ + ཐ + འ", read: "m'tha", gloss: "end, edge" },
+        { word: "མཁའ་", parts: "མ + ཁ + འ", read: "m'kha", gloss: "sky, space" },
+        { word: "གཟའ་", parts: "ག + ཟ + འ", read: "z'a", gloss: "planet, day" },
+      ],
     note: "འ as a suffix is a writing-only sign. Its main use is licensing an ‘a-suffix root to also take a post-suffix ས.",
   },
   {
@@ -258,7 +259,7 @@ export const STEPS = [
   { id: "intro", eyebrow: "Step 01", title: "What is a suffix?", description: "The ten suffixes and the two post-suffixes." },
   { id: "suffixes", eyebrow: "Step 02", title: "Meet the ten suffixes", description: "Study each suffix and its spelling." },
   { id: "vowel", eyebrow: "Step 03", title: "When the vowel meets the suffix", description: "How suffixes reshape the preceding vowel." },
-  { id: "post", eyebrow: "Step 04", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical vs modern." },
+  { id: "post", eyebrow: "Step 04", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical and active." },
   { id: "root", eyebrow: "Step 05", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
   { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
   { id: "practice", eyebrow: "Step 07", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
@@ -268,7 +269,7 @@ export const STEPS = [
 export const POST_SUFFIX_QUESTIONS: QuizQuestion[] = [
   { promptText: "Which two letters can act as post-suffixes?", answer: "da-sa", choices: [{label: "ད and ས", value: "da-sa", isTibetan: true}, {label: "ག and ང", value: "ga-nga", isTibetan: true}, {label: "བ and མ", value: "ba-ma", isTibetan: true}, {label: "ན and ལ", value: "na-la", isTibetan: true}], explanation: "Only ད (da) and ས (sa) can be used as post-suffixes." },
   { promptText: "Do post-suffixes change how a word is pronounced?", answer: "no", choices: [{label: "Yes", value: "yes"}, {label: "No", value: "no"}], explanation: "Post-suffixes are completely silent and do not alter the pronunciation." },
-  { promptText: "Which post-suffix is still used in modern spelling?", answer: "sa", choices: [{label: "ད", value: "da", isTibetan: true}, {label: "ས", value: "sa", isTibetan: true}], explanation: "The post-suffix ས (sa) is still written today to distinguish homophones, while ད (da) is historical." },
+  { promptText: "Which post-suffix is still written in active spelling today?", answer: "sa", choices: [{label: "ད", value: "da", isTibetan: true}, {label: "ས", value: "sa", isTibetan: true}], explanation: "The post-suffix ས (sa) is still actively written today to distinguish homophones, while ད (da) is historical." },
 ];
 
 export const ROOT_LETTER_QUESTIONS: QuizQuestion[] = [
@@ -289,31 +290,33 @@ export const ROOT_LETTER_QUESTIONS: QuizQuestion[] = [
   { promptText: "Identify the root letter in", promptHighlight: "དམངས་", promptAudio: "དམངས་", answer: "མ", audioTarget: "མ", choices: [{label: "ད", value: "ད", isTibetan: true}, {label: "མ", value: "མ", isTibetan: true}, {label: "ང", value: "ང", isTibetan: true}, {label: "ས", value: "ས", isTibetan: true}], explanation: "Rule 4: Four letters. The second (མ) is the root." },
 ];
 
+
+
 export function generateVocabQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   for (const v of VOCAB) {
-    const wrongs = VOCAB.filter(x => x.tib !== v.tib).sort(() => 0.5 - Math.random()).slice(0, 3);
+    // 🚨 BUG FIX: Filter out homophones so there are no duplicate readings/translations
+    const pool = VOCAB.filter(x => x.tib !== v.tib && x.read !== v.read && x.en !== v.en).sort(() => 0.5 - Math.random());
+    const wrongs: Vocab[] = [];
+    const seenTranslit = new Set<string>([v.read]);
+    for (const candidate of pool) {
+      if (!seenTranslit.has(candidate.read)) {
+        seenTranslit.add(candidate.read);
+        wrongs.push(candidate);
+        if (wrongs.length === 3) break;
+      }
+    }
     const choices = [v, ...wrongs].sort(() => 0.5 - Math.random()).map(x => ({ tib: x.tib, value: x.tib, emoji: x.emoji, en: x.en }));
     
     if (Math.random() > 0.5) {
       qs.push({
-        isAudioType: true,
-        type: 'base',
-        questionText: "Listen and select the matching option.",
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices
+        isAudioType: true, type: 'base', questionText: "Listen and select the matching option.",
+        answer: v.tib, audioString: v.tib, answerObj: v as any, choices
       });
     } else {
       qs.push({
-        isAudioType: false,
-        type: 'vocab',
-        questionText: `Which word means "${v.en}"?`,
-        answer: v.tib,
-        audioString: v.tib,
-        answerObj: v,
-        choices
+        isAudioType: false, type: 'vocab', questionText: `Which word means "${v.en}"?`,
+        answer: v.tib, audioString: v.tib, answerObj: v as any, choices
       });
     }
   }
@@ -323,10 +326,13 @@ export function generateVocabQuiz(): QuizQuestion[] {
 export function generateFinalQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-  const pickWrongs = <T,>(arr: T[], correct: T, count: number, filterFn = (x: T) => x !== correct) => shuffle(arr.filter(filterFn)).slice(0, count);
+  
+  // 🚨 BUG FIX: Use a Set to ensure all generated wrong options are completely unique
+  const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
 
   const ALL_SUF_EXAMPLES = SUFFIXES.flatMap(s => s.examples.map(e => ({ ...e, sufKey: s.key, head: s.head, latin: s.latin, family: s.family, reads: s.reads })));
   const GLOSSED_EXAMPLES = ALL_SUF_EXAMPLES.filter(e => !!e.gloss);
+
 
   // 1. listenWordQs (take 3)
   shuffle(VOCAB).slice(0, 3).forEach(v => {
