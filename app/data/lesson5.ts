@@ -158,11 +158,11 @@ export const VOCAB: Vocab[] = [
   { tib: "གཡུ་", translit: "yu", en: "turquoise", emoji: "🔷", prefix: "ga" },
   { tib: "གཞི་", translit: "zhi", en: "basis, ground", emoji: "🧱", prefix: "ga" },
   { tib: "དབུ་", translit: "wu", en: "head (H)", emoji: "🧠", prefix: "da" },
-  { tib: "དཔེ་ཆ་", translit: "pe-cha", en: "book (pecha)", emoji: "📖", prefix: "da" },
-  { tib: "དབྲ་", translit: "dra", en: "lineage", emoji: "🌳", prefix: "da" },
+  { tib: "དཔེ་ཆ་", translit: "pe-cha", en: "book", emoji: "📖", prefix: "da" },
+  { tib: "དབྲ་", translit: "dra", en: "ancient Tibetan lineage", emoji: "🌳", prefix: "da" },
   { tib: "བཞི་", translit: "zhi", en: "four", emoji: "4️⃣", prefix: "ba" },
   { tib: "བཅུ་", translit: "chu", en: "ten", emoji: "🔟", prefix: "ba" },
-  { tib: "བདེ་བ་", translit: "de-wa", en: "at ease, bliss", emoji: "🧘", prefix: "ba" },
+  { tib: "བདེ་བ་", translit: "de-wa", en: "happiness", emoji: "🧘", prefix: "ba" },
   { tib: "བཟོ་", translit: "zo", en: "to make, craft", emoji: "🔨", prefix: "ba" },
   { tib: "མགོ་", translit: "m'go", en: "head", emoji: "🗿", prefix: "ma" },
   { tib: "མཐོ་པོ་", translit: "m'tho-po", en: "high, tall", emoji: "📈", prefix: "ma" },
@@ -173,6 +173,13 @@ export const VOCAB: Vocab[] = [
   { tib: "འདི་", translit: "di", en: "this", emoji: "👉", prefix: "a" },
   { tib: "འབྲི་", translit: "ng'dri", en: "to write", emoji: "✍️", prefix: "a" },
   { tib: "འཆི་", translit: "ng'chi", en: "to die", emoji: "🕊️", prefix: "a" },
+  // New additions
+  { tib: "དགོན་པ་", translit: "gön-pa", en: "monastery", emoji: "🛕", prefix: "da" },
+  { tib: "དགའ་པོ་", translit: "ga-po", en: "to like", emoji: "😊", prefix: "da" },
+  { tib: "གསུམ་", translit: "sum", en: "three", emoji: "3️⃣", prefix: "ga" },
+  { tib: "བརྒྱད་", translit: "gye", en: "eight", emoji: "8️⃣", prefix: "ba" },
+  { tib: "མདུན་", translit: "dün", en: "front", emoji: "⬆️", prefix: "ma" },
+  { tib: "འབྲས་", translit: "dre", en: "rice, fruit", emoji: "🍚", prefix: "a" },
 ];
 
 export const NEVER_TAKE = "ཝ འ ལ ཧ ཨ";
