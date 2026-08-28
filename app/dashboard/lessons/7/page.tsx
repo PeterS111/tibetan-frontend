@@ -258,7 +258,7 @@ function buildFinalBank(): Question[] {
   // --- SECTION 8: Spelling (6 Qs) ---
   const s8_pool: Question[] = [];
   const orders = [
-    { c: "དགེ་བ་", r: "[ge-wa]", s: ["ད", "ག", "ེ", "བ", "རྐྱང་", "བ"] }, // keeping simpler
+    { c: "དགེ་བ་", r: "[ge-wa]", s: ["ད", "ག", "ེ", "བ", "རྐྱང་", "བ"] }, 
     { c: "དགེ་བ་", r: "[ge-wa]", s: ["ད", "ག", "ེ", "བ"] },
     { c: "གྲྭ", r: "[drwa]", s: ["ག", "ར", "ྭ"] },
     { c: "བསྒྲིམས་", r: "[drim]", s: ["བ", "ས", "ག", "ྲ", "ི", "མ", "ས"] },
@@ -355,7 +355,6 @@ export default function FinalAssessmentLesson() {
   const handleDevBypass = async () => {
     setIsBypassing(true);
     
-    // Dynamically calculate a perfect score based on the actual drawn questions
     const perfectSections = emptySectionScores(questions);
     let totalPts = 0;
     
@@ -797,6 +796,12 @@ function ListenView({ q, picked, onPick, playAudio, playingItem }: any) {
 
 // --- QUIZ CONTROLLER ---
 
+const getExpectedAnswer = (q: Question) => {
+  if (q.kind === "root") return q.answer;
+  if (q.kind === "mc" || q.kind === "listen") return q.answerKey;
+  return null;
+};
+
 function Quiz({ questions, playAudio, playErrorBeep, playingItem, onFinish }: any) {
   const [step, setStep] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
@@ -819,7 +824,7 @@ function Quiz({ questions, playAudio, playErrorBeep, playingItem, onFinish }: an
   const handlePick = (key: string) => {
     if (picked) return;
     setPicked(key);
-    const isCorrect = key === q.answerKey;
+    const isCorrect = key === getExpectedAnswer(q);
     if (isCorrect) {
       const sound = q.audioTarget || (q as any).audio;
       if (sound) playAudio(sound);
@@ -844,7 +849,7 @@ function Quiz({ questions, playAudio, playErrorBeep, playingItem, onFinish }: an
     if (q.kind === "order") {
       isCorrect = orderState.join("|") === q.steps.join("|");
     } else {
-      isCorrect = picked === q.answerKey;
+      isCorrect = picked === getExpectedAnswer(q);
     }
 
     const nextCorrect = correctCount + (isCorrect ? 1 : 0);
@@ -882,7 +887,7 @@ function Quiz({ questions, playAudio, playErrorBeep, playingItem, onFinish }: an
   const isAnswered = q.kind === "order" ? orderSubmitted : picked !== null;
   const isCorrect = q.kind === "order"
     ? orderSubmitted && orderState.join("|") === q.steps.join("|")
-    : picked !== null && picked === q.answerKey;
+    : picked !== null && picked === getExpectedAnswer(q);
 
   const progressVal = Math.round((step / total) * 100);
 
