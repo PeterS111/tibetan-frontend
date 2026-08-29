@@ -1,3 +1,4 @@
+// app/dashboard/lessons/2/page.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -141,13 +142,17 @@ export default function VowelsLesson() {
               <div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => {
                   return (
-                    <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
+                    <button 
+                      key={`mark-${v.key}`} 
+                      onClick={() => playAudio(v.markTranslit)} 
+                      className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/10 bg-[#14120f] hover:bg-[#1a1714]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}
+                    >
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
-                      {/* Base letter 'ཨ' acts as a valid anchor to prevent Firefox circles. 
-                          It is colored transparent to blend into any background, while the vowel is colored normally. */}
+                      {/* FIX: Use valid base letter 'ཨ' colored exactly the same as the background so it becomes invisible. 
+                          The vowel mark is colored normally. This prevents Firefox from injecting dotted circles. */}
                       <span className="flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1]" style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className="text-transparent select-none">
+                        <span className={`select-none transition-colors duration-300 ${studyMode === "night" ? "text-[#14120f] group-hover:text-[#1a1714]" : "text-white group-hover:text-white"}`}>
                           ཨ<span className={studyMode === "night" ? "text-amber-500" : "text-ink"}>{v.mark}</span>
                         </span>
                       </span>
@@ -160,7 +165,11 @@ export default function VowelsLesson() {
 
               <div className="relative grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => (
-                  <button key={v.key} onClick={(e) => { setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); playAudio(v.tib); }} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
+                  <button 
+                    key={v.key} 
+                    onClick={(e) => { setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); playAudio(v.tib); }} 
+                    className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/10 bg-[#14120f] hover:bg-[#1a1714]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}
+                  >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                     <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>{v.tib}</span>
                     <div className="mt-3 flex items-end justify-between">
