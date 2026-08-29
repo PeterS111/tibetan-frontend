@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
-  Info, Moon, Sun, Volume2, Loader2, X, CheckCircle2
+  Info, Moon, Sun, Volume2, Loader2, CheckCircle2
 } from "lucide-react";
 
 // --- Custom Hooks ---
@@ -23,8 +23,6 @@ import QuizModule from "@/app/components/QuizModule";
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
-
-
 export default function VowelsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
@@ -33,42 +31,37 @@ export default function VowelsLesson() {
   const [filter, setFilter] = useState<"all" | Position>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   
-  // 🚨 ADDED: State to manage the Dev Bypass button loading screen
   const [isBypassing, setIsBypassing] = useState(false);
 
   const filtered = useMemo(() => (filter === "all" ? VOWELS : VOWELS.filter((v) => v.position === filter)), [filter]);
 
- // Map to Generic Practice Suite Format
+  // Map to Generic Practice Suite Format
   const practiceGroups = useMemo(() => [
     {
       name: "Vowels",
       items: VOWELS.map(v => ({
-        id: `v-${v.key}`, tibetan: v.tib, reading: v.markTranslit, english: POSITION_META[v.position].label, audioTarget: v.translit
+        id: `v-${v.key}`, tibetan: v.tib, reading: `[${v.translit.toLowerCase()}]`, english: POSITION_META[v.position].label, audioTarget: v.translit
       }))
     },
     {
       name: "Vocabulary",
       items: VOCAB.map(v => ({
-        id: `voc-${v.tib}`, tibetan: v.tib, reading: v.translit, english: v.en, audioTarget: v.tib, emoji: v.emoji
+        id: `voc-${v.tib}`, tibetan: v.tib, reading: `[${v.translit}]`, english: v.en, audioTarget: v.tib, emoji: v.emoji
       }))
     }
   ], []);
 
-
-
-const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
+  const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
   const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
 
   return (
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto px-6 py-8">
         
-        {/* 🚨 TEMPORARY DEV BUTTON - DELETE AFTER TESTING 🚨 */}
         <button 
           onClick={async () => {
             setIsBypassing(true);
             await markComplete(STEPS.length - 1);
-            // Wait a second to guarantee the network request finishes, then auto-redirect
             setTimeout(() => {
               window.location.href = "/dashboard";
             }, 1000);
@@ -151,21 +144,9 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
                     <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
+                      {/* Vowel Mark purely rendered on a Zero Width Joiner to completely suppress Firefox's auto-injected dotted circles */}
                       <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        {v.key === 'u' ? (
-                          <span className="relative flex items-center justify-center">
-                            <span className="absolute">{"\u25CC"}</span>
-                            {/* We render the full ཨུ to guarantee the authentic font, then visually chop off the top 60% */}
-                            <span 
-                              className="relative z-10 -translate-x-[0.12em]" 
-                              style={{ clipPath: "polygon(0 60%, 100% 60%, 100% 150%, 0 150%)" }}
-                            >
-                              {"ཨ\u0F74"}
-                            </span>
-                          </span>
-                        ) : (
-                          "\u25CC" + v.mark
-                        )}
+                        {"\u200D" + v.mark}
                       </span>
                       
                       {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
@@ -181,7 +162,7 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
                     <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>{v.tib}</span>
                     <div className="mt-3 flex items-end justify-between">
                     <div className="flex flex-col gap-1">
-                      <span className={`text-xl font-bold uppercase tracking-wider ${studyMode === "night" ? "text-white/90" : "text-ink"}`}>{v.translit}</span>
+                      <span className={`text-lg font-mono font-bold tracking-wider ${studyMode === "night" ? "text-white/90" : "text-ink"}`}>[{v.translit.toLowerCase()}]</span>
                       <span className={`text-sm font-bold tracking-wide ${studyMode === "night" ? "text-white/60" : "text-ink-light"}`}>{v.markTranslit}</span>
                     </div>
                   </div>
@@ -202,7 +183,7 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
             </div>
           </StepContainer>
 
-         {/* Step 1: Marks */}
+          {/* Step 1: Marks */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {VOWELS.map((v) => {
@@ -221,7 +202,7 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
                       className="mt-8 flex items-center gap-4 w-fit group transition-all text-left"
                     >
                       <span className="font-tibetan text-[5rem] leading-none text-ink group-hover:text-brand transition-colors">{v.tib}</span>
-                      <span className="font-serif text-3xl italic text-ink-muted">{v.translit}</span>
+                      <span className="font-mono font-bold text-2xl text-ink-muted group-hover:text-ink transition-colors">[{v.translit.toLowerCase()}]</span>
                       <span className="ml-1 inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
                         {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
                       </span>
@@ -273,7 +254,7 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
                           <span className="text-eyebrow">{v.markTranslit}</span>
                         </button>
                       </td>
-                      <td className="px-6 py-5 font-serif text-2xl text-ink">{v.translit}</td>
+                      <td className="px-6 py-5 font-mono font-bold text-lg text-ink">[{v.translit.toLowerCase()}]</td>
                       <td className="px-6 py-5 text-ink-light font-bold">{v.english}</td>
                       <td className="px-6 py-5 text-right">
                         <Button variant="outline" className="px-3 py-2" onClick={() => playAudio(v.translit)} disabled={playingItem !== null}>
@@ -288,58 +269,79 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
             <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm">
               <Info className="mt-0.5 size-5 shrink-0 text-brand" />
               <div className="text-sm font-bold leading-relaxed text-ink-light">
-                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="text-ink">‘a’</span> — for example ཀ is read <em>ka</em>, not <em>k</em>. The four diacritics replace that inherent ‘a’.
+                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example ཀ is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
               </div>
             </div>
           </StepContainer>
 
           {/* Step 3: Spelling */}
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+            {/* Switched to single-column stacking layout to match lessons 3/4/5 */}
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm mb-10">
-              <div className="grid grid-cols-1 divide-y divide-border-strong md:grid-cols-2 md:divide-x md:divide-y-0">
+              <div className="flex flex-col divide-y divide-border-strong">
                 {VOWELS.map((v) => (
                   <div key={v.key} className="p-6 md:p-8">
                     <div className="flex items-center gap-2 text-eyebrow mb-6">
                       <span className="h-2 w-4" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       Spelling {v.translit}
                     </div>
-                    <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-3">
-                      <span className="font-tibetan text-5xl text-ink">ཨ</span>
-                      <span className="text-2xl text-ink-muted">+</span>
-                      <span className="font-tibetan text-5xl text-ink">{v.markTib}</span>
-                      <span className="text-2xl text-ink-muted">⇒</span>
-                      <span className="font-tibetan text-5xl text-brand-dark">{v.tib}</span>
-                      <span className="text-2xl text-ink-muted">⇒</span>
-                      <span className="font-serif text-4xl italic text-ink">{v.translit}</span>
-                    </div>
+                    
+                    {/* Main 'A' Spelling Row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 border-border-strong bg-surface shadow-sm">
+                      <span className="font-tibetan text-[2.5rem] leading-none pt-1 w-12 text-center text-ink">{v.tib}</span>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-4">
-                      <Button variant="outline" onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="px-3 py-2 shrink-0">
-                        {playingItem === v.tib ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand-dark" />}
-                      </Button>
-                      <div className="text-sm font-mono font-bold text-ink-light tracking-wide">
-                        [a + {v.markTranslit}] ⇒ [{v.markGloss}] ⇒ {v.translit}
+                      <span className="flex items-center gap-2 md:gap-3 text-ink-light">
+                         <span className="font-tibetan text-2xl sm:text-3xl">ཨ</span>
+                         <span className="text-lg font-sans opacity-40">+</span>
+                         <span className="font-tibetan text-2xl sm:text-3xl">{v.markTib}</span>
+                      </span>
+
+                      <ArrowRight size={16} className="text-border-strong" />
+
+                      <div className="flex items-center gap-2">
+                         <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: POSITION_META[v.position].hex }}>{v.tib}</span>
+                         <span className="font-mono text-lg font-bold text-ink">[{v.translit.toLowerCase()}]</span>
+                      </div>
+
+                      <div className="ml-auto">
+                         <Button variant="outline" onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="px-3 py-2">
+                           {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand-dark" />}
+                         </Button>
                       </div>
                     </div>
                     
-                    {/* Render out all individual spellings using v.spellings data */}
+                    {/* Try it with other consonants */}
                     {v.spellings && v.spellings.length > 0 && (
                       <div className="mt-8 border-t border-border-strong pt-5">
                         <div className="text-eyebrow mb-4 text-ink-muted">Try it with other consonants</div>
-                        <div className="grid gap-3">
+                        <div className="space-y-2">
                           {v.spellings.map((s) => (
-                            <button 
-                              key={s.word} 
-                              onClick={() => playAudio(s.audio || s.word)} 
-                              className="text-left border border-border-strong bg-surface hover:bg-brand-light/20 p-4 hover:border-brand hover:shadow-sm transition-all group flex flex-col gap-1"
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-tibetan text-4xl text-ink group-hover:text-brand transition-colors">{s.word}</span>
-                                {playingItem === (s.audio || s.word) ? <Loader2 className="size-5 animate-spin text-brand" /> : <Volume2 className="size-5 text-ink-muted group-hover:text-brand transition-colors" />}
+                            <div key={s.word} className="flex flex-wrap items-center gap-x-6 gap-y-3 border border-border-strong bg-surface px-5 py-4 shadow-sm hover:border-brand transition-colors group">
+                              {/* 1. Target Word */}
+                              <span className="font-tibetan text-[2.5rem] leading-none pt-1 w-12 text-center text-ink">{s.word}</span>
+
+                              {/* 2. Math */}
+                              <span className="flex items-center gap-2 md:gap-3 text-ink-light">
+                                <span className="font-tibetan text-2xl sm:text-3xl">{s.spell.charAt(0)}</span>
+                                <span className="text-lg font-sans opacity-40">+</span>
+                                <span className="font-tibetan text-2xl sm:text-3xl">{v.markTib}</span>
+                              </span>
+
+                              <ArrowRight size={16} className="text-border-strong mx-1" />
+
+                              {/* 3. Phonetic + Target Word */}
+                              <div className="flex items-center gap-2">
+                                <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: POSITION_META[v.position].hex }}>{s.word}</span>
+                                <span className="font-mono text-lg font-bold text-ink group-hover:text-brand-dark transition-colors">[{s.roman.split(' ').pop()}]</span>
                               </div>
-                              <div className="text-xl font-tibetan text-ink-light">{s.spell}</div>
-                              <div className="text-xs font-mono text-brand-dark mt-1">{s.roman}</div>
-                            </button>
+
+                              {/* 4. Play Button */}
+                              <div className="ml-auto">
+                                <Button variant="outline" onClick={() => playAudio(s.audio || s.word)} disabled={playingItem !== null} className="px-3 py-2">
+                                  {playingItem === (s.audio || s.word) ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand-dark" />}
+                                </Button>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -357,16 +359,15 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
               playErrorBeep={playErrorBeep} 
             />
           </StepContainer>
-					
-					
-{/* Step 4: Vocabulary */}
+
+          {/* Step 4: Vocabulary */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="mb-10">
               <VocabGrid 
                 items={VOCAB.map(v => {
                   const pm = POSITION_META[VOWELS.find((x) => x.key === v.vowel)!.position];
                   return {
-                    tib: v.tib, pron: v.translit, en: v.en, emoji: v.emoji,
+                    tib: v.tib, pron: `[${v.translit}]`, en: v.en, emoji: v.emoji,
                     badge: { text: v.vowel, hex: pm.hex, bg: pm.hex + "15", border: pm.hex + "40" }
                   };
                 })}
@@ -375,10 +376,7 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
               />
             </div>
             
-        
-		
-		<QuizModule
-          
+            <QuizModule
               title="Vocabulary Mastery" 
               intro="Check your memory of the new words before moving on." 
               data={VOCAB} 
@@ -389,15 +387,13 @@ const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
               isVocabMatch 
             />
           </StepContainer>
-		 
-		 
 
           {/* Step 5: Practice */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-{/* 🚨 FIXED: Step 6 (Index 6) correctly hooked up to markComplete(6) on passing the Quiz */}
+          {/* Step 6: Final Test */}
           <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
             <QuizModule 
               title="Final Step Test" 
@@ -456,39 +452,39 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) 
   return (
     <DraggablePanel rect={rect} title={`Vowel · ${v.translit}`} onClose={onClose}>
       <div className="flex items-center gap-5 mb-6">
-            <div className="text-tibetan-display">{v.tib}</div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <div className="text-xl font-serif italic text-ink">{v.translit}</div>
-              </div>
-              <Button variant="primary" onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-4 py-1.5 text-xs">
-                {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Play
-              </Button>
-            </div>
+        <div className="text-tibetan-display">{v.tib}</div>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <div className="text-xl font-mono font-bold text-ink">[{v.translit.toLowerCase()}]</div>
           </div>
+          <Button variant="primary" onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-4 py-1.5 text-xs">
+            {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Play
+          </Button>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className={`p-3 border ${pm.swatch} border-opacity-50`}>
-              <div className="text-eyebrow mb-1">Position</div>
-              <div className={`font-serif text-sm font-bold ${pm.text}`}>{pm.label}</div>
-            </div>
-            
-            <div className="p-3 border bg-surface border-border-strong">
-              <div className="text-eyebrow mb-1">Mark Name</div>
-              <div className="font-serif text-base text-ink tibetan">{v.markTib}</div>
-              <div className="text-[10px] italic text-ink-light mt-1">{v.markTranslit}</div>
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className={`p-3 border ${pm.swatch} border-opacity-50`}>
+          <div className="text-eyebrow mb-1">Position</div>
+          <div className={`font-serif text-sm font-bold ${pm.text}`}>{pm.label}</div>
+        </div>
+        
+        <div className="p-3 border bg-surface border-border-strong">
+          <div className="text-eyebrow mb-1">Mark Name</div>
+          <div className="font-serif text-base text-ink tibetan">{v.markTib}</div>
+          <div className="text-[10px] italic text-ink-light mt-1">{v.markTranslit}</div>
+        </div>
+      </div>
 
-          <div className="mb-6">
-            <div className="text-eyebrow mb-1">Pronunciation</div>
-            <p className="text-sm text-ink-light font-bold leading-relaxed">{v.english}</p>
-          </div>
+      <div className="mb-6">
+        <div className="text-eyebrow mb-1">Pronunciation</div>
+        <p className="text-sm text-ink-light font-bold leading-relaxed">{v.english}</p>
+      </div>
 
-<div className="border-t border-border-strong pt-4">
-            <div className="text-eyebrow mb-1">Notes from the textbook</div>
-            <p className="text-sm text-ink-light leading-relaxed italic">{v.note}</p>
-          </div>
+      <div className="border-t border-border-strong pt-4">
+        <div className="text-eyebrow mb-1">Notes from the textbook</div>
+        <p className="text-sm text-ink-light leading-relaxed italic">{v.note}</p>
+      </div>
     </DraggablePanel>
   );
-}         
+}
