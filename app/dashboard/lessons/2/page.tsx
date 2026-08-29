@@ -149,11 +149,12 @@ export default function VowelsLesson() {
                     >
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
-                      {/* FIX: Use valid base letter 'ཨ' colored exactly the same as the background so it becomes invisible. 
-                          The vowel mark is colored normally. This prevents Firefox from injecting dotted circles. */}
+                      {/* FIX: Pedagogical 'Faint Base' Approach. 
+                          The base letter 'ཨ' anchors the vowel naturally. 
+                          It is colored a faint watermark gray, while the vowel mark is a bold, bright color. */}
                       <span className="flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1]" style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className={`select-none transition-colors duration-300 ${studyMode === "night" ? "text-[#14120f] group-hover:text-[#1a1714]" : "text-white group-hover:text-white"}`}>
-                          ཨ<span className={studyMode === "night" ? "text-amber-500" : "text-ink"}>{v.mark}</span>
+                        <span className={`select-none transition-colors duration-300 ${studyMode === "night" ? "text-stone-800" : "text-stone-300"}`}>
+                          ཨ<span className={studyMode === "night" ? "text-amber-400" : "text-brand-dark"}>{v.mark}</span>
                         </span>
                       </span>
                       
