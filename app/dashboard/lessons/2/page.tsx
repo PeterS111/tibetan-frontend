@@ -145,9 +145,17 @@ export default function VowelsLesson() {
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
                       
-					 {/* Vowel Mark rendered over a transparent valid base letter to completely suppress Firefox fallbacks */}
+					 {/* Vowel Mark rendered over a valid base letter (ཨ) to suppress Firefox circles, then masked out using CSS clip-path */}
                       <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className="text-transparent select-none">ཨ<span className="text-current">{v.mark}</span></span>
+                        <span 
+                          className="inline-block leading-none" 
+                          style={{ 
+                            clipPath: v.position === "above" ? "inset(0 0 60% 0)" : "inset(60% 0 0 0)",
+                            transform: v.position === "above" ? "translateY(30%)" : "translateY(-30%)"
+                          }}
+                        >
+                          ཨ{v.mark}
+                        </span>
                       </span>
 					  
                       
