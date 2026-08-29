@@ -145,10 +145,10 @@ export default function VowelsLesson() {
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
                       
-					 {/* Vowel Mark rendered over a transparent dotted circle to suppress Firefox fallbacks */}
-                      <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"} whitespace-nowrap`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className="text-transparent select-none">{"\u25CC"}</span><span>{v.mark}</span>
-                      </span> 
+					 {/* Vowel Mark rendered over a transparent valid base letter to completely suppress Firefox fallbacks */}
+                      <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+                        <span className="text-transparent select-none">ཨ<span className="text-current">{v.mark}</span></span>
+                      </span>
 					  
                       
                       {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
