@@ -1,4 +1,3 @@
-// app/dashboard/lessons/2/page.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -142,20 +141,12 @@ export default function VowelsLesson() {
               <div className="relative mb-2 grid grid-cols-2 gap-2 sm:mb-3 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => {
                   return (
-                    <button 
-                      key={`mark-${v.key}`} 
-                      onClick={() => playAudio(v.markTranslit)} 
-                      className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/10 bg-[#14120f] hover:bg-[#1a1714]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}
-                    >
+                    <button key={`mark-${v.key}`} onClick={() => playAudio(v.markTranslit)} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                       <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                       
-                      {/* FIX: Pedagogical 'Faint Base' Approach. 
-                          The base letter 'ཨ' anchors the vowel naturally. 
-                          It is colored a faint watermark gray, while the vowel mark is a bold, bright color. */}
-                      <span className="flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1]" style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
-                        <span className={`select-none transition-colors duration-300 ${studyMode === "night" ? "text-stone-800" : "text-stone-300"}`}>
-                          ཨ<span className={studyMode === "night" ? "text-amber-400" : "text-brand-dark"}>{v.mark}</span>
-                        </span>
+                      {/* Vowel Mark purely rendered on top of a non-breaking space - NO SVGs or Circles */}
+                      <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+                        {"\u00A0" + v.mark}
                       </span>
                       
                       {playingItem === v.markTranslit && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
@@ -166,11 +157,7 @@ export default function VowelsLesson() {
 
               <div className="relative grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => (
-                  <button 
-                    key={v.key} 
-                    onClick={(e) => { setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); playAudio(v.tib); }} 
-                    className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/10 bg-[#14120f] hover:bg-[#1a1714]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}
-                  >
+                  <button key={v.key} onClick={(e) => { setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); playAudio(v.tib); }} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                     <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>{v.tib}</span>
                     <div className="mt-3 flex items-end justify-between">
