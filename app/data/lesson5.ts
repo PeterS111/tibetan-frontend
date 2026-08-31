@@ -190,8 +190,8 @@ export const STEPS = [
   { id: "family", eyebrow: "Step 03", title: "Meet the five prefixes" },
   { id: "exceptions", eyebrow: "Step 04", title: "Exceptions worth memorising" },
   { id: "vocab", eyebrow: "Step 05", title: "Vocabulary built from prefixes" },
-  { id: "practice", eyebrow: "Step 06", title: "Practice & mastery check" },
-  { id: "complete", eyebrow: "Finish", title: "Lesson complete" }
+  { id: "practice", eyebrow: "Step 06", title: "Practice & exercises" },
+  { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." }
 ];
 
 

@@ -56,7 +56,6 @@ export default function DashboardHub() {
   // --- Dynamic Progress Calculations (Safely parsing strings to prevent UI glitches) ---
   const parseNum = (val: any, fallback: number) => {
     if (val === undefined || val === null) return fallback;
-    // This forcibly strips out text like "LESSONS" and ensures it is a clean number
     const parsed = parseInt(String(val).replace(/\D/g, ''), 10);
     return isNaN(parsed) ? fallback : parsed;
   };
@@ -85,7 +84,8 @@ export default function DashboardHub() {
         
         {/* Welcome Text */}
         <div className="flex-1 space-y-4">
-          <div className="text-[11px] font-bold tracking-[0.2em] text-brand-dark mb-4 font-tibetan">
+          {/* UPDATED: Tibetan text is now significantly larger and readable */}
+          <div className="text-brand-dark font-tibetan text-2xl md:text-3xl leading-normal mb-2">
             ༄༅། །བོད་སྐད་ཀྱི་ལམ་བུ།
           </div>
           <h1 className="text-4xl md:text-[2.75rem] font-bold font-serif text-ink leading-[1.2]">
@@ -116,7 +116,7 @@ export default function DashboardHub() {
         </div>
       </div>
 
-      {/* NEW: Achievements & Tracking Dashboard */}
+      {/* Achievements & Tracking Dashboard */}
       <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-border-subtle">
         <Card className="p-6 bg-surface border border-border-subtle shadow-sm flex flex-col hover:border-brand transition-colors">
           <div className="flex justify-between items-start mb-4">

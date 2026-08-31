@@ -81,14 +81,16 @@ export const VOCAB = [
   { tib: "ཇོ་ཇོ",  translit: "jo-jo",    en: "elder brother",  emoji: "👦",       vowel: "o" },
 ];
 
+
+
 export const STEPS = [
   { id: "grid", eyebrow: "Step 01", title: "The four vowels, as a type specimen", description: "Tap each mark to hear and inspect it." },
   { id: "marks", eyebrow: "Step 02", title: "The four diacritic marks", description: "Names, positions, and how each mark is written." },
   { id: "pronunciation", eyebrow: "Step 03", title: "Pronouncing the four vowels", description: "Map each vowel to a familiar English sound." },
   { id: "spelling", eyebrow: "Step 04", title: "Spelling — root letter + vowel mark", description: "Combine any consonant with the four vowel marks." },
-  { id: "vocab", eyebrow: "Step 05", title: "Nouns formed with the four vowels", description: "Read and hear real words using vowels only." },
+  { id: "vocab", eyebrow: "Step 05", title: "Vocabulary built from the four vowels", description: "Read and hear real words using vowels only." },
   { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
-  { id: "complete", eyebrow: "Final test", title: "Step test — unlock the next step", description: "Score 80% or higher to unlock Superscripts." },
+  { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." },
 ];
 
 export function generateSpellingQuiz(): QuizQuestion[] {

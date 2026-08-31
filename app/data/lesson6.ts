@@ -261,9 +261,9 @@ export const STEPS = [
   { id: "vowel", eyebrow: "Step 03", title: "When the vowel meets the suffix", description: "How suffixes reshape the preceding vowel." },
   { id: "post", eyebrow: "Step 04", title: "Post-suffixes", description: "The silent closers \u0f51 and \u0f66, historical and active." },
   { id: "root", eyebrow: "Step 05", title: "How to recognise the root letter", description: "Rules for parsing complex syllables." },
-  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Words that use the suffixes you just learned." },
-  { id: "practice", eyebrow: "Step 07", title: "Cumulative practice", description: "Flashcards, quiz, and matching drills." },
-  { id: "test", eyebrow: "Step 08", title: "Step complete", description: "Pass to unlock the next lesson." }
+  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary built from suffixes", description: "Words that use the suffixes you just learned." },
+  { id: "practice", eyebrow: "Step 07", title: "Practice & exercises", description: "Flashcards, quiz, and matching drills." },
+  { id: "test", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the Capstone." }
 ];
 
 export const POST_SUFFIX_QUESTIONS: QuizQuestion[] = [

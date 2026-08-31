@@ -244,13 +244,15 @@ return (
             <p className="mb-8 max-w-3xl text-[15px] text-ink-light leading-relaxed">
               Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> — seed syllables that anchor a whole tone family.
             </p>
-            <div className="grid gap-6 md:grid-cols-3">
+            
+			
+			<div className="grid gap-6 md:grid-cols-3">
               {[
                 { tib: "ཨ", translit: "a", label: "Neutral root · High", swatch: "bg-sky-100", ring: "ring-sky-300", text: "text-sky-800", members: "ཨ ཀ ཅ ཏ པ ཙ", description: "The neutral vowel carrier — a clean ‘a’ with no consonantal onset. Anchors the plain, unaspirated stops." },
                 { tib: "ཧ", translit: "ha", label: "Aspirated root · Breath", swatch: "bg-amber-100", ring: "ring-amber-300", text: "text-amber-800", members: "ཁ ཆ ཐ ཕ ཚ ཧ ཤ ས", description: "The breath root — a light, aspirated ‘h’. Anchors the aspirated stops and fricatives." },
                 { tib: "འ", translit: "'a", label: "Glottal root · Voiced flow", swatch: "bg-rose-100", ring: "ring-rose-300", text: "text-rose-800", members: "ག ཇ ད བ ཛ ཞ ཟ འ ཡ ར ལ ང ཉ ན མ", description: "The glottal root — a soft, voiced ‘a’ that carries the vowel without a hard onset. Anchors the low-register letters." },
               ].map((r) => (
-                <div key={r.tib} className={`p-8 bg-surface border ${r.ring} flex flex-col`}>
+                <div key={r.tib} className={`p-8 bg-surface border ${r.ring} flex flex-col h-full`}>
                   <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit border ${r.swatch} ${r.text}`}>
                     <span className="text-[10px] font-bold uppercase tracking-widest">{r.label}</span>
                   </div>
@@ -268,12 +270,14 @@ return (
                     </span>
                   </button>
                   
-                  <p className="mt-6 text-sm leading-relaxed text-ink-light flex-1">{r.description}</p>
+                  {/* MIN-H added to align dividers perfectly horizontally */}
+                  <p className="mt-6 text-sm leading-relaxed text-ink-light min-h-[100px]">{r.description}</p>
                   
-                  <div className="mt-6 border-t border-border-strong pt-5">
+                  {/* FLEX-1 moved here so unused space falls beneath the buttons */}
+                  <div className="mt-6 border-t border-border-strong pt-5 flex-1">
                     <div className="text-eyebrow mb-3">Family</div>
                     {/* Small Family Member Buttons */}
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 content-start">
                       {r.members.split(" ").map((letter) => (
                         <button 
                           key={letter} 
@@ -290,6 +294,8 @@ return (
                 </div>
               ))}
             </div>
+			
+			
           </StepContainer>
 
           {/* Gender */}

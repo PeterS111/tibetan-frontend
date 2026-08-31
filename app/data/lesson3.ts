@@ -136,8 +136,8 @@ export const STEPS = [
   { id: "intro", eyebrow: "Step 01", title: "What is a superscript?", desc: "How superscripts stack over a root letter." },
   { id: "family", eyebrow: "Step 02", title: "Meet the three superscripts", desc: "Study each superscript with its root combinations." },
   { id: "vocab", eyebrow: "Step 03", title: "Vocabulary built from superscripts", desc: "Real words using stacked letters." },
-  { id: "practice", eyebrow: "Step 04", title: "Practice & mastery check", desc: "Flashcards, quiz, and matching drills." },
-  { id: "complete", eyebrow: "Finish", title: "Lesson complete", desc: "Take the final test to unlock the next unit." }
+  { id: "practice", eyebrow: "Step 04", title: "Practice & exercises", desc: "Flashcards, quiz, and matching drills." },
+  { id: "complete", eyebrow: "Final step", title: "Lesson complete", desc: "Take the final test to unlock the next lesson." }
 ];
 
 export function generateVocabQuiz(): QuizQuestion[] {

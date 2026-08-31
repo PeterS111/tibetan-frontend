@@ -91,14 +91,14 @@ export const VOCAB = [
 ];
 
 export const STEPS = [
-  { id: "intro", eyebrow: "Introduction", title: "Welcome to the 30 consonants", description: "A short orientation before you meet the letters." },
-  { id: "grid", eyebrow: "Step 01", title: "The alphabet, as a type specimen", description: "Tap each letter to hear its sound and see its details." },
-  { id: "tone", eyebrow: "Step 02", title: "Understanding tone", description: "The four voice registers that colour every consonant." },
-  { id: "roots", eyebrow: "Step 03", title: "The three root sounds", description: "Trace every consonant back to ཨ, ཧ, or འ." },
-  { id: "gender", eyebrow: "Step 04", title: "Traditional gender classification", description: "The five effort-based groupings of the alphabet." },
-  { id: "vocab", eyebrow: "Step 05", title: "Nouns formed from the 30 consonants", description: "Read and hear real words built from the root letters." },
-  { id: "practice", eyebrow: "Step 06", title: "Practice & exercises", description: "Flashcards, listening, matching, and stroke tracing." },
-  { id: "complete", eyebrow: "Final test", title: "Step complete — unlock the next step", description: "Score 80% or higher on the final test to unlock The Four Vowels." },
+  { id: "intro", eyebrow: "Step 01", title: "Welcome to the 30 consonants", description: "A short orientation before you meet the letters." },
+  { id: "grid", eyebrow: "Step 02", title: "The alphabet, as a type specimen", description: "Tap each letter to hear its sound and see its details." },
+  { id: "tone", eyebrow: "Step 03", title: "Understanding tone", description: "The four voice registers that colour every consonant." },
+  { id: "roots", eyebrow: "Step 04", title: "The three root sounds", description: "Trace every consonant back to ཨ, ཧ, or འ." },
+  { id: "gender", eyebrow: "Step 05", title: "Traditional gender classification", description: "The five effort-based groupings of the alphabet." },
+  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary built from the 30 consonants", description: "Read and hear real words built from the root letters." },
+  { id: "practice", eyebrow: "Step 07", title: "Practice & exercises", description: "Flashcards, listening, matching, and stroke tracing." },
+  { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." }
 ];
 
 export function generateFinalQuiz(): QuizQuestion[] {

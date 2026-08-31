@@ -225,15 +225,16 @@ export const TRIPLE_STACKS: Stack3[] = [
 
 export const TRIPLE_ACCENT = "#0f766e";
 
+
 export const STEPS = [
   { id: "intro", eyebrow: "Step 01", title: "What is a subscript?", desc: "The four subjoined letters and how they attach." },
   { id: "family", eyebrow: "Step 02", title: "Meet the four subscripts", desc: "Study each subscript with its root combinations." },
   { id: "super-sub", eyebrow: "Step 03", title: "Roots with a superscript and subscript", desc: "Three-letter stacks combining both." },
   { id: "vocab", eyebrow: "Step 04", title: "Vocabulary built from subscripts", desc: "Real words using subjoined letters." },
-  { id: "practice", eyebrow: "Step 05", title: "Practice & mastery check", desc: "Flashcards, quiz, and matching drills." },
-  // Updated step array explicitly adds the Cumulative Exercise here
-  { id: "cumulative", eyebrow: "Step Complete", title: "Cumulative Exercise", desc: "Test your recognition of all subscript variations combined." }
+  { id: "practice", eyebrow: "Step 05", title: "Practice & exercises", desc: "Flashcards, quiz, and matching drills." },
+  { id: "cumulative", eyebrow: "Final step", title: "Lesson complete", desc: "Take the final test to unlock the next lesson." }
 ];
+
 
 export function generateVocabQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];

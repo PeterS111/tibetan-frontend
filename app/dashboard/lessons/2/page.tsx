@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
   Info, Moon, Sun, Volume2, Loader2, CheckCircle2
@@ -24,14 +25,42 @@ import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export default function VowelsLesson() {
+  const { user } = useUser();
+  const { getToken } = useAuth();
+
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  const { unlockedStep, expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Position>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
   
   const [isBypassing, setIsBypassing] = useState(false);
+
+  // --- Words Known Save Logic ---
+  const saveWords = async (wordCount: number, stepIndex: number) => {
+    // Prevent double counting: only add words if the step wasn't already completed
+    if (!completed.has(stepIndex) && user) {
+      try {
+        const token = await getToken();
+        if (token) {
+          const formData = new FormData();
+          formData.append("user_id", user.id);
+          formData.append("new_words", wordCount.toString());
+
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          });
+        }
+      } catch (e) {
+        console.error("Failed to save words", e);
+      }
+    }
+    // Proceed to mark the step complete
+    markComplete(stepIndex);
+  };
 
   const filtered = useMemo(() => (filter === "all" ? VOWELS : VOWELS.filter((v) => v.position === filter)), [filter]);
 
@@ -84,7 +113,7 @@ export default function VowelsLesson() {
         {/* Hero Section */}
         <Card className="mb-8 grid gap-6 md:grid-cols-[1fr,auto] md:items-end">
           <div>
-            <div className="text-eyebrow text-brand-dark mb-2">Step 02 · Foundations</div>
+            <div className="text-eyebrow text-brand-dark mb-2">Lesson 02 · Foundations</div>
             <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">The Four Vowels</h1>
             <p className="mt-1 font-serif text-2xl text-ink-light italic tibetan">དབྱངས་བཞི།</p>
             <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
@@ -95,7 +124,7 @@ export default function VowelsLesson() {
           </div>
           <div className="w-full md:w-72">
             <div className="mb-2 flex items-center justify-between text-eyebrow">
-              <span>Step progress</span>
+              <span>Lesson progress</span>
               <span className="text-brand-dark">{Math.min(unlockedStep, STEPS.length)} of {STEPS.length} sections</span>
             </div>
             <div className="h-1.5 w-full bg-border-subtle overflow-hidden">
@@ -276,7 +305,6 @@ export default function VowelsLesson() {
 
           {/* Step 3: Spelling */}
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            {/* Switched to single-column stacking layout to match lessons 3/4/5 */}
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm mb-10">
               <div className="flex flex-col divide-y divide-border-strong">
                 {VOWELS.map((v) => (
@@ -376,15 +404,18 @@ export default function VowelsLesson() {
               />
             </div>
             
+            {/* UPDATED QUIZ MODULE: Triggers saveWords onPass */}
             <QuizModule
               title="Vocabulary Mastery" 
-              intro="Check your memory of the new words before moving on." 
+              intro="Score 80% or higher to prove you know these words and add them to your profile." 
               data={VOCAB} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               questionCount={16} 
-              isVocabMatch 
+              isVocabMatch
+              isUnlockTest={true} // Forces a pass/fail screen
+              onPass={() => saveWords(VOCAB.length, 4)} // Adds words and unlocks next step
             />
           </StepContainer>
 
@@ -435,7 +466,7 @@ export default function VowelsLesson() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Subcomponents                                                       */
+/* Subcomponents                                                      */
 /* ------------------------------------------------------------------ */
 
 interface DetailPanelProps {

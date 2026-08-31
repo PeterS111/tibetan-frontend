@@ -9,6 +9,7 @@ import {
   LayoutDashboard, BookOpen, MessageSquare, 
   CheckSquare, FileText, TrendingUp, Settings, Menu, X, Calendar, LogOut 
 } from "lucide-react";
+import { useActiveTracker } from "@/hooks/useActiveTracker";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profile, setProfile] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  
+  useActiveTracker();
+  
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
