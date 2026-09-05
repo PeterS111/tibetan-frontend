@@ -43,8 +43,8 @@ export function useAudio() {
           if (!preloadedIds.current.has(assetId)) {
             await NativeAudio.preload({
               assetId: assetId,
-              assetPath: `public/sounds/${fileName}`, 
-              isComplex: false,
+              assetPath: `public/sounds/${fileName}`
+              // REMOVED 'isComplex' to fix the strict TypeScript error!
             });
             preloadedIds.current.add(assetId);
           }
