@@ -103,7 +103,6 @@ export const AUDIO_MAP: Record<string, string> = {
   "ཉྭ": "Section 02_nya_wazur_individual.wav", "ཉྭ spelling": "Section 02_nya_wazur_Spelling.wav",
   "དྭ": "Section 02_da_wazur_individual.wav", "དྭ spelling": "Section 02_da_wazur_Spelling.wav",
   "ཙྭ": "Section 02_tsa_wazur_individual.wav", "ཙྭ spelling": "Section 02_tsa_wazur_Spelling.wav",
-  "ཚྭ": "Section 02_tsha_wazur_individual.wav", "ཚྭ spelling": "Section 02_tsha_wazur_Spelling.wav",
   "ཞྭ": "Section 02_zha_wazur_individual.wav", "ཞྭ spelling": "Section 02_zha_wazur_Spelling.wav",
   "ཟྭ": "Section 02_za_wazur_individual.wav", "ཟྭ spelling": "Section 02_za_wazur_Spelling.wav",
   "རྭ": "Section 02_ra_wazur_individual.wav", "རྭ spelling": "Section 02_ra_wazur_Spelling.wav",
@@ -209,7 +208,8 @@ export const AUDIO_MAP: Record<string, string> = {
   "ལས་": "Section 02_suffix_sa_las_individual.wav", "ལས་ spelling": "Section 02_suffix_sa_las_spelling.wav",
   "རུས་": "Section 02_suffix_sa_rus_individual.wav", "རུས་ spelling": "Section 02_suffix_sa_rus_spelling.wav",
   "སོས་": "Section 02_suffix_sa_soe_individual.wav", "སོས་ spelling": "Section 02_suffix_sa_soe_spelling.wav",
-
+  
+  // Vocabulary & Shift Rules
   "བོད་": "Tibet.wav", "ཁང་པ་": "House.wav", "ཁང་": "House.wav", "མེ་མདའ་": "Gun.wav",
   "རྒྱལ་ཁབ་": "Country.wav", "དཀར་པོ་": "White.wav", "ལག་པ་": "Hand.wav",
   "ནག་པོ་": "Black.wav", "གངས་རི་": "Snow mountain.wav", "ནགས་ཚལ་": "Forest.wav",
