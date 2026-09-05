@@ -44,7 +44,7 @@ export const AUDIO_MAP: Record<string, string> = {
   "ལ་མགོ": "Lesson 03 _ Foundations- Lago.wav",
   "ས་མགོ": "Lesson 03 _ Foundations - Soho.wav",
   "རྐ": "Step  2 Rago_ka.wav", "རྒ": "Step 2 Rago _ga.wav", "རྗ": "rja .wav", "རྙ": "Step 2 Rago _nya.wav",
-  "རྡ": "Step 2 Rago_da.wav", "རྣ": "Step 2 Rago_na.wav", "རྦ": "Step  2 Rago_ba.wav", "རྩ": "Step 2 Rago_tsa.wav", "རྫ": "Step 2 Rago_dza.wav",
+  "རྡ": "Step 2 Rago_da.wav", "རྣ": "Step 2 Rago_na.wav", "རྦ": "Step  2 Rago_ba.wav", "རྫ": "Step 2 Rago_dza.wav",
   "ལྐ": "Step two_lago_ka individual words.wav", "ལྒ": "Step two_lago_ga individual words.wav", "ལྕ": "Step two_Lago_cha individual words.wav", "ལྗ": "Step two_Lago_ja individual words.wav",
   "ལྡ": "Step two_Lago_da individual words.wav", "ལྤ": "Step two_Lago_pa individual words.wav", "ལྦ": "Step two_Lago_ba individual words.wav",
   "སྐ": "Step 02_ka_ Sa Go individuals.wav", "སྙ": "Step 02_nya_ Sa Go individuals.wav", "སྟ": "Step 02_ta_ Sa Go individuals.wav",
