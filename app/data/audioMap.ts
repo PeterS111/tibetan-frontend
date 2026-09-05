@@ -44,12 +44,12 @@ export const AUDIO_MAP: Record<string, string> = {
   "ལ་མགོ": "Lesson 03 _ Foundations- Lago.wav",
   "ས་མགོ": "Lesson 03 _ Foundations - Soho.wav",
   "རྐ": "Step  2 Rago_ka.wav", "རྒ": "Step 2 Rago _ga.wav", "རྗ": "rja .wav", "རྙ": "Step 2 Rago _nya.wav",
-  "རྡ": "Step 2 Rago_da.wav", "རྣ": "Step 2 Rago_na.wav", "རྦ": "Step  2 Rago_ba.wav", "རྨ": "Step 2 Rago_ma.wav",
-  "རྩ": "Step 2 Rago_tsa.wav", "རྫ": "Step 2 Rago_dza.wav",
+  "རྡ": "Step 2 Rago_da.wav", "རྣ": "Step 2 Rago_na.wav", "རྦ": "Step  2 Rago_ba.wav", "རྩ": "Step 2 Rago_tsa.wav", "རྫ": "Step 2 Rago_dza.wav",
   "ལྐ": "Step two_lago_ka individual words.wav", "ལྒ": "Step two_lago_ga individual words.wav", "ལྕ": "Step two_Lago_cha individual words.wav", "ལྗ": "Step two_Lago_ja individual words.wav",
-  "ལྡ": "Step two_Lago_da individual words.wav", "ལྤ": "Step two_Lago_pa individual words.wav", "ལྦ": "Step two_Lago_ba individual words.wav", "ལྷ": "Step two_Laho_lha individual words.wav",
-  "སྐ": "Step 02_ka_ Sa Go individuals.wav", "སྔ": "Step 02_nga_ Sa Go individuals.wav", "སྙ": "Step 02_nya_ Sa Go individuals.wav", "སྟ": "Step 02_ta_ Sa Go individuals.wav",
+  "ལྡ": "Step two_Lago_da individual words.wav", "ལྤ": "Step two_Lago_pa individual words.wav", "ལྦ": "Step two_Lago_ba individual words.wav",
+  "སྐ": "Step 02_ka_ Sa Go individuals.wav", "སྙ": "Step 02_nya_ Sa Go individuals.wav", "སྟ": "Step 02_ta_ Sa Go individuals.wav",
   "སྡ": "Step 02_da_ Sa Go individuals.wav", "སྣ": "Step 02_na_ Sa Go individuals.wav", "སྤ": "Step 02_pa_ Sa Go individuals.wav", "སྦ": "Step 02_ba_ Sa Go individuals.wav", "སྨ": "Step 02_Ma_ Sa Go individuals.wav", "སྩ": "Step 02_Tsa_ Sa Go individuals.wav",
+
   "རྐ spelling": "Step 2 Rago_ ka spelling.wav", "རྒ spelling": "Step 2 Rago_ga spelling.wav", "རྔ spelling": "Step 2 Rago _rnga-spelling.wav",
   "རྗ spelling": "Step 2 Rago_ja spelling.wav", "རྙ spelling": "Step 2 Rago_nya spelling.wav", "རྟ spelling": "Step 2 Rago_ta spelling.wav",
   "རྡ spelling": "Step 2 _da spelling.wav", "རྣ spelling": "Step 2 Rago_na spelling.wav", "རྦ spelling": "Step 2 Rago_ba spelling.wav",
@@ -61,6 +61,7 @@ export const AUDIO_MAP: Record<string, string> = {
   "སྔ spelling": "Step 02_snga_ Sa Go spelling.wav", "སྙ spelling": "Step 02_snya_ Sa Go spelling.wav", "སྟ spelling": "Step 02_sta_ Sa Go spelling.wav",
   "སྡ spelling": "Step 02_sda_ Sa Go spelling.wav", "སྣ spelling": "Step 02_sna_ Sa Go spelling.wav", "སྤ spelling": "Step 02_spa_ Sa Go spelling.wav",
   "སྦ spelling": "Step 02_sba_ Sa Go spelling.wav", "སྨ spelling": "Step 02_sma_ Sa Go spelling.wav", "སྩ spelling": "Step 02_stsa_ Sa Go spelling.wav",
+
   "རྟ": "Horse.wav", "རྔ": "Drum.wav", "རྗེ་བོ": "King.wav", "རྡོ": "Stone.wav", "རྡོ་རྗེ": "Vajra.wav", "རྨ": "Wound.wav", "རྐུ་མ": "Thief.wav", "རྩ": "Grass.wav",
   "རྫ་ཆུ": "Mountain river.wav", "རྩ་བ": "Root.wav", "ལྔ": "Five.wav", "ལྷ": "Deity.wav", "ལྷ་མོ": "Goddess.wav", "ལྕེ": "Tongue.wav", "ལྡི་ལི": "Delhi.wav",
   "ལྟ": "Look.wav", "ལྗི་བ": "Flea.wav", "ལྕི་བ": "Dung.wav", "སྒ": "Saddle.wav", "སྙེ་མ": "Ear of the grain.wav", "སྐྲ": "Hair.wav", "སྟ་རེ": "Axe.wav",
@@ -121,6 +122,7 @@ export const AUDIO_MAP: Record<string, string> = {
   "སྣྲ": "Section 03 snra_stacked_individual .wav", "སྣྲ spelling": "Section 03_snra_stacked_Spelling.wav",
   "སྤྲ": "Section 03 spra_stacked_individual .wav", "སྤྲ spelling": "Section 03_spra_stacked_Spelling.wav",
   "སྨྲ": "Section 03 smra_stacked_individual .wav", "སྨྲ spelling": "Section 03_smra_stacked_Spelling.wav",
+  
   "ཁྲོ་བ": "Anger.wav", "སྲུ་མོ": "Aunts.wav", "ཀླ་ཀློ": "Barbarian.wav", "སྦྲ": "Black tent.wav",
   "རྒྱ་མི": "Chinese.wav", "ཁྭ་ཏ": "Crow.wav", "ཤྭ་བ": "Deer.wav", "ཁྱི": "Dog.wav",
   "སླ་པོ": "Easy.wav", "མྱེ": "Fire.wav", "རྩྭ": "Grass.wav", "སྐྱ་སྐྱ": "Grey.wav",
@@ -207,8 +209,7 @@ export const AUDIO_MAP: Record<string, string> = {
   "ལས་": "Section 02_suffix_sa_las_individual.wav", "ལས་ spelling": "Section 02_suffix_sa_las_spelling.wav",
   "རུས་": "Section 02_suffix_sa_rus_individual.wav", "རུས་ spelling": "Section 02_suffix_sa_rus_spelling.wav",
   "སོས་": "Section 02_suffix_sa_soe_individual.wav", "སོས་ spelling": "Section 02_suffix_sa_soe_spelling.wav",
-  
-  // Vocabulary & Shift Rules
+
   "བོད་": "Tibet.wav", "ཁང་པ་": "House.wav", "ཁང་": "House.wav", "མེ་མདའ་": "Gun.wav",
   "རྒྱལ་ཁབ་": "Country.wav", "དཀར་པོ་": "White.wav", "ལག་པ་": "Hand.wav",
   "ནག་པོ་": "Black.wav", "གངས་རི་": "Snow mountain.wav", "ནགས་ཚལ་": "Forest.wav",
