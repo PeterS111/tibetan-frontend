@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/clerk-react";
 import { MessageSquarePlus, X, Loader2, CheckCircle2, Heart, Move } from "lucide-react";
 
 export default function FeedbackWidget() {

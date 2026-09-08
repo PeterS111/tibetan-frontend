@@ -151,45 +151,45 @@ const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
               </Card>
             </div>
 
-           <div className="mt-6 border border-border-strong bg-surface overflow-hidden">
-              <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
+           
+		   
+		<div className="mt-6 border border-border-strong bg-surface overflow-hidden">
+              {/* FIX: 1-column on mobile, gap-px used to perfectly draw borders regardless of screen size */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-px bg-border-strong text-center">
                 {SUBS.map((s) => (
-                  <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group relative flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
+                  <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group relative flex flex-col items-center p-6 transition bg-surface hover:bg-surface-muted">
                     <span className="absolute inset-x-6 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
                     
-                  <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-1">
-                      {/* 1. Gray SVG Circle */}
-                      <svg 
-                        className="absolute text-border-strong" 
-                        width="38" 
-                        height="38" 
-                        viewBox="0 0 100 100" 
-                        style={{ 
-                          transform: s.key === "ya" ? "translate(-2px, 8px)" : 
-                                     s.key === "ra" ? "translate(-2px, 8px)" : 
-                                     s.key === "la" ? "translate(-9px, 8px)" : 
-                                                      "translate(-4px, 8px)" 
-                        }}
-                      >
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="14,10" />
-                      </svg>
-                      
-                      {/* 2. Black Font Subscript (Anchored to an invisible space) */}
+                
+<span className="relative flex items-center justify-center h-16 w-full mt-2 mb-2">
+                      {/* FIX: Final pixel-perfect calibration. Shifted Ya/Ra left by 10px, La left by 6px, Wa left by 4px to hit absolute visual dead-center. */}
                       <span 
-                        className="relative z-10 text-ink leading-none" 
-                        style={{ fontSize: "4.2rem", fontFamily: "'Jomolhari', serif" }}
+                        className="relative text-ink leading-none" 
+                        style={{ 
+                          fontSize: "4.2rem", 
+                          fontFamily: "'Jomolhari', serif",
+                          left: s.key === "la" ? "-32px" : s.key === "wa" ? "-22px" : "-28px",
+                          top: s.key === "wa" ? "-6px" : "0px"
+                        }}
                       >
                         {s.key === "ya" ? "\u00A0\u0FB1" : s.key === "ra" ? "\u00A0\u0FB2" : s.key === "la" ? "\u00A0\u0FB3" : "\u00A0\u0FAD"}
                       </span>
                     </span>
+				
 				   
-				   
-                    <span className="text-sm font-bold text-ink">{s.name}</span>
-                    <span className="text-xs font-bold uppercase tracking-widest text-ink-light items-center inline-flex">{s.count} stacks · <span className="font-serif text-lg ml-1.5">{s.key === 'wa' ? 'ཝ་ཟུར་' : s.headLarge + '་བཏགས་'}</span></span>
+                    {/* FIX: Reorganized text to stack cleanly in 3 lines */}
+                    <div className="flex flex-col items-center gap-1.5 w-full mt-2">
+                      <span className="text-sm font-bold text-ink">{s.name}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{s.count} STACKS</span>
+                      <span className="font-tibetan text-2xl text-ink-light mt-1">
+                        {s.key === 'wa' ? 'ཝ་ཟུར་' : s.headLarge + '་བཏགས་'}
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
-            </div>
+            </div>   
+		   
 
             <div className="mt-6 p-6 border border-border-strong bg-surface-muted">
               <div className="mb-4 flex items-center gap-2 text-eyebrow">

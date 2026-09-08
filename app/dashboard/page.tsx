@@ -1,15 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
-import { Lock, Loader2, Flame, Clock, Sparkles, ArrowRight, Award, CheckSquare, BookOpen } from "lucide-react";
-
-import { Card } from "../components/ui/Card";
+import { Loader2, ArrowRight, Lock, CheckCircle2, Play } from "lucide-react";
+import { DEV_BYPASS_LOCKS } from "@/app/config";
 import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/Button";
 
-export default function DashboardHub() {
+const FALLBACK_MODULES = [
+  { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active", lesson_count: 8 },
+  { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked", lesson_count: 7 },
+  { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked", lesson_count: 5 },
+  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked", lesson_count: 6 },
+  { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked", lesson_count: 7 },
+  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked", lesson_count: 9 },
+  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked", lesson_count: 3 }
+];
+
+export default function UnifiedDashboard() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const [profile, setProfile] = useState<any>(null);
@@ -18,289 +26,200 @@ export default function DashboardHub() {
 
   useEffect(() => {
     let isMounted = true;
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setModules(FALLBACK_MODULES);
+        setLoading(false);
+      }
+    }, 2000);
+
     const fetchData = async () => {
+      if (!isLoaded) return;
+      if (isLoaded && !user) {
+         if (isMounted) { setModules(FALLBACK_MODULES); setLoading(false); }
+         clearTimeout(safetyTimer); return;
+      }
       if (isLoaded && user) {
         try {
-          const token = await getToken();
-          if (!token) {
-            if (isMounted) setLoading(false);
-            return;
-          }
-          
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}&t=${Date.now()}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store"
+          const token = await Promise.race([
+            getToken(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Token timeout")), 1500))
+          ]);
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          
           if (isMounted) {
             if (data.profile) setProfile(data.profile);
-            if (data.modules && Array.isArray(data.modules)) {
+            if (data.modules && Array.isArray(data.modules) && data.modules.length > 0) {
               setModules(data.modules);
+            } else {
+              setModules(FALLBACK_MODULES);
             }
-            setLoading(false);
           }
-        } catch(e) { 
-          if (isMounted) setLoading(false); 
+        } catch(e) {
+          if (isMounted) setModules(FALLBACK_MODULES);
+        } finally {
+          if (isMounted) setLoading(false);
+          clearTimeout(safetyTimer);
         }
-      } else if (isLoaded && !user) {
-        if (isMounted) setLoading(false);
       }
     };
     fetchData();
-    return () => { isMounted = false; };
+    return () => { isMounted = false; clearTimeout(safetyTimer); };
   }, [user, isLoaded, getToken]);
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-brand" /></div>;
 
-  // --- Dynamic Progress Calculations (Safely parsing strings to prevent UI glitches) ---
   const parseNum = (val: any, fallback: number) => {
     if (val === undefined || val === null) return fallback;
     const parsed = parseInt(String(val).replace(/\D/g, ''), 10);
     return isNaN(parsed) ? fallback : parsed;
   };
 
-  const totalCompletedSections = modules.reduce((sum, m) => sum + parseNum(m.progress, 0), 0);
-  const totalSections = modules.reduce((sum, m) => sum + parseNum(m.lesson_count, 1), 0);
-  const completedModules = modules.filter(m => parseNum(m.progress, 0) >= parseNum(m.lesson_count, 1));
+  const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
+  const nextModule = visibleModules.find(m => parseNum(m.progress, 0) < parseNum(m.lesson_count, 1)) || visibleModules[0] || FALLBACK_MODULES[0];
   
-  const nextModule = modules.find(m => parseNum(m.progress, 0) < parseNum(m.lesson_count, 1)) || modules[0] || { 
-    module_id: 1, 
-    title: "The 30 Consonants", 
-    description: "The foundation of the Tibetan alphabet.", 
-    progress: 0 
-  };
-  
-  const progressPercent = totalSections > 0 ? Math.round((totalCompletedSections / totalSections) * 100) : 0; 
   const hoursSpent = profile?.time_spent_mins ? (profile.time_spent_mins / 60).toFixed(1) : "0.0";
   const wordsKnown = profile?.words_known || 0;
   const streak = profile?.streak || 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in duration-500 pb-24">
+    <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-24">
       
-      {/* Top Section: Intro & Stats */}
-      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12">
-        
-        {/* Welcome Text */}
-        <div className="flex-1 space-y-4">
-          {/* UPDATED: Tibetan text is now significantly larger and readable */}
-          <div className="text-brand-dark font-tibetan text-2xl md:text-3xl leading-normal mb-2">
-            ༄༅། །བོད་སྐད་ཀྱི་ལམ་བུ།
-          </div>
-          <h1 className="text-4xl md:text-[2.75rem] font-bold font-serif text-ink leading-[1.2]">
-            Three courses. One scholarly path through the Tibetan language.
-          </h1>
-          <p className="text-[15px] text-ink-light font-sans max-w-xl leading-relaxed pt-2">
-            Each course is broken into short, focused levels — script and sounds first, then everyday conversation, then reading real texts.
-          </p>
+      {/* 1. Designer's Minimalist Stats Grid */}
+      <div className="grid grid-cols-3 divide-x divide-border-subtle border-y border-border-subtle py-8 mb-12">
+        <div className="flex flex-col items-center justify-center text-center px-4">
+          <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{streak}</div>
+          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Day Streak</div>
         </div>
-
-        {/* Stats Grid */}
-        <div className="flex gap-4 shrink-0">
-          <div className="flex flex-col w-28 bg-surface border border-border-subtle p-5">
-            <Flame className="text-brand mb-4" size={20} strokeWidth={2.5} />
-            <div className="text-2xl font-serif text-ink mb-1">{streak}</div>
-            <div className="text-[9px] font-bold text-ink-muted uppercase tracking-widest">Day Streak</div>
-          </div>
-          <div className="flex flex-col w-28 bg-surface border border-border-subtle p-5">
-            <Clock className="text-brand mb-4" size={20} strokeWidth={2.5} />
-            <div className="text-2xl font-serif text-ink mb-1">{hoursSpent}h</div>
-            <div className="text-[9px] font-bold text-ink-muted uppercase tracking-widest">Time Spent</div>
-          </div>
-          <div className="flex flex-col w-28 bg-surface border border-border-subtle p-5">
-            <Sparkles className="text-brand mb-4" size={20} strokeWidth={2.5} />
-            <div className="text-2xl font-serif text-ink mb-1">{wordsKnown}</div>
-            <div className="text-[9px] font-bold text-ink-muted uppercase tracking-widest">Words Known</div>
-          </div>
+        <div className="flex flex-col items-center justify-center text-center px-4">
+          <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{hoursSpent}<span className="text-2xl text-ink-light ml-1">h</span></div>
+          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Time Spent</div>
+        </div>
+        <div className="flex flex-col items-center justify-center text-center px-4">
+          <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{wordsKnown}</div>
+          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Words Known</div>
         </div>
       </div>
 
-      {/* Achievements & Tracking Dashboard */}
-      <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-border-subtle">
-        <Card className="p-6 bg-surface border border-border-subtle shadow-sm flex flex-col hover:border-brand transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-[#FCECD8] text-[#9A5013] rounded-sm">
-              <CheckSquare size={20} />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Sections</span>
-          </div>
-          <div className="text-3xl font-serif text-ink mb-1">{totalCompletedSections} <span className="text-lg text-ink-muted">/ {totalSections || 34}</span></div>
-          <div className="text-sm text-ink-light">Total sections completed</div>
-        </Card>
-        
-        <Card className="p-6 bg-surface border border-border-subtle shadow-sm flex flex-col hover:border-brand transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-sm">
-              <BookOpen size={20} />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Lessons</span>
-          </div>
-          <div className="text-3xl font-serif text-ink mb-1">{completedModules.length} <span className="text-lg text-ink-muted">/ {modules.length || 7}</span></div>
-          <div className="text-sm text-ink-light">Full lessons mastered</div>
-        </Card>
-
-        <Card className="p-6 bg-surface border border-border-subtle shadow-sm flex flex-col hover:border-brand transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-indigo-100 text-indigo-700 rounded-sm">
-              <Award size={20} />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">Certificates</span>
-          </div>
-          <div className="text-3xl font-serif text-ink mb-1">{completedModules.length >= 7 ? "1" : "0"}</div>
-          <div className="text-sm text-ink-light font-bold text-brand-dark">{completedModules.length >= 7 ? "Beginner Part 1 Issued" : "Unlocks at 7 lessons"}</div>
-        </Card>
+      {/* 2. Editorial Drop-Cap Intro */}
+      <div className="mb-16 max-w-3xl">
+        <span className="float-left text-brand text-[5rem] md:text-[6rem] leading-[0.8] pr-4 font-serif mt-1">T</span>
+        <p className="text-xl md:text-2xl text-ink leading-relaxed font-serif">
+          hree courses and six levels, one scholarly path through the Tibetan language — script and sounds first, then everyday conversation, then discourse and nuance, and finally the classical register.
+        </p>
       </div>
 
-      {/* Curriculum Section */}
-      <div className="space-y-12 pt-6">
-        <div className="flex items-end justify-between border-b border-border-subtle pb-4">
-          <div>
-            <div className="text-eyebrow text-brand-dark mb-2 tracking-[0.2em]">Curriculum</div>
-            <h2 className="text-3xl font-serif text-ink">Your courses</h2>
-          </div>
-          <Link href="/dashboard/lessons" className="text-sm font-medium text-ink-light hover:text-ink transition-colors pb-1">
-            View full syllabus &rarr;
-          </Link>
-        </div>
-
-        {/* Course 1: Beginner */}
+      {/* 3. Dark Blue "Resume" Banner */}
+      <div className="bg-[#1a2332] text-white p-8 md:p-10 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16 rounded-none">
         <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <div className="text-eyebrow text-brand-dark tracking-[0.2em]">Course 1</div>
-            <div className="text-xs text-ink-light font-medium">2 levels</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3 flex items-center gap-3">
+            <span className="w-6 h-[1px] bg-brand"></span> Resume where you left off
           </div>
-          <h3 className="text-2xl font-serif text-ink mb-1">Beginner Course</h3>
-          <p className="text-sm text-ink-light italic font-serif mb-6">Script, sounds, and daily conversation.</p>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Level 1 - Active */}
-            <Card className="border-t-4 border-t-brand p-8 flex flex-col h-full shadow-sm relative">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-eyebrow">Part 1</span>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <h4 className="text-xl font-serif text-ink">Beginner 1</h4>
-                {completedModules.length >= 7 ? (
-                  <Badge variant="default" className="bg-emerald-100 text-emerald-800 border-emerald-200">Completed</Badge>
-                ) : (
-                  <Badge variant="brand">In Progress</Badge>
-                )}
-              </div>
-              <p className="text-[13px] text-ink-light leading-relaxed mb-8">
-                The Tibetan script from the ground up: 30 consonants, four vowels, stacks, prefixes and suffixes.
-              </p>
-              
-              <div className="mt-auto">
-                <div className="flex justify-between text-xs font-bold text-ink-light mb-3">
-                  <span>{progressPercent}% complete</span>
-                  <span className="text-ink-muted font-medium">7 units</span>
-                </div>
-                <div className="w-full bg-surface-muted h-1 mb-6 overflow-hidden">
-                  <div className="bg-brand h-full transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
-                </div>
-                <Link href="/dashboard/lessons" className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium transition-colors rounded-none bg-brand text-ink hover:bg-[#E5AC00]">
-                  {completedModules.length >= 7 ? "Review Course" : "Continue"} <ArrowRight size={16} strokeWidth={1.5} />
-                </Link>
-              </div>
-            </Card>
-
-            {/* Level 2 - Available/Ready */}
-            <Card className="border-t-4 border-t-border-subtle p-8 flex flex-col h-full shadow-sm relative">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-eyebrow">Part 2</span>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <h4 className="text-xl font-serif text-ink">Beginner 2</h4>
-                <Badge variant="default">Locked</Badge>
-              </div>
-              <p className="text-[13px] text-ink-light leading-relaxed mb-8">
-                Put the script to work: greetings, self-introduction, numbers, family, shopping, and daily life.
-              </p>
-              
-              <div className="mt-auto">
-                <div className="flex justify-between text-xs font-bold text-ink-light mb-3">
-                  <span>0% complete</span>
-                  <span className="text-ink-muted font-medium">11 units</span>
-                </div>
-                <div className="w-full bg-surface-muted h-1 mb-6 overflow-hidden"></div>
-                <Button variant="outline" className="px-6 py-2.5 flex gap-2 opacity-50 cursor-not-allowed">
-                  Start <ArrowRight size={16} strokeWidth={1.5} />
-                </Button>
-              </div>
-            </Card>
-          </div>
+          <h3 className="text-2xl md:text-3xl font-serif mb-2">{nextModule.title}</h3>
+          <p className="text-sm text-slate-300 max-w-md opacity-90">{nextModule.description}</p>
         </div>
-
-        {/* Course 2: Intermediate */}
-        <div className="pt-8">
-          <div className="text-eyebrow text-brand-dark tracking-[0.2em] mb-2">Course 2</div>
-          <h3 className="text-2xl font-serif text-ink mb-1">Intermediate Course</h3>
-          <p className="text-sm text-ink-light italic font-serif mb-6">Register, tenses, and reading longer texts.</p>
-          
-          <div className="grid md:grid-cols-2 gap-6 opacity-75">
-            {[
-              { part: "Part 1", title: "Pre-Intermediate", desc: "Build conversational fluency. Past and future tenses through traditional storytelling." },
-              { part: "Part 2", title: "Intermediate", desc: "Honorifics, register, and reading short prose from contemporary Tibetan writers." },
-            ].map((tier, i) => (
-              <Card key={i} className="p-8 bg-paper border-border-subtle flex flex-col h-full">
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-eyebrow text-ink-muted">{tier.part}</span>
-                </div>
-                <h4 className="text-xl font-serif text-ink-light mb-4">{tier.title}</h4>
-                <p className="text-[13px] text-ink-muted leading-relaxed mb-8">{tier.desc}</p>
-                
-                <div className="mt-auto flex items-center gap-2 text-[11px] font-medium text-ink-muted border-t border-border-subtle pt-4 uppercase tracking-wider">
-                  <Lock size={12} /> Unlocks after previous course
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <Link href={`/dashboard/lessons/${nextModule.module_id || 1}`} className="w-full md:w-auto shrink-0">
+          <button className="w-full bg-brand hover:bg-[#E5AC00] text-ink font-bold text-sm px-8 py-4 transition-colors shadow-sm flex items-center justify-center gap-2">
+            Continue Learning <ArrowRight size={16} />
+          </button>
+        </Link>
       </div>
 
-      {/* Dynamic Continue Widget */}
-      <div className="pt-16 border-t border-border-subtle">
-        <div className="text-eyebrow text-brand-dark tracking-[0.2em] mb-3">Pick up where you left off</div>
-        <h2 className="text-3xl font-serif text-ink mb-8">Continue your journey</h2>
+      {/* 4. The Clean Module List (Syllabus) */}
+      <div className="mb-16">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="text-5xl font-serif text-brand opacity-40">I</div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-1">Course 1</div>
+            <h2 className="text-3xl font-serif text-ink">Beginner Course</h2>
+          </div>
+        </div>
         
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2 p-8 shadow-sm border border-border-strong hover:border-brand transition-colors flex flex-col">
-            <div className="mb-4">
-              <span className="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-[#FCECD8] text-[#9A5013]">
-                Unit {nextModule.module_id || 1} · Step {parseNum(nextModule.progress, 0) + 1}
-              </span>
-            </div>
-            <h3 className="text-2xl font-serif text-ink mb-3">{nextModule.title}</h3>
-            <p className="text-sm text-ink-light mb-8 font-sans">
-              {nextModule.description}
-            </p>
-            <div className="mt-auto flex items-center gap-4">
-              <Link href={`/dashboard/lessons/${nextModule.module_id || 1}`}>
-                <Button variant="secondary" className="px-6 py-2.5 flex gap-2 font-medium bg-brand text-ink hover:bg-[#E5AC00] border-none shadow-sm">
-                  Jump right in <ArrowRight size={16} strokeWidth={1.5} />
-                </Button>
-              </Link>
-            </div>
-          </Card>
+        <p className="text-sm text-ink-light italic font-serif mb-8 border-l-2 border-brand pl-4">
+          Part 1: The Tibetan script from the ground up: 30 consonants, four vowels, stacks, prefixes and suffixes.
+        </p>
 
-          <Card className="p-8 shadow-sm border border-border-strong flex flex-col hover:border-brand transition-colors">
-            <div className="mb-4">
-              <span className="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-surface-muted border border-border-subtle text-ink-light">
-                Today
-              </span>
-            </div>
-            <h3 className="text-xl font-serif text-ink mb-3">Practice with Lobsang</h3>
-            <p className="text-[13px] text-ink-light mb-8 font-sans leading-relaxed flex-1">
-              Test your conversational skills using the vocabulary you have unlocked so far.
-            </p>
-            <Link href="/dashboard/chat" className="text-sm font-medium text-brand-dark hover:text-ink transition-colors flex items-center gap-1">
-              Open chat <ArrowRight size={14} strokeWidth={1.5} />
-            </Link>
-          </Card>
+        <div className="space-y-3">
+          {visibleModules.map((module) => {
+            const lessonUrl = `/dashboard/lessons/${Number(module.module_id)}`;
+            const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
+            const isCompleted = module.status === "completed";
+            const progressVal = parseNum(module.progress, 0);
+
+            let rowClass = "flex flex-col md:flex-row bg-surface border transition-all p-5 gap-5 ";
+            if (isCompleted) rowClass += "border-border-subtle hover:border-ink/30";
+            else if (isLocked) rowClass += "border-transparent bg-surface-muted/50 opacity-60";
+            else rowClass += "border-brand/40 shadow-sm relative";
+
+            return (
+              <div key={module.id || module.module_id} className={rowClass}>
+                {!isCompleted && !isLocked && <div className="absolute top-0 left-0 w-1 h-full bg-brand"></div>}
+                
+                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-serif text-xl border border-border-strong bg-white text-ink">
+                  {module.module_id}
+                </div>
+                
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-lg font-serif font-bold text-ink">{module.title}</h3>
+                    {isCompleted && <Badge variant="success" className="text-[9px]">Completed</Badge>}
+                    {!isCompleted && !isLocked && progressVal > 0 && <Badge variant="brand" className="text-[9px]">In Progress</Badge>}
+                  </div>
+                  <p className="text-sm text-ink-light">{module.description}</p>
+                </div>
+                
+                <div className="flex items-center mt-2 md:mt-0 md:pl-4">
+                  {isLocked ? (
+                    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-ink-muted">
+                      <Lock size={14} /> Locked
+                    </div>
+                  ) : (
+                    <Link href={lessonUrl} className="w-full md:w-auto">
+                      <button className={`w-full flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold transition-colors uppercase tracking-wider border ${isCompleted ? 'bg-transparent text-ink border-border-strong hover:bg-surface-muted' : 'bg-ink text-white border-ink hover:bg-ink-light shadow-sm'}`}>
+                        {isCompleted ? <><CheckCircle2 size={14}/> Review</> : <><Play size={14}/> Continue</>}
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-      
+
+      {/* 5. Future Tiers (Greyed out previews) */}
+      <div className="border-t border-border-subtle pt-12 space-y-6 opacity-60 pointer-events-none">
+         <div className="flex items-center gap-4 mb-6">
+          <div className="text-5xl font-serif text-ink-muted opacity-40">II</div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-1">Course 2</div>
+            <h2 className="text-2xl font-serif text-ink-muted">Intermediate Course</h2>
+          </div>
+        </div>
+        
+        <div className="flex flex-col md:flex-row bg-surface-muted border border-transparent p-6 gap-5">
+           <div className="flex-1">
+             <div className="flex items-center gap-3 mb-1">
+               <h3 className="text-lg font-serif font-bold text-ink-muted">Pre-Intermediate</h3>
+               <Badge variant="locked" className="text-[9px]">Locked</Badge>
+             </div>
+             <p className="text-sm text-ink-muted">Build conversational fluency. Past and future tenses through traditional storytelling.</p>
+           </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row bg-surface-muted border border-transparent p-6 gap-5">
+           <div className="flex-1">
+             <div className="flex items-center gap-3 mb-1">
+               <h3 className="text-lg font-serif font-bold text-ink-muted">Intermediate</h3>
+               <Badge variant="locked" className="text-[9px]">Locked</Badge>
+             </div>
+             <p className="text-sm text-ink-muted">Honorifics, register, and reading short prose from contemporary Tibetan writers.</p>
+           </div>
+        </div>
+      </div>
+
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SignInButton, Show, UserButton } from '@clerk/nextjs';
+import { SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 
 export default function AboutPage() {
   return (
@@ -23,19 +23,19 @@ export default function AboutPage() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Show when="signed-out">
+          <SignedOut>
             <SignInButton mode="modal">
               <button className="text-sm font-semibold bg-amber-500 text-stone-900 px-5 py-2.5 rounded-md hover:bg-amber-400 transition-colors shadow-sm">
                 Log In
               </button>
             </SignInButton>
-        </Show>
-          <Show when="signed-in">
+          </SignedOut>
+          <SignedIn>
             <Link href="/chat" className="text-sm font-bold bg-amber-500 text-stone-900 px-5 py-2.5 rounded-md hover:bg-amber-400 transition-colors shadow-sm flex items-center gap-2">
               Open Tutor <ArrowRight size={16} />
             </Link>
             <UserButton />
-          </Show>
+          </SignedIn>
         </div>
       </header>
 

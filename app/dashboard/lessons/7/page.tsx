@@ -7,7 +7,7 @@ import {
   Volume2, ChevronRight, ChevronLeft, ArrowUp, ArrowDown, CheckCircle2, 
   Sparkles, BookOpen, Award, Target, Loader2, XCircle, RotateCcw, Trophy, ArrowRight, Printer
 } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/clerk-react";
 
 // --- Custom Hooks ---
 import { useAudio } from "@/hooks/useAudio";

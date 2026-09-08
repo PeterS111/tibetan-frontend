@@ -1,12 +1,11 @@
-// app/layout.tsx
-import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Merriweather, Inter, Jomolhari } from "next/font/google";
 import "./globals.css";
 
 import FeedbackWidget from "./components/FeedbackWidget";
+// 1. IMPORT OUR NEW WRAPPER
+import ClerkClientProvider from "./ClerkClientProvider"; 
 
-// Merriweather matches the sturdy, heavy slab-like serifs in the screenshots
 const merriweather = Merriweather({
   weight: ["300", "400", "700", "900"],
   variable: "--font-serif",
@@ -14,7 +13,6 @@ const merriweather = Merriweather({
   style: ["normal", "italic"],
 });
 
-// Inter matches the clean body copy with the single-story 'g'
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -31,21 +29,30 @@ export const metadata: Metadata = {
   description: "Tibetan Language AI Tutor",
 };
 
+// 3. THIS LOCKS THE MOBILE SCREEN BOUNDARIES
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${merriweather.variable} ${inter.variable} ${jomolhari.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col font-sans bg-paper text-ink selection:bg-brand-light">
-        <ClerkProvider>
+    
+	<html lang="en" className={`${merriweather.variable} ${inter.variable} ${jomolhari.variable} h-full antialiased overflow-x-hidden`}>
+      <body className="min-h-full flex flex-col font-sans bg-paper text-ink selection:bg-brand-light w-full max-w-[100vw] overflow-x-hidden">
+	
+        {/* 2. USE THE WRAPPER INSTEAD OF CLERK PROVIDER DIRECTLY */}
+        <ClerkClientProvider>
           {children}
           <FeedbackWidget />
-        </ClerkProvider>
+        </ClerkClientProvider>
       </body>
     </html>
   );

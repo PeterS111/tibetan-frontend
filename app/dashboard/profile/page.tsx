@@ -1,6 +1,6 @@
 "use client";
 import { Wrench } from "lucide-react";
-import { UserProfile } from "@clerk/nextjs";
+import { UserProfile } from "@clerk/clerk-react";
 
 export default function ProfilePage() {
   return (

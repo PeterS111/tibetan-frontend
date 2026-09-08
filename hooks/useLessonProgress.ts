@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
-import { useAuth } from "@clerk/nextjs"; 
+import { useAuth } from "@clerk/clerk-react"; 
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
   const [unlockedStep, setUnlockedStep] = useState<number>(DEV_BYPASS_LOCKS ? bypassAmount || totalSteps : 0);

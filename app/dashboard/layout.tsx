@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/nextjs";
+import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { 
-  LayoutDashboard, MessageSquare, CheckSquare, 
-  FileText, TrendingUp, Settings, Menu, X, Calendar, LogOut 
+  LayoutDashboard, TrendingUp, Settings, Menu, X, LogOut 
 } from "lucide-react";
 import { useActiveTracker } from "@/hooks/useActiveTracker";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -19,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profile, setProfile] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // 📱 NEW: Detect Native Platform
+  // Detect Native Platform
   const { isNative } = usePlatform();
   
   useActiveTracker();
@@ -46,36 +45,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const libraryItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Your Path", href: "/dashboard/lessons", icon: TrendingUp },
   ];
 
   const moreItems = [
-    { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare },
-    { name: "Exercises", href: "/dashboard/exercises", icon: CheckSquare },
-    { name: "Materials", href: "/dashboard/materials", icon: FileText },
-    { name: "Tutors", href: "/dashboard/tutors", icon: Calendar },
     { name: "Progress", href: "/dashboard/progress", icon: TrendingUp },
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
   ];
 
-  // 📱 Native Bottom Tab Navigation Items (Max 5 for mobile)
+  // Native Bottom Tab Navigation Items
   const nativeTabs = [
-    { name: "Path", href: "/dashboard/lessons", icon: TrendingUp },
-    { name: "AI Chats", href: "/dashboard/chat", icon: MessageSquare },
-    { name: "Tutors", href: "/dashboard/tutors", icon: Calendar },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Progress", href: "/dashboard/progress", icon: TrendingUp },
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
   ];
 
   const streak = profile?.streak || 0;
-  const currentPageName = [...libraryItems, ...moreItems].find(i => i.href === pathname)?.name || "Library";
+  const currentPageName = [...libraryItems, ...moreItems].find(i => i.href === pathname)?.name || "Dashboard";
 
   // ==========================================
   // NATIVE MOBILE LAYOUT
   // ==========================================
   if (isNative) {
     return (
-      <div className="flex flex-col h-screen bg-paper text-ink font-sans">
-        {/* Native Top Header (Sleeker, centered) */}
+      <div className="flex flex-col h-[100dvh] w-full max-w-[100vw] overflow-hidden bg-paper text-ink font-sans">
+        
+        {/* Native Top Header */}
         <header className="pt-12 pb-4 px-6 border-b border-border-subtle bg-surface flex items-center justify-between shrink-0 shadow-sm z-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-[#8B4513] text-surface flex items-center justify-center font-serif text-lg shadow-inner rounded-md">ལ</div>
@@ -90,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Main Scrollable Content */}
-        <main className="flex-1 overflow-y-auto bg-paper pb-20 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[100vw] bg-paper px-5 pt-6 pb-24">
           {children}
         </main>
 
@@ -122,7 +116,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   // ==========================================
-  // DESKTOP WEB LAYOUT (Original)
+  // DESKTOP WEB LAYOUT
   // ==========================================
   return (
     <div className="min-h-screen flex bg-paper text-ink font-sans">
@@ -183,7 +177,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="font-serif text-lg text-ink">Learn Tibetan</div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-ink-light"><X size={20}/></button>
             </div>
-            {/* Same navigation logic as desktop goes here for mobile web */}
+            <div className="flex-1 overflow-y-auto pt-4">
+               {/* Mobile Web Menu Items */}
+               {[...libraryItems, ...moreItems].map((item) => (
+                 <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-6 py-3 text-sm text-ink-light hover:bg-surface-muted transition-colors">
+                    <item.icon size={16} className="text-ink-muted" />{item.name}
+                 </Link>
+               ))}
+               <div className="px-6 py-3 mt-4 border-t border-border-subtle">
+                  <SignOutButton><button className="flex items-center gap-3 text-sm text-ink-light"><LogOut size={16} className="text-ink-muted" /> Sign Out</button></SignOutButton>
+               </div>
+            </div>
           </div>
         </div>
       )}
@@ -205,7 +209,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-2 text-ink"><Menu size={20} /></button>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-12">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12">
           {children}
         </div>
       </main>

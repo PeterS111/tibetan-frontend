@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
   Info, Moon, Sun, Volume2, Loader2, CheckCircle2

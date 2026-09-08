@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { TrendingUp, Clock, Brain, Flame, BookOpen, Loader2 } from "lucide-react";
 
