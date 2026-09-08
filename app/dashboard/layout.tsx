@@ -73,7 +73,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="pt-12 pb-4 px-6 border-b border-border-subtle bg-surface flex items-center justify-between shrink-0 shadow-sm z-10">
           <div className="flex items-center gap-3">
             
-			<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain" />
+		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />	
 			
             <h2 className="text-xl font-serif text-ink">{currentPageName}</h2>
           </div>
@@ -126,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-3 px-6 py-8">
           
 		  
-		 <img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain" /> 
+		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain mix-blend-multiply opacity-90" />  
 		  
           <div>
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>

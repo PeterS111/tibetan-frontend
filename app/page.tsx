@@ -14,7 +14,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             
 			
-			<img src="/icon.png" alt="Learn Tibetan Logo" className="w-9 h-9 object-contain" />
+		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-9 h-9 object-contain mix-blend-multiply opacity-90" />	
 			
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>
           </div>
@@ -254,7 +254,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             
-		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain invert opacity-90" />	
+		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain invert mix-blend-screen opacity-70" />	
 			
             <span className="text-white font-medium">Learn Tibetan UK</span>
           </div>
