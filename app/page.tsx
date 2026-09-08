@@ -131,34 +131,39 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-serif text-ink mb-2">Five Tiers of Proficiency</h2>
+        
+		
+		<div className="mb-12 text-center">
+          <h2 className="text-3xl font-serif text-ink mb-2">Six Levels of Proficiency</h2>
           <p className="text-sm text-ink-muted">A clear, step-by-step journey from your first letter to fluent discourse.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { tier: "I", level: "LEVEL I", title: "Beginner", desc: "Script, phonology, and essential daily greetings." },
-            { tier: "II", level: "LEVEL II", title: "Pre-Int.", desc: "Build conversational fluency and tense structures." },
-            { tier: "III", level: "LEVEL III", title: "Intermediate", desc: "Honorifics, register, and reading short prose." },
-            { tier: "IV", level: "LEVEL IV", title: "Upper-Int.", desc: "Navigating philosophical and journalistic texts." },
-            { tier: "V", level: "LEVEL V", title: "Advanced", desc: "Independent reading of canonical texts and poetry." }
+            { num: "I",   level: "LEVEL 1", title: "Beginner 1", desc: "Script, phonology, and foundations." },
+            { num: "II",  level: "LEVEL 2", title: "Beginner 2", desc: "Essential daily greetings and conversation." },
+            { num: "III", level: "LEVEL 3", title: "Pre-Int.",   desc: "Build conversational fluency and tense structures." },
+            { num: "IV",  level: "LEVEL 4", title: "Intermediate", desc: "Honorifics, register, and reading short prose." },
+            { num: "V",   level: "LEVEL 5", title: "Upper-Int.", desc: "Navigating philosophical and journalistic texts." },
+            { num: "VI",  level: "LEVEL 6", title: "Advanced",   desc: "Independent reading of canonical texts and poetry." }
           ].map((item, idx) => (
-            <div key={idx} className="bg-surface border border-border-subtle p-6 flex flex-col h-full hover:border-brand transition-colors group relative overflow-hidden">
-              <div className="flex items-center gap-2 mb-8">
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${idx === 0 ? 'bg-brand text-ink' : 'bg-surface-muted text-ink-muted border border-border-strong'}`}>
-                  {item.tier}
+            <div key={idx} className="bg-surface border border-border-subtle p-8 flex flex-col h-full hover:border-brand transition-colors group relative overflow-hidden">
+              <div className="flex items-center gap-3 mb-8">
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx === 0 ? 'bg-brand text-ink shadow-sm' : 'bg-surface-muted text-ink-muted border border-border-strong'}`}>
+                  {item.num}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-ink-muted">{item.level}</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted">{item.level}</span>
               </div>
-              <h3 className="text-xl font-serif text-ink mb-3">{item.title}</h3>
-              <p className="text-xs text-ink-light leading-relaxed relative z-10">{item.desc}</p>
-              <div className="absolute -bottom-6 -right-4 font-serif text-[8rem] text-surface-muted font-bold opacity-30 group-hover:text-brand-light transition-colors pointer-events-none">
-                {item.tier}
+              <h3 className="text-2xl font-serif text-ink mb-3">{item.title}</h3>
+              <p className="text-sm text-ink-light leading-relaxed relative z-10">{item.desc}</p>
+              <div className="absolute -bottom-8 -right-4 font-serif text-[10rem] text-surface-muted font-bold opacity-30 group-hover:text-brand-light transition-colors pointer-events-none leading-none">
+                {item.num}
               </div>
             </div>
           ))}
         </div>
+		
+		
       </section>
 
       {/* FEATURES SECTION */}
