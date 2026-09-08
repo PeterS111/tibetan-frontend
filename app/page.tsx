@@ -12,7 +12,10 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 bg-paper/80 backdrop-blur-md border-b border-border-subtle">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#8B4513] text-surface flex items-center justify-center font-serif text-lg shadow-inner rounded-md">ལ</div>
+            
+			
+			<img src="/icon.png" alt="Learn Tibetan Logo" className="w-9 h-9 object-contain" />
+			
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>
           </div>
           
@@ -250,7 +253,9 @@ export default function LandingPage() {
       <footer className="bg-ink text-slate-400 py-12 border-t border-slate-800 text-sm">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-[#8B4513] text-surface flex items-center justify-center font-serif text-sm rounded-sm">ལ</div>
+            
+		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain invert opacity-90" />	
+			
             <span className="text-white font-medium">Learn Tibetan UK</span>
           </div>
           <div className="flex gap-8">

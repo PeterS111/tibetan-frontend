@@ -72,7 +72,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Native Top Header */}
         <header className="pt-12 pb-4 px-6 border-b border-border-subtle bg-surface flex items-center justify-between shrink-0 shadow-sm z-10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#8B4513] text-surface flex items-center justify-center font-serif text-lg shadow-inner rounded-md">ལ</div>
+            
+			<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain" />
+			
             <h2 className="text-xl font-serif text-ink">{currentPageName}</h2>
           </div>
           <div className="flex items-center gap-3">
@@ -122,7 +124,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex bg-paper text-ink font-sans">
       <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
         <div className="flex items-center gap-3 px-6 py-8">
-          <div className="w-10 h-10 bg-[#8B4513] text-surface flex items-center justify-center font-serif text-xl shadow-inner">ལ</div>
+          
+		  
+		 <img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain" /> 
+		  
           <div>
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>
             <div className="text-[9px] font-bold tracking-[0.2em] text-ink-muted mt-1.5 uppercase">Scholar's Edition</div>
