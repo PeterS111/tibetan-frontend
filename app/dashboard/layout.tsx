@@ -73,12 +73,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />
             <h2 className="text-xl font-serif text-ink">{currentPageName}</h2>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-amber-50 px-2 py-1 border border-amber-200 rounded-md">
-              <span className="text-amber-600 text-xs font-bold">🔥 {streak}</span>
-            </div>
+          
+		  
+		  <div className="flex items-center gap-3">
             <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-full" } }} />
           </div>
+		  
         </header>
 
         {/* Main Scrollable Content */}
@@ -155,15 +155,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </nav>
         </div>
-        <div className="p-6 border-t border-border-subtle bg-paper flex items-center gap-4">
+        
+		
+		<div className="p-6 border-t border-border-subtle bg-paper flex items-center gap-4">
           <div className="w-8 h-8 rounded-full bg-brand overflow-hidden flex items-center justify-center shrink-0">
             <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-full" } }} />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
             <p className="text-sm font-medium text-ink truncate">{user?.firstName || "Student"} {user?.lastName || ""}</p>
-            <div className="text-[10px] font-bold text-ink-muted tracking-wider uppercase mt-0.5">{streak} Day Streak</div>
+            <div className="text-[10px] font-bold text-ink-muted tracking-wider uppercase mt-0.5">Scholar</div>
           </div>
         </div>
+		
       </aside>
 
       {/* Web Mobile Fallback (Hidden on actual Native App) */}

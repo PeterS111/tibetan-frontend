@@ -77,26 +77,21 @@ export default function UnifiedDashboard() {
     return isNaN(parsed) ? fallback : parsed;
   };
 
-  const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
-  const nextModule = visibleModules.find(m => parseNum(m.progress, 0) < parseNum(m.lesson_count, 1)) || visibleModules[0] || FALLBACK_MODULES[0];
   
-  const hoursSpent = profile?.time_spent_mins ? (profile.time_spent_mins / 60).toFixed(1) : "0.0";
+  // NEW CODE:
+  const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
+  
+// Bulletproof logic: Find the first module that isn't fully completed. 
+  // If all are completed, default to the final assessment for review.
+  const nextModule = visibleModules.find(m => m.status !== "completed") || visibleModules[visibleModules.length - 1] || FALLBACK_MODULES[0];
+  
   const wordsKnown = profile?.words_known || 0;
-  const streak = profile?.streak || 0;
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-24">
       
-      {/* 1. Designer's Minimalist Stats Grid */}
-      <div className="grid grid-cols-3 divide-x divide-border-subtle border-y border-border-subtle py-8 mb-12">
-        <div className="flex flex-col items-center justify-center text-center px-4">
-          <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{streak}</div>
-          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Day Streak</div>
-        </div>
-        <div className="flex flex-col items-center justify-center text-center px-4">
-          <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{hoursSpent}<span className="text-2xl text-ink-light ml-1">h</span></div>
-          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Time Spent</div>
-        </div>
+      {/* 1. Designer's Minimalist Stats */}
+      <div className="border-y border-border-subtle py-8 mb-12 flex justify-center">
         <div className="flex flex-col items-center justify-center text-center px-4">
           <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{wordsKnown}</div>
           <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Words Known</div>
