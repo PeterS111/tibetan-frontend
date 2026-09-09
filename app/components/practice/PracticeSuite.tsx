@@ -88,8 +88,6 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
 }
 
 // --- FLASHCARDS ---
-
-// --- FLASHCARDS ---
 interface FlashcardsProps {
   groups: PracticeGroup[];
   speak: (text: string) => void;
@@ -99,7 +97,6 @@ interface FlashcardsProps {
 
 function Flashcards({ groups, speak, playingItem, isLesson1 }: FlashcardsProps) {
   const [activeGroupIdx, setActiveGroupIdx] = useState(0);
-
 
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -130,7 +127,7 @@ function Flashcards({ groups, speak, playingItem, isLesson1 }: FlashcardsProps) 
         <span>Card {(idx % items.length) + 1} of {items.length}</span>
       </div>
 
-      <button onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-border-strong shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden">
+      <button onClick={() => setFlipped(!flipped)} className="w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-surface border border-border-subtle shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden rounded-3xl">
         {!flipped ? (
           <div className="flex flex-col items-center gap-4 group-hover:scale-105 transition-transform">
             <span className="text-tibetan-display">{card.tibetan}</span>
@@ -156,7 +153,6 @@ function Flashcards({ groups, speak, playingItem, isLesson1 }: FlashcardsProps) 
   );
 }
 
-
 // --- MATCH GAME ---
 interface MatchGameProps {
   items: PracticeItem[];
@@ -172,7 +168,6 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: Matc
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const pool = useMemo(() => [...items].sort(() => 0.5 - Math.random()).slice(0, 6), [seed, items]);
-  // 🚨 FIXED: Readings are now objects containing a unique ID so we can track duplicates independently
   const readings = useMemo(() => pool.map(p => ({ id: p.id, text: getReading(p, isLesson1) })).sort(() => 0.5 - Math.random()), [pool, isLesson1]);
 
   const pick = (reading: { id: string, text: string }) => {
@@ -203,8 +198,8 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: Matc
             return (
               <button
                 key={`tib-${p.id}`} onClick={() => !isPaired && setSelectedWord(p.tibetan)}
-                className={`flex w-fit h-14 items-center gap-4 border px-4 text-left transition-colors bg-white ${
-                  active ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : isPaired ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : "border-border-strong hover:border-brand hover:bg-surface-muted text-ink"
+                className={`flex w-fit h-14 items-center gap-4 border px-5 text-left transition-all rounded-full ${
+                  active ? "border-emerald-500 bg-[#E6F4EA] text-[#1E4620] shadow-sm" : isPaired ? "border-emerald-500 bg-[#E6F4EA] text-[#1E4620] shadow-sm" : "border-border-subtle bg-surface hover:border-brand hover:shadow-sm text-ink"
                 }`}
               >
                 <span className="font-tibetan text-3xl leading-none pt-1">{p.tibetan}</span>
@@ -220,8 +215,8 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: Matc
             return (
               <button
                 key={`read-${r.id}-${idx}`} onClick={() => pick(r)} disabled={taken || !selectedWord}
-                className={`flex w-fit h-14 items-center gap-6 border px-4 text-left transition-colors font-mono font-bold text-lg bg-white ${
-                  taken ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm" : selectedWord ? "border-brand hover:bg-brand-light text-amber-700 shadow-sm cursor-pointer" : "cursor-not-allowed border-border-strong text-ink-light opacity-80"
+                className={`flex w-fit h-14 items-center gap-6 border px-5 text-left transition-all font-mono font-bold text-lg rounded-full ${
+                  taken ? "border-emerald-500 bg-[#E6F4EA] text-[#1E4620] shadow-sm" : selectedWord ? "border-brand bg-surface hover:bg-brand-light text-brand-dark shadow-sm cursor-pointer hover:-translate-y-0.5" : "cursor-not-allowed border-border-subtle bg-surface text-ink-light opacity-60"
                 }`}
               >
                 <span>{r.text}</span>
@@ -243,8 +238,7 @@ function MatchGame({ items, speak, playingItem, playErrorBeep, isLesson1 }: Matc
   );
 }
 
-
-// --- NEW: LISTEN & SELECT ---
+// --- LISTEN & SELECT ---
 interface ListenSelectProps {
   items: PracticeItem[];
   speak: (text: string) => void;
@@ -303,17 +297,18 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep }: ListenSelect
           {pool.map((p) => {
             const isRight = picked && p.tibetan === target.tibetan;
             const isWrong = picked === p.tibetan && p.tibetan !== target.tibetan;
-            let stateClass = "bg-white border-border-strong hover:border-brand hover:bg-surface-muted text-ink";
-            if (isRight) stateClass = "bg-emerald-50 text-emerald-700 border-emerald-400";
-            else if (isWrong) stateClass = "bg-rose-50 text-rose-700 border-rose-400 opacity-60";
-            else if (picked) stateClass = "bg-stone-50 text-stone-300 opacity-60 border-border-subtle";
+            
+            let stateClass = "bg-surface border-border-subtle hover:border-brand hover:shadow-md text-ink";
+            if (isRight) stateClass = "bg-[#E6F4EA] text-[#1E4620] border-emerald-400";
+            else if (isWrong) stateClass = "bg-rose-50 text-destructive border-destructive opacity-60";
+            else if (picked) stateClass = "bg-surface-muted text-ink-muted opacity-60 border-border-subtle";
 
             return (
               <button
                 key={`listen-${p.id}`} 
                 disabled={!!picked}
                 onClick={() => pick(p.tibetan)}
-                className={`flex items-center justify-center h-24 border text-center transition-all shadow-sm ${stateClass}`}
+                className={`flex items-center justify-center h-24 border text-center transition-all shadow-sm rounded-3xl ${stateClass}`}
               >
                 <span className="font-tibetan text-4xl leading-none">{p.tibetan}</span>
               </button>
@@ -322,7 +317,7 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep }: ListenSelect
         </div>
 
         {picked && (
-          <div className="w-full mt-4 flex items-center justify-between p-4 border bg-stone-50 border-stone-200 shadow-sm animate-in fade-in slide-in-from-bottom-4">
+          <div className="w-full mt-4 flex items-center justify-between p-4 border bg-stone-50 border-stone-200 shadow-sm animate-in fade-in slide-in-from-bottom-4 rounded-3xl">
             <span className={`text-sm font-bold ${picked === target.tibetan ? "text-emerald-600" : "text-rose-600"}`}>
               {picked === target.tibetan ? "Correct!" : "Incorrect."}
             </span>
@@ -335,7 +330,6 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep }: ListenSelect
     </div>
   );
 }
-
 
 // --- MEMORY REVIEW (SRS) ---
 interface MemoryReviewProps {
@@ -377,17 +371,20 @@ function MemoryReview({ items, speak, playingItem, isLesson1 }: MemoryReviewProp
         <div className="flex justify-between items-center mb-6 text-eyebrow border-b border-border-strong pb-4">
           <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
         </div>
-        <div className="bg-white border border-border-strong p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden">
+        
+        <div className="bg-surface border border-border-subtle p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm rounded-3xl relative overflow-hidden">
           <div className="text-tibetan-display mb-8 text-center">{deck[0].tibetan}</div>
           <Button variant="outline" onClick={() => speak(deck[0].audioTarget)} disabled={playingItem !== null}>
             {playingItem === deck[0].audioTarget ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand" />} Check Sound
           </Button>
         </div>
+        
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <button onClick={() => setRating('Hard')} className={`py-4 border font-bold text-sm transition-colors ${rating === 'Hard' ? 'bg-rose-100 border-rose-400 text-rose-800' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'}`}>Hard</button>
-          <button onClick={() => setRating('Good')} className={`py-4 border font-bold text-sm transition-colors ${rating === 'Good' ? 'bg-brand-light border-amber-400 text-brand-dark' : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'}`}>Good</button>
-          <button onClick={() => setRating('Easy')} className={`py-4 border font-bold text-sm transition-colors ${rating === 'Easy' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'}`}>Easy</button>
+          <button onClick={() => setRating('Hard')} className={`py-4 border font-bold text-sm transition-all rounded-full ${rating === 'Hard' ? 'bg-rose-100 border-destructive text-destructive shadow-sm' : 'bg-surface border-border-subtle text-ink-light hover:border-destructive hover:text-destructive'}`}>Hard</button>
+          <button onClick={() => setRating('Good')} className={`py-4 border font-bold text-sm transition-all rounded-full ${rating === 'Good' ? 'bg-brand-light border-brand text-brand-dark shadow-sm' : 'bg-surface border-border-subtle text-ink-light hover:border-brand hover:text-brand-dark'}`}>Good</button>
+          <button onClick={() => setRating('Easy')} className={`py-4 border font-bold text-sm transition-all rounded-full ${rating === 'Easy' ? 'bg-[#E6F4EA] border-emerald-400 text-[#1E4620] shadow-sm' : 'bg-surface border-border-subtle text-ink-light hover:border-emerald-300 hover:text-[#1E4620]'}`}>Easy</button>
         </div>
+        
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mt-8">
           <p className="text-[11px] font-bold text-ink-muted uppercase tracking-widest flex items-center gap-2"><BookOpen size={14} /> Cards you mark Hard return soon.</p>
           <Button onClick={nextCard} disabled={!rating} variant={rating ? "primary" : "outline"} className="w-full sm:w-auto">
