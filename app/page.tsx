@@ -99,7 +99,8 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* METRICS BANNER */}
+      
+	  {/* METRICS BANNER */}
       <div className="bg-surface border-y border-border-subtle py-6">
         <div className="max-w-6xl mx-auto px-6 flex flex-wrap justify-center gap-12 md:gap-24 text-center">
            <div>
@@ -114,12 +115,9 @@ export default function LandingPage() {
              <div className="text-2xl font-serif text-ink mb-1">70+</div>
              <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-ink-muted">Units</div>
            </div>
-           <div>
-             <div className="text-2xl font-serif text-ink mb-1">0</div>
-             <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-ink-muted">Distractions</div>
-           </div>
         </div>
       </div>
+	  
 
       {/* CURRICULUM SECTION */}
       <section id="curriculum" className="py-24 max-w-6xl mx-auto px-6">
