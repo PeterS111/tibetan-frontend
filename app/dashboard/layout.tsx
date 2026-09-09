@@ -67,10 +67,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="flex flex-col h-[100dvh] w-full max-w-[100vw] overflow-hidden bg-paper text-ink font-sans">
         
-        {/* Native Top Header */}
+        
+		{/* Native Top Header */}
         <header className="pt-12 pb-4 px-6 border-b border-border-subtle bg-surface flex items-center justify-between shrink-0 shadow-sm z-10">
           <div className="flex items-center gap-3">
-            <img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />
+            </Link>
             <h2 className="text-xl font-serif text-ink">{currentPageName}</h2>
           </div>
           
@@ -118,14 +121,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // ==========================================
   return (
     <div className="min-h-screen flex bg-paper text-ink font-sans">
-      <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
-        <div className="flex items-center gap-3 px-6 py-8">
+      
+	  
+	  <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
+        <Link href="/" className="flex items-center gap-3 px-6 py-8 hover:opacity-80 transition-opacity">
           <img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain mix-blend-multiply opacity-90" />
           <div>
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>
             <div className="text-[9px] font-bold tracking-[0.2em] text-ink-muted mt-1.5 uppercase">Scholar's Edition</div>
           </div>
-        </div>
+        </Link>
+	  
         <div className="flex-1 overflow-y-auto custom-scrollbar pt-2 pb-6">
           <div className="text-eyebrow mb-3 px-6">Library</div>
           <nav className="space-y-0.5 mb-8">
@@ -169,15 +175,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 		
       </aside>
 
-      {/* Web Mobile Fallback (Hidden on actual Native App) */}
+      
+	  
+	  {/* Web Mobile Fallback (Hidden on actual Native App) */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
           <div className="relative w-64 bg-paper h-full shadow-2xl flex flex-col animate-in slide-in-from-left-8 duration-300">
             <div className="p-4 flex items-center justify-between border-b border-border-subtle">
-              <div className="font-serif text-lg text-ink">Learn Tibetan</div>
+              <Link href="/" className="font-serif text-lg text-ink hover:text-brand-dark transition-colors">Learn Tibetan</Link>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-ink-light"><X size={20}/></button>
             </div>
+	  
+	  
             <div className="flex-1 overflow-y-auto pt-4">
                {/* Mobile Web Menu Items */}
                {[...libraryItems, ...moreItems].map((item) => (

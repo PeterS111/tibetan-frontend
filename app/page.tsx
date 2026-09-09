@@ -142,14 +142,17 @@ export default function LandingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { num: "I",   level: "LEVEL 1", title: "Beginner 1", desc: "Script, phonology, and foundations." },
-            { num: "II",  level: "LEVEL 2", title: "Beginner 2", desc: "Essential daily greetings and conversation." },
-            { num: "III", level: "LEVEL 3", title: "Pre-Int.",   desc: "Build conversational fluency and tense structures." },
-            { num: "IV",  level: "LEVEL 4", title: "Intermediate", desc: "Honorifics, register, and reading short prose." },
-            { num: "V",   level: "LEVEL 5", title: "Upper-Int.", desc: "Navigating philosophical and journalistic texts." },
-            { num: "VI",  level: "LEVEL 6", title: "Advanced",   desc: "Independent reading of canonical texts and poetry." }
-          ].map((item, idx) => (
+          
+		  
+		{[
+            { num: "I",   level: "LEVEL 1", title: "Beginner 1",         desc: "Script, phonology, and foundations." },
+            { num: "II",  level: "LEVEL 2", title: "Beginner 2",         desc: "Essential daily greetings and conversation." },
+            { num: "III", level: "LEVEL 3", title: "Pre-Intermediate",   desc: "Build conversational fluency and tense structures." },
+            { num: "IV",  level: "LEVEL 4", title: "Intermediate",       desc: "Honorifics, register, and reading short prose." },
+            { num: "V",   level: "LEVEL 5", title: "Upper-Intermediate", desc: "Navigating philosophical and journalistic texts." },
+            { num: "VI",  level: "LEVEL 6", title: "Advanced",           desc: "Independent reading of canonical texts and poetry." }
+          ].map((item, idx) => (  
+		  
             <div key={idx} className="bg-surface border border-border-subtle p-8 flex flex-col h-full hover:border-brand transition-colors group relative overflow-hidden">
               <div className="flex items-center gap-3 mb-8">
                 <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx === 0 ? 'bg-brand text-ink shadow-sm' : 'bg-surface-muted text-ink-muted border border-border-strong'}`}>
