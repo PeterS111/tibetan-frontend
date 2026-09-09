@@ -22,6 +22,7 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-light">
             <Link href="#curriculum" className="hover:text-ink transition-colors">Curriculum</Link>
             <Link href="#methodology" className="hover:text-ink transition-colors">Methodology</Link>
+            <Link href="/about" className="hover:text-ink transition-colors">About</Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -247,10 +248,16 @@ export default function LandingPage() {
 			
             <span className="text-white font-medium">Learn Tibetan UK</span>
           </div>
-          <div className="flex gap-8">
-            <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+          
+		  
+		  <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+            <Link href="/about" className="hover:text-white transition-colors">About</Link>
+            <Link href="/support" className="hover:text-white transition-colors">Support</Link>
+            <Link href="/donate" className="hover:text-white transition-colors text-brand hover:text-brand-light font-medium">Donate</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
+		  
           <div className="text-xs opacity-60">
             © {new Date().getFullYear()} Learn Tibetan UK. All rights reserved.
           </div>

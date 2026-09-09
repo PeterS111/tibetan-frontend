@@ -1,30 +1,44 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 export default function TermsPage() {
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-6 md:p-12">
+    <div className="min-h-screen bg-paper text-ink p-6 md:p-12 pb-24 font-sans selection:bg-brand-light selection:text-brand-dark">
       <div className="max-w-3xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 mb-8 transition">
-          <ArrowLeft size={16} /> Back to Home
-        </Link>
         
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-200 prose prose-slate max-w-none">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Terms of Service</h1>
-          <p className="text-sm text-slate-500 mb-8">Last Updated: June 2026</p>
-          
-          <h3 className="text-xl font-bold mt-6 mb-3">1. Acceptance of Terms</h3>
-          <p className="mb-4">By accessing or using Learn Tibetan UK (Dolma AI), you agree to be bound by these Terms. If you do not agree, please do not use the service.</p>
-          
-          <h3 className="text-xl font-bold mt-6 mb-3">2. AI-Generated Content</h3>
-          <p className="mb-4">Dolma AI utilizes generative artificial intelligence. While we strive for high accuracy in grammar, translation, and pronunciation, the AI can make mistakes. You acknowledge that AI output should be used as a study aid and not an infallible source.</p>
-          
-          <h3 className="text-xl font-bold mt-6 mb-3">3. User Conduct</h3>
-          <p className="mb-4">You agree not to use the platform to generate harmful, illegal, or abusive content. We reserve the right to suspend accounts that abuse the platform or attempt to bypass rate limits.</p>
-          
-          <h3 className="text-xl font-bold mt-6 mb-3">4. Account Access</h3>
-          <p>Currently, the platform operates on an invite/approved basis. We reserve the right to terminate or suspend access to our service immediately, without prior notice, for any reason whatsoever.</p>
+        <button 
+          onClick={() => router.back()} 
+          className="flex items-center gap-2 text-sm font-bold text-ink-muted hover:text-ink transition-colors mb-10"
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+
+        <div className="text-eyebrow text-brand-dark mb-4">Legal Information</div>
+        <h1 className="text-4xl md:text-5xl font-serif mb-8 text-ink">Terms of Service</h1>
+        
+        <div className="prose prose-stone max-w-none text-ink-light leading-relaxed">
+          <p><em>Last updated: September 2026</em></p>
+          <p>
+            By accessing or using Learn Tibetan UK, you agree to be bound by these Terms of Service.
+          </p>
+          <h3 className="text-2xl font-serif text-ink mt-8 mb-4">1. Educational Use</h3>
+          <p>
+            The materials provided on this platform are for educational purposes. We strive for accuracy based on traditional Tibetan scholarship, but the platform is provided "as is" without warranty of any kind.
+          </p>
+          <h3 className="text-2xl font-serif text-ink mt-8 mb-4">2. User Accounts</h3>
+          <p>
+            You are responsible for safeguarding your account login credentials. We reserve the right to suspend accounts that abuse the platform or attempt to bypass security systems.
+          </p>
+          <h3 className="text-2xl font-serif text-ink mt-8 mb-4">3. Intellectual Property</h3>
+          <p>
+            The design, structure, and original curriculum sequencing of the application are the property of Learn Tibetan UK. Traditional Tibetan vocabulary and historical script structures are, naturally, part of the public domain.
+          </p>
         </div>
+
       </div>
     </div>
   );
