@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { 
-  LayoutDashboard, TrendingUp, Settings, Menu, X, LogOut 
+  LayoutDashboard, Settings, Menu, X, LogOut 
 } from "lucide-react";
 import { useActiveTracker } from "@/hooks/useActiveTracker";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -48,14 +48,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   const moreItems = [
-    { name: "Progress", href: "/dashboard/progress", icon: TrendingUp },
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
   ];
 
   // Native Bottom Tab Navigation Items
   const nativeTabs = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Progress", href: "/dashboard/progress", icon: TrendingUp },
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
   ];
 
@@ -72,9 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Native Top Header */}
         <header className="pt-12 pb-4 px-6 border-b border-border-subtle bg-surface flex items-center justify-between shrink-0 shadow-sm z-10">
           <div className="flex items-center gap-3">
-            
-		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />	
-			
+            <img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />
             <h2 className="text-xl font-serif text-ink">{currentPageName}</h2>
           </div>
           <div className="flex items-center gap-3">
@@ -91,14 +87,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
 
         {/* Native Bottom Tab Bar */}
-        <nav className="fixed bottom-0 left-0 w-full bg-surface border-t border-border-subtle pb-safe pt-2 px-6 flex justify-between items-center shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-50 h-20">
+        <nav className="fixed bottom-0 left-0 w-full bg-surface border-t border-border-subtle pb-safe pt-2 px-6 flex justify-around items-center shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-50 h-20">
           {nativeTabs.map((tab) => {
             const isActive = pathname === tab.href || (pathname.startsWith(tab.href) && tab.href !== "/dashboard");
             return (
               <Link 
                 key={tab.name} 
                 href={tab.href}
-                className="flex flex-col items-center justify-center gap-1.5 w-16 h-12 relative"
+                className="flex flex-col items-center justify-center gap-1.5 w-20 h-12 relative"
               >
                 <tab.icon 
                   size={24} 
@@ -124,10 +120,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex bg-paper text-ink font-sans">
       <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
         <div className="flex items-center gap-3 px-6 py-8">
-          
-		  
-		<img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain mix-blend-multiply opacity-90" />  
-		  
+          <img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain mix-blend-multiply opacity-90" />
           <div>
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>
             <div className="text-[9px] font-bold tracking-[0.2em] text-ink-muted mt-1.5 uppercase">Scholar's Edition</div>
