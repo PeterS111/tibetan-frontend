@@ -44,61 +44,81 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <header className="pt-40 pb-0 relative flex flex-col items-center text-center">
-        <div className="px-6 relative z-10 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-light text-ink text-[10px] font-bold uppercase tracking-[0.2em] mb-8 rounded-full shadow-sm border border-brand/20">
+      
+	  
+	  
+	  {/* HERO SECTION */}
+      <header className="relative w-full min-h-[100svh] md:min-h-[85vh] flex flex-col items-center justify-end md:justify-start text-center overflow-hidden">
+        
+        {/* MOBILE BACKGROUND (Full Screen, Portrait) */}
+        <div className="absolute inset-0 z-0 md:hidden pointer-events-none">
+          <img 
+            src="/loplao-launch-bg.png" 
+            alt="Himalayan Landscape" 
+            className="w-full h-full object-cover object-top" 
+          />
+          {/* Gradient fade to cream at the bottom so the text remains perfectly readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-paper/40 to-paper"></div>
+        </div>
+
+        {/* DESKTOP BACKGROUND (Bottom aligned, Landscape) */}
+        <div className="absolute inset-0 z-0 hidden md:flex flex-col justify-end pointer-events-none">
+          <div className="w-full h-[60vh] relative">
+            {/* Soft fade at the top to blend the sky into the cream background */}
+            <div className="absolute inset-0 bg-gradient-to-b from-paper via-transparent to-transparent z-10"></div>
+            <img 
+              src="/hero-landscape.jpg" 
+              alt="Himalayan Landscape" 
+              className="w-full h-full object-cover object-bottom mix-blend-multiply opacity-95" 
+            />
+          </div>
+        </div>
+
+        {/* HERO CONTENT */}
+        <div className="px-6 relative z-10 max-w-4xl mx-auto w-full pb-16 pt-32 md:pt-40 md:pb-0 flex flex-col items-center mt-auto md:mt-0">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-light text-ink text-[10px] font-bold uppercase tracking-[0.2em] mb-6 md:mb-8 rounded-full shadow-sm border border-brand/20">
             <span className="w-1.5 h-1.5 rounded-full bg-brand flex-shrink-0"></span> A complete scholarly path
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-serif text-ink leading-[1.1] mb-6">
-            Master Tibetan with a <br/><span className="text-brand italic">Structured Curriculum</span>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif text-ink leading-[1.1] mb-6">
+            Master Tibetan with a <br className="hidden md:block"/><span className="text-brand italic">Structured Curriculum</span>
           </h1>
           
-          <p className="text-lg text-ink-light max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-base md:text-lg text-ink-light max-w-2xl mx-auto mb-10 leading-relaxed font-medium md:font-normal">
             Progress through five proficiency tiers. Access authentic textbook materials, 
             master the script, and build a robust vocabulary through spaced repetition.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <SignedOut>
               <SignUpButton mode="modal">
-                <button className="w-full sm:w-auto bg-brand hover:brightness-95 text-ink font-bold px-8 py-4 text-sm transition-all shadow-sm flex items-center justify-center gap-2 rounded-full active:scale-95">
+                <button className="w-full sm:w-auto bg-brand hover:brightness-95 text-ink font-bold px-8 py-4 text-sm transition-all shadow-md md:shadow-sm flex items-center justify-center gap-2 rounded-full active:scale-95">
                   Start Learning Free <ArrowRight size={16} />
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-brand hover:brightness-95 text-ink font-bold px-8 py-4 text-sm transition-all shadow-sm flex items-center justify-center gap-2 rounded-full active:scale-95">
+                <button className="w-full sm:w-auto bg-brand hover:brightness-95 text-ink font-bold px-8 py-4 text-sm transition-all shadow-md md:shadow-sm flex items-center justify-center gap-2 rounded-full active:scale-95">
                   Continue to Dashboard <ArrowRight size={16} />
                 </button>
               </Link>
             </SignedIn>
             <Link href="#curriculum" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto bg-surface border border-border-subtle text-ink hover:border-border-strong font-bold px-8 py-4 text-sm transition-all shadow-sm rounded-full active:scale-95">
+              <button className="w-full sm:w-auto bg-surface border border-border-subtle text-ink hover:border-border-strong font-bold px-8 py-4 text-sm transition-all shadow-md md:shadow-sm rounded-full active:scale-95">
                 Explore Curriculum
               </button>
             </Link>
           </div>
 
-          <div className="mt-12 text-ink-muted text-sm italic font-serif flex items-center justify-center gap-4">
+          <div className="mt-12 text-ink-muted text-sm italic font-serif items-center justify-center gap-4 hidden md:flex">
             <span className="font-tibetan text-2xl text-ink-light not-italic">བཀྲ་ཤིས་བདེ་ལེགས།</span> 
             <span className="w-6 h-[1px] bg-border-strong"></span> 
             Tashi Delek — welcome
           </div>
         </div>
-
-        {/* HIMALAYAN LANDSCAPE ARTWORK */}
-        <div className="w-full mt-8 pointer-events-none relative z-0 flex justify-center">
-          {/* NOTE: Make sure your image is named hero-landscape.jpg and is in the public/ folder! */}
-          <img 
-            src="/hero-landscape.jpg" 
-            alt="Himalayan Landscape" 
-            className="w-full max-w-7xl object-cover h-[30vh] md:h-[40vh] object-bottom mix-blend-multiply opacity-90" 
-          />
-        </div>
       </header>
+	  
 
       {/* METRICS BANNER */}
       <div className="bg-surface border-y border-border-subtle py-8 shadow-sm relative z-10">
