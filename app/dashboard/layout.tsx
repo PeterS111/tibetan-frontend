@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { 
   LayoutDashboard, Settings, Menu, X, LogOut 
 } from "lucide-react";
-import { useActiveTracker } from "@/hooks/useActiveTracker";
+
 import { usePlatform } from "@/hooks/usePlatform";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Detect Native Platform
   const { isNative } = usePlatform();
   
-  useActiveTracker();
+
   
   useEffect(() => {
     let isMounted = true;

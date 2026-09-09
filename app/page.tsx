@@ -205,23 +205,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TESTIMONIAL / CTA */}
+      
+	  {/* CTA SECTION */}
       <section className="py-24 bg-surface text-center px-6">
-        <div className="max-w-2xl mx-auto mb-16">
-          <div className="text-4xl text-brand font-serif mb-6">"</div>
-          <p className="text-2xl md:text-3xl font-serif text-ink italic leading-relaxed mb-8">
-            The structure I always wished for when learning Tibetan — it makes daily practice actually joyful.
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-brand-dark"></div>
-            <div className="text-left">
-              <div className="text-sm font-bold text-ink">Sarah Jenkins</div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-ink-muted mt-0.5">Oxford University · Tibetan Studies</div>
-            </div>
-          </div>
-        </div>
-
         <div className="bg-[#1a2332] max-w-4xl mx-auto p-12 md:p-16 text-center text-white relative overflow-hidden">
+	  
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-4">Begin Today</div>
           <h2 className="text-4xl font-serif mb-6 relative z-10">Start with the thirty consonants.</h2>
           <p className="text-slate-300 mb-10 max-w-lg mx-auto relative z-10">
