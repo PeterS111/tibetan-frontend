@@ -299,18 +299,10 @@ return (
           </StepContainer>
 
           
-		 {/* Gender */}
+{/* Gender */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="overflow-hidden border border-border-subtle bg-surface flex flex-col divide-y divide-border-strong">
               
-              {/* Desktop Header (Hidden on Mobile) */}
-              <div className="hidden md:grid md:grid-cols-[1fr,1fr,2fr] bg-surface-muted text-eyebrow border-b border-border-subtle">
-                <div className="px-6 py-4 text-left">Gender</div>
-                <div className="px-6 py-4 text-left">Tibetan</div>
-                <div className="px-6 py-4 text-left">Consonants</div>
-              </div>
-
-              {/* Responsive Rows */}
               {(Object.keys(GENDER_META) as Gender[]).map((g) => {
                 const letters = CONSONANTS.filter((c) => c.gender === g);
                 const gm = GENDER_META[g];
@@ -318,47 +310,39 @@ return (
                 return (
                   <div 
                     key={g} 
-                    className="flex flex-col md:grid md:grid-cols-[1fr,1fr,2fr] border-l-4 transition-colors"
+                    className="flex flex-col border-l-4 transition-colors p-6"
                     style={{ backgroundColor: gm.tint, borderLeftColor: gm.color }}
                   >
                     
-                 {/* Mobile Header Combo / Desktop Column 1 */}
-                    <div className="px-5 py-4 md:px-6 md:py-5 flex items-center justify-between md:justify-start border-b border-border-strong/30 md:border-none">
-                      <span className="inline-flex items-center gap-3 font-bold" style={{ color: gm.text }}>
+                    {/* Top Line: English & Tibetan Labels */}
+                    <div className="flex items-center justify-between sm:justify-start sm:gap-10 mb-6">
+                      <span className="inline-flex items-center gap-3 font-bold text-lg" style={{ color: gm.text }}>
                         <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: gm.color }} /> {gm.label}
                       </span>
-                      {/* Mobile-only Tibetan Label */}
-                      <span className="md:hidden font-serif text-3xl tibetan whitespace-nowrap" style={{ color: gm.text }}>{gm.tib}</span>
+                      <span className="font-serif text-3xl tibetan whitespace-nowrap" style={{ color: gm.text }}>
+                        {gm.tib}
+                      </span>
                     </div>
 
-                    {/* Desktop Column 2 (Hidden on Mobile) */}
-                    <div className="hidden md:flex px-6 py-5 items-center font-serif text-2xl text-ink tibetan whitespace-nowrap">
-                      {gm.tib}
-                    </div>   
-
-                    {/* Consonants Wrapper */}
-                    <div className="px-5 py-5 md:px-6">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-3 md:hidden">Consonants</div>
-                      <div className="flex flex-wrap gap-2">
-                        {letters.map((c) => (
-                          <button 
-                            key={c.tib} 
-                            onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} 
-                            className="border bg-surface px-3.5 py-1.5 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm tibetan" 
-                            style={{ borderColor: gm.color + "55", color: gm.text }}
-                          >
-                            {c.tib}
-                          </button>
-                        ))}
-                      </div>
+                    {/* Bottom Line: Consonant Buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      {letters.map((c) => (
+                        <button 
+                          key={c.tib} 
+                          onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} 
+                          className="border bg-surface px-4 py-2 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm tibetan" 
+                          style={{ borderColor: gm.color + "55", color: gm.text }}
+                        >
+                          {c.tib}
+                        </button>
+                      ))}
                     </div>
                     
                   </div>
                 );
               })}
             </div>
-          </StepContainer> 
-
+          </StepContainer>
           
 		  
 		  
