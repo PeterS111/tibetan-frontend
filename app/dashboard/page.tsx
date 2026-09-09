@@ -90,37 +90,51 @@ export default function UnifiedDashboard() {
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-24">
       
-      {/* 1. Designer's Minimalist Stats */}
-      <div className="border-y border-border-subtle py-8 mb-12 flex justify-center">
-        <div className="flex flex-col items-center justify-center text-center px-4">
-          <div className="text-4xl md:text-5xl font-serif text-ink mb-2">{wordsKnown}</div>
-          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-[0.2em]">Words Known</div>
+      
+	  
+	 {/* 1. Greeting & Intro */}
+      <div className="mb-8 mt-4">
+        <div className="text-sm font-bold uppercase tracking-widest text-brand mb-1 flex items-center gap-2">
+          <span className="font-tibetan text-lg font-normal capitalize">བཀྲ་ཤིས་བདེ་ལེགས།</span> 
         </div>
-      </div>
-
-      {/* 2. Editorial Drop-Cap Intro */}
-      <div className="mb-16 max-w-3xl">
-        <span className="float-left text-brand text-[5rem] md:text-[6rem] leading-[0.8] pr-4 font-serif mt-1">T</span>
-        <p className="text-xl md:text-2xl text-ink leading-relaxed font-serif">
-          hree courses and six levels, one scholarly path through the Tibetan language — script and sounds first, then everyday conversation, then discourse and nuance, and finally the classical register.
+        <h1 className="text-3xl md:text-4xl font-serif text-ink">
+          Tashi Delek, welcome back
+        </h1>
+        <p className="text-ink-light mt-3 max-w-2xl leading-relaxed">
+          Three courses and six levels, one scholarly path through the Tibetan language — script and sounds first, then everyday conversation, then discourse and nuance, and finally the classical register.
         </p>
       </div>
 
-      {/* 3. Dark Blue "Resume" Banner */}
-      <div className="bg-[#1a2332] text-white p-8 md:p-10 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16 rounded-none">
-        <div>
+      {/* 2. Deep Blue "Resume" Banner */}
+      <div className="bg-ink text-paper p-8 md:p-10 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8 rounded-3xl relative overflow-hidden">
+        {/* Subtle decorative background circle */}
+        <div className="absolute -right-10 -top-20 w-64 h-64 bg-white opacity-5 rounded-full blur-2xl pointer-events-none"></div>
+        
+        <div className="relative z-10">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3 flex items-center gap-3">
-            <span className="w-6 h-[1px] bg-brand"></span> Resume where you left off
+            <span className="w-6 h-[1px] bg-brand"></span> Continue Learning
           </div>
           <h3 className="text-2xl md:text-3xl font-serif mb-2">{nextModule.title}</h3>
-          <p className="text-sm text-slate-300 max-w-md opacity-90">{nextModule.description}</p>
+          <p className="text-sm text-paper/80 max-w-md">{nextModule.description}</p>
         </div>
-        <Link href={`/dashboard/lessons/${nextModule.module_id || 1}`} className="w-full md:w-auto shrink-0">
-          <button className="w-full bg-brand hover:bg-[#E5AC00] text-ink font-bold text-sm px-8 py-4 transition-colors shadow-sm flex items-center justify-center gap-2">
-            Continue Learning <ArrowRight size={16} />
+        <Link href={`/dashboard/lessons/${nextModule.module_id || 1}`} className="w-full md:w-auto shrink-0 relative z-10">
+          <button className="w-full bg-brand hover:bg-brand-dark text-ink font-bold text-sm px-8 py-4 transition-colors shadow-sm flex items-center justify-center gap-2 rounded-full">
+            Resume Lesson <ArrowRight size={16} />
           </button>
         </Link>
       </div>
+
+      {/* 3. Metrics Chips (Matching the mockup) */}
+      <div className="flex flex-wrap items-center gap-4 mb-16">
+        <div className="flex items-center gap-4 bg-surface px-6 py-4 rounded-3xl shadow-sm border border-border-subtle">
+          <div className="text-3xl font-serif text-ink">{wordsKnown}</div>
+          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-widest leading-tight">Words<br/>Known</div>
+        </div>
+        <div className="flex items-center gap-4 bg-surface px-6 py-4 rounded-3xl shadow-sm border border-border-subtle">
+          <div className="text-3xl font-serif text-ink">3</div>
+          <div className="text-[10px] font-bold text-ink-muted uppercase tracking-widest leading-tight">Courses<br/>Available</div>
+        </div>
+      </div> 
 
       {/* 4. The Clean Module List (Syllabus) */}
       <div className="mb-16">
@@ -143,17 +157,18 @@ export default function UnifiedDashboard() {
             const isCompleted = module.status === "completed";
             const progressVal = parseNum(module.progress, 0);
 
-            let rowClass = "flex flex-col md:flex-row bg-surface border transition-all p-5 gap-5 ";
-            if (isCompleted) rowClass += "border-border-subtle hover:border-ink/30";
-            else if (isLocked) rowClass += "border-transparent bg-surface-muted/50 opacity-60";
-            else rowClass += "border-brand/40 shadow-sm relative";
+            
+			
+		let rowClass = "flex flex-col md:flex-row bg-surface border transition-all p-5 gap-5 rounded-3xl ";
+            if (isCompleted) rowClass += "border-border-subtle hover:border-border-strong hover:shadow-md";
+            else if (isLocked) rowClass += "border-transparent bg-surface/40 opacity-60";
+            else rowClass += "border-border-subtle shadow-md relative"; // Active state
 
             return (
               <div key={module.id || module.module_id} className={rowClass}>
-                {!isCompleted && !isLocked && <div className="absolute top-0 left-0 w-1 h-full bg-brand"></div>}
                 
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-serif text-xl border border-border-strong bg-white text-ink">
-                  {module.module_id}
+                <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center font-serif text-xl rounded-full ${!isCompleted && !isLocked ? 'bg-brand text-ink shadow-sm' : 'bg-surface-muted text-ink-muted border border-border-subtle'}`}>
+                  {isCompleted ? <CheckCircle2 size={20} className="text-emerald-600" /> : module.module_id}
                 </div>
                 
                 <div className="flex-1 flex flex-col justify-center">
@@ -172,14 +187,15 @@ export default function UnifiedDashboard() {
                     </div>
                   ) : (
                     <Link href={lessonUrl} className="w-full md:w-auto">
-                      <button className={`w-full flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold transition-colors uppercase tracking-wider border ${isCompleted ? 'bg-transparent text-ink border-border-strong hover:bg-surface-muted' : 'bg-ink text-white border-ink hover:bg-ink-light shadow-sm'}`}>
-                        {isCompleted ? <><CheckCircle2 size={14}/> Review</> : <><Play size={14}/> Continue</>}
+                      <button className={`w-full flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold transition-all rounded-full shadow-sm active:scale-[0.98] ${isCompleted ? 'bg-surface text-ink border border-border-strong hover:bg-surface-muted' : 'bg-ink text-white border-none hover:bg-ink-light'}`}>
+                        {isCompleted ? "Review" : <><Play size={14} className="fill-current"/> Continue</>}
                       </button>
                     </Link>
                   )}
                 </div>
               </div>
-            );
+            );	
+			
           })}
         </div>
       </div>
@@ -194,7 +210,8 @@ export default function UnifiedDashboard() {
           </div>
         </div>
         
-        <div className="flex flex-col md:flex-row bg-surface-muted border border-transparent p-6 gap-5">
+        
+		<div className="flex flex-col md:flex-row bg-surface-muted border border-transparent rounded-3xl p-6 gap-5">
            <div className="flex-1">
              <div className="flex items-center gap-3 mb-1">
                <h3 className="text-lg font-serif font-bold text-ink-muted">Pre-Intermediate</h3>
@@ -204,7 +221,7 @@ export default function UnifiedDashboard() {
            </div>
         </div>
 
-        <div className="flex flex-col md:flex-row bg-surface-muted border border-transparent p-6 gap-5">
+        <div className="flex flex-col md:flex-row bg-surface-muted border border-transparent rounded-3xl p-6 gap-5">
            <div className="flex-1">
              <div className="flex items-center gap-3 mb-1">
                <h3 className="text-lg font-serif font-bold text-ink-muted">Intermediate</h3>
@@ -213,6 +230,7 @@ export default function UnifiedDashboard() {
              <p className="text-sm text-ink-muted">Honorifics, register, and reading short prose from contemporary Tibetan writers.</p>
            </div>
         </div>
+		
       </div>
 
     </div>
