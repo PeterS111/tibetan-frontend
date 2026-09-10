@@ -11,8 +11,8 @@ interface CardProps {
 export function Card({ children, className, hoverable = false }: CardProps) {
   return (
     <div className={twMerge(
-      "bg-surface border border-border-subtle rounded-3xl p-6 md:p-8 shadow-sm",
-      hoverable && "transition-all duration-200 hover:border-border-strong hover:shadow-md cursor-pointer",
+      "bg-surface border border-border-subtle rounded-none p-6 md:p-8",
+      hoverable && "transition-colors duration-200 hover:border-ink cursor-pointer",
       className
     )}>
       {children}

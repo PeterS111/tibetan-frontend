@@ -29,16 +29,19 @@ export default function SupportPage() {
             <h3 className="text-xl font-serif text-ink mb-4 flex items-center gap-3">
               <Mail className="text-brand" size={24} /> Email Us
             </h3>
-            <p className="text-base mb-6">
+            
+			
+			<p className="text-base mb-6">
               For all inquiries, technical support, and curriculum feedback, please reach out to us directly via email.
             </p>
-            <a href="mailto:support@learntibetan.uk" className="inline-block bg-ink text-white hover:bg-ink-light font-bold px-6 py-3 text-sm transition-colors shadow-sm">
-              support@learntibetan.uk
+            <a href="mailto:p.sm1549c@gmail.com" className="inline-block bg-ink text-white hover:bg-ink-light font-bold px-6 py-3 text-sm transition-colors shadow-sm">
+              p.sm1549c@gmail.com
             </a>
           </div>
         </div>
 
       </div>
+			
     </div>
   );
 }

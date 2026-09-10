@@ -172,8 +172,7 @@ export const AUDIO_MAP: Record<string, string> = {
   "འབྲི་": "Section 02_Prefix ‘a_’bri_individual.wav", "འབྲི་ spelling": "Section 02_Prefix ‘a_’bri_individual.wav", 
   "དགེ་བ་": "Virtue.wav", "གཙོ་བོ་": "Chief.wav", "དཔེ་ཆ་": "Book.wav", "བདེ་བ་": "Happiness.wav",
   "བཟོ་བ་": "To make.wav", "མཐོ་པོ་": "High.wav", "འགྲོ་བ་": "To go.wav", "འབྲི་བ་": "To write.wav",
-  "འཆི་བ་": "To die.wav", "དགོན་པ་": "Monastery.wav", "དགའ་པོ་": "Like.wav", "གསུམ་": "Three.wav",
-  "བརྒྱད་": "Eight.wav", "མདུན་": "Front.wav", "འབྲས་": "Rice.wav",
+  "འཆི་བ་": "To die.wav",
 
   // ==========================================
   // LESSON 6: THE SUFFIX LETTERS

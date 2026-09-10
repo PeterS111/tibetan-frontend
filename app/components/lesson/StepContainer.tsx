@@ -36,29 +36,27 @@ export function StepContainer({
   const isUnlocked = status !== "upcoming";
   const stepNumber = index + 1 < 10 ? `0${index + 1}` : index + 1;
 
-  
   // Determine container styling based on state
-  let containerClasses = "flex flex-col transition-all duration-200 border bg-surface rounded-3xl overflow-hidden shadow-sm ";
+  let containerClasses = "flex flex-col transition-all duration-200 border bg-surface ";
   
   if (status === "current") {
-    containerClasses += "border-2 border-brand shadow-md z-10 relative";
+    containerClasses += "border-2 border-brand shadow-sm z-10 relative";
   } else if (status === "upcoming") {
-    containerClasses += "border-border-subtle bg-surface-muted opacity-75";
+    containerClasses += "border-border-subtle bg-[#FAFAFA] opacity-75";
   } else if (status === "done") {
-    containerClasses += "border-border-subtle hover:border-border-strong hover:shadow-md";
+    containerClasses += "border-border-subtle hover:border-ink/20";
   }
 
   // Determine number box styling
-  let numberBoxClasses = "w-12 h-12 flex items-center justify-center font-serif text-lg mr-5 transition-colors rounded-full shrink-0 ";
+  let numberBoxClasses = "w-12 h-12 flex items-center justify-center font-serif text-lg mr-5 transition-colors ";
   
   if (status === "current") {
     numberBoxClasses += "border border-brand text-brand-dark bg-brand/5";
   } else if (status === "upcoming") {
-    numberBoxClasses += "border border-border-subtle text-ink-muted bg-surface-muted";
+    numberBoxClasses += "border border-border-subtle text-ink-muted bg-transparent";
   } else if (status === "done") {
     numberBoxClasses += "border border-border-subtle text-ink-light bg-surface-muted";
   }
-  
 
   return (
     <div className={containerClasses}>
@@ -120,16 +118,14 @@ export function StepContainer({
               </div>
             )}
 
-            
-			{/* Next / Complete Button */}
-            <div className="w-full sm:w-auto mt-4 sm:mt-0">
+            {/* Next / Complete Button */}
+            <div>
               {!isLast && (
-                <Button onClick={onContinue} className="w-full sm:w-auto px-8 shadow-sm">
+                <Button onClick={onContinue} className="px-6 shadow-sm">
                   Mark complete & continue <ChevronRight className="size-4" strokeWidth={2.5} />
                 </Button>
               )}
             </div>
-			
 
           </div>
         </div>

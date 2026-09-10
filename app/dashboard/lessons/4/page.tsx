@@ -162,13 +162,11 @@ const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
                     
                 
 <span className="relative flex items-center justify-center h-16 w-full mt-2 mb-2">
-                      {/* FIX: Final pixel-perfect calibration. Shifted Ya/Ra left by 10px, La left by 6px, Wa left by 4px to hit absolute visual dead-center. */}
                       <span 
-                        className="relative text-ink leading-none" 
+                        className="relative text-ink leading-none text-center" 
                         style={{ 
                           fontSize: "4.2rem", 
                           fontFamily: "'Jomolhari', serif",
-                          left: s.key === "la" ? "-32px" : s.key === "wa" ? "-22px" : "-28px",
                           top: s.key === "wa" ? "-6px" : "0px"
                         }}
                       >

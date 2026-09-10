@@ -173,13 +173,6 @@ export const VOCAB: Vocab[] = [
   { tib: "འདི་", translit: "di", en: "this", emoji: "👉", prefix: "a" },
   { tib: "འབྲི་", translit: "ng'dri", en: "to write", emoji: "✍️", prefix: "a" },
   { tib: "འཆི་", translit: "ng'chi", en: "to die", emoji: "🕊️", prefix: "a" },
-  // New additions
-  { tib: "དགོན་པ་", translit: "gön-pa", en: "monastery", emoji: "🛕", prefix: "da" },
-  { tib: "དགའ་པོ་", translit: "ga-po", en: "to like", emoji: "😊", prefix: "da" },
-  { tib: "གསུམ་", translit: "sum", en: "three", emoji: "3️⃣", prefix: "ga" },
-  { tib: "བརྒྱད་", translit: "gye", en: "eight", emoji: "8️⃣", prefix: "ba" },
-  { tib: "མདུན་", translit: "dün", en: "front", emoji: "⬆️", prefix: "ma" },
-  { tib: "འབྲས་", translit: "dre", en: "rice, fruit", emoji: "🍚", prefix: "a" },
 ];
 
 export const NEVER_TAKE = "ཝ འ ལ ཧ ཨ";

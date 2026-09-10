@@ -181,7 +181,7 @@ export const VOCAB: Vocab[] = [
   { tib: "ཀླུ",    translit: "lu",      en: "nāga / serpent spirit",  emoji: "🐍", sub: "la" },
   { tib: "ཟླ་བོ", translit: "lo-bo",   en: "friend, sweetheart",     emoji: "👫", sub: "la" },
   { tib: "སླ་པོ", translit: "lo-po",   en: "easy",                   emoji: "👌", sub: "la" },
-  { tib: "ཁྭ་ཏ",   translit: "khwa-ta", en: "crow, raven",            emoji: "🐦‍⬛", sub: "wa" },
+  { tib: "ཁྭ་ཏ",   translit: "khwa-ta", en: "crow, raven",            emoji: "🐦‍", sub: "wa" },
   { tib: "རྩྭ",    translit: "tswa",    en: "grass",                  emoji: "🌱", sub: "wa" },
   { tib: "ཤྭ་བ",   translit: "shwa-wa", en: "deer",                   emoji: "🦌", sub: "wa" },
   { tib: "གྭ་པ",   translit: "gwa-pa",  en: "cow",                    emoji: "🐄", sub: "wa" },

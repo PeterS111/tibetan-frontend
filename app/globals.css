@@ -6,27 +6,29 @@
 
 @theme inline {
   /* Fonts */
+  /* Jomolhari is appended to base fonts so Tibetan characters automatically fall back to it globally */
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Jomolhari";
   --font-serif: var(--font-serif), ui-serif, Georgia, serif, "Jomolhari";
+  /* Keeping the explicit variable for legacy classes, but it's no longer strictly needed */
   --font-tibetan: var(--font-tibetan), "Jomolhari", serif;
 
-  /* Global App Palette - Loplao Mobile Redesign */
-  --color-paper: #FAF6EC;        /* Cream */
+/* Global App Palette - Scholar's Edition */
+  --color-paper: #FAF6EC;        
   --color-surface: #FFFFFF;
-  --color-surface-muted: #F2F5F8; /* Soft blue-grey for surface contrast */
+  --color-surface-muted: #F2EDE1;
   
-  --color-ink: #0E2C4D;          /* Deep Himalayan Blue */
-  --color-ink-light: #1B4571;    /* Secondary Blue */
-  --color-ink-muted: rgba(27, 69, 113, 0.6); /* Transparent Secondary Blue */
+  --color-ink: #0E2C4D;          
+  --color-ink-light: #1B4571;    
+  --color-ink-muted: #6A829A;    
   
-  --color-border-subtle: #CFE2F1; /* Pale Sky Blue */
-  --color-border-strong: rgba(27, 69, 113, 0.2); /* Deeper blue border */
+  --color-border-subtle: #CFE2F1;
+  --color-border-strong: #93B2CD;
 
-  --color-brand: #FFB600;        /* Warm Gold */
-  --color-brand-light: #FFF7E0;  /* Very soft gold for backgrounds */
-  --color-brand-dark: #D49700;   /* Hover state for gold */
+  --color-brand: #FFB600;        
+  --color-brand-light: #FFF5D6; 
+  --color-brand-dark: #D49700;   
 
-  --color-destructive: #8C2A21;  /* Rust Red */
+  --color-destructive: #8C2A21;
   --color-destructive-foreground: #FAF6EC;
 }
 

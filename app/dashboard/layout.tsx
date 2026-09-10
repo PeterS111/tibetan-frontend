@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
 
+import { useEffect, useState } from "react";
 import { 
-  LayoutDashboard, Settings, Menu, X, LogOut, Heart, HelpCircle 
+  LayoutDashboard, Settings, Menu, X, LogOut, Heart, HelpCircle
 } from "lucide-react";
 
 import { usePlatform } from "@/hooks/usePlatform";
@@ -44,19 +44,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => { isMounted = false; };
   }, [user, isLoaded, getToken]);
 
+  
+  
   const libraryItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   ];
 
-  
   const moreItems = [
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
     { name: "Support", href: "/support", icon: HelpCircle },
     { name: "Donate", href: "/donate", icon: Heart },
   ];
-  
 
   // Native Bottom Tab Navigation Items
+  
   const nativeTabs = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
@@ -173,24 +174,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-full" } }} />
           </div>
           
-		  
-		<div className="flex-1 min-w-0 flex flex-col justify-center">
+		 <div className="flex-1 min-w-0 flex flex-col justify-center">
             <p className="text-sm font-medium text-ink truncate">{user?.firstName || "Student"} {user?.lastName || ""}</p>
             <div className="text-[10px] font-bold text-ink-muted tracking-wider uppercase mt-0.5">Scholar</div>
           </div>
         </div>
         
+        {/* NEW: Desktop Meta Links Footer */}
         <div className="px-6 py-4 border-t border-border-subtle bg-surface-muted flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-ink-muted uppercase tracking-wider font-bold">
           <Link href="/about" className="hover:text-ink transition-colors">About</Link>
           <Link href="/privacy" className="hover:text-ink transition-colors">Privacy</Link>
           <Link href="/terms" className="hover:text-ink transition-colors">Terms</Link>
         </div>
 		
-      </aside>  
+      </aside>
 
       
 	  
-	  {/* Web Mobile Fallback (Hidden on actual Native App) */}
+	  {/* Web Mobile Fallback (Hidden on actual Native App) */} 
+		  
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
