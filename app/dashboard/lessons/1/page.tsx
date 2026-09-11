@@ -10,6 +10,7 @@ import {
 // --- Custom Hooks ---
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
+import { usePlatform } from "@/hooks/usePlatform"; // <-- ADD THIS
 
 // --- Data ---
 import { CONSONANTS, VOCAB, STEPS, TONE_META, TONE_HEX, GENDER_META, generateFinalQuiz, type Consonant, type Tone, type Gender } from "@/app/data/lesson1";
@@ -28,6 +29,8 @@ import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 export default function ConsonantsLesson() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  
+  const { isNative } = usePlatform(); // <-- ADD THIS
 
   const [selected, setSelected] = useState<{ c: Consonant, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Tone>("all");
@@ -171,7 +174,12 @@ return (
               <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
               <div className="relative grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
                 {filtered.map((c) => (
-                  <button key={c.tib + c.translit} onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
+                  <button key={c.tib + c.translit} onClick={(e) => { 
+  if (!isNative) {
+    setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); 
+  }
+  playAudio(c.tib); 
+}} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: TONE_HEX[c.tone] }} />
                     <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>{c.tib}</span>
                     <div className="mt-2 flex items-end justify-between">
@@ -228,7 +236,12 @@ return (
                     <p className="mt-3 text-[13px] leading-relaxed text-ink-light min-h-[140px]">{m.description}</p>
                     <div className="mt-6 flex flex-wrap gap-2">
                       {CONSONANTS.filter((c) => c.tone === t).map((c) => (
-                        <button key={c.tib} onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} className="border border-border-strong bg-surface-muted px-3 py-1.5 font-serif text-xl hover:border-brand hover:bg-surface transition-colors text-ink tibetan">
+                        <button key={c.tib} onClick={(e) => { 
+  if (!isNative) {
+    setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); 
+  }
+  playAudio(c.tib); 
+}} className="border border-border-strong bg-surface-muted px-3 py-1.5 font-serif text-xl hover:border-brand hover:bg-surface transition-colors text-ink tibetan">
                           {c.tib}
                         </button>
                       ))}
@@ -329,7 +342,12 @@ return (
                       {letters.map((c) => (
                         <button 
                           key={c.tib} 
-                          onClick={(e) => { setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); playAudio(c.tib); }} 
+                          onClick={(e) => { 
+  if (!isNative) {
+    setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); 
+  }
+  playAudio(c.tib); 
+}}
                           className="border bg-surface px-4 py-2 font-serif text-2xl transition hover:-translate-y-0.5 shadow-sm tibetan" 
                           style={{ borderColor: gm.color + "55", color: gm.text }}
                         >

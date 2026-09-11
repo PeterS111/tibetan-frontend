@@ -6,7 +6,7 @@ import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react"
 
 import { useEffect, useState } from "react";
 import { 
-  LayoutDashboard, Settings, Menu, X, LogOut, Heart, HelpCircle
+  LayoutDashboard, Settings, Menu, X, LogOut, Heart, HelpCircle, MessageSquarePlus
 } from "lucide-react";
 
 import { usePlatform } from "@/hooks/usePlatform";
@@ -53,6 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const moreItems = [
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
     { name: "Support", href: "/support", icon: HelpCircle },
+    { name: "Feedback", href: "/dashboard/feedback", icon: MessageSquarePlus }, // <-- ADD THIS
     { name: "Donate", href: "/donate", icon: Heart },
   ];
 

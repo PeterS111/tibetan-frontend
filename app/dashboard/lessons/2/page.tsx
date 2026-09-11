@@ -11,6 +11,7 @@ import {
 // --- Custom Hooks ---
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
+import { usePlatform } from "@/hooks/usePlatform";
 
 // --- Data ---
 import { VOWELS, VOCAB, STEPS, POSITION_META, generateSpellingQuiz, generateFinalQuiz, type Vowel, type Position } from "@/app/data/lesson2";
@@ -30,6 +31,7 @@ export default function VowelsLesson() {
 
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { unlockedStep, expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Position>("all");
@@ -186,7 +188,12 @@ export default function VowelsLesson() {
 
               <div className="relative grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
                 {filtered.map((v) => (
-                  <button key={v.key} onClick={(e) => { setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); playAudio(v.tib); }} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
+                  <button key={v.key} onClick={(e) => { 
+  if (!isNative) {
+    setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); 
+  }
+  playAudio(v.tib); 
+}} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
                     <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>{v.tib}</span>
                     <div className="mt-3 flex items-end justify-between">
@@ -278,7 +285,11 @@ export default function VowelsLesson() {
                   {VOWELS.map((v) => (
                     <tr key={v.key} className="transition hover:bg-surface-muted">
                       <td className="px-6 py-5">
-                        <button onClick={(e) => setSelected({ v, rect: e.currentTarget.getBoundingClientRect() })} className="inline-flex items-center gap-3">
+                        <button onClick={(e) => {
+  if (!isNative) {
+    setSelected({ v, rect: e.currentTarget.getBoundingClientRect() });
+  }
+}} className="inline-flex items-center gap-3">
                           <span className="font-tibetan text-3xl text-ink">{v.tib}</span>
                           <span className="text-eyebrow">{v.markTranslit}</span>
                         </button>

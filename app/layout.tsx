@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Merriweather, Inter, Jomolhari } from "next/font/google";
 import "./globals.css";
 
-import FeedbackWidget from "./components/FeedbackWidget";
 // 1. IMPORT OUR NEW WRAPPER
 import ClerkClientProvider from "./ClerkClientProvider"; 
 
@@ -51,7 +50,7 @@ export default function RootLayout({
         {/* 2. USE THE WRAPPER INSTEAD OF CLERK PROVIDER DIRECTLY */}
         <ClerkClientProvider>
           {children}
-          <FeedbackWidget />
+   
         </ClerkClientProvider>
       </body>
     </html>
