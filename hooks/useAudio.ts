@@ -1,3 +1,4 @@
+// hooks/useAudio.ts
 import { useState, useCallback, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Capacitor } from "@capacitor/core";
@@ -7,7 +8,7 @@ import { AUDIO_MAP } from "@/app/data/audioMap";
 export function useAudio() {
   const { getToken } = useAuth();
   const [playingItem, setPlayingItem] = useState<string | null>(null);
-  const preloadedIds = useRef(new Set<string>()); // Keep track of loaded files
+  const preloadedIds = useRef(new Set<string>());
 
   const safeGetToken = useCallback(async () => {
     if (typeof window !== 'undefined' && window.location.hostname === '10.0.2.2') return null;
@@ -35,24 +36,19 @@ export function useAudio() {
       }
 
       if (fileName) {
-        // Strip out weird characters to make a safe internal ID for the plugin
-        const assetId = fileName.replace('.wav', '').replace(/[^a-zA-Z0-9]/g, '_');
+        // FIX: Safely encode Tibetan characters into UNIQUE alphanumeric strings!
+        const assetId = encodeURIComponent(fileName.replace('.wav', '')).replace(/[^a-zA-Z0-9]/g, '_');
         
         try {
-          // Preload into hardware memory if we haven't already
           if (!preloadedIds.current.has(assetId)) {
             await NativeAudio.preload({
               assetId: assetId,
               assetPath: `public/sounds/${fileName}`
-              // REMOVED 'isComplex' to fix the strict TypeScript error!
             });
             preloadedIds.current.add(assetId);
           }
           
-          // Play instantly
           await NativeAudio.play({ assetId });
-          
-          // Turn off the loading spinner after 1.5 seconds (avg length of your clips)
           setTimeout(() => setPlayingItem(null), 1500);
           return;
         } catch (err) {
@@ -62,7 +58,7 @@ export function useAudio() {
     }
 
     // ==========================================
-    // DESKTOP / FALLBACK: FastAPI Base64 Fetch
+    // DESKTOP / FALLBACK: FastAPI Fetch
     // ==========================================
     try {
       const token = await safeGetToken();
@@ -93,7 +89,6 @@ export function useAudio() {
     setPlayingItem(null);
   }, [safeGetToken, playingItem]);
 
-  // ... playErrorBeep remains exactly the same
   const playErrorBeep = useCallback(() => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();

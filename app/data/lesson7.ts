@@ -1,180 +1,88 @@
 // app/data/lesson7.ts
-
-export type Concept = "consonants" | "vowels" | "superscripts" | "subscripts" | "prefixes" | "suffixes";
-
-export interface MCQuestion {
-  kind: "mc";
-  id: string;
-  concept: Concept;
-  promptType: "how-read" | "which-vowel" | "tone" | "vocab";
-  promptTarget: string; // The Tibetan text or English word
-  promptSub?: string;   // Optional secondary target (like a root letter)
-  choices: { key: string; label: string }[];
-  answerKey: string;
-}
-
-export interface RootPickQuestion {
-  kind: "root";
-  id: string;
-  concept: Concept;
-  cluster: string;
-  translit: string;
-  tiles: string[];
-  answer: string;
-}
-
-export interface OrderQuestion {
-  kind: "order";
-  id: string;
-  concept: Concept;
-  cluster: string;
-  translit: string;
-  steps: string[];
-}
-
-export interface ListenQuestion {
-  kind: "listen";
-  id: string;
-  concept: Concept;
-  spoken: string;
-  choices: { tib: string; translit: string }[];
-  answerTib: string;
-}
-
-export type Question = MCQuestion | RootPickQuestion | OrderQuestion | ListenQuestion;
+import { QuizQuestion } from "@/app/components/QuizModule";
 
 export function shuffle<T>(arr: T[]): T[] {
-  return [...arr].map((v) => ({ v, r: Math.random() })).sort((a, b) => a.r - b.r).map((x) => x.v);
+  return [...arr].sort(() => 0.5 - Math.random());
 }
 
+// 1. CONSONANTS (Mapped to existing Ka.wav, Kha.wav, etc.)
 const CONSONANTS = [
-  { tib: "ཀ", translit: "ka" }, { tib: "ཁ", translit: "kha" }, { tib: "ག", translit: "ga" }, { tib: "ང", translit: "nga" },
-  { tib: "ཅ", translit: "cha" }, { tib: "ཆ", translit: "chha" }, { tib: "ཇ", translit: "ja" }, { tib: "ཉ", translit: "nya" },
-  { tib: "ཏ", translit: "ta" }, { tib: "ཐ", translit: "tha" }, { tib: "ད", translit: "da" }, { tib: "ན", translit: "na" },
-  { tib: "པ", translit: "pa" }, { tib: "ཕ", translit: "pha" }, { tib: "བ", translit: "ba" }, { tib: "མ", translit: "ma" },
-  { tib: "ཙ", translit: "tsa" }, { tib: "ཞ", translit: "zha" }, { tib: "ཟ", translit: "za" }, { tib: "འ", translit: "a" },
-  { tib: "ཡ", translit: "ya" }, { tib: "ར", translit: "ra" }, { tib: "ལ", translit: "la" }, { tib: "ཤ", translit: "sha" },
-  { tib: "ས", translit: "sa" }, { tib: "ཧ", translit: "ha" }, { tib: "ཨ", translit: "ah" },
+  { tib: "ཀ", translit: "ka", tone: "High tone" }, { tib: "ཁ", translit: "kha", tone: "High tone" },
+  { tib: "ག", translit: "ga", tone: "Low tone" }, { tib: "ང", translit: "nga", tone: "Low tone" },
+  { tib: "ཅ", translit: "cha", tone: "High tone" }, { tib: "ཆ", translit: "chha", tone: "High tone" },
+  { tib: "ཇ", translit: "ja", tone: "Low tone" }, { tib: "ཉ", translit: "nya", tone: "Low tone" },
+  { tib: "ཏ", translit: "ta", tone: "High tone" }, { tib: "ཐ", translit: "tha", tone: "High tone" },
+  { tib: "ད", translit: "da", tone: "Low tone" }, { tib: "ན", translit: "na", tone: "Low tone" },
+  { tib: "པ", translit: "pa", tone: "High tone" }, { tib: "ཕ", translit: "pha", tone: "High tone" },
+  { tib: "བ", translit: "ba", tone: "Low tone" }, { tib: "མ", translit: "ma", tone: "Low tone" },
+  { tib: "ཙ", translit: "tsa", tone: "High tone" }, { tib: "ཚ", translit: "tsha", tone: "High tone" },
+  { tib: "ཛ", translit: "dza", tone: "Low tone" }, { tib: "ཝ", translit: "wa", tone: "Low tone" },
+  { tib: "ཞ", translit: "zha", tone: "Low tone" }, { tib: "ཟ", translit: "za", tone: "Low tone" },
+  { tib: "འ", translit: "a", tone: "Low tone" }, { tib: "ཡ", translit: "ya", tone: "Low tone" },
+  { tib: "ར", translit: "ra", tone: "Low tone" }, { tib: "ལ", translit: "la", tone: "Low tone" },
+  { tib: "ཤ", translit: "sha", tone: "High tone" }, { tib: "ས", translit: "sa", tone: "High tone" },
+  { tib: "ཧ", translit: "ha", tone: "High tone" }, { tib: "ཨ", translit: "ah", tone: "High tone" },
 ];
 
+// 2. VOWELS (Strictly mapped to AUDIO_MAP items)
 const VOWELS = [
-  { tib: "ཀི", base: "ཀ", translit: "ki" }, { tib: "ཀུ", base: "ཀ", translit: "ku" },
-  { tib: "ཀེ", base: "ཀ", translit: "ke" }, { tib: "ཀོ", base: "ཀ", translit: "ko" },
-  { tib: "མི", base: "མ", translit: "mi" }, { tib: "ལུ", base: "ལ", translit: "lu" },
+  { tib: "མི", read: "i" }, { tib: "སུ", read: "u" }, { tib: "མེ", read: "e" }, { tib: "སོ", read: "o" },
+  { tib: "ཆུ", read: "u" }, { tib: "རི", read: "i" }, { tib: "ཤི", read: "i" }, { tib: "ཕུ", read: "u" }
 ];
 
-const STACKS = [
-  { cluster: "ལག", translit: "lak", parts: ["ལ", "ག"], root: "ལ" },
-  { cluster: "ནག", translit: "nak", parts: ["ན", "ག"], root: "ན" },
-  { cluster: "ཁང་", translit: "khang", parts: ["ཁ", "ང"], root: "ཁ" },
-  { cluster: "གངས་", translit: "gang", parts: ["ག", "ང", "ས"], root: "ག" },
-  { cluster: "ཁམས་", translit: "kham", parts: ["ཁ", "མ", "ས"], root: "ཁ" },
-  { cluster: "ནགས་", translit: "nak", parts: ["ན", "ག", "ས"], root: "ན" },
-  { cluster: "དཀར་", translit: "kar", parts: ["ད", "ཀ", "ར"], root: "ཀ" },
-  { cluster: "དགའ་", translit: "ga", parts: ["ད", "ག", "འ"], root: "ག" },
-  { cluster: "མདངས་", translit: "dang", parts: ["མ", "ད", "ང", "ས"], root: "ད" },
+// 3. ROOT WORDS (Strictly mapped to AUDIO_MAP items)
+const ROOT_WORDS = [
+  { word: "གངས་", root: "ག" }, { word: "ཁམས་", root: "ཁ" }, { word: "དཀར་", root: "ཀ" },
+  { word: "བོད་", root: "བ" }, { word: "རིག་", root: "ར" }, { word: "ཐུབ་", root: "ཐ" },
+  { word: "ཁྱིམ་", root: "ཁ" }, { word: "མཁའ་", root: "ཁ" }, { word: "བཞི་", root: "ཞ" },
+  { word: "དགེ་", root: "ག" }
 ];
 
-const PREFIX_TONE: { prefix: string; root: string; cluster: string; translit: string; tone: "high" | "low" }[] = [
-  { prefix: "ད", root: "ཀ", cluster: "དཀ", translit: "ka", tone: "high" },
-  { prefix: "ད", root: "ག", cluster: "དག", translit: "ga", tone: "high" },
-  { prefix: "བ", root: "ཀ", cluster: "བཀ", translit: "ka", tone: "high" },
-  { prefix: "མ", root: "ག", cluster: "མག", translit: "ga", tone: "low" },
-  { prefix: "འ", root: "ག", cluster: "འག", translit: "ga", tone: "low" },
-  { prefix: "ག", root: "ཙ", cluster: "གཙ", translit: "tsa", tone: "high" },
+// 4. TONE RULES (Strictly mapped to AUDIO_MAP items)
+const TONE_RULES = [
+  { word: "དགེ་", tone: "Low tone" }, { word: "དབུ་", tone: "High tone" },
+  { word: "མགོ་", tone: "Low tone" }, { word: "གཙོ་", tone: "High tone" },
+  { word: "གཡོ་", tone: "High tone" }, { word: "འགྲོ་", tone: "Low tone" },
+  { word: "འབུ་", tone: "Low tone" }, { word: "བཞི་", tone: "Low tone" }
 ];
 
-const VOCAB = [
-  { tib: "རྟ", translit: "ta", en: "horse" }, { tib: "སྒྲ", translit: "dra", en: "sound" },
-  { tib: "དགེ", translit: "ge", en: "virtuous" }, { tib: "སྐྱ་སྐྱ", translit: "kya-kya", en: "pale / grey" },
-  { tib: "ལག", translit: "lak", en: "hand" }, { tib: "ནག", translit: "nak", en: "black" },
-  { tib: "གངས", translit: "gang", en: "snow" }, { tib: "ནགས", translit: "nak", en: "forest" },
-  { tib: "ཁམས", translit: "kham", en: "region (Kham)" }, { tib: "ཁང", translit: "khang", en: "house" },
-  { tib: "མི", translit: "mi", en: "person" }, { tib: "བོད", translit: "bö", en: "Tibet" },
-  { tib: "ཟླ", translit: "da", en: "moon" }, { tib: "རྒྱལ", translit: "gyal", en: "king / victory" },
+// 5. READING WORDS (Strictly mapped to AUDIO_MAP items)
+const READING_WORDS = [
+  { word: "ལམ་", read: "lam" }, { word: "ནད་", read: "ne" }, { word: "མར་", read: "mar" },
+  { word: "ལས་", read: "le" }, { word: "གསལ་", read: "sel" }, { word: "རིག་", read: "rik" },
+  { word: "མན་", read: "men" }, { word: "རབ་", read: "rap" }
 ];
 
-const LISTEN_GROUPS: { concept: Concept; items: { tib: string; translit: string }[] }[] = [
-  { concept: "consonants", items: [{ tib: "ཀ", translit: "ka" }, { tib: "ཁ", translit: "kha" }, { tib: "ག", translit: "ga" }, { tib: "ང", translit: "nga" }] },
-  { concept: "consonants", items: [{ tib: "ཏ", translit: "ta" }, { tib: "ཐ", translit: "tha" }, { tib: "ད", translit: "da" }, { tib: "ན", translit: "na" }] },
-  { concept: "subscripts", items: [{ tib: "རྟ", translit: "ta" }, { tib: "སྒྲ", translit: "dra" }, { tib: "སྐྱ", translit: "kya" }, { tib: "རྒྱ", translit: "gya" }] },
-  { concept: "vowels", items: [{ tib: "ཀི", translit: "ki" }, { tib: "ཀུ", translit: "ku" }, { tib: "ཀེ", translit: "ke" }, { tib: "ཀོ", translit: "ko" }] },
-  { concept: "suffixes", items: [{ tib: "ལག", translit: "lak" }, { tib: "ནག", translit: "nak" }, { tib: "གངས", translit: "gang" }, { tib: "ཁམས", translit: "kham" }] },
-  { concept: "prefixes", items: [{ tib: "དགེ", translit: "ge" }, { tib: "དཀར", translit: "kar" }, { tib: "དགའ", translit: "ga" }, { tib: "མདངས", translit: "dang" }] },
+// 6. VOCABULARY (Strictly mapped to AUDIO_MAP items)
+const VOCAB_WORDS = [
+  { tib: "དགེ་བ་", en: "virtue" }, { tib: "གཙོ་བོ་", en: "chief" },
+  { tib: "ཁང་པ་", en: "house" }, { tib: "མེ་མདའ་", en: "gun" },
+  { tib: "ལག་པ་", en: "hand" }, { tib: "དཀར་པོ་", en: "white" },
+  { tib: "ནག་པོ་", en: "black" }, { tib: "གངས་རི་", en: "snow mountain" }
 ];
 
-export function buildBank(): Question[] {
-  const qs: Question[] = [];
+// 7. SPELLING SEQUENCES (Strictly mapped to "X spelling.wav" in AUDIO_MAP)
+const SPELLING_WORDS = [
+  { word: "སྐྱ", parts: "ས + ཀ + བཏགས + སྐ + ཡ + བཏགས + སྐྱ" },
+  { word: "རྒྱ", parts: "ར + ག + བཏགས + རྒ + ཡ + བཏགས + རྒྱ" },
+  { word: "དགེ་", parts: "ད + ག + དག + ེ + དགེ" },
+  { word: "བཀྲ་", parts: "བ + ཀ + ར + བཏགས + བཀྲ" },
+  { word: "སྒྲ", parts: "ས + ག + བཏགས + སྒ + ར + བཏགས + སྒྲ" },
+  { word: "མཁའ་", parts: "མ + ཁ + མཁ + འ + མཁའ" }
+];
 
-  for (const c of shuffle(CONSONANTS).slice(0, 5)) {
-    const wrong = shuffle(CONSONANTS.filter((x) => x.translit !== c.translit)).slice(0, 3);
-    qs.push({
-      kind: "mc", id: `cons-${c.tib}`, concept: "consonants",
-      promptType: "how-read", promptTarget: c.tib,
-      choices: shuffle([c, ...wrong]).map((x) => ({ key: x.translit, label: x.translit })), answerKey: c.translit,
-    });
-  }
-
-  for (const v of shuffle(VOWELS).slice(0, 3)) {
-    const wrong = shuffle(VOWELS.filter((x) => x.translit !== v.translit)).slice(0, 3);
-    qs.push({
-      kind: "mc", id: `vow-${v.tib}`, concept: "vowels",
-      promptType: "which-vowel", promptTarget: v.tib,
-      choices: shuffle([v, ...wrong]).map((x) => ({ key: x.translit, label: `[${x.translit}]` })), answerKey: v.translit,
-    });
-  }
-
-  for (const s of shuffle(STACKS).slice(0, 5)) {
-    const others = CONSONANTS.filter((c) => !s.parts.includes(c.tib));
-    const distractors = shuffle(others).slice(0, 4 - s.parts.length);
-    const tiles = shuffle([...s.parts, ...distractors.map((d) => d.tib)]);
-    qs.push({
-      kind: "root", id: `root-${s.cluster}`,
-      concept: ["ད", "བ", "མ", "འ", "ག"].includes(s.parts[0]) && s.parts.length >= 3 ? "prefixes" : "suffixes",
-      cluster: s.cluster, translit: s.translit, tiles, answer: s.root,
-    });
-  }
-
-  for (const p of shuffle(PREFIX_TONE).slice(0, 4)) {
-    qs.push({
-      kind: "mc", id: `tone-${p.cluster}`, concept: "prefixes",
-      promptType: "tone", promptTarget: p.cluster, promptSub: p.root,
-      choices: shuffle([{ key: "high", label: "High tone" }, { key: "low", label: "Low tone" }]), answerKey: p.tone,
-    });
-  }
-
-  const orderPool = [
-    { cluster: "སྐྱ", translit: "kya", steps: ["ས", "ཀ", "བཏགས", "སྐ", "ཡ", "བཏགས", "སྐྱ"] },
-    { cluster: "རྒྱ", translit: "gya", steps: ["ར", "ག", "བཏགས", "རྒ", "ཡ", "བཏགས", "རྒྱ"] },
-    { cluster: "དགེ", translit: "ge", steps: ["ད", "ག", "དག", "ེ", "དགེ"] },
-    { cluster: "བཀྲ", translit: "tra", steps: ["བ", "ཀ", "ར", "བཏགས", "བཀྲ"] },
-  ];
-  for (const o of shuffle(orderPool).slice(0, 3)) {
-    qs.push({
-      kind: "order", id: `order-${o.cluster}`, concept: "subscripts",
-      cluster: o.cluster, translit: o.translit, steps: o.steps,
-    });
-  }
-
-  for (const w of shuffle(VOCAB).slice(0, 6)) {
-    const wrong = shuffle(VOCAB.filter((x) => x.tib !== w.tib)).slice(0, 3);
-    qs.push({
-      kind: "mc", id: `vocab-${w.tib}`, concept: "suffixes",
-      promptType: "vocab", promptTarget: w.en,
-      choices: shuffle([w, ...wrong]).map((x) => ({ key: x.tib, label: x.tib })), answerKey: w.tib,
-    });
-  }
-
-  for (const g of shuffle(LISTEN_GROUPS).slice(0, 5)) {
-    const target = g.items[Math.floor(Math.random() * g.items.length)];
-    qs.push({
-      kind: "listen", id: `listen-${target.tib}`, concept: g.concept,
-      spoken: target.translit, choices: shuffle(g.items), answerTib: target.tib,
-    });
-  }
-
-  return shuffle(qs);
-}
+export const SKILLS = [
+  { num: "01", title: "Letter recognition & sounds", desc: "Recognising the 30 root consonants and their pronunciation" },
+  { num: "02", title: "Tone & gender classes", desc: "Classifying letters by tone class and gender" },
+  { num: "03", title: "Vowels & diacritics", desc: "The four vowel signs and how they change a syllable" },
+  { num: "04", title: "Stacks — superscripts & subscripts", desc: "Finding the root letter and reading stacked syllables" },
+  { num: "05", title: "Prefixes & suffixes", desc: "Prefix rules, tone change, suffixes and post-suffixes" },
+  { num: "06", title: "Reading complete words", desc: "Reading whole words aloud from the written form" },
+  { num: "07", title: "Word meaning & images", desc: "Matching words with meanings and pictures" },
+  { num: "08", title: "Spelling & word building", desc: "Spelling words, building them from letters, spotting missing letters" },
+  { num: "09", title: "Similar words", desc: "Telling apart words that look or sound alike" },
+  { num: "10", title: "Listening", desc: "Hearing a word and picking its written form or meaning" }
+];
 
 export const STEPS = [
   { id: "overview", eyebrow: "Section 01", title: "What this capstone covers" },
@@ -182,11 +90,122 @@ export const STEPS = [
   { id: "result", eyebrow: "Section 03", title: "Your result" },
 ];
 
-export const CONCEPT_LABEL: Record<Concept, { name: string; to: string }> = {
-  consonants: { name: "The 30 Consonants", to: "/dashboard/lessons/1" },
-  vowels: { name: "The Four Vowels", to: "/dashboard/lessons/2" },
-  superscripts: { name: "Superscripts", to: "/dashboard/lessons/3" },
-  subscripts: { name: "Subscripts", to: "/dashboard/lessons/4" },
-  prefixes: { name: "The Five Prefixes", to: "/dashboard/lessons/5" },
-  suffixes: { name: "Suffixes & Post-suffixes", to: "/dashboard/lessons/6" }, 
-};
+export function generateCapstoneQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
+
+  // 1. Letter recognition (6 Qs) - "read" triggers spoiler hide
+  shuffle(CONSONANTS).slice(0, 6).forEach(c => {
+    qs.push({
+      questionText: "How does this letter read?",
+      prominentTibetan: c.tib,
+      answer: c.translit,
+      audioString: c.tib, // Audio plays safely AFTER selection
+      choices: shuffle([c.translit, ...pickWrongs(CONSONANTS.map(x => x.translit), c.translit, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+  });
+
+  // 2. Tone & Gender (6 Qs) - "read" triggers spoiler hide
+  shuffle(CONSONANTS).slice(0, 6).forEach(c => {
+    qs.push({
+      questionText: "Read the letter and identify its tone class:",
+      prominentTibetan: c.tib,
+      answer: c.tone,
+      audioString: c.tib,
+      choices: shuffle([{ value: "High tone", label: "High tone" }, { value: "Low tone", label: "Low tone" }])
+    });
+  });
+
+  // 3. Vowels (6 Qs) - "read" triggers spoiler hide
+  shuffle(VOWELS).slice(0, 6).forEach(v => {
+    qs.push({
+      questionText: "Read the syllable and identify its vowel sound:",
+      prominentTibetan: v.tib,
+      answer: `[${v.read}]`,
+      audioString: v.tib,
+      choices: shuffle([`[${v.read}]`, ...pickWrongs(["[i]", "[u]", "[e]", "[o]"], `[${v.read}]`, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 4. Stacks / Root letter (6 Qs) - No spoiler hide needed (hearing the word doesn't reveal the root)
+  shuffle(ROOT_WORDS).slice(0, 6).forEach(r => {
+    qs.push({
+      questionText: "Identify the root letter in this word:",
+      prominentTibetan: r.word,
+      answer: r.root,
+      audioString: r.word,
+      choices: shuffle([r.root, ...pickWrongs(CONSONANTS.map(x => x.tib), r.root, 3)]).map(x => ({ value: x, tib: x }))
+    });
+  });
+
+  // 5. Prefix/Suffix rules (6 Qs) - "read" triggers spoiler hide
+  shuffle(TONE_RULES).slice(0, 6).forEach(t => {
+    qs.push({
+      questionText: "Read the combination and identify its tone:",
+      prominentTibetan: t.word,
+      answer: t.tone,
+      audioString: t.word,
+      choices: shuffle([{ value: "High tone", label: "High tone" }, { value: "Low tone", label: "Low tone" }])
+    });
+  });
+
+  // 6. Reading complete words (6 Qs) - "read" triggers spoiler hide
+  shuffle(READING_WORDS).slice(0, 6).forEach(w => {
+    qs.push({
+      questionText: "How does this word read?",
+      prominentTibetan: w.word,
+      answer: w.read,
+      audioString: w.word,
+      choices: shuffle([w.read, ...pickWrongs(READING_WORDS.map(x => x.read), w.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+  });
+
+  // 7. Word meaning (6 Qs) - Automatically hides prominent Tibetan
+  shuffle(VOCAB_WORDS).slice(0, 6).forEach(v => {
+    qs.push({
+      type: "vocab",
+      questionText: `Which word means "${v.en}"?`,
+      answer: v.tib,
+      audioString: v.tib,
+      choices: shuffle([v.tib, ...pickWrongs(VOCAB_WORDS.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x }))
+    });
+  });
+
+  // 8. Spelling & word building (6 Qs) - Uses spelling audio
+  shuffle(SPELLING_WORDS).slice(0, 6).forEach(s => {
+    const w1 = s.parts.split(" + ").reverse().join(" + ");
+    const w2 = s.parts.replace("བཏགས", "ས").replace("ཡ", "ར"); 
+    qs.push({
+      isAudioType: true,
+      questionText: "Listen to the spelling sequence and build it.",
+      answer: s.parts,
+      audioString: s.word + " spelling",
+      audioTarget: s.word,
+      choices: shuffle([s.parts, w1, w2]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 9. Similar words (6 Qs) - "read" triggers spoiler hide
+  shuffle(READING_WORDS).slice(0, 6).forEach(w => {
+    qs.push({
+      questionText: `Read carefully: Which word correctly reads as [${w.read}]?`,
+      answer: w.word,
+      audioString: w.word,
+      choices: shuffle([w.word, ...pickWrongs(ROOT_WORDS.map(x => x.word), w.word, 3)]).map(x => ({ value: x, tib: x }))
+    });
+  });
+
+  // 10. Listening (6 Qs) - Audio is prominent
+  shuffle(VOCAB_WORDS).slice(0, 6).forEach(v => {
+    qs.push({
+      isAudioType: true,
+      questionText: "Listen and select the matching word.",
+      answer: v.tib,
+      audioString: v.tib,
+      choices: shuffle([v.tib, ...pickWrongs(VOCAB_WORDS.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x }))
+    });
+  });
+
+  // Returns exactly 60 Questions
+  return qs;
+}

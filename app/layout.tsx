@@ -43,14 +43,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    
-	<html lang="en" className={`${merriweather.variable} ${inter.variable} ${jomolhari.variable} h-full antialiased overflow-x-hidden`}>
+    <html lang="en" className={`${merriweather.variable} ${inter.variable} ${jomolhari.variable} h-full antialiased overflow-x-hidden`}>
       <body className="min-h-full flex flex-col font-sans bg-paper text-ink selection:bg-brand-light w-full max-w-[100vw] overflow-x-hidden">
-	
         {/* 2. USE THE WRAPPER INSTEAD OF CLERK PROVIDER DIRECTLY */}
         <ClerkClientProvider>
           {children}
-   
         </ClerkClientProvider>
       </body>
     </html>

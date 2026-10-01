@@ -230,18 +230,18 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 15. ruleQs (take 3)
+  // 15. ruleQs (take 3) - ADDED noAudio: true to all!
   const allRules = [
-    { q: "How many root consonants does the Tibetan alphabet have?", a: "30", w: ["24", "26", "34"] },
-    { q: "Which set contains only the four true nasals?", a: "ང ཉ ན མ", w: ["ཀ ཁ ག ང", "ན མ ར ལ", "ཙ ཚ ཛ ཝ"] },
-    { q: "In the traditional grid, what does each column of a row share?", a: "Tone & gender", w: ["The same vowel sound", "The same strokes", "Place of articulation"] },
-    { q: "What does “aspirated” mean when describing a consonant?", a: "Released with a puff of air", w: ["Voiced through the nose", "Held longer", "Whispered"] },
-    { q: "Which pair of letters is classed as Sub-Feminine?", a: "ར ལ", w: ["ཀ ཁ", "ང མ", "ས ཧ"] },
-    { q: "ག and ཀ differ mainly in which way?", a: "Tone — ཀ is high, ག is low", w: ["Gender only", "Nothing", "ག is nasal"] }
+    { q: "How many root consonants does the Tibetan alphabet have?", a: "30", w: ["24", "26", "34"], noAudio: true },
+    { q: "Which set contains only the four true nasals?", a: "ང ཉ ན མ", w: ["ཀ ཁ ག ང", "ན མ ར ལ", "ཙ ཚ ཛ ཝ"], noAudio: true },
+    { q: "In the traditional grid, what does each column of a row share?", a: "Tone & gender", w: ["The same vowel sound", "The same strokes", "Place of articulation"], noAudio: true },
+    { q: "What does “aspirated” mean when describing a consonant?", a: "Released with a puff of air", w: ["Voiced through the nose", "Held longer", "Whispered"], noAudio: true },
+    { q: "Which pair of letters is classed as Sub-Feminine?", a: "ར ལ", w: ["ཀ ཁ", "ང མ", "ས ཧ"], noAudio: true },
+    { q: "ག and ཀ differ mainly in which way?", a: "Tone — ཀ is high, ག is low", w: ["Gender only", "Nothing", "ག is nasal"], noAudio: true }
   ];
   shuffle(allRules).slice(0, 3).forEach(r => {
     qs.push({
-      questionText: r.q, answer: r.a,
+      questionText: r.q, answer: r.a, noAudio: r.noAudio,
       choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
     });
   });

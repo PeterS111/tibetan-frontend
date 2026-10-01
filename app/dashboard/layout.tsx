@@ -6,10 +6,12 @@ import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react"
 
 import { useEffect, useState } from "react";
 import { 
-  LayoutDashboard, Settings, Menu, X, LogOut, Heart, HelpCircle, MessageSquarePlus
+  LayoutDashboard, Settings, Menu, X, LogOut, Heart, HelpCircle, MessageSquarePlus,
+  Home, BookOpen, Dumbbell, BarChart2, User
 } from "lucide-react";
 
 import { usePlatform } from "@/hooks/usePlatform";
+import { useTimeTracker } from "@/hooks/useTimeTracker";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,8 +24,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Detect Native Platform
   const { isNative } = usePlatform();
   
+  // Track time silently in the background
+  useTimeTracker();
 
-  
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -44,8 +47,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => { isMounted = false; };
   }, [user, isLoaded, getToken]);
 
-  
-  
   const libraryItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   ];
@@ -53,15 +54,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const moreItems = [
     { name: "Settings", href: "/dashboard/profile", icon: Settings },
     { name: "Support", href: "/support", icon: HelpCircle },
-    { name: "Feedback", href: "/dashboard/feedback", icon: MessageSquarePlus }, // <-- ADD THIS
+    { name: "Feedback", href: "/dashboard/feedback", icon: MessageSquarePlus },
     { name: "Donate", href: "/donate", icon: Heart },
-  ];
-
-  // Native Bottom Tab Navigation Items
-  
-  const nativeTabs = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Settings", href: "/dashboard/profile", icon: Settings },
   ];
 
   const streak = profile?.streak || 0;
@@ -71,50 +65,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // NATIVE MOBILE LAYOUT
   // ==========================================
   if (isNative) {
+    const mobileTabs = [
+      { name: "Home", href: "/dashboard", icon: Home },
+      { name: "Lessons", href: "/dashboard/lessons", icon: BookOpen },
+      { name: "Practice", href: "/dashboard/practice", icon: Dumbbell },
+      { name: "Progress", href: "/dashboard/progress", icon: BarChart2 },
+      { name: "Profile", href: "/dashboard/profile", icon: User },
+    ];
+
     return (
       <div className="flex flex-col h-[100dvh] w-full max-w-[100vw] overflow-hidden bg-paper text-ink font-sans">
         
-        
-		{/* Native Top Header */}
-        <header className="pt-12 pb-4 px-6 border-b border-border-subtle bg-surface flex items-center justify-between shrink-0 shadow-sm z-10">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="hover:opacity-80 transition-opacity">
-              <img src="/icon.png" alt="Learn Tibetan Logo" className="w-8 h-8 object-contain mix-blend-multiply opacity-90" />
-            </Link>
-            <h2 className="text-xl font-serif text-ink">{currentPageName}</h2>
-          </div>
-          
-		  
-		  <div className="flex items-center gap-3">
-            <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-full" } }} />
-          </div>
-		  
-        </header>
-
-        {/* Main Scrollable Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[100vw] bg-paper px-5 pt-6 pb-24">
+        {/* Main Scrollable Content (No global top header on mobile, pages manage their own top) */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[100vw] bg-paper pb-28">
           {children}
         </main>
 
-        {/* Native Bottom Tab Bar */}
-        <nav className="fixed bottom-0 left-0 w-full bg-surface border-t border-border-subtle pb-safe pt-2 px-6 flex justify-around items-center shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-50 h-20">
-          {nativeTabs.map((tab) => {
+        {/* Native Bottom Tab Bar matching the mockups */}
+        <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-border-subtle pb-safe pt-3 px-4 flex justify-between shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-50 rounded-t-3xl">
+          {mobileTabs.map((tab) => {
+            // Simplified active check for now
             const isActive = pathname === tab.href || (pathname.startsWith(tab.href) && tab.href !== "/dashboard");
             return (
               <Link 
                 key={tab.name} 
                 href={tab.href}
-                className="flex flex-col items-center justify-center gap-1.5 w-20 h-12 relative"
+                className="flex flex-col items-center justify-center gap-1.5 w-16 h-14 relative group mb-1"
               >
+                {/* Background pill for active state */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-brand/10 rounded-2xl -z-10 scale-110"></div>
+                )}
+                
                 <tab.icon 
                   size={24} 
-                  strokeWidth={isActive ? 2.5 : 1.5} 
+                  strokeWidth={isActive ? 2.5 : 2} 
                   className={`transition-colors ${isActive ? "text-brand-dark" : "text-ink-muted"}`} 
                 />
                 <span className={`text-[10px] font-bold tracking-wide transition-colors ${isActive ? "text-brand-dark" : "text-ink-muted"}`}>
                   {tab.name}
                 </span>
-                {isActive && <div className="absolute -top-3 w-8 h-1 rounded-full bg-brand"></div>}
               </Link>
             );
           })}
@@ -129,8 +119,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex bg-paper text-ink font-sans">
       
-	  
-	  <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
+      <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
         <Link href="/" className="flex items-center gap-3 px-6 py-8 hover:opacity-80 transition-opacity">
           <img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain mix-blend-multiply opacity-90" />
           <div>
@@ -138,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="text-[9px] font-bold tracking-[0.2em] text-ink-muted mt-1.5 uppercase">Scholar's Edition</div>
           </div>
         </Link>
-	  
+      
         <div className="flex-1 overflow-y-auto custom-scrollbar pt-2 pb-6">
           <div className="text-eyebrow mb-3 px-6">Library</div>
           <nav className="space-y-0.5 mb-8">
@@ -169,31 +158,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
         
-		
-		<div className="p-6 border-t border-border-subtle bg-paper flex items-center gap-4">
+        <div className="p-6 border-t border-border-subtle bg-paper flex items-center gap-4">
           <div className="w-8 h-8 rounded-full bg-brand overflow-hidden flex items-center justify-center shrink-0">
             <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-full" } }} />
           </div>
           
-		 <div className="flex-1 min-w-0 flex flex-col justify-center">
+         <div className="flex-1 min-w-0 flex flex-col justify-center">
             <p className="text-sm font-medium text-ink truncate">{user?.firstName || "Student"} {user?.lastName || ""}</p>
             <div className="text-[10px] font-bold text-ink-muted tracking-wider uppercase mt-0.5">Scholar</div>
           </div>
         </div>
         
-        {/* NEW: Desktop Meta Links Footer */}
+        {/* Desktop Meta Links Footer */}
         <div className="px-6 py-4 border-t border-border-subtle bg-surface-muted flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-ink-muted uppercase tracking-wider font-bold">
           <Link href="/about" className="hover:text-ink transition-colors">About</Link>
           <Link href="/privacy" className="hover:text-ink transition-colors">Privacy</Link>
           <Link href="/terms" className="hover:text-ink transition-colors">Terms</Link>
         </div>
-		
       </aside>
 
-      
-	  
-	  {/* Web Mobile Fallback (Hidden on actual Native App) */} 
-		  
+      {/* Web Mobile Fallback (Hidden on actual Native App) */} 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -202,8 +186,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link href="/" className="font-serif text-lg text-ink hover:text-brand-dark transition-colors">Learn Tibetan</Link>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-ink-light"><X size={20}/></button>
             </div>
-	  
-	  
             <div className="flex-1 overflow-y-auto pt-4">
                {/* Mobile Web Menu Items */}
                {[...libraryItems, ...moreItems].map((item) => (

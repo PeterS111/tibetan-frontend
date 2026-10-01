@@ -9,8 +9,10 @@ interface BadgeProps {
 }
 
 export function Badge({ children, variant = "default", className }: BadgeProps) {
-  // Matched exactly to the bordered "READY TO START" badges in the screenshots
-  const baseClasses = "inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-none";
+  
+  
+  // Pill-shaped badges for the native UI
+  const baseClasses = "inline-flex items-center justify-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full";
   
   const variants = {
     default: "bg-surface border border-border-strong text-ink-light",

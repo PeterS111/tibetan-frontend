@@ -37,17 +37,9 @@ export const TONE_META: Record<Tone, { label: string; hex: string; Icon: any; te
 
 export const PREFIXES: Prefix[] = [
   {
-    key: "ga",
-    head: "ག",
-    latin: "ga",
-    nameTib: "ག་སྔོན་འཇུག",
-    title: "The Prefix ག",
-    count: "10 roots",
+    key: "ga", head: "ག", latin: "ga", nameTib: "ག་སྔོན་འཇུག", title: "The Prefix ག", count: "10 roots",
     intro: "Prefix ག sits before ten root letters, mostly of the ca, ta, tsa and sha families. It never changes masculine sounds; with feminine roots it deepens the tone; with the letter ཡ it produces a high [yo].",
-    followedBy: "ཅ ཉ ཏ ད ན ཙ ཞ ཟ ཡ ཤ ས",
-    usage: "Silent in speech. Written-only role for most masculine roots — same sound, same tone. Deepens ད, ཞ, ཟ; raises ཡ to a high tone.",
-    accent: { hex: "#b45309" },
-    family: "silent",
+    followedBy: "ཅ ཉ ཏ ད ན ཙ ཞ ཟ ཡ ཤ ས", usage: "Silent in speech. Written-only role for most masculine roots — same sound, same tone. Deepens ད, ཞ, ཟ; raises ཡ to a high tone.", accent: { hex: "#b45309" }, family: "silent",
     combos: [
       { word: "གཙོ་", parts: "ག + ཙ + ོ", read: "tso", gloss: "chief, main", tone: "same" },
       { word: "གཡོ་", parts: "ག + ཡ + ོ", read: "yo", gloss: "sway, motion", tone: "up", note: "ག + ཡ → high [yo]" },
@@ -59,17 +51,9 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "da",
-    head: "ད",
-    latin: "da",
-    nameTib: "ད་སྔོན་འཇུག",
-    title: "The Prefix ད",
-    count: "5 roots",
+    key: "da", head: "ད", latin: "da", nameTib: "ད་སྔོན་འཇུག", title: "The Prefix ད", count: "5 roots",
     intro: "Prefix ད precedes ཀ ག ང པ བ མ — five letters after excluding ba's own group. With the very-feminine ང it produces a nasal high tone. With root བ, the whole syllable becomes [wa] in a high tone.",
-    followedBy: "ཀ ག ང པ བ མ",
-    usage: "Deepens ག; raises ང to a nasal high tone. The stack ད + བ is the classical way to write the [wa] syllable — always high tone.",
-    accent: { hex: "#7c3aed" },
-    family: "silent",
+    followedBy: "ཀ ག ང པ བ མ", usage: "Deepens ག; raises ང to a nasal high tone. The stack ད + བ is the classical way to write the [wa] syllable — always high tone.", accent: { hex: "#7c3aed" }, family: "silent",
     combos: [
       { word: "དགེ་", parts: "ད + ག + ེ", read: "ge", gloss: "virtue", tone: "down" },
       { word: "དབུ་", parts: "ད + བ + ུ", read: "wu", gloss: "head (H)", tone: "up", note: "ད + བ → [wa] family" },
@@ -79,17 +63,9 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "ba",
-    head: "བ",
-    latin: "ba",
-    nameTib: "བ་སྔོན་འཇུག",
-    title: "The Prefix བ",
-    count: "14 roots",
+    key: "ba", head: "བ", latin: "ba", nameTib: "བ་སྔོན་འཇུག", title: "The Prefix བ", count: "14 roots",
     intro: "Prefix བ can precede fourteen root letters spanning several families. It is silent in speech, but on the page distinguishes verbs of different tense.",
-    followedBy: "ཀ ག ཅ ཇ ཏ ད ན ཙ ཛ ཞ ཟ ཉ ཤ ས",
-    usage: "No pronunciation change for masculine roots. Feminine ག ཇ ད ཞ ཟ deepen; the shift is often subtle in Lhasa speech but decisive in spelling.",
-    accent: { hex: "#0f766e" },
-    family: "silent",
+    followedBy: "ཀ ག ཅ ཇ ཏ ད ན ཙ ཛ ཞ ཟ ཉ ཤ ས", usage: "No pronunciation change for masculine roots. Feminine ག ཇ ད ཞ ཟ deepen; the shift is often subtle in Lhasa speech but decisive in spelling.", accent: { hex: "#0f766e" }, family: "silent",
     combos: [
       { word: "བཀྲ་", parts: "བ + ཀ + ྲ", read: "tra", gloss: "auspicious", tone: "same" },
       { word: "བགོ་", parts: "བ + ག + ོ", read: "go", gloss: "to wear", tone: "down" },
@@ -100,17 +76,9 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "ma",
-    head: "མ",
-    latin: "ma",
-    nameTib: "མ་སྔོན་འཇུག",
-    title: "The Prefix མ",
-    count: "6 roots",
+    key: "ma", head: "མ", latin: "ma", nameTib: "མ་སྔོན་འཇུག", title: "The Prefix མ", count: "6 roots",
     intro: "Prefix མ turns the root letter into a nasalized sound. It attaches to six letters — mostly of the ka, ca, ta, tsa families — creating recognisable [m’-] onsets in speech.",
-    followedBy: "ཁ ག ང ཆ ཇ ཉ ཐ ད ན ཚ ཛ",
-    usage: "Nasalises the root. Feminine roots take a lower nasal tone (ma + go → [m'go]); very-feminine roots take a higher nasal tone (ma + no → [m'no]).",
-    accent: { hex: "#b91c1c" },
-    family: "nasal",
+    followedBy: "ཁ ག ང ཆ ཇ ཉ ཐ ད ན ཚ ཛ", usage: "Nasalises the root. Feminine roots take a lower nasal tone (ma + go → [m'go]); very-feminine roots take a higher nasal tone (ma + no → [m'no]).", accent: { hex: "#b91c1c" }, family: "nasal",
     combos: [
       { word: "མཁོ་", parts: "མ + ཁ + ོ", read: "m'kho", gloss: "needed", tone: "up", note: "nasalized" },
       { word: "མགོ་", parts: "མ + ག + ོ", read: "m'go", gloss: "head", tone: "down", note: "nasalized" },
@@ -120,17 +88,9 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "a",
-    head: "འ",
-    latin: "'a",
-    nameTib: "འ་སྔོན་འཇུག",
-    title: "The Prefix འ",
-    count: "10 roots",
+    key: "a", head: "འ", latin: "'a", nameTib: "འ་སྔོན་འཇུག", title: "The Prefix འ", count: "10 roots",
     intro: "Prefix འ (‘a-chung) attaches to ten root letters. Like མ, it produces a nasal onset — commonly transcribed as [ng’-]. Very common in verbs and future forms.",
-    followedBy: "ཁ ག ཆ ཇ ཐ ད ཕ བ ཚ ཛ",
-    usage: "Nasalises the root. Feminine roots deepen (’a + gu → [ng’gu]); very-feminine roots rise ([ng’no]). Root ba is a special case: ’a + ba stays [ba] in a low nasal tone.",
-    accent: { hex: "#0284c7" },
-    family: "nasal",
+    followedBy: "ཁ ག ཆ ཇ ཐ ད ཕ བ ཚ ཛ", usage: "Nasalises the root. Feminine roots deepen (’a + gu → [ng’gu]); very-feminine roots rise ([ng’no]). Root ba is a special case: ’a + ba stays [ba] in a low nasal tone.", accent: { hex: "#0284c7" }, family: "nasal",
     combos: [
       { word: "འཁུ་", parts: "འ + ཁ + ུ", read: "ng'khu", gloss: "to churn", tone: "up" },
       { word: "འགྲོ་", parts: "འ + ག + ྲ + ོ", read: "ng'dro", gloss: "to go", tone: "down" },
@@ -144,13 +104,7 @@ export const PREFIXES: Prefix[] = [
   },
 ];
 
-export interface Vocab {
-  tib: string;
-  translit: string;
-  en: string;
-  emoji: string;
-  prefix: PrefixKey;
-}
+export interface Vocab { tib: string; translit: string; en: string; emoji: string; prefix: PrefixKey; }
 
 export const VOCAB: Vocab[] = [
   { tib: "དགེ་བ་", translit: "ge-wa", en: "virtue", emoji: "🌱", prefix: "da" },
@@ -187,12 +141,80 @@ export const STEPS = [
   { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." }
 ];
 
+export function generatePrefixQuiz(prefixKey: PrefixKey): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+  const prefix = PREFIXES.find(p => p.key === prefixKey)!;
 
+  prefix.combos.forEach(c => {
+    // 1. Audio Spelling
+    const spellWrongs = shuffle(prefix.combos.filter(x => x.word !== c.word)).slice(0, 3);
+    qs.push({
+      isAudioType: true,
+      questionText: "Listen to the spelling and select the matching stack.",
+      answer: c.word,
+      audioString: `${c.word} spelling`,
+      audioTarget: c.word,
+      choices: shuffle([c, ...spellWrongs]).map(x => ({ tib: x.word, value: x.word }))
+    });
+
+    // 2. Reading
+    const romanWrongs = shuffle(Array.from(new Set(prefix.combos.map(x => x.read))).filter(r => r !== c.read)).slice(0, 3);
+    qs.push({
+      questionText: `How does ${c.word} read?`,
+      prominentTibetan: c.word,
+      answer: c.read,
+      audioString: c.word,
+      choices: shuffle([c.read, ...romanWrongs]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+
+    // 3. Meaning (if gloss exists)
+    if (c.gloss) {
+      const glossWrongs = shuffle(Array.from(new Set(prefix.combos.filter(x => x.gloss).map(x => x.gloss!))).filter(g => g !== c.gloss)).slice(0, 3);
+      if (glossWrongs.length > 0) {
+        qs.push({
+          questionText: `What does ${c.word} mean?`,
+          prominentTibetan: c.word,
+          answer: c.gloss,
+          choices: shuffle([c.gloss, ...glossWrongs]).map(x => ({ value: x, label: x }))
+        });
+      }
+    }
+  });
+
+  return shuffle(qs).slice(0, 10);
+}
+
+export function generateExceptionsQuiz(): QuizQuestion[] {
+  const exceptions = [
+    { word: "དབུ་", read: "wu", note: "ད + བ reads as [wa]" },
+    { word: "དབྱེ་", read: "ye", note: "ད + བ + ཡ reads as [ya]" },
+    { word: "དབྲ་", read: "dra", note: "ད + བ + ར reads as [dra]" },
+    { word: "འབུ་", read: "ng'bu", note: "འ + བ reads as low nasal [ba]" },
+    { word: "འབྲི་", read: "ng'dri", note: "འ + བ + ར reads as [dra]" },
+    { word: "གཡོ་", read: "yo", note: "ག + ཡ reads as high [ya]" }
+  ];
+  
+  const qs: QuizQuestion[] = [];
+  const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+
+  exceptions.forEach(e => {
+    const romanWrongs = shuffle(Array.from(new Set(exceptions.map(x => x.read))).filter(r => r !== e.read)).slice(0, 3);
+    qs.push({
+      questionText: `How does the exception ${e.word} read?`,
+      prominentTibetan: e.word,
+      answer: e.read,
+      audioString: e.word,
+      choices: shuffle([e.read, ...romanWrongs]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+  });
+
+  return shuffle(qs);
+}
 
 export function generateVocabQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   for (const v of VOCAB) {
-    // 🚨 BUG FIX: Filter out homophones so there are no duplicate readings/translations
     const pool = VOCAB.filter(x => x.tib !== v.tib && x.translit !== v.translit && x.en !== v.en).sort(() => 0.5 - Math.random());
     const wrongs: Vocab[] = [];
     const seenTranslit = new Set<string>([v.translit]);
@@ -223,40 +245,27 @@ export function generateVocabQuiz(): QuizQuestion[] {
 export function generateFinalQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-  
-  // 🚨 BUG FIX: Use a Set to ensure all generated wrong options are completely unique
   const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
 
   const ALL_COMBOS = PREFIXES.flatMap(p => p.combos.map(c => ({ ...c, prefKey: p.key, head: p.head, latin: p.latin, family: p.family })));
-  const GLOSSED_COMBOS = ALL_COMBOS.filter(c => !!c.gloss);
-
-
-
-  // 1. listenWordQs (take 3)
-  shuffle(VOCAB).slice(0, 3).forEach(v => {
+  
+  // Audio Spelling for Random Stacks
+  shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
     qs.push({
-      isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
-      choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+      isAudioType: true, questionText: "Listen to the spelling and select the matching stack.", answer: c.word, audioString: `${c.word} spelling`, audioTarget: c.word,
+      choices: shuffle([c.word, ...pickWrongs(ALL_COMBOS.map(x => x.word), c.word, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // 2. listenMeanQs (take 2)
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
+  // Vocab Listen -> Meaning
+  shuffle(VOCAB).slice(0, 3).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 3. readQs (take 4)
-  shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
-    qs.push({
-      questionText: `How is ${c.word} pronounced?`, prominentTibetan: c.word, answer: c.read, audioString: c.word,
-      choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
-    });
-  });
-
-  // 4. whichPrefixQs (take 3)
+  // Identify Prefix Logic
   shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
     qs.push({
       questionText: `Which prefix opens the syllable ${c.word}?`, prominentTibetan: c.word, answer: c.latin, audioString: c.word,
@@ -264,7 +273,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 5. rootQs (take 3)
+  // Root isolation
   shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
     const root = c.parts.split(' + ')[1] ?? c.parts;
     qs.push({
@@ -273,78 +282,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 6. toneQs (take 4)
-  shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
-    const answerLabel = TONE_META[c.tone as Tone].label;
-    const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
-    qs.push({
-      questionText: `What does the prefix do to the sound of ${c.word}?`, prominentTibetan: c.word, answer: answerLabel, audioString: c.word,
-      choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
-    });
-  });
-
-  // 7. familyQs (take 3)
-  shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-    const ansStr = c.family === "silent" ? "Silent — written only" : "Adds a nasal hum before the root";
-    const wrgStr = c.family === "silent" ? "Adds a nasal hum before the root" : "Silent — written only";
-    qs.push({
-      questionText: `Does the prefix in ${c.word} stay fully silent, or add a nasal onset in speech?`, prominentTibetan: c.word, answer: ansStr, audioString: c.word,
-      choices: shuffle([{ value: ansStr, label: ansStr }, { value: wrgStr, label: wrgStr }])
-    });
-  });
-
-  // 8. spellQs (take 3)
-  shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
-    qs.push({
-      questionText: `Which letters spell ${c.word}?`, prominentTibetan: c.word, answer: c.parts, audioString: c.word,
-      choices: shuffle([c.parts, ...pickWrongs(ALL_COMBOS.map(x => x.parts), c.parts, 3)]).map(x => ({ value: x, tib: x }))
-    });
-  });
-
-  // 9. glossQs (take 3)
-  shuffle(GLOSSED_COMBOS).slice(0, 3).forEach(c => {
-    const gloss = c.gloss || "";
-    qs.push({
-      questionText: `What does ${c.word} mean?`, prominentTibetan: c.word, answer: gloss, audioString: c.word,
-      choices: shuffle([gloss, ...pickWrongs(GLOSSED_COMBOS.map(x => x.gloss || ""), gloss, 3)]).map(x => ({ value: x, label: x }))
-    });
-  });
-
-  // 10. oddQs (take 2)
-  shuffle(PREFIXES).slice(0, 2).forEach(pref => {
-    const members = ALL_COMBOS.filter(c => c.prefKey === pref.key);
-    const oddOne = shuffle(ALL_COMBOS.filter(c => c.prefKey !== pref.key))[0];
-    qs.push({
-      questionText: `Which word does NOT use the prefix ${pref.head}?`, answer: oddOne.word,
-      choices: shuffle([...shuffle(members).slice(0, 3).map(m => m.word), oddOne.word]).map(x => ({ value: x, tib: x }))
-    });
-  });
-
-  // 11. vocabReadQs (take 3)
-  shuffle(VOCAB).slice(0, 3).forEach(v => {
-    qs.push({
-      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib,
-      choices: shuffle([v.translit, ...pickWrongs(VOCAB.map(x => x.translit), v.translit, 3)]).map(x => ({ value: x, label: x }))
-    });
-  });
-
-  // 12. vocabMeanQs (take 4)
-  shuffle(VOCAB).slice(0, 4).forEach(v => {
-    qs.push({
-      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
-      choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
-    });
-  });
-
-  // 13. vocabWordQs (take 2)
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
-    qs.push({
-      questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
-      choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x }))
-    });
-  });
-
-  // 14. ruleQs (take 4)
+  // Abstract Rules (No Audio)
   const allRules = [
     { q: "Which five letters can be prefixes?", a: "ག ད བ མ འ", w: ["ར ལ ས མ འ", "ག ད བ ས ང", "ཡ ར ལ ཝ འ"] },
     { q: "Where does a prefix sit?", a: "Before the root letter, on the same line", w: ["Above the root letter", "Below the root letter", "After the vowel mark"] },
@@ -356,7 +294,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   ];
   shuffle(allRules).slice(0, 4).forEach(r => {
     qs.push({
-      questionText: r.q, answer: r.a,
+      questionText: r.q, answer: r.a, noAudio: true,
       choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
     });
   });

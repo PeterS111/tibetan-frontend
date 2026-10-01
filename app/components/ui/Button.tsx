@@ -13,8 +13,9 @@ export function Button({
   className, 
   ...props 
 }: ButtonProps) {
-  // Buttons in the dashboard are extremely flat, sharp, and minimal
-  const baseClasses = "inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-none";
+  
+  // Buttons are now pill-shaped and tactile for a native mobile feel
+  const baseClasses = "inline-flex items-center justify-center gap-2 px-6 py-3.5 text-[15px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed rounded-full shadow-sm";
   
   
   const variants = {
