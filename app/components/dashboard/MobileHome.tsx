@@ -10,6 +10,7 @@ interface MobileHomeProps {
   wordsKnown: number;
   courseProgressPercent: number;
   activeStep: number;
+  isBrandNew: boolean;
 }
 
 export function MobileHome({ 
@@ -17,15 +18,11 @@ export function MobileHome({
   profile, 
   wordsKnown, 
   courseProgressPercent,
-  activeStep 
+  activeStep,
+  isBrandNew
 }: MobileHomeProps) {
   const streak = profile?.streak || 0;
-  
-  // FIX: Calculate if the lesson is completely untouched
-  const isBrandNew = activeStep === 0;
   const currentStepNumber = Math.min(activeStep + 1, nextModule.lesson_count || 1);
-  
-  // FIX: Use activeStep for the bar so it calculates at 0% when brand new
   const progressPercent = Math.round((activeStep / (nextModule.lesson_count || 1)) * 100);
 
   return (
@@ -34,11 +31,12 @@ export function MobileHome({
       {/* Top Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <div className="font-tibetan text-sm text-brand-dark mb-1 tracking-wider opacity-80">
+          {/* Made Tibetan font much larger (text-2xl instead of text-sm) */}
+          <div className="font-tibetan text-2xl text-brand-dark mb-2 tracking-wider opacity-90">
             བཀྲ་ཤིས་བདེ་ལེགས།
           </div>
           <h1 className="font-serif text-[32px] text-ink leading-tight">
-            Tashi Delek,<br />welcome back
+            Tashi Delek,<br />welcome {isBrandNew ? "to Loplao" : "back"}
           </h1>
         </div>
         
@@ -54,17 +52,16 @@ export function MobileHome({
         
         <div className="relative z-10">
           <div className="text-[9px] font-bold uppercase tracking-widest text-ink/70 mb-3">
-            Continue Learning · Beginner 1
+            {isBrandNew ? "Start Learning" : "Continue Learning"} · Beginner 1
           </div>
           
           <h2 className="font-serif text-2xl text-ink mb-1">
             {nextModule.title}
           </h2>
           <p className="text-sm text-ink/80 mb-5">
-            Step {currentStepNumber} of {nextModule.lesson_count} — {isBrandNew ? "Start learning" : "Jump back in"}
+            Step {currentStepNumber} of {nextModule.lesson_count} — {isBrandNew ? "Begin your journey" : "Jump back in"}
           </p>
 
-          {/* Mini Progress Bar */}
           <div className="w-full h-1.5 bg-ink/10 rounded-full mb-6 overflow-hidden">
             <div 
               className="h-full bg-ink rounded-full transition-all duration-500" 

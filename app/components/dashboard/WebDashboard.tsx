@@ -6,11 +6,20 @@ import { ArrowRight, Lock, CheckCircle2, Play } from "lucide-react";
 import { Badge } from "@/app/components/ui/Badge";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
 
-export function WebDashboard({ modules, nextModule, wordsKnown }: any) {
+
+
+export function WebDashboard({ modules, nextModule, wordsKnown, isBrandNew }: any) {
   const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-24">
+      
+      {/* 0. NEW: Top Greeting */}
+      <div className="flex flex-col items-center justify-center text-center mb-10 pt-4">
+        <div className="font-tibetan text-4xl text-brand-dark mb-3 opacity-90">བཀྲ་ཤིས་བདེ་ལེགས།</div>
+        <h1 className="text-3xl font-serif text-ink">Tashi Delek, welcome {isBrandNew ? "to Loplao" : "back"}</h1>
+      </div>
+
       {/* 1. Designer's Minimalist Stats */}
       <div className="border-y border-border-subtle py-8 mb-12 flex justify-center">
         <div className="flex flex-col items-center justify-center text-center px-4">
@@ -31,17 +40,18 @@ export function WebDashboard({ modules, nextModule, wordsKnown }: any) {
       <div className="bg-ink text-white p-8 md:p-10 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16 rounded-2xl">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3 flex items-center gap-3">
-            <span className="w-6 h-[1px] bg-brand"></span> Resume where you left off
+            <span className="w-6 h-[1px] bg-brand"></span> {isBrandNew ? "Start your journey" : "Resume where you left off"}
           </div>
           <h3 className="text-2xl md:text-3xl font-serif mb-2">{nextModule.title}</h3>
           <p className="text-sm text-slate-300 max-w-md opacity-90">{nextModule.description}</p>
         </div>
         <Link href={`/dashboard/lessons/${nextModule.module_id || 1}`} className="w-full md:w-auto shrink-0">
           <button className="w-full bg-brand hover:bg-brand-dark text-ink font-bold text-sm px-8 py-4 rounded-full transition-colors shadow-sm flex items-center justify-center gap-2">
-            Continue Learning <ArrowRight size={16} />
+            {isBrandNew ? "Start Learning" : "Continue Learning"} <ArrowRight size={16} />
           </button>
         </Link>
       </div>
+
 
       {/* 4. The Clean Module List (Syllabus) */}
       <div className="mb-16">

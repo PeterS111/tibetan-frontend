@@ -148,14 +148,20 @@ export default function UnifiedDashboard() {
     activeModuleId = Number(activeModule.module_id);
   }
 
+  
+  
   if (typeof window !== "undefined") {
     const savedStep = localStorage.getItem(`tibetan_mobile_lesson_${activeModuleId}_step`);
-    if (savedStep !== null) {
+    // FIX: Only trust the phone's memory if the database says we've actually made progress!
+    if (savedStep !== null && activeModule.progress > 0) {
       activeStep = parseInt(savedStep, 10);
     } else {
       activeStep = activeModule.progress || 0;
     }
   }
+
+  // Calculate if the user is completely new
+  const isBrandNew = activeModuleId === 1 && activeModule.progress === 0;
 
   if (isNative) {
     return (
@@ -165,9 +171,18 @@ export default function UnifiedDashboard() {
         wordsKnown={effectiveWordsKnown} 
         courseProgressPercent={courseProgressPercent}
         activeStep={activeStep}
+        isBrandNew={isBrandNew} // Pass to mobile
       />
     );
   }
 
-  return <WebDashboard modules={mergedModules} nextModule={activeModule} wordsKnown={effectiveWordsKnown} />;
+  return (
+    <WebDashboard 
+      modules={mergedModules} 
+      nextModule={activeModule} 
+      wordsKnown={effectiveWordsKnown} 
+      isBrandNew={isBrandNew} // Pass to web
+    />
+  );
+  
 }
