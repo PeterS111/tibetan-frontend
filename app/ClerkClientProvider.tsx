@@ -13,6 +13,8 @@ export default function ClerkClientProvider({ children }: { children: React.Reac
       publishableKey={clerkPubKey!}
       routerPush={(to) => router.push(to)}
       routerReplace={(to) => router.replace(to)}
+      signUpForceRedirectUrl="/onboarding"
+      signInFallbackRedirectUrl="/dashboard"
       appearance={{
         layout: {
           logoImageUrl: "/icon.png", 

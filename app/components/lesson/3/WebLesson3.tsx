@@ -174,7 +174,9 @@ export function WebLesson3() {
             </div>
           </StepContainer>
 
-          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+          
+		  
+		  <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <VocabGrid 
               items={VOCAB.map(v => {
                 const sup = SUPERS.find(s => s.key === v.sup)!;
@@ -186,7 +188,7 @@ export function WebLesson3() {
               playAudio={playAudio} playingItem={playingItem}
             />
             <div className="mt-10">
-              <QuizModule title="Vocabulary Mastery" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch isUnlockTest={true} onPass={() => saveWords(VOCAB.length, 2)} />
+              <QuizModule moduleId={3} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch isUnlockTest={true} onPass={() => saveWords(VOCAB.length, 2)} />
             </div>
           </StepContainer>
 
@@ -195,8 +197,9 @@ export function WebLesson3() {
           </StepContainer>
 
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)} isLast>
-            <QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: Subscripts." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} nextLessonPath="/dashboard/lessons/4" onPass={() => markComplete(4)} />
+            <QuizModule moduleId={3} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Subscripts." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} nextLessonPath="/dashboard/lessons/4" onPass={() => markComplete(4)} />
           </StepContainer>
+		  
 
         </div>
       </div>

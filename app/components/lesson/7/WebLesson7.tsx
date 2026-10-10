@@ -103,7 +103,8 @@ export function WebLesson7() {
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="p-0">
                <QuizModule 
-                 title="Begin the assessment" 
+                 moduleId={7}
+                 title="Capstone Assessment" 
                  intro="Fresh questions are drawn each attempt. Take your time — accuracy matters more than speed." 
                  questions={quizQuestions} 
                  playAudio={playAudio} 

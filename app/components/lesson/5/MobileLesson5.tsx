@@ -307,19 +307,19 @@ export function MobileLesson5() {
         );
 
       case 3: return renderPrefixGrid(0); // Ga
-      case 4: return <div className="pb-6"><QuizModule title="Mastery Check · Prefix Ga" questions={gaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 4: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ga" questions={gaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 5: return renderPrefixGrid(1); // Da
-      case 6: return <div className="pb-6"><QuizModule title="Mastery Check · Prefix Da" questions={daQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 6: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Da" questions={daQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 7: return renderPrefixGrid(2); // Ba
-      case 8: return <div className="pb-6"><QuizModule title="Mastery Check · Prefix Ba" questions={baQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 8: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ba" questions={baQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 9: return renderPrefixGrid(3); // Ma
-      case 10: return <div className="pb-6"><QuizModule title="Mastery Check · Prefix Ma" questions={maQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 10: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ma" questions={maQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
       
       case 11: return renderPrefixGrid(4); // 'A
-      case 12: return <div className="pb-6"><QuizModule title="Mastery Check · Prefix 'A" questions={aQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 12: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix 'A" questions={aQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 13: // Exceptions
         return (
@@ -362,7 +362,8 @@ export function MobileLesson5() {
           </div>
         );
 
-      case 14: return <div className="pb-6"><QuizModule title="Mastery Check · Exceptions" questions={exceptionsQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+case 14: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Exceptions" questions={exceptionsQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      
 
       case 15: // Vocab
         return (
@@ -384,11 +385,11 @@ export function MobileLesson5() {
           </div>
         );
 
-      case 16: return <div className="pb-6"><QuizModule title="Vocabulary Mastery" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
+      case 16: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
 
       case 17: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
 
-      case 18: return <div className="pb-6"><QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/6" onPass={() => markComplete(6)} /></div>;
+      case 18: return <div className="pb-6"><QuizModule moduleId={5} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/6" onPass={() => markComplete(6)} /></div>;
     }
   };
 

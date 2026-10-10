@@ -370,7 +370,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   const EXCEPTIONS = ALL_COMBOS.filter(c => !!c.note);
 
   // 1. Audio Spelling for Random Stacks (Replaces the "idiotic" visual questions)
-  shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
+  shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     qs.push({
       isAudioType: true, questionText: "Listen to the spelling and select the matching stack.", answer: c.stack, audioString: `${c.stack} spelling`, audioTarget: c.stack,
       choices: shuffle([c.stack, ...pickWrongs(ALL_COMBOS.map(x => x.stack), c.stack, 3)]).map(x => ({ value: x, tib: x }))
@@ -378,7 +378,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 2. Listen -> Word
-  shuffle(VOCAB).slice(0, 3).forEach(v => {
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
       isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
@@ -386,7 +386,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 3. Listen -> Meaning
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
+  shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
       isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
@@ -394,7 +394,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 4. Read -> Roman
-  shuffle(ALL_COMBOS).slice(0, 4).forEach(c => {
+  shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     qs.push({
       questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack, audioTarget: c.read,
       choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
@@ -402,7 +402,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 5. Identify Tone Change
-  shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
+  shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     const answerLabel = TONE_META[c.tone as Tone].label;
     const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
     qs.push({
@@ -412,7 +412,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 6. Identify Outlier
-  shuffle(SUBS).slice(0, 2).forEach(sup => {
+  shuffle(SUBS).slice(0, 3).forEach(sup => {
     const members = ALL_COMBOS.filter(c => c.subKey === sup.key);
     const oddOne = shuffle(ALL_COMBOS.filter(c => c.subKey !== sup.key))[0];
     qs.push({
@@ -422,7 +422,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 7. Exception Pronunciation
-  shuffle(EXCEPTIONS).slice(0, 3).forEach(c => {
+  shuffle(EXCEPTIONS).slice(0, 5).forEach(c => {
     qs.push({
       questionText: `In the Lhasa accent, ${c.stack} is an exception. How is it pronounced?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack,
       choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
@@ -430,7 +430,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 8. Vocab -> Meaning
-  shuffle(VOCAB).slice(0, 4).forEach(v => {
+  shuffle(VOCAB).slice(0, 6).forEach(v => {
     qs.push({
       questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
@@ -438,7 +438,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   });
 
   // 9. Meaning -> Vocab
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
       questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
@@ -454,7 +454,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     { q: "How many root letters take Ya-tak?", a: "7", w: ["4", "6", "12"] },
     { q: "In a three-part stack, what is the correct top-to-bottom order?", a: "Superscript, root letter, subscript", w: ["Root letter, superscript, subscript", "Subscript, root letter, superscript", "Superscript, subscript, root letter"] }
   ];
-  shuffle(allRules).slice(0, 3).forEach(r => {
+  shuffle(allRules).slice(0, 5).forEach(r => {
     qs.push({
       questionText: r.q, answer: r.a, noAudio: true,
       choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])

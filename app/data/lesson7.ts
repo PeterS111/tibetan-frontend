@@ -90,88 +90,96 @@ export const STEPS = [
   { id: "result", eyebrow: "Section 03", title: "Your result" },
 ];
 
+
 export function generateCapstoneQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
 
-  // 1. Letter recognition (6 Qs) - "read" triggers spoiler hide
-  shuffle(CONSONANTS).slice(0, 6).forEach(c => {
+  // 1. Letter recognition (10 Qs)
+  shuffle(CONSONANTS).slice(0, 10).forEach(c => {
     qs.push({
       questionText: "How does this letter read?",
       prominentTibetan: c.tib,
       answer: c.translit,
-      audioString: c.tib, // Audio plays safely AFTER selection
+      audioString: c.tib, 
+      audioTarget: c.tib,
       choices: shuffle([c.translit, ...pickWrongs(CONSONANTS.map(x => x.translit), c.translit, 3)]).map(x => ({ value: x, label: `[${x}]` }))
     });
   });
 
-  // 2. Tone & Gender (6 Qs) - "read" triggers spoiler hide
-  shuffle(CONSONANTS).slice(0, 6).forEach(c => {
+  // 2. Tone & Gender (10 Qs)
+  shuffle(CONSONANTS).slice(0, 10).forEach(c => {
     qs.push({
       questionText: "Read the letter and identify its tone class:",
       prominentTibetan: c.tib,
       answer: c.tone,
       audioString: c.tib,
+      audioTarget: c.tib,
       choices: shuffle([{ value: "High tone", label: "High tone" }, { value: "Low tone", label: "Low tone" }])
     });
   });
 
-  // 3. Vowels (6 Qs) - "read" triggers spoiler hide
-  shuffle(VOWELS).slice(0, 6).forEach(v => {
+  // 3. Vowels (8 Qs - max available)
+  shuffle(VOWELS).slice(0, 8).forEach(v => {
     qs.push({
       questionText: "Read the syllable and identify its vowel sound:",
       prominentTibetan: v.tib,
       answer: `[${v.read}]`,
       audioString: v.tib,
+      audioTarget: v.tib,
       choices: shuffle([`[${v.read}]`, ...pickWrongs(["[i]", "[u]", "[e]", "[o]"], `[${v.read}]`, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 4. Stacks / Root letter (6 Qs) - No spoiler hide needed (hearing the word doesn't reveal the root)
-  shuffle(ROOT_WORDS).slice(0, 6).forEach(r => {
+  // 4. Stacks / Root letter (10 Qs - max available)
+  shuffle(ROOT_WORDS).slice(0, 10).forEach(r => {
     qs.push({
       questionText: "Identify the root letter in this word:",
       prominentTibetan: r.word,
       answer: r.root,
       audioString: r.word,
+      audioTarget: r.word,
       choices: shuffle([r.root, ...pickWrongs(CONSONANTS.map(x => x.tib), r.root, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // 5. Prefix/Suffix rules (6 Qs) - "read" triggers spoiler hide
-  shuffle(TONE_RULES).slice(0, 6).forEach(t => {
+  // 5. Prefix/Suffix rules (8 Qs - max available)
+  shuffle(TONE_RULES).slice(0, 8).forEach(t => {
     qs.push({
       questionText: "Read the combination and identify its tone:",
       prominentTibetan: t.word,
       answer: t.tone,
       audioString: t.word,
+      audioTarget: t.word,
       choices: shuffle([{ value: "High tone", label: "High tone" }, { value: "Low tone", label: "Low tone" }])
     });
   });
 
-  // 6. Reading complete words (6 Qs) - "read" triggers spoiler hide
-  shuffle(READING_WORDS).slice(0, 6).forEach(w => {
+  // 6. Reading complete words (8 Qs - max available)
+  shuffle(READING_WORDS).slice(0, 8).forEach(w => {
     qs.push({
       questionText: "How does this word read?",
       prominentTibetan: w.word,
       answer: w.read,
       audioString: w.word,
+      audioTarget: w.word,
       choices: shuffle([w.read, ...pickWrongs(READING_WORDS.map(x => x.read), w.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
     });
   });
 
-  // 7. Word meaning (6 Qs) - Automatically hides prominent Tibetan
-  shuffle(VOCAB_WORDS).slice(0, 6).forEach(v => {
+  // 7. Word meaning (8 Qs - max available)
+  shuffle(VOCAB_WORDS).slice(0, 8).forEach(v => {
     qs.push({
       type: "vocab",
       questionText: `Which word means "${v.en}"?`,
       answer: v.tib,
       audioString: v.tib,
+      audioTarget: v.tib,
       choices: shuffle([v.tib, ...pickWrongs(VOCAB_WORDS.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // 8. Spelling & word building (6 Qs) - Uses spelling audio
+  // 8. Spelling & word building (6 Qs - max available)
   shuffle(SPELLING_WORDS).slice(0, 6).forEach(s => {
     const w1 = s.parts.split(" + ").reverse().join(" + ");
     const w2 = s.parts.replace("བཏགས", "ས").replace("ཡ", "ར"); 
@@ -185,27 +193,29 @@ export function generateCapstoneQuiz(): QuizQuestion[] {
     });
   });
 
-  // 9. Similar words (6 Qs) - "read" triggers spoiler hide
-  shuffle(READING_WORDS).slice(0, 6).forEach(w => {
+  // 9. Similar words (8 Qs - max available)
+  shuffle(READING_WORDS).slice(0, 8).forEach(w => {
     qs.push({
       questionText: `Read carefully: Which word correctly reads as [${w.read}]?`,
       answer: w.word,
       audioString: w.word,
+      audioTarget: w.word,
       choices: shuffle([w.word, ...pickWrongs(ROOT_WORDS.map(x => x.word), w.word, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // 10. Listening (6 Qs) - Audio is prominent
-  shuffle(VOCAB_WORDS).slice(0, 6).forEach(v => {
+  // 10. Listening (8 Qs - max available)
+  shuffle(VOCAB_WORDS).slice(0, 8).forEach(v => {
     qs.push({
       isAudioType: true,
       questionText: "Listen and select the matching word.",
       answer: v.tib,
       audioString: v.tib,
+      audioTarget: v.tib,
       choices: shuffle([v.tib, ...pickWrongs(VOCAB_WORDS.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // Returns exactly 60 Questions
-  return qs;
+  // Randomize the 84 questions and return exactly 60
+  return shuffle(qs).slice(0, 60);
 }

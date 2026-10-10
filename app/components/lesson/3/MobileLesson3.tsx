@@ -178,23 +178,25 @@ export function MobileLesson3() {
         );
 
       case 1: return renderSuperscriptGrid(0); // Ra-go
-      case 2: return (
+      
+	  
+	  case 2: return (
         <div className="pb-6">
-          <QuizModule title="Mastery Check · Ra-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("ra")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
+          <QuizModule moduleId={3} title="Mastery Check · Ra-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("ra")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
         </div>
       );
 
       case 3: return renderSuperscriptGrid(1); // La-go
       case 4: return (
         <div className="pb-6">
-          <QuizModule title="Mastery Check · La-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("la")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
+          <QuizModule moduleId={3} title="Mastery Check · La-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("la")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
         </div>
       );
 
       case 5: return renderSuperscriptGrid(2); // Sa-go
       case 6: return (
         <div className="pb-6">
-          <QuizModule title="Mastery Check · Sa-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("sa")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
+          <QuizModule moduleId={3} title="Mastery Check · Sa-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("sa")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
         </div>
       );
 
@@ -218,10 +220,12 @@ export function MobileLesson3() {
           </div>
         );
 
-      case 8:
+      
+	  
+	  case 8:
         return (
           <div className="pb-6">
-            <QuizModule title="Vocabulary Mastery" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} />
+            <QuizModule moduleId={3} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} />
           </div>
         );
 
@@ -235,9 +239,10 @@ export function MobileLesson3() {
       case 10:
         return (
           <div className="pb-6">
-            <QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: Subscripts." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/4" onPass={() => markComplete(4)} />
+            <QuizModule moduleId={3} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Subscripts." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/4" onPass={() => markComplete(4)} />
           </div>
         );
+	  
     }
   };
 

@@ -2,11 +2,27 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Flame, CheckCircle2 } from "lucide-react";
+import { Play, Flame } from "lucide-react";
 
-export function MobileHome({ nextModule, profile }: any) {
+interface MobileHomeProps {
+  nextModule: any;
+  profile: any;
+  wordsKnown: number;
+  courseProgressPercent: number;
+  activeStep: number;
+}
+
+export function MobileHome({ 
+  nextModule, 
+  profile, 
+  wordsKnown, 
+  courseProgressPercent,
+  activeStep 
+}: MobileHomeProps) {
   const streak = profile?.streak || 0;
-  
+  const currentStepNumber = Math.min(activeStep + 1, nextModule.lesson_count || 1);
+  const progressPercent = Math.max(Math.round((currentStepNumber / (nextModule.lesson_count || 1)) * 100), 5);
+
   return (
     <div className="px-5 pt-12 animate-in fade-in">
       
@@ -22,14 +38,13 @@ export function MobileHome({ nextModule, profile }: any) {
         </div>
         
         {/* Streak Pill */}
-        <div className="flex items-center gap-1.5 bg-brand-light text-brand-dark px-3 py-1.5 rounded-full font-bold text-sm shadow-sm border border-brand/20">
+        <div className="flex items-center gap-1.5 bg-brand-light text-brand-dark px-3.5 py-1.5 rounded-full font-bold text-sm shadow-sm border border-brand/20">
           <Flame size={16} fill="currentColor" /> {streak}
         </div>
       </div>
 
-      {/* Hero Resume Card (Gold) */}
+      {/* Hero Resume Card (Dynamic from Database) */}
       <div className="bg-brand rounded-[1.5rem] p-6 shadow-md mb-6 relative overflow-hidden">
-        {/* Subtle background decoration */}
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-dark/10 rounded-full blur-2xl"></div>
         
         <div className="relative z-10">
@@ -38,17 +53,17 @@ export function MobileHome({ nextModule, profile }: any) {
           </div>
           
           <h2 className="font-serif text-2xl text-ink mb-1">
-            {nextModule.title || "Unit 4 · Subscripts"}
+            {nextModule.title}
           </h2>
           <p className="text-sm text-ink/80 mb-5">
-            Step {nextModule.progress + 1} of {nextModule.lesson_count} — Jump back in
+            Step {currentStepNumber} of {nextModule.lesson_count} — Jump back in
           </p>
 
-          {/* Mini Progress Bar inside card */}
+          {/* Mini Progress Bar */}
           <div className="w-full h-1.5 bg-ink/10 rounded-full mb-6">
             <div 
-              className="h-full bg-ink rounded-full" 
-              style={{ width: `${Math.max((nextModule.progress / nextModule.lesson_count) * 100, 5)}%` }}
+              className="h-full bg-ink rounded-full transition-all duration-500" 
+              style={{ width: `${progressPercent}%` }}
             ></div>
           </div>
 
@@ -60,36 +75,15 @@ export function MobileHome({ nextModule, profile }: any) {
         </div>
       </div>
 
-      {/* 3 Stats Boxes */}
-      <div className="grid grid-cols-3 gap-3 mb-10">
-        <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
-          <div className="font-serif text-2xl text-ink mb-1">{streak}</div>
-          <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Day<br/>Streak</div>
+      {/* 2 Database-Connected Stats Boxes */}
+      <div className="grid grid-cols-2 gap-3 mb-10">
+        <div className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
+          <div className="font-serif text-3xl text-ink mb-1">{wordsKnown}</div>
+          <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Words<br/>Known</div>
         </div>
-        <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
-          <div className="font-serif text-2xl text-ink mb-1">30</div>
-          <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Letters</div>
-        </div>
-        <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
-          <div className="font-serif text-2xl text-ink mb-1">43%</div>
+        <div className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
+          <div className="font-serif text-3xl text-ink mb-1">{courseProgressPercent}%</div>
           <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Beginner<br/>1</div>
-        </div>
-      </div>
-
-      {/* Today's Plan Header */}
-      <div className="flex items-end justify-between mb-4 px-1">
-        <h3 className="font-serif text-2xl text-ink">Today's plan</h3>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">3 Tasks</span>
-      </div>
-
-      {/* Placeholder Task Card */}
-      <div className="bg-white rounded-[1.25rem] p-5 shadow-sm border border-border-subtle flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center border border-border-strong shrink-0">
-          <CheckCircle2 className="text-ink-muted" size={24} />
-        </div>
-        <div>
-          <div className="font-bold text-ink text-[15px]">Listen & select</div>
-          <div className="text-sm text-ink-muted">Daily review</div>
         </div>
       </div>
 

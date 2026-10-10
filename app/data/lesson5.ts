@@ -249,40 +249,82 @@ export function generateFinalQuiz(): QuizQuestion[] {
 
   const ALL_COMBOS = PREFIXES.flatMap(p => p.combos.map(c => ({ ...c, prefKey: p.key, head: p.head, latin: p.latin, family: p.family })));
   
-  // Audio Spelling for Random Stacks
-  shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
+  // 1. Audio Spelling for Random Stacks
+  shuffle(ALL_COMBOS).slice(0, 7).forEach(c => {
     qs.push({
       isAudioType: true, questionText: "Listen to the spelling and select the matching stack.", answer: c.word, audioString: `${c.word} spelling`, audioTarget: c.word,
       choices: shuffle([c.word, ...pickWrongs(ALL_COMBOS.map(x => x.word), c.word, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // Vocab Listen -> Meaning
-  shuffle(VOCAB).slice(0, 3).forEach(v => {
+  // 2. Listen -> Word
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
+    qs.push({
+      isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib, audioTarget: v.tib,
+      choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+    });
+  });
+
+  // 3. Vocab Listen -> Meaning
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
       isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // Identify Prefix Logic
-  shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
+  // 4. Read -> Roman
+  shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     qs.push({
-      questionText: `Which prefix opens the syllable ${c.word}?`, prominentTibetan: c.word, answer: c.latin, audioString: c.word,
+      questionText: `How does ${c.word} read?`, prominentTibetan: c.word, answer: c.read, audioString: c.word, audioTarget: c.read,
+      choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
+    });
+  });
+
+  // 5. Identify Prefix Logic
+  shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
+    qs.push({
+      questionText: `Which prefix opens the syllable ${c.word}?`, prominentTibetan: c.word, answer: c.latin, audioString: c.word, audioTarget: c.latin,
       choices: shuffle([c.latin, ...pickWrongs(PREFIXES.map(p => p.latin), c.latin, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // Root isolation
-  shuffle(ALL_COMBOS).slice(0, 3).forEach(c => {
+  // 6. Root isolation
+  shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
     const root = c.parts.split(' + ')[1] ?? c.parts;
     qs.push({
-      questionText: `Which letter is the root of ${c.word}?`, prominentTibetan: c.word, answer: root, audioString: c.word,
+      questionText: `Which letter is the root of ${c.word}?`, prominentTibetan: c.word, answer: root, audioString: c.word, audioTarget: root,
       choices: shuffle([root, ...pickWrongs(ALL_COMBOS.map(x => x.parts.split(' + ')[1] ?? x.parts), root, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // Abstract Rules (No Audio)
+  // 7. Identify Tone Change
+  shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
+    const answerLabel = TONE_META[c.tone as Tone].label;
+    const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
+    qs.push({
+      questionText: `What happens to the tone of the root letter in ${c.word}?`, prominentTibetan: c.word, answer: answerLabel, audioString: c.word, audioTarget: answerLabel,
+      choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 8. Vocab -> Meaning
+  shuffle(VOCAB).slice(0, 6).forEach(v => {
+    qs.push({
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
+      choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
+    });
+  });
+
+  // 9. Meaning -> Vocab
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
+    qs.push({
+      questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib, audioTarget: v.tib,
+      choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
+    });
+  });
+
+  // 10. Abstract Rules (No Audio)
   const allRules = [
     { q: "Which five letters can be prefixes?", a: "ག ད བ མ འ", w: ["ར ལ ས མ འ", "ག ད བ ས ང", "ཡ ར ལ ཝ འ"] },
     { q: "Where does a prefix sit?", a: "Before the root letter, on the same line", w: ["Above the root letter", "Below the root letter", "After the vowel mark"] },
@@ -292,12 +334,13 @@ export function generateFinalQuiz(): QuizQuestion[] {
     { q: "བཞི་ and གཞི་ sound alike. What tells them apart?", a: "Only the written prefix — the meaning differs", w: ["The tone of the root letter", "The vowel mark", "Nothing — they are the same word"] },
     { q: "What happens when the prefix ག precedes the root ཡ?", a: "It reads as a high-tone [yo]/[yu]", w: ["It reads as [gya]", "The ཡ becomes silent", "It reads as a low-tone [yo]"] }
   ];
-  shuffle(allRules).slice(0, 4).forEach(r => {
+  shuffle(allRules).slice(0, 6).forEach(r => {
     qs.push({
       questionText: r.q, answer: r.a, noAudio: true,
       choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
     });
   });
 
+  // 56 questions are generated, then cleanly sliced to 40.
   return shuffle(qs).slice(0, 40);
 }

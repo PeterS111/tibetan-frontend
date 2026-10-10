@@ -324,7 +324,8 @@ export function WebLesson4() {
             </div>
 
             <QuizModule		  
-              title="Vocabulary Mastery" 
+              moduleId={4}
+              title="Mastery Check · Vocabulary" 
               intro="Check your memory of the new subscript words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
               playAudio={playAudio} 
@@ -343,9 +344,12 @@ export function WebLesson4() {
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)} isLast>
+          
+		  
+		  <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)} isLast>
             <QuizModule 
-              title="Cumulative Assessment" 
+              moduleId={4}
+              title="Final Assessment" 
               intro="Test your recognition of all subscript variations combined. Score 80% or higher to unlock the next unit." 
               questions={quizQuestions} 
               playAudio={playAudio} 

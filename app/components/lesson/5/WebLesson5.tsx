@@ -319,13 +319,15 @@ export default function WebLesson5() {
             </div>
 
             <QuizModule
-              title="Vocabulary Mastery" 
+              moduleId={5}
+              title="Mastery Check · Vocabulary" 
               intro="Check your memory of the new prefix words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
             />
+			
           </StepContainer>
 
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
@@ -334,7 +336,8 @@ export default function WebLesson5() {
 
           <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
             <QuizModule 
-              title="Final Step Test" 
+              moduleId={5}
+              title="Final Assessment" 
               intro="Score 80% or higher to unlock the next step: Suffixes & Post-suffixes." 
               questions={quizQuestions} 
               playAudio={playAudio} 
@@ -345,6 +348,7 @@ export default function WebLesson5() {
               onPass={() => markComplete(6)} 
             />
           </StepContainer>
+		  
 
         </div>
       </div>

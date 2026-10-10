@@ -327,94 +327,91 @@ export function generateFinalQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
   
-  // 🚨 BUG FIX: Use a Set to ensure all generated wrong options are completely unique
   const pickWrongs = <T,>(arr: T[], correct: T, count: number) => shuffle(Array.from(new Set(arr)).filter((x) => x !== correct)).slice(0, count);
 
   const ALL_SUF_EXAMPLES = SUFFIXES.flatMap(s => s.examples.map(e => ({ ...e, sufKey: s.key, head: s.head, latin: s.latin, family: s.family, reads: s.reads })));
   const GLOSSED_EXAMPLES = ALL_SUF_EXAMPLES.filter(e => !!e.gloss);
 
-
-  // 1. listenWordQs (take 3)
-  shuffle(VOCAB).slice(0, 3).forEach(v => {
+  // 1. listenWordQs
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib,
+      isAudioType: true, questionText: "Listen and select the matching Tibetan word.", answer: v.tib, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
     });
   });
 
-  // 2. listenMeanQs (take 2)
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
+  // 2. listenMeanQs
+  shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib,
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 3. readQs (take 4)
-  shuffle(ALL_SUF_EXAMPLES).slice(0, 4).forEach(e => {
+  // 3. readQs
+  shuffle(ALL_SUF_EXAMPLES).slice(0, 5).forEach(e => {
     qs.push({
-      questionText: `How is ${e.word} pronounced?`, prominentTibetan: e.word, answer: e.read, audioString: e.word,
+      questionText: `How is ${e.word} pronounced?`, prominentTibetan: e.word, answer: e.read, audioString: e.word, audioTarget: e.read,
       choices: shuffle([e.read, ...pickWrongs(ALL_SUF_EXAMPLES.map(x => x.read), e.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
     });
   });
 
-  // 4. whichSuffixQs (take 3)
-  shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
+  // 4. whichSuffixQs
+  shuffle(ALL_SUF_EXAMPLES).slice(0, 4).forEach(e => {
     qs.push({
-      questionText: `Which suffix closes the syllable ${e.word}?`, prominentTibetan: e.word, answer: e.latin, audioString: e.word,
+      questionText: `Which suffix closes the syllable ${e.word}?`, prominentTibetan: e.word, answer: e.latin, audioString: e.word, audioTarget: e.latin,
       choices: shuffle([e.latin, ...pickWrongs(SUFFIXES.map(s => s.latin), e.latin, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 5. familyQs (take 3)
-  shuffle(ALL_SUF_EXAMPLES).slice(0, 3).forEach(e => {
+  // 5. familyQs
+  shuffle(ALL_SUF_EXAMPLES).slice(0, 4).forEach(e => {
     const answerLabel = FAMILY_META[e.family as Family].label;
     const wrongs = Object.keys(FAMILY_META).filter(k => k !== e.family).map(k => FAMILY_META[k as Family].label);
     qs.push({
-      questionText: `What does the suffix do at the end of ${e.word}?`, prominentTibetan: e.word, answer: answerLabel, audioString: e.word,
+      questionText: `What does the suffix do at the end of ${e.word}?`, prominentTibetan: e.word, answer: answerLabel, audioString: e.word, audioTarget: answerLabel,
       choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 6. soundOfSuffixQs (take 3)
-  shuffle(SUFFIXES).slice(0, 3).forEach(s => {
+  // 6. soundOfSuffixQs
+  shuffle(SUFFIXES).slice(0, 4).forEach(s => {
     qs.push({
-      questionText: `How does the suffix ${s.head} sound at the end of a syllable?`, prominentTibetan: s.head, answer: s.reads, audioString: s.head,
+      questionText: `How does the suffix ${s.head} sound at the end of a syllable?`, prominentTibetan: s.head, answer: s.reads, audioString: s.head, audioTarget: s.reads,
       choices: shuffle([s.reads, ...pickWrongs(SUFFIXES.map(x => x.reads), s.reads, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 7. suffixFamilyQs (take 3)
-  shuffle(SUFFIXES).slice(0, 3).forEach(s => {
+  // 7. suffixFamilyQs
+  shuffle(SUFFIXES).slice(0, 4).forEach(s => {
     const answerLabel = FAMILY_META[s.family as Family].label;
     const wrongs = Object.keys(FAMILY_META).filter(k => k !== s.family).map(k => FAMILY_META[k as Family].label);
     qs.push({
-      questionText: `Which group does the suffix ${s.head} belong to?`, prominentTibetan: s.head, answer: answerLabel, audioString: s.head,
+      questionText: `Which group does the suffix ${s.head} belong to?`, prominentTibetan: s.head, answer: answerLabel, audioString: s.head, audioTarget: answerLabel,
       choices: shuffle([answerLabel, ...pickWrongs(wrongs, answerLabel, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-
-// 8. glossQs (take 3)
-  shuffle(GLOSSED_EXAMPLES).slice(0, 3).forEach(e => {
+  // 8. glossQs
+  shuffle(GLOSSED_EXAMPLES).slice(0, 4).forEach(e => {
     const gloss = e.gloss || "";
     qs.push({
-      questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: gloss, audioString: e.word,
+      questionText: `What does ${e.word} mean?`, prominentTibetan: e.word, answer: gloss, audioString: e.word, audioTarget: gloss,
       choices: shuffle([gloss, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.gloss || ""), gloss, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 9. glossWordQs (take 2)
-  shuffle(GLOSSED_EXAMPLES).slice(0, 2).forEach(e => {
+  // 9. glossWordQs
+  shuffle(GLOSSED_EXAMPLES).slice(0, 4).forEach(e => {
     const gloss = e.gloss || "";
     qs.push({
-      questionText: `Which syllable means "${gloss}"?`, answer: e.word, audioString: e.word,
+      questionText: `Which syllable means "${gloss}"?`, answer: e.word, audioString: e.word, audioTarget: e.word,
       choices: shuffle([e.word, ...pickWrongs(GLOSSED_EXAMPLES.map(x => x.word), e.word, 3)]).map(x => ({ value: x, tib: x }))
     });
   });
 
-  // 10. oddQs (take 2)
-  shuffle(SUFFIXES.filter(s => s.examples.length >= 3)).slice(0, 2).forEach(suf => {
+  // 10. oddQs
+  shuffle(SUFFIXES.filter(s => s.examples.length >= 3)).slice(0, 3).forEach(suf => {
     const members = ALL_SUF_EXAMPLES.filter(e => e.sufKey === suf.key);
     const oddOne = shuffle(ALL_SUF_EXAMPLES.filter(e => e.sufKey !== suf.key))[0];
     qs.push({
@@ -423,35 +420,35 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 11. vocabReadQs (take 3)
-  shuffle(VOCAB).slice(0, 3).forEach(v => {
+  // 11. vocabReadQs
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
-      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.read, audioString: v.tib,
+      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.read, audioString: v.tib, audioTarget: v.read,
       choices: shuffle([v.read, ...pickWrongs(VOCAB.map(x => x.read), v.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
     });
   });
 
-  // 12. vocabMeanQs (take 4)
-  shuffle(VOCAB).slice(0, 4).forEach(v => {
+  // 12. vocabMeanQs
+  shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
-      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib,
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
 
-  // 13. vocabWordQs (take 2)
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
+  // 13. vocabWordQs
+  shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
-      questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib,
+      questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.tib, ...pickWrongs(VOCAB.map(x => x.tib), v.tib, 3)]).map(x => ({ value: x, tib: x })) 
     });
   });
 
-  // 14. vocabSuffixQs (take 2)
-  shuffle(VOCAB).slice(0, 2).forEach(v => {
+  // 14. vocabSuffixQs
+  shuffle(VOCAB).slice(0, 3).forEach(v => {
     const suffixName = SUFFIXES.find(s => s.key === v.suffix)?.latin || v.suffix;
     qs.push({
-      questionText: `Which suffix ends ${v.tib}?`, prominentTibetan: v.tib, answer: suffixName, audioString: v.tib,
+      questionText: `Which suffix ends ${v.tib}?`, prominentTibetan: v.tib, answer: suffixName, audioString: v.tib, audioTarget: suffixName,
       choices: shuffle([suffixName, ...pickWrongs(SUFFIXES.map(s => s.latin), suffixName, 3)]).map(x => {
          const s = SUFFIXES.find(suf => suf.latin === x);
          return { value: x, label: s ? `${s.head} ${s.latin}` : x };
@@ -459,7 +456,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 15. ruleQs (take 4)
+  // 15. ruleQs (noAudio added)
   const allRules = [
     { q: "How many letters can serve as suffixes?", a: "10", w: ["5", "8", "12"] },
     { q: "Where does a suffix sit in the syllable?", a: "After the root letter, closing the syllable", w: ["Before the root letter", "Beneath the root letter", "Above the root letter"] },
@@ -469,9 +466,9 @@ export function generateFinalQuiz(): QuizQuestion[] {
     { q: "How is the suffix ག heard in speech?", a: "As a light glottal closure — almost silent", w: ["As a clear hard [g]", "As a nasal [ng]", "It lengthens the vowel"] },
     { q: "How does the suffix ལ behave?", a: "It is largely silent, colouring the syllable toward [el]", w: ["It is pronounced as a strong [l]", "It nasalises the vowel", "It makes the syllable high tone"] }
   ];
-  shuffle(allRules).slice(0, 4).forEach(r => {
+  shuffle(allRules).slice(0, 5).forEach(r => {
     qs.push({
-      questionText: r.q, answer: r.a,
+      questionText: r.q, answer: r.a, noAudio: true,
       choices: shuffle([{ value: r.a, label: r.a }, ...r.w.map(w => ({ value: w, label: w }))])
     });
   });

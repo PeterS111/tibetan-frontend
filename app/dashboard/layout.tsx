@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react";
 
 import { useEffect, useState } from "react";
@@ -15,7 +15,8 @@ import { useTimeTracker } from "@/hooks/useTimeTracker";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const { user, isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
   
   const [profile, setProfile] = useState<any>(null);
@@ -28,6 +29,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useTimeTracker();
 
   useEffect(() => {
+    // 1. Auth Guard: If Clerk loaded and no user, kick to landing page
+    if (isLoaded && !isSignedIn) {
+      router.replace("/");
+      return;
+    }
+
+    // 2. Fetch Profile Data
     let isMounted = true;
     const fetchData = async () => {
       if (isLoaded && user) {
@@ -39,13 +47,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             headers: { Authorization: `Bearer ${token}` }
           });
           const data = await res.json();
-          if (isMounted && data.profile) setProfile(data.profile);
+          
+          if (isMounted && data.profile) {
+            setProfile(data.profile);
+            
+            // Check if they need to complete onboarding (only if they aren't already there)
+            if (!data.profile.learning_goals && pathname !== '/onboarding') {
+               router.replace('/onboarding');
+            }
+          }
         } catch(e) {}
       }
     };
     fetchData();
     return () => { isMounted = false; };
-  }, [user, isLoaded, getToken]);
+  }, [user, isLoaded, isSignedIn, getToken, router, pathname]);
 
   const libraryItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -76,15 +92,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="flex flex-col h-[100dvh] w-full max-w-[100vw] overflow-hidden bg-paper text-ink font-sans">
         
-        {/* Main Scrollable Content (No global top header on mobile, pages manage their own top) */}
+        {/* Main Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[100vw] bg-paper pb-28">
           {children}
         </main>
 
-        {/* Native Bottom Tab Bar matching the mockups */}
+        {/* Native Bottom Tab Bar */}
         <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-border-subtle pb-safe pt-3 px-4 flex justify-between shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-50 rounded-t-3xl">
           {mobileTabs.map((tab) => {
-            // Simplified active check for now
             const isActive = pathname === tab.href || (pathname.startsWith(tab.href) && tab.href !== "/dashboard");
             return (
               <Link 
@@ -92,11 +107,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={tab.href}
                 className="flex flex-col items-center justify-center gap-1.5 w-16 h-14 relative group mb-1"
               >
-                {/* Background pill for active state */}
                 {isActive && (
                   <div className="absolute inset-0 bg-brand/10 rounded-2xl -z-10 scale-110"></div>
                 )}
-                
                 <tab.icon 
                   size={24} 
                   strokeWidth={isActive ? 2.5 : 2} 
@@ -177,7 +190,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Web Mobile Fallback (Hidden on actual Native App) */} 
+      {/* Web Mobile Fallback */} 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -187,7 +200,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-ink-light"><X size={20}/></button>
             </div>
             <div className="flex-1 overflow-y-auto pt-4">
-               {/* Mobile Web Menu Items */}
                {[...libraryItems, ...moreItems].map((item) => (
                  <Link key={item.name} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-6 py-3 text-sm text-ink-light hover:bg-surface-muted transition-colors">
                     <item.icon size={16} className="text-ink-muted" />{item.name}

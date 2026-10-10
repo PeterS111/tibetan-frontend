@@ -92,7 +92,8 @@ export function MobileLesson7() {
         return (
           <div className="pb-6">
              <QuizModule 
-               title="Begin the assessment" 
+               moduleId={7}
+               title="Capstone Assessment" 
                intro="Fresh questions are drawn each attempt. Take your time — accuracy matters more than speed." 
                questions={quizQuestions} 
                playAudio={playAudio} 

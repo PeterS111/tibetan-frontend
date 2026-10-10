@@ -9,32 +9,31 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { WebDashboard } from "../components/dashboard/WebDashboard";
 import { MobileHome } from "../components/dashboard/MobileHome";
 
-// ... Keep your FALLBACK_MODULES definition ...
 const FALLBACK_MODULES = [
-  { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active", lesson_count: 8 },
-  { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked", lesson_count: 7 },
-  { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked", lesson_count: 5 },
-  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked", lesson_count: 6 },
-  { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked", lesson_count: 7 },
-  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked", lesson_count: 9 },
-  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked", lesson_count: 3 }
+  { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active", lesson_count: 8, mastery_scores: {} },
+  { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked", lesson_count: 7, mastery_scores: {} },
+  { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked", lesson_count: 5, mastery_scores: {} },
+  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked", lesson_count: 6, mastery_scores: {} },
+  { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked", lesson_count: 7, mastery_scores: {} },
+  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked", lesson_count: 9, mastery_scores: {} },
+  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked", lesson_count: 3, mastery_scores: {} }
 ];
 
 export default function UnifiedDashboard() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
-  const { isNative } = usePlatform(); // <-- THE MAGIC ROUTER
+  const { isNative } = usePlatform();
 
   const [profile, setProfile] = useState<any>(null);
   const [modules, setModules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // --- DATA FETCHING (The Shared Brain) ---
+  // --- DATA FETCHING ---
   useEffect(() => {
     let isMounted = true;
     const safetyTimer = setTimeout(() => {
       if (isMounted) { setModules(FALLBACK_MODULES); setLoading(false); }
-    }, 2000);
+    }, 5000);
 
     const fetchData = async () => {
       if (!isLoaded) return;
@@ -46,7 +45,7 @@ export default function UnifiedDashboard() {
         try {
           const token = await Promise.race([
             getToken(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Token timeout")), 1500))
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Token timeout")), 4500))
           ]);
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/progress?user_id=${user.id}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -74,15 +73,112 @@ export default function UnifiedDashboard() {
 
   if (loading) return <div className="flex items-center justify-center h-[60vh]"><Loader2 size={40} className="animate-spin text-brand" /></div>;
 
-  // Calculate logic once
   const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
-  const nextModule = visibleModules.find(m => m.status !== "completed") || visibleModules[visibleModules.length - 1] || FALLBACK_MODULES[0];
-  const wordsKnown = profile?.words_known || 0;
 
-  // --- RENDERING (The Different Bodies) ---
-  if (isNative) {
-    return <MobileHome nextModule={nextModule} profile={profile} />;
+  // --- CALCULATE WORDS KNOWN IDENTICAL TO PROGRESS PAGE ---
+  let totalWordsKnown = 0;
+
+  const mergedModules = visibleModules.map((m) => {
+    const modId = Number(m.module_id);
+    let serverScores: Record<string, any> = {};
+
+    if (typeof m.mastery_scores === "string") {
+      try { serverScores = JSON.parse(m.mastery_scores); } catch {}
+    } else if (m.mastery_scores && typeof m.mastery_scores === "object") {
+      serverScores = m.mastery_scores;
+    }
+
+    let localScores: Record<string, any> = {};
+    if (typeof window !== "undefined") {
+      try {
+        localScores = JSON.parse(localStorage.getItem(`tibetan_mastery_scores_mod_${modId}`) || "{}");
+      } catch {}
+    }
+
+    // Combine both sources, always choosing the highest score for each test
+    const combinedScores: Record<string, any> = { ...localScores };
+    for (const [title, sData] of Object.entries(serverScores)) {
+      const sScore = typeof sData === "object" && sData !== null ? (sData.score ?? 0) : Number(sData) || 0;
+      const lData = combinedScores[title];
+      const lScore = typeof lData === "object" && lData !== null ? (lData.score ?? -1) : Number(lData) || -1;
+      
+      if (sScore >= lScore) {
+        combinedScores[title] = sData;
+      }
+    }
+
+    // Extract ONLY this lesson's own highest vocabulary score
+    let lessonVocabScore = 0;
+    if (typeof window !== "undefined") {
+      const directLocal = parseInt(localStorage.getItem(`tibetan_vocab_score_mod_${modId}`) || "0", 10);
+      if (!isNaN(directLocal) && directLocal > lessonVocabScore) lessonVocabScore = directLocal;
+    }
+
+    const vocabEntry = Object.entries(combinedScores).find(([title]) =>
+      title.toLowerCase().includes("vocabulary")
+    );
+    if (vocabEntry) {
+      const [, vData]: any = vocabEntry;
+      const sc = typeof vData === "object" && vData !== null ? (vData.score ?? 0) : Number(vData) || 0;
+      if (sc > lessonVocabScore) lessonVocabScore = sc;
+    }
+
+    totalWordsKnown += lessonVocabScore;
+
+    return {
+      ...m,
+      mastery_scores: combinedScores
+    };
+  });
+
+  // Words known matches the Progress page calculation exactly
+  const effectiveWordsKnown = totalWordsKnown > 0 ? totalWordsKnown : (profile?.words_known || 0);
+
+  // Calculate course completion percentage
+  const totalCourseSteps = mergedModules.reduce((sum, m) => sum + (Number(m.lesson_count) || 1), 0);
+  const completedCourseSteps = mergedModules.reduce((sum, m) => sum + Math.min(Number(m.progress) || 0, Number(m.lesson_count) || 1), 0);
+  const courseProgressPercent = totalCourseSteps > 0 ? Math.round((completedCourseSteps / totalCourseSteps) * 100) : 0;
+
+  // Determine active module and step to resume
+  let activeModuleId = 1;
+  let activeStep = 0;
+
+  if (typeof window !== "undefined") {
+    const savedLastModule = localStorage.getItem("tibetan_last_active_lesson");
+    if (savedLastModule) {
+      activeModuleId = parseInt(savedLastModule, 10);
+    }
   }
 
-  return <WebDashboard modules={visibleModules} nextModule={nextModule} wordsKnown={wordsKnown} />;
+  let activeModule = mergedModules.find(m => Number(m.module_id) === activeModuleId);
+  if (!activeModule || (activeModule.progress >= activeModule.lesson_count && activeModule.status === "completed")) {
+    activeModule = mergedModules.find(m => m.status !== "completed" && m.progress < m.lesson_count) 
+      || mergedModules[mergedModules.length - 1] 
+      || FALLBACK_MODULES[0];
+    activeModuleId = Number(activeModule.module_id);
+  }
+
+  if (typeof window !== "undefined") {
+    const savedStep = localStorage.getItem(`tibetan_mobile_lesson_${activeModuleId}_step`);
+    if (savedStep !== null) {
+      activeStep = parseInt(savedStep, 10);
+    } else {
+      activeStep = activeModule.progress || 0;
+    }
+  }
+
+  // --- RENDERING ---
+  if (isNative) {
+    return (
+      <MobileHome 
+        nextModule={activeModule} 
+        profile={profile} 
+        wordsKnown={effectiveWordsKnown} 
+        courseProgressPercent={courseProgressPercent}
+        activeStep={activeStep}
+      />
+    );
+  }
+
+  return <WebDashboard modules={mergedModules} nextModule={activeModule} wordsKnown={effectiveWordsKnown} />;
 }

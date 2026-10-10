@@ -200,16 +200,16 @@ export function MobileLesson4() {
         );
 
       case 1: return renderSubscriptGrid(0); // Ya-tak
-      case 2: return <div className="pb-6"><QuizModule title="Mastery Check · Ya-tak" questions={yaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 2: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ya-tak" questions={yaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 3: return renderSubscriptGrid(1); // Ra-tak
-      case 4: return <div className="pb-6"><QuizModule title="Mastery Check · Ra-tak" questions={raQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 4: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ra-tak" questions={raQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 5: return renderSubscriptGrid(2); // La-tak
-      case 6: return <div className="pb-6"><QuizModule title="Mastery Check · La-tak" questions={laQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 6: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · La-tak" questions={laQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 7: return renderSubscriptGrid(3); // Wa-zur
-      case 8: return <div className="pb-6"><QuizModule title="Mastery Check · Wa-zur" questions={waQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 8: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Wa-zur" questions={waQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 9: // Triple Stacks
         return (
@@ -242,7 +242,7 @@ export function MobileLesson4() {
           </div>
         );
 
-      case 10: return <div className="pb-6"><QuizModule title="Mastery Check · Triple Stacks" questions={tripleQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 10: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Triple Stacks" questions={tripleQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 11: // Vocab
         return (
@@ -264,11 +264,11 @@ export function MobileLesson4() {
           </div>
         );
 
-      case 12: return <div className="pb-6"><QuizModule title="Vocabulary Mastery" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
+      case 12: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
 
       case 13: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
 
-      case 14: return <div className="pb-6"><QuizModule title="Final Step Test" intro="Score 80% or higher to unlock the next step: Prefixes." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/5" onPass={() => markComplete(5)} /></div>;
+      case 14: return <div className="pb-6"><QuizModule moduleId={4} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Prefixes." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/5" onPass={() => markComplete(5)} /></div>;
     }
   };
 

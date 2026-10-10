@@ -448,8 +448,10 @@ export function WebLesson6() {
                 playingItem={playingItem}
               />
             </div>
-            <QuizModule
-              title="Vocabulary Mastery Check" 
+            
+			<QuizModule
+              moduleId={6}
+              title="Mastery Check · Vocabulary" 
               intro="Check your memory of the new suffix words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
             />
@@ -461,7 +463,8 @@ export function WebLesson6() {
 
           <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
             <QuizModule 
-              title="Final Step Test" intro="Score 80% or higher to unlock the next step: Capstone." 
+              moduleId={6}
+              title="Final Assessment" intro="Score 80% or higher to unlock the next step: Capstone." 
               questions={quizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
               isUnlockTest={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(7)} 
             />
