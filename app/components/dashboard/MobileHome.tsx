@@ -20,8 +20,13 @@ export function MobileHome({
   activeStep 
 }: MobileHomeProps) {
   const streak = profile?.streak || 0;
+  
+  // FIX: Calculate if the lesson is completely untouched
+  const isBrandNew = activeStep === 0;
   const currentStepNumber = Math.min(activeStep + 1, nextModule.lesson_count || 1);
-  const progressPercent = Math.max(Math.round((currentStepNumber / (nextModule.lesson_count || 1)) * 100), 5);
+  
+  // FIX: Use activeStep for the bar so it calculates at 0% when brand new
+  const progressPercent = Math.round((activeStep / (nextModule.lesson_count || 1)) * 100);
 
   return (
     <div className="px-5 pt-12 animate-in fade-in">
@@ -43,7 +48,7 @@ export function MobileHome({
         </div>
       </div>
 
-      {/* Hero Resume Card (Dynamic from Database) */}
+      {/* Hero Resume Card */}
       <div className="bg-brand rounded-[1.5rem] p-6 shadow-md mb-6 relative overflow-hidden">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-dark/10 rounded-full blur-2xl"></div>
         
@@ -56,11 +61,11 @@ export function MobileHome({
             {nextModule.title}
           </h2>
           <p className="text-sm text-ink/80 mb-5">
-            Step {currentStepNumber} of {nextModule.lesson_count} — Jump back in
+            Step {currentStepNumber} of {nextModule.lesson_count} — {isBrandNew ? "Start learning" : "Jump back in"}
           </p>
 
           {/* Mini Progress Bar */}
-          <div className="w-full h-1.5 bg-ink/10 rounded-full mb-6">
+          <div className="w-full h-1.5 bg-ink/10 rounded-full mb-6 overflow-hidden">
             <div 
               className="h-full bg-ink rounded-full transition-all duration-500" 
               style={{ width: `${progressPercent}%` }}
@@ -69,13 +74,13 @@ export function MobileHome({
 
           <Link href={`/dashboard/lessons/${nextModule.module_id || 1}`}>
             <button className="w-full bg-ink text-white hover:bg-ink-light font-bold py-3.5 rounded-full flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95">
-              <Play size={18} fill="currentColor" /> Resume lesson
+              <Play size={18} fill="currentColor" /> {isBrandNew ? "Start lesson" : "Resume lesson"}
             </button>
           </Link>
         </div>
       </div>
 
-      {/* 2 Database-Connected Stats Boxes */}
+      {/* Stats Boxes */}
       <div className="grid grid-cols-2 gap-3 mb-10">
         <div className="bg-white rounded-2xl p-5 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
           <div className="font-serif text-3xl text-ink mb-1">{wordsKnown}</div>

@@ -40,9 +40,7 @@ export function MobileLessons({ modules }: any) {
         <button className="bg-[#8C2A21] text-white px-5 py-2.5 rounded-full text-[13px] font-bold shadow-sm">
           Beginner 1
         </button>
-        <button className="bg-surface-muted text-ink-muted px-5 py-2.5 rounded-full text-[13px] font-bold border border-border-subtle opacity-70 cursor-not-allowed">
-          Beginner 2 · soon
-        </button>
+        
       </div>
 
       {/* Module List */}

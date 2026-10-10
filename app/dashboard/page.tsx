@@ -28,7 +28,6 @@ export default function UnifiedDashboard() {
   const [modules, setModules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // --- DATA FETCHING ---
   useEffect(() => {
     let isMounted = true;
     const safetyTimer = setTimeout(() => {
@@ -75,7 +74,6 @@ export default function UnifiedDashboard() {
 
   const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
 
-  // --- CALCULATE WORDS KNOWN IDENTICAL TO PROGRESS PAGE ---
   let totalWordsKnown = 0;
 
   const mergedModules = visibleModules.map((m) => {
@@ -90,56 +88,40 @@ export default function UnifiedDashboard() {
 
     let localScores: Record<string, any> = {};
     if (typeof window !== "undefined") {
-      try {
-        localScores = JSON.parse(localStorage.getItem(`tibetan_mastery_scores_mod_${modId}`) || "{}");
-      } catch {}
+      try { localScores = JSON.parse(localStorage.getItem(`tibetan_mastery_scores_mod_${modId}`) || "{}"); } catch {}
     }
 
-    // Combine both sources, always choosing the highest score for each test
     const combinedScores: Record<string, any> = { ...localScores };
     for (const [title, sData] of Object.entries(serverScores)) {
       const sScore = typeof sData === "object" && sData !== null ? (sData.score ?? 0) : Number(sData) || 0;
       const lData = combinedScores[title];
       const lScore = typeof lData === "object" && lData !== null ? (lData.score ?? -1) : Number(lData) || -1;
-      
-      if (sScore >= lScore) {
-        combinedScores[title] = sData;
-      }
+      if (sScore >= lScore) combinedScores[title] = sData;
     }
 
-    // Extract ONLY this lesson's own highest vocabulary score
     let lessonVocabScore = 0;
     if (typeof window !== "undefined") {
       const directLocal = parseInt(localStorage.getItem(`tibetan_vocab_score_mod_${modId}`) || "0", 10);
       if (!isNaN(directLocal) && directLocal > lessonVocabScore) lessonVocabScore = directLocal;
     }
 
-    const vocabEntry = Object.entries(combinedScores).find(([title]) =>
-      title.toLowerCase().includes("vocabulary")
-    );
+    const vocabEntry = Object.entries(combinedScores).find(([title]) => title.toLowerCase().includes("vocabulary"));
     if (vocabEntry) {
       const [, vData]: any = vocabEntry;
       const sc = typeof vData === "object" && vData !== null ? (vData.score ?? 0) : Number(vData) || 0;
       if (sc > lessonVocabScore) lessonVocabScore = sc;
     }
-
     totalWordsKnown += lessonVocabScore;
 
-    return {
-      ...m,
-      mastery_scores: combinedScores
-    };
+    return { ...m, mastery_scores: combinedScores };
   });
 
-  // Words known matches the Progress page calculation exactly
   const effectiveWordsKnown = totalWordsKnown > 0 ? totalWordsKnown : (profile?.words_known || 0);
 
-  // Calculate course completion percentage
   const totalCourseSteps = mergedModules.reduce((sum, m) => sum + (Number(m.lesson_count) || 1), 0);
   const completedCourseSteps = mergedModules.reduce((sum, m) => sum + Math.min(Number(m.progress) || 0, Number(m.lesson_count) || 1), 0);
   const courseProgressPercent = totalCourseSteps > 0 ? Math.round((completedCourseSteps / totalCourseSteps) * 100) : 0;
 
-  // Determine active module and step to resume
   let activeModuleId = 1;
   let activeStep = 0;
 
@@ -151,6 +133,14 @@ export default function UnifiedDashboard() {
   }
 
   let activeModule = mergedModules.find(m => Number(m.module_id) === activeModuleId);
+  
+  // FIX: Safety check! If the phone remembers Module 2+, but the user hasn't even started Module 1, force them to Module 1!
+  const module1 = mergedModules.find(m => Number(m.module_id) === 1);
+  if (activeModuleId !== 1 && module1 && module1.progress === 0 && module1.status !== "completed") {
+      activeModule = module1;
+      activeModuleId = 1;
+  }
+
   if (!activeModule || (activeModule.progress >= activeModule.lesson_count && activeModule.status === "completed")) {
     activeModule = mergedModules.find(m => m.status !== "completed" && m.progress < m.lesson_count) 
       || mergedModules[mergedModules.length - 1] 
@@ -167,7 +157,6 @@ export default function UnifiedDashboard() {
     }
   }
 
-  // --- RENDERING ---
   if (isNative) {
     return (
       <MobileHome 

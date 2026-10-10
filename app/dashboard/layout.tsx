@@ -1,8 +1,9 @@
+// app/dashboard/layout.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { UserButton, useUser, useAuth, SignOutButton } from "@clerk/clerk-react";
+import { UserButton, useUser, useAuth, useClerk } from "@clerk/clerk-react";
 
 import { useEffect, useState } from "react";
 import { 
@@ -18,6 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const { user, isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
+  const { signOut } = useClerk();
   
   const [profile, setProfile] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -28,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Track time silently in the background
   useTimeTracker();
 
+  // AUTH GUARD & DATA FETCH
   useEffect(() => {
     // 1. Auth Guard: If Clerk loaded and no user, kick to landing page
     if (isLoaded && !isSignedIn) {
@@ -62,6 +65,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     fetchData();
     return () => { isMounted = false; };
   }, [user, isLoaded, isSignedIn, getToken, router, pathname]);
+
+  const handleSignOut = () => {
+    if (typeof window !== "undefined") {
+      localStorage.clear(); // Wipes device memory completely to prevent bleeding progress
+    }
+    signOut({ redirectUrl: "/" });
+  };
 
   const libraryItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -166,7 +176,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               );
             })}
             <div className="pt-4 mt-4 px-6 border-t border-border-subtle mx-4">
-              <SignOutButton><button className="flex items-center gap-3 py-2 text-sm text-ink-light hover:text-ink transition-colors w-full text-left"><LogOut size={16} strokeWidth={1.5} className="text-ink-muted" />Sign Out</button></SignOutButton>
+              <button onClick={handleSignOut} className="flex items-center gap-3 py-2 text-sm text-ink-light hover:text-ink transition-colors w-full text-left">
+                <LogOut size={16} strokeWidth={1.5} className="text-ink-muted" />Sign Out
+              </button>
             </div>
           </nav>
         </div>
@@ -206,7 +218,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                  </Link>
                ))}
                <div className="px-6 py-3 mt-4 border-t border-border-subtle">
-                  <SignOutButton><button className="flex items-center gap-3 text-sm text-ink-light"><LogOut size={16} className="text-ink-muted" /> Sign Out</button></SignOutButton>
+                  <button onClick={handleSignOut} className="flex items-center gap-3 text-sm text-ink-light w-full text-left">
+                    <LogOut size={16} className="text-ink-muted" /> Sign Out
+                  </button>
                </div>
             </div>
           </div>
