@@ -134,10 +134,11 @@ export const VOCAB: Vocab[] = [
 ];
 
 export const STEPS = [
-  { id: "intro", eyebrow: "Step 01", title: "What is a superscript?", desc: "How superscripts stack over a root letter." },
-  { id: "family", eyebrow: "Step 02", title: "Meet the three superscripts", desc: "Study each superscript with its root combinations." },
-  { id: "vocab", eyebrow: "Step 03", title: "Vocabulary built from superscripts", desc: "Real words using stacked letters." },
-  { id: "practice", eyebrow: "Step 04", title: "Practice & exercises", desc: "Flashcards, quiz, and matching drills." },
+  { id: "syllabus", eyebrow: "Step 01", title: "What you'll learn", desc: "Syllabus overview." },
+  { id: "intro", eyebrow: "Step 02", title: "What is a superscript?", desc: "How superscripts stack over a root letter." },
+  { id: "family", eyebrow: "Step 03", title: "Meet the three superscripts", desc: "Study each superscript with its root combinations." },
+  { id: "vocab", eyebrow: "Step 04", title: "Vocabulary built from superscripts", desc: "Read and hear real words using stacked letters." },
+  { id: "practice", eyebrow: "Step 05", title: "Practice & exercises", desc: "Flashcards, quiz, and matching drills." },
   { id: "complete", eyebrow: "Final step", title: "Lesson complete", desc: "Take the final test to unlock the next lesson." }
 ];
 

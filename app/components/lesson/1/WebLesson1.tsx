@@ -1,10 +1,10 @@
 // app/components/lesson/1/WebLesson1.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { 
-  ChevronRight, ChevronLeft, Sparkles, Layers, CheckCircle2, 
+  ChevronRight, ChevronLeft, Sparkles, CheckCircle2, 
   Moon, Sun, Volume2, Loader2, ArrowRight
 } from "lucide-react";
 
@@ -32,18 +32,29 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
+import { InstructionModal } from "@/app/components/ui/InstructionModal";
 
 export function WebLesson1() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
-  
   const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ c: Consonant, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Tone>("all");
   const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
-  
   const [isBypassing, setIsBypassing] = useState(false);
+  
+  // Auto-Trigger Modal State
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
+
+  useEffect(() => {
+    // Pop up automatically when they open Step 1 (The Alphabet)
+    if (expandedStep === 1 && !hasSeenInstructions) {
+      setShowInstructions(true);
+      setHasSeenInstructions(true);
+    }
+  }, [expandedStep, hasSeenInstructions]);
 
   const filtered = useMemo(() => (filter === "all" ? CONSONANTS : CONSONANTS.filter((c) => c.tone === filter)), [filter]);
 
@@ -94,7 +105,7 @@ export function WebLesson1() {
 
         {/* Hero Section */}
         <Card className="mb-8 p-0 overflow-hidden shadow-sm border border-border-subtle">
-          <div className="w-full h-56 sm:h-72 bg-surface-muted overflow-hidden relative">
+          <div className="w-full h-72 sm:h-96 md:h-[400px] bg-surface-muted overflow-hidden relative">
             <img 
               src="/loplao-hero-scene.jpg" 
               alt="Himalayan Monastery Scene" 
@@ -104,11 +115,12 @@ export function WebLesson1() {
 
           <div className="p-6 md:p-10 grid gap-6 md:grid-cols-[1fr,auto] md:items-end">
             <div>
-              <div className="text-eyebrow text-brand-dark mb-2">Step 01 · Foundations</div>
+              <div className="text-eyebrow text-brand-dark mb-2">Lesson 01 · Foundations</div>
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">
-                The 30 Tibetan Consonants
+                The 30 Consonants
               </h1>
-              <p className="mt-1 font-serif text-2xl text-ink-light italic tibetan">གསལ་བྱེད་སུམ་ཅུ།</p>
+              <p className="mt-2 font-serif text-3xl text-ink-light italic tibetan">གསལ་བྱེད་སུམ་ཅུ།</p>
+		
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
                 The Tibetan alphabet is built on thirty root letters — the foundation of every word you
                 will read, write, and speak. Move through the lesson one step at a time; every section
@@ -169,22 +181,17 @@ export function WebLesson1() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-2xl p-6 sm:p-7 border border-border-strong shadow-sm">
-                <h3 className="font-serif text-2xl font-bold text-ink mb-6">How to use this app</h3>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm"><Sparkles size={18} /></div>
-                    <p className="text-[14px] leading-relaxed text-ink-light pt-1 font-medium">Tap any letter card to hear its sound and see its details.</p>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm"><Layers size={18} /></div>
-                    <p className="text-[14px] leading-relaxed text-ink-light pt-1 font-medium">Steps unlock as you continue, but you can peek ahead.</p>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm"><CheckCircle2 size={18} /></div>
-                    <p className="text-[14px] leading-relaxed text-ink-light pt-1 font-medium">Completed steps are marked and stay open for review.</p>
-                  </div>
+              <div className="bg-brand-light rounded-2xl p-6 sm:p-7 border border-brand/20 shadow-sm flex flex-col justify-center items-start">
+                <div className="w-12 h-12 rounded-full bg-brand text-ink flex items-center justify-center mb-4 shadow-sm">
+                  <Sparkles size={20} />
                 </div>
+                <h3 className="font-serif text-2xl font-bold text-ink mb-2">App Guide</h3>
+                <p className="text-[15px] text-ink/80 mb-6 leading-relaxed">
+                  Learn how to interact with flashcards, pronunciation guides, and progression locks.
+                </p>
+                <Button onClick={() => setShowInstructions(true)} variant="secondary" className="w-full">
+                  How to use this app
+                </Button>
               </div>
             </div>
           </StepContainer>
@@ -262,7 +269,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Tone - REFACTORED FOR WEB (Horizontal Splits in Unified Box) */}
+          {/* Tone */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm rounded-2xl flex flex-col divide-y divide-border-subtle">
               {(Object.keys(TONE_META) as Tone[]).map((t) => {
@@ -296,7 +303,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Roots - REFACTORED FOR WEB */}
+          {/* Roots */}
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <p className="mb-8 max-w-3xl text-[15px] text-ink-light leading-relaxed">
               Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> — seed syllables that anchor a whole tone family.
@@ -354,7 +361,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Gender - REFACTORED FOR WEB */}
+          {/* Gender */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm rounded-2xl flex flex-col divide-y divide-border-subtle">
               {(Object.keys(GENDER_META) as Gender[]).map((g) => {
@@ -457,6 +464,8 @@ export function WebLesson1() {
           </Link>
         </div>
       </div>
+
+      <InstructionModal isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
     </div>
   );
 }

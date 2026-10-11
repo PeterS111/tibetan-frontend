@@ -1,12 +1,11 @@
 // app/components/lesson/2/MobileLesson2.tsx
 "use client";
 
-import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
-  Loader2, Volume2, Sparkles, Layers, CheckCircle2, 
+  Loader2, Volume2, Sparkles, CheckCircle2, 
   ArrowRight, ArrowUp, ArrowDown, Info 
 } from "lucide-react";
 
@@ -15,7 +14,6 @@ import { useLessonProgress } from "@/hooks/useLessonProgress";
 import { 
   VOWELS, 
   VOCAB, 
-  STEPS, 
   POSITION_META, 
   generateSpellingQuiz, 
   generateFinalQuiz, 
@@ -26,6 +24,8 @@ import {
 import { MobileStepPlayer } from "../MobileStepPlayer";
 import QuizModule from "@/app/components/QuizModule";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
+import { InstructionModal } from "@/app/components/ui/InstructionModal";
+import { MARK_CONFIG, SpellingFormula } from "@/app/components/ui/SpellingFormula";
 
 export function MobileLesson2() {
   const router = useRouter();
@@ -33,9 +33,10 @@ export function MobileLesson2() {
   const { getToken } = useAuth();
   
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { markComplete, completed } = useLessonProgress(STEPS.length);
-
-  const totalSteps = 12; 
+  
+  // Total steps updated for new structure
+  const totalSteps = 11; 
+  const { markComplete, completed } = useLessonProgress(totalSteps);
   const MODULE_ID = 2;
 
   // Initialize from saved step so "Resume lesson" opens at the exact point
@@ -51,9 +52,19 @@ export function MobileLesson2() {
   });
   
   const [selectedVowel, setSelectedVowel] = useState<Vowel | null>(null);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
 
-  // Steps 0, 1, 2, and 3 map to Web Step 0
-  const webStepMap = [0, 0, 0, 0, 1, 2, 3, 3, 4, 4, 5, 6]; 
+  // Auto-trigger modal on the Diacritics step
+  useEffect(() => {
+    if (currentStep === 2 && !hasSeenInstructions) {
+      setShowInstructions(true);
+      setHasSeenInstructions(true);
+    }
+  }, [currentStep, hasSeenInstructions]);
+
+  // Sync mobile isolated steps to the 9 underlying Web Steps
+  const webStepMap = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]; 
 
   const saveWords = async (wordCount: number) => {
     if (user) {
@@ -80,8 +91,8 @@ export function MobileLesson2() {
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
-    // Save words on the Vocabulary quiz step (Step 9)
-    if (currentStep === 9 && !completed.has(currentWebStep)) {
+    // Save words on the Vocabulary quiz step (Step 8)
+    if (currentStep === 8 && !completed.has(currentWebStep)) {
       saveWords(VOCAB.length);
     }
 
@@ -148,24 +159,27 @@ export function MobileLesson2() {
   const renderStepContent = () => {
     switch (currentStep) {
       // ---------------------------------------------------------
-      // STEP 0: WELCOME HERO CARD (PALACE SCENE + STATS)
+      // STEP 0: WELCOME HERO CARD
       // ---------------------------------------------------------
       case 0:
         return (
           <div className="pb-4">
             <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
-              <div className="w-full h-28 sm:h-32 bg-surface-muted overflow-hidden relative">
+              <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
                 <img 
                   src="/loplao-hero-scene.jpg" 
                   alt="Himalayan Monastery and Mountains" 
-                  className="w-full h-full object-cover object-[50%_75%]"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
 
-              <div className="p-5 pt-4">
-                <h2 className="font-serif text-xl font-bold text-ink mb-1.5">
-                  Welcome to the Four Vowels.
+              <div className="p-5 pt-5">
+                <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
+                  The Four Vowels
                 </h2>
+                <div className="font-serif text-xl text-ink-light italic tibetan mb-4">
+                  དབྱངས་བཞི།
+                </div>
                 <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
                   Every Tibetan syllable is voiced through a vowel. Just four diacritic marks — three above the letter and one below — turn the thirty consonants into the full range of spoken sound.
                 </p>
@@ -192,7 +206,7 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 1: WHAT YOU'LL LEARN (SINGLE-COLUMN MODULES LIST)
+      // STEP 1: WHAT YOU'LL LEARN
       // ---------------------------------------------------------
       case 1:
         return (
@@ -204,12 +218,12 @@ export function MobileLesson2() {
 
               <div className="space-y-5">
                 {[
-                  { mod: "MODULE 01", title: "The four vowels, as a type specimen" },
-                  { mod: "MODULE 02", title: "The four diacritic marks" },
-                  { mod: "MODULE 03", title: "Pronouncing the four vowels" },
-                  { mod: "MODULE 04", title: "Spelling — root letter + vowel mark" },
-                  { mod: "MODULE 05", title: "Vocabulary built from the four vowels" },
-                  { mod: "MODULE 06", title: "Practice & exercises" },
+                  { mod: "MODULE 01", title: "The four diacritic marks" },
+                  { mod: "MODULE 02", title: "Pronouncing the vowels" },
+                  { mod: "MODULE 03", title: "Marks & Sounds Mastery" },
+                  { mod: "MODULE 04", title: "Spelling rules" },
+                  { mod: "MODULE 05", title: "Spelling Mastery" },
+                  { mod: "MODULE 06", title: "Vocabulary & Practice" },
                 ].map((item, idx) => (
                   <div 
                     key={item.mod} 
@@ -232,133 +246,52 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 2: HOW TO STUDY THIS UNIT (CIRCULAR ICON BADGES)
+      // STEP 2: THE DIACRITIC MARKS (PNGs Only)
       // ---------------------------------------------------------
       case 2:
         return (
-          <div className="pb-6">
-            <div className="bg-surface rounded-[1.5rem] p-6 sm:p-8 shadow-sm border border-border-subtle">
-              <h2 className="font-serif text-2xl font-bold text-ink mb-6">
-                How to study this unit
-              </h2>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm">
-                    <Sparkles size={20} />
-                  </div>
-                  <p className="text-[15px] leading-relaxed text-ink/80 pt-1 font-medium">
-                    Tap any mark to hear its sound and inspect its rules.
-                  </p>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm">
-                    <Layers size={20} />
-                  </div>
-                  <p className="text-[15px] leading-relaxed text-ink/80 pt-1 font-medium">
-                    Steps unlock as you continue, but you can peek ahead.
-                  </p>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm">
-                    <CheckCircle2 size={20} />
-                  </div>
-                  <p className="text-[15px] leading-relaxed text-ink/80 pt-1 font-medium">
-                    Completed steps are marked and stay open for review.
-                  </p>
-                </div>
-              </div>
+          <div className="space-y-6 pb-6 flex flex-col">
+            <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle shadow-sm mb-2">
+              <p className="text-[15px] leading-relaxed text-ink/90">
+                The four diacritic marks attach to root letters. Three sit above, and one sits below.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {VOWELS.map((v) => {
+                const pm = POSITION_META[v.position];
+                const pngConfig = MARK_CONFIG[v.mark.trim()]; 
+                return (
+                  <button 
+                    key={v.key}
+                    onClick={() => openInspector(v)}
+                    className="bg-white rounded-[1.5rem] shadow-sm border border-border-subtle flex flex-col items-center justify-center p-6 active:scale-95 transition-transform"
+                  >
+                     <div className="h-16 flex items-center justify-center mb-4">
+                       {pngConfig ? (
+                         <img src={pngConfig.src} alt={v.markTib} className="h-full w-auto object-contain opacity-90 drop-shadow-sm" />
+                       ) : (
+                         <span className="font-tibetan text-5xl">{v.mark}</span>
+                       )}
+                     </div>
+                     <span className="font-tibetan text-2xl text-ink leading-none mb-1">{v.markTib}</span>
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{v.markTranslit}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
 
       // ---------------------------------------------------------
-      // STEP 3: THE FOUR VOWELS GRID
+      // STEP 3: TYPE SPECIMEN + PRONOUNCING
       // ---------------------------------------------------------
       case 3:
-        return (
-          <div className="space-y-6 pb-6 flex flex-col">
-            <div className="grid grid-cols-2 gap-3">
-              {VOWELS.map((v) => (
-                <button 
-                  key={v.key}
-                  onClick={() => openInspector(v)}
-                  className="bg-white rounded-[1.5rem] aspect-square shadow-sm border border-border-subtle flex flex-col items-center justify-center text-center active:scale-95 transition-transform overflow-hidden relative"
-                >
-                  <span className="absolute inset-x-0 top-0 h-1.5" style={{ backgroundColor: POSITION_META[v.position].hex }} />
-                  <span className="font-tibetan text-6xl text-ink leading-none mt-2">{v.tib}</span>
-                  <div className="flex flex-col gap-0.5 mt-4">
-                    <span className="font-mono text-[16px] font-bold text-ink">[{v.translit.toLowerCase()}]</span>
-                    <span className="font-bold text-[10px] uppercase tracking-widest text-ink-muted">{v.markTranslit}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-6 text-[10px] font-bold text-ink-muted uppercase tracking-widest bg-surface p-4 rounded-[1.25rem] border border-border-subtle shadow-sm">
-              <span>Legend</span>
-              {(Object.keys(POSITION_META) as Position[]).map((p) => (
-                <div key={p} className="inline-flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: POSITION_META[p].hex }} />
-                  <span>{POSITION_META[p].label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
-      // ---------------------------------------------------------
-      // STEP 4: THE DIACRITIC MARKS
-      // ---------------------------------------------------------
-      case 4:
-        return (
-          <div className="space-y-6 pb-6">
-            {VOWELS.map((v) => {
-              const pm = POSITION_META[v.position];
-              return (
-                <div key={v.key} className={`p-6 rounded-[1.5rem] border bg-surface ${pm.ring} shadow-sm`}>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 ${pm.swatch} ${pm.text}`}>
-                    {v.position === "above" ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                    {pm.label}
-                  </div>
-                  <div className="flex items-center gap-5 mb-6">
-                    <button onClick={() => playAudio(v.tib)} className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink active:opacity-50 transition-opacity">{v.tib}</button>
-                    <div className="flex flex-col gap-2">
-                      <div className="font-mono font-bold text-2xl text-ink">[{v.translit.toLowerCase()}]</div>
-                      <button 
-                        onClick={() => playAudio(v.tib)}
-                        className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center border border-border-strong text-ink-muted active:text-brand"
-                      >
-                        {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="pt-5 border-t border-border-subtle">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-3">Mark Name</div>
-                    <button onClick={() => playAudio(v.markTranslit)} className="flex items-center gap-3 active:opacity-60 transition-opacity">
-                      <span className="font-tibetan text-3xl text-ink">{v.markTib}</span>
-                      <span className="font-serif italic text-lg text-ink-light">{v.markTranslit}</span>
-                      <Volume2 size={16} className="text-brand-dark ml-2" />
-                    </button>
-                    <p className="mt-4 text-[14px] leading-relaxed text-ink/80 bg-surface-muted p-4 rounded-[1.25rem] border border-border-subtle">{v.note}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        );
-
-      // ---------------------------------------------------------
-      // STEP 5: PRONOUNCING THE VOWELS
-      // ---------------------------------------------------------
-      case 5:
         return (
           <div className="space-y-4 pb-6">
             <div className="flex gap-4 p-5 bg-surface rounded-[1.5rem] border border-border-strong shadow-sm mb-6">
               <Info className="mt-0.5 size-5 shrink-0 text-brand" />
               <div className="text-[14px] font-bold leading-relaxed text-ink-light">
-                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example ཀ is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
+                The four diacritics replace the inherent [a] of the root letter.
               </div>
             </div>
             {VOWELS.map((v) => (
@@ -385,9 +318,30 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 6: SPELLING RULES
+      // STEP 4: INTERIM MASTERY CHECK
       // ---------------------------------------------------------
-      case 6:
+      case 4:
+        return (
+          <div className="pb-6">
+            <QuizModule
+              moduleId={2}
+              title="Mastery Check · Marks & Sounds" 
+              intro="Test your recognition of the vowel marks." 
+              data={VOWELS.map(v => ({ tib: v.tib, pron: v.translit, en: v.markTranslit }))} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+              questionCount={8} 
+              hideHeader={true}
+              isUnlockTest={false}
+            />
+          </div>
+        );
+
+      // ---------------------------------------------------------
+      // STEP 5: SPELLING MATH (Typo Fixed to ཨ)
+      // ---------------------------------------------------------
+      case 5:
         return (
           <div className="space-y-6 pb-6">
             {VOWELS.map((v) => (
@@ -399,7 +353,8 @@ export function MobileLesson2() {
                 
                 <div className="bg-white rounded-[1.25rem] p-4 sm:p-5 flex items-center justify-between border border-border-subtle shadow-sm mb-6">
                   <span className="font-tibetan text-4xl leading-none pt-1 text-ink text-center">{v.tib}</span>
-                  <SpellingFormula parts={`${v.examples?.[0]?.charAt(0) || "ཨ"} + ${v.markTib}`} />
+                  {/* FIX: Set base letter to ཨ explicitly */}
+                  <SpellingFormula parts={`ཨ + ${v.markTib}`} />
                   <ArrowRight size={14} className="text-border-strong hidden sm:block" />
                   <div className="flex flex-col items-center gap-0.5">
                      <span className="font-tibetan text-4xl leading-none pt-1" style={{ color: POSITION_META[v.position].hex }}>{v.tib}</span>
@@ -437,9 +392,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 7: SPELLING MASTERY CHECK
+      // STEP 6: SPELLING MASTERY CHECK
       // ---------------------------------------------------------
-      case 7:
+      case 6:
         return (
           <div className="pb-6">
             <QuizModule 
@@ -457,9 +412,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 8: VOCABULARY
+      // STEP 7: VOCABULARY
       // ---------------------------------------------------------
-      case 8:
+      case 7:
         return (
           <div className="pb-6">
             <div className="grid grid-cols-2 gap-3">
@@ -480,9 +435,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 9: VOCABULARY MASTERY CHECK
+      // STEP 8: VOCABULARY MASTERY CHECK
       // ---------------------------------------------------------
-      case 9:
+      case 8:
         return (
           <div className="pb-6">
             <QuizModule
@@ -502,9 +457,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 10: PRACTICE DRILLS
+      // STEP 9: PRACTICE DRILLS
       // ---------------------------------------------------------
-      case 10:
+      case 9:
         return (
           <div className="pb-6">
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
@@ -512,9 +467,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 11: FINAL ASSESSMENT
+      // STEP 10: FINAL ASSESSMENT
       // ---------------------------------------------------------
-      case 11:
+      case 10:
         return (
           <div className="pb-6">
             <QuizModule 
@@ -528,7 +483,7 @@ export function MobileLesson2() {
               isUnlockTest={true} 
               hideHeader={true}
               nextLessonPath="/dashboard/lessons/3" 
-              onPass={() => markComplete(6)} 
+              onPass={() => markComplete(8)} 
             />
           </div>
         );
@@ -538,10 +493,9 @@ export function MobileLesson2() {
   const stepTitles = [
     "Welcome to the Four Vowels", 
     "What you'll learn", 
-    "How to use this app",
-    "The four vowels", 
     "The diacritic marks", 
     "Pronouncing the vowels", 
+    "Marks & Sounds Mastery", 
     "Spelling rules", 
     "Spelling Mastery", 
     "Vocabulary", 
@@ -589,9 +543,13 @@ export function MobileLesson2() {
                 <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">Position</div>
                 <div className={`font-bold text-sm ${POSITION_META[selectedVowel.position].text}`}>{POSITION_META[selectedVowel.position].label}</div>
               </div>
-              <div className="p-4 rounded-2xl bg-white border border-border-subtle">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1.5">Mark Name</div>
-                <div className="font-tibetan text-2xl text-ink leading-none">{selectedVowel.markTib}</div>
+              <div className="p-4 rounded-2xl bg-white border border-border-subtle relative overflow-hidden flex flex-col justify-center items-center h-20">
+                <div className="absolute top-2 left-3 text-[10px] font-bold uppercase tracking-widest text-ink-muted">Mark Name</div>
+                {MARK_CONFIG[selectedVowel.mark.trim()] ? (
+                   <img src={MARK_CONFIG[selectedVowel.mark.trim()].src} alt={selectedVowel.markTib} className="h-8 w-auto object-contain opacity-80 mt-3" />
+                ) : (
+                   <div className="font-tibetan text-2xl text-ink leading-none mt-3">{selectedVowel.markTib}</div>
+                )}
               </div>
             </div>
             <div className="bg-white rounded-[1.25rem] p-5 border border-border-subtle mb-4 shadow-sm">
@@ -606,6 +564,8 @@ export function MobileLesson2() {
           </div>
         </>
       )}
+
+      <InstructionModal isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
     </>
   );
 }

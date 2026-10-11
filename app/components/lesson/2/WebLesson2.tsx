@@ -1,13 +1,12 @@
 // app/components/lesson/2/WebLesson2.tsx
 "use client";
 
-import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
-  Info, Moon, Sun, Volume2, Loader2, CheckCircle2
+  Info, Volume2, Loader2, CheckCircle2
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -17,7 +16,6 @@ import { usePlatform } from "@/hooks/usePlatform";
 import { 
   VOWELS, 
   VOCAB, 
-  STEPS, 
   POSITION_META, 
   generateSpellingQuiz, 
   generateFinalQuiz, 
@@ -32,21 +30,44 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
+import { InstructionModal } from "@/app/components/ui/InstructionModal";
+import { MARK_CONFIG, SpellingFormula } from "@/app/components/ui/SpellingFormula";
+
+// Redefined local steps to match our new restructured flow
+const WEB_STEPS = [
+  { id: "marks", eyebrow: "Step 01", title: "The diacritic marks", description: "Names, positions, and how each mark is written." },
+  { id: "pronunciation", eyebrow: "Step 02", title: "Pronouncing the vowels", description: "Map each vowel to a familiar English sound." },
+  { id: "quiz1", eyebrow: "Step 03", title: "Marks & Sounds Mastery", description: "Test your recognition of the vowel marks." },
+  { id: "spelling", eyebrow: "Step 04", title: "Spelling rules", description: "Combine any consonant with the four vowel marks." },
+  { id: "spelling_quiz", eyebrow: "Step 05", title: "Spelling Mastery", description: "Check your spelling before moving to vocabulary." },
+  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Read and hear real words using vowels only." },
+  { id: "vocab_quiz", eyebrow: "Step 07", title: "Vocabulary Mastery", description: "Score 80% or higher to add words to your profile." },
+  { id: "practice", eyebrow: "Step 08", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
+  { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." },
+];
 
 export function WebLesson2() {
   const { user } = useUser();
   const { getToken } = useAuth();
 
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  
-  const { unlockedStep, expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  const { unlockedStep, expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
   const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
-  const [filter, setFilter] = useState<"all" | Position>("all");
-  const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
-  
   const [isBypassing, setIsBypassing] = useState(false);
+
+  // Auto-Trigger Modal State
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
+
+  useEffect(() => {
+    // Trigger modal automatically when they reach the first interactive step (Diacritic Marks)
+    if (expandedStep === 0 && !hasSeenInstructions) {
+      setShowInstructions(true);
+      setHasSeenInstructions(true);
+    }
+  }, [expandedStep, hasSeenInstructions]);
 
   const saveWords = async (wordCount: number, stepIndex: number) => {
     if (!completed.has(stepIndex) && user) {
@@ -69,8 +90,6 @@ export function WebLesson2() {
     }
     markComplete(stepIndex);
   };
-
-  const filtered = useMemo(() => (filter === "all" ? VOWELS : VOWELS.filter((v) => v.position === filter)), [filter]);
 
   const practiceGroups = useMemo(() => [
     {
@@ -107,7 +126,7 @@ export function WebLesson2() {
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(STEPS.length - 1);
+            await markComplete(WEB_STEPS.length - 1);
             setTimeout(() => {
               window.location.href = "/dashboard";
             }, 1000);
@@ -127,13 +146,13 @@ export function WebLesson2() {
           <span className="text-ink font-bold">The Four Vowels</span>
         </div>
 
-        {/* Hero Section with Palace Illustration */}
+        {/* Hero Section */}
         <Card className="mb-8 p-0 overflow-hidden shadow-sm border border-border-subtle">
-          <div className="w-full h-56 sm:h-72 bg-surface-muted overflow-hidden relative">
+          <div className="w-full h-72 sm:h-96 md:h-[400px] bg-surface-muted overflow-hidden relative">
             <img 
               src="/loplao-hero-scene.jpg" 
               alt="Himalayan Monastery Scene" 
-              className="w-full h-full object-cover object-[50%_75%]"
+              className="w-full h-full object-cover object-center"
             />
           </div>
 
@@ -141,7 +160,7 @@ export function WebLesson2() {
             <div>
               <div className="text-eyebrow text-brand-dark mb-2">Lesson 02 · Foundations</div>
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">The Four Vowels</h1>
-              <p className="mt-1 font-serif text-2xl text-ink-light italic tibetan">དབྱངས་བཞི།</p>
+              <p className="mt-2 font-serif text-3xl text-ink-light italic tibetan">དབྱངས་བཞི།</p>
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
                 Every Tibetan syllable is voiced through a vowel. Just four diacritic marks — three
                 above the letter and one below — turn the thirty consonants into the full range of
@@ -152,7 +171,7 @@ export function WebLesson2() {
             <div className="w-full md:w-72">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, STEPS.length)} of {STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
@@ -177,62 +196,12 @@ export function WebLesson2() {
 
         <div className="space-y-4">
           
-          {/* Step 0: Grid Specimen */}
-          <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap gap-2">
-                {(["all", "above", "below"] as const).map((k) => (
-                  <button key={k} onClick={() => setFilter(k)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${filter === k ? "bg-ink text-white border-ink" : "bg-surface border-border-strong text-ink-muted hover:bg-surface-muted"}`}>
-                    {k === "all" ? `All ${VOWELS.length}` : POSITION_META[k].label}
-                  </button>
-                ))}
-              </div>
-              <Button variant="outline" onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))} className="text-[10px] uppercase tracking-widest px-4 py-2">
-                {studyMode === "paper" ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />} {studyMode === "paper" ? "Study mode" : "Paper mode"}
-              </Button>
-            </div>
-
-            <div className={`relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-border-subtle bg-gradient-to-br from-stone-50 to-white"}`}>
-              <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
-
-              <div className="relative grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-                {filtered.map((v) => (
-                  <button key={v.key} onClick={(e) => { 
-                    if (!isNative) {
-                      setSelected({ v, rect: e.currentTarget.getBoundingClientRect() }); 
-                    }
-                    playAudio(v.tib); 
-                  }} className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}>
-                    <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: POSITION_META[v.position].hex }} />
-                    <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>{v.tib}</span>
-                    <div className="mt-3 flex items-end justify-between">
-                    <div className="flex flex-col gap-1">
-                      <span className={`text-lg font-mono font-bold tracking-wider ${studyMode === "night" ? "text-white/90" : "text-ink"}`}>[{v.translit.toLowerCase()}]</span>
-                      <span className={`text-sm font-bold tracking-wide ${studyMode === "night" ? "text-white/60" : "text-ink-light"}`}>{v.markTranslit}</span>
-                    </div>
-                  </div>
-                    {playingItem === v.tib && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="mt-6 flex flex-wrap items-center gap-6 text-eyebrow">
-              <span>Legend</span>
-              {(Object.keys(POSITION_META) as Position[]).map((p) => (
-                <div key={p} className="inline-flex items-center gap-2">
-                  <span className="h-2 w-4" style={{ backgroundColor: POSITION_META[p].hex }} />
-                  <span>{POSITION_META[p].label}</span>
-                </div>
-              ))}
-            </div>
-          </StepContainer>
-
-          {/* Step 1: Marks */}
-          <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+          {/* Step 0: Marks (Using PNGs) */}
+          <StepContainer index={0} step={WEB_STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {VOWELS.map((v) => {
                 const pm = POSITION_META[v.position];
+                const pngConfig = MARK_CONFIG[v.mark.trim()];
                 return (
                   <div key={v.key} className={`p-6 border bg-surface ${pm.ring} shadow-sm flex flex-col`}>
                     <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit ${pm.swatch} ${pm.text}`}>
@@ -240,19 +209,15 @@ export function WebLesson2() {
                       <span className="text-eyebrow">{pm.label}</span>
                     </div>
                     
-                    <button 
-                      onClick={() => playAudio(v.tib)} 
-                      disabled={playingItem !== null}
-                      className="mt-8 flex items-center gap-4 w-fit group transition-all text-left"
-                    >
-                      <span className="font-tibetan text-[5rem] leading-none text-ink group-hover:text-brand transition-colors">{v.tib}</span>
-                      <span className="font-mono font-bold text-2xl text-ink-muted group-hover:text-ink transition-colors">[{v.translit.toLowerCase()}]</span>
-                      <span className="ml-1 inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
-                        {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
-                      </span>
-                    </button>
+                    <div className="mt-8 mb-6 h-20 flex items-center justify-start">
+                      {pngConfig ? (
+                         <img src={pngConfig.src} alt={v.markTib} className="h-full w-auto object-contain opacity-90" />
+                       ) : (
+                         <span className="font-tibetan text-6xl text-ink">{v.mark}</span>
+                       )}
+                    </div>
 
-                    <div className="mt-6 border-t border-border-strong pt-4 flex-1">
+                    <div className="border-t border-border-strong pt-4 flex-1">
                       <div className="text-eyebrow mb-3">Mark name</div>
                       
                       <button 
@@ -276,53 +241,58 @@ export function WebLesson2() {
             </div>
           </StepContainer>
 
-          {/* Step 2: Pronunciation */}
-          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
-            <div className="overflow-hidden border border-border-subtle shadow-sm mb-8">
-              <table className="w-full text-sm">
-                <thead className="bg-surface-muted text-eyebrow border-b border-border-subtle">
-                  <tr>
-                    <th className="px-6 py-4 text-left">Vowel</th>
-                    <th className="px-6 py-4 text-left">Sound</th>
-                    <th className="px-6 py-4 text-left">As in English</th>
-                    <th className="px-6 py-4 text-right">Listen</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-strong bg-surface">
-                  {VOWELS.map((v) => (
-                    <tr key={v.key} className="transition hover:bg-surface-muted">
-                      <td className="px-6 py-5">
-                        <button onClick={(e) => {
-                          if (!isNative) {
-                            setSelected({ v, rect: e.currentTarget.getBoundingClientRect() });
-                          }
-                        }} className="inline-flex items-center gap-3">
-                          <span className="font-tibetan text-3xl text-ink">{v.tib}</span>
-                          <span className="text-eyebrow">{v.markTranslit}</span>
-                        </button>
-                      </td>
-                      <td className="px-6 py-5 font-mono font-bold text-lg text-ink">[{v.translit.toLowerCase()}]</td>
-                      <td className="px-6 py-5 text-ink-light font-bold">{v.english}</td>
-                      <td className="px-6 py-5 text-right">
-                        <Button variant="outline" className="px-3 py-2" onClick={() => playAudio(v.translit)} disabled={playingItem !== null}>
-                          {playingItem === v.translit ? <Loader2 className="size-4 animate-spin text-brand" /> : <Volume2 className="size-4 text-brand-dark" />}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm">
+          {/* Step 1: Pronunciation & Specimen Combined */}
+          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+            <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm mb-6">
               <Info className="mt-0.5 size-5 shrink-0 text-brand" />
               <div className="text-sm font-bold leading-relaxed text-ink-light">
                 The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example ཀ is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {VOWELS.map((v) => (
+                <div key={v.key} className="bg-surface rounded-2xl p-6 shadow-sm border border-border-subtle flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-5">
+                       <button onClick={(e) => {
+                          if (!isNative) setSelected({ v, rect: e.currentTarget.getBoundingClientRect() });
+                          playAudio(v.tib);
+                       }} className="w-20 h-20 bg-surface-muted border border-border-subtle rounded-2xl flex items-center justify-center font-tibetan text-5xl leading-none pt-2 text-ink shadow-sm hover:border-brand transition-colors">{v.tib}</button>
+                       <div className="flex flex-col gap-1">
+                         <span className="font-mono font-bold text-xl text-ink">[{v.translit.toLowerCase()}]</span>
+                         <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted">{v.markTranslit}</span>
+                       </div>
+                     </div>
+                     <button onClick={() => playAudio(v.translit)} className="w-12 h-12 shrink-0 rounded-full bg-brand-light border border-brand/20 flex items-center justify-center text-brand-dark hover:bg-brand/40 transition-colors shadow-sm">
+                       {playingItem === v.translit ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />}
+                     </button>
+                  </div>
+                  <div className="pt-4 border-t border-border-subtle">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted block mb-1">As in English</span>
+                    <div className="text-base font-medium text-ink">{v.english}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </StepContainer>
 
-          {/* Step 3: Spelling */}
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+          {/* Step 2: Interim Quiz */}
+          <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+            <QuizModule
+              moduleId={2}
+              title="Mastery Check · Marks & Sounds" 
+              intro="Test your recognition of the vowel marks." 
+              data={VOWELS.map(v => ({ tib: v.tib, pron: v.translit, en: v.markTranslit }))} 
+              playAudio={playAudio} 
+              playingItem={playingItem} 
+              playErrorBeep={playErrorBeep} 
+              questionCount={8} 
+              isUnlockTest={false}
+            />
+          </StepContainer>
+
+          {/* Step 3: Spelling (Fixed Typo) */}
+          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="space-y-8 mb-10">
               {VOWELS.map((v) => (
                 <div key={v.key} className="bg-surface-muted rounded-[1.5rem] p-6 border border-border-subtle shadow-sm">
@@ -335,7 +305,8 @@ export function WebLesson2() {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-3 bg-white border border-border-subtle shadow-sm rounded-[1.25rem] px-6 py-5 mb-6">
                     <span className="font-tibetan text-[3rem] leading-none pt-1 w-12 text-center text-ink">{v.tib}</span>
 
-                    <SpellingFormula parts={`${v.examples?.[0]?.charAt(0) || "ཨ"} + ${v.markTib}`} />
+                    {/* FIX: Using ཨ (A) instead of མ (Ma) */}
+                    <SpellingFormula parts={`ཨ + ${v.markTib}`} />
 
                     <ArrowRight size={16} className="text-border-strong mx-2" />
 
@@ -385,7 +356,10 @@ export function WebLesson2() {
                 </div>
               ))}
             </div>
-            
+          </StepContainer>
+
+          {/* Step 4: Spelling Quiz */}
+          <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <QuizModule 
               moduleId={2}
               title="Mastery Check · Vowel Spelling" 
@@ -394,11 +368,12 @@ export function WebLesson2() {
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
+              isUnlockTest={false}
             />
           </StepContainer>
 
-          {/* Step 4: Vocabulary */}
-          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
+          {/* Step 5: Vocabulary */}
+          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <div className="mb-10">
               <VocabGrid 
                 items={VOCAB.map(v => {
@@ -412,7 +387,10 @@ export function WebLesson2() {
                 playingItem={playingItem}
               />
             </div>
-            
+          </StepContainer>
+
+          {/* Step 6: Vocabulary Quiz */}
+          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
             <QuizModule
               moduleId={2}
               title="Mastery Check · Vocabulary" 
@@ -424,17 +402,17 @@ export function WebLesson2() {
               questionCount={16} 
               isVocabMatch
               isUnlockTest={true} 
-              onPass={() => saveWords(VOCAB.length, 4)} 
+              onPass={() => saveWords(VOCAB.length, 6)} 
             />
           </StepContainer>
 
-          {/* Step 5: Practice */}
-          <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+          {/* Step 7: Practice */}
+          <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)}>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 6: Final Test */}
-          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
+          {/* Step 8: Final Assessment */}
+          <StepContainer index={8} step={WEB_STEPS[8]} status={statusOf(8)} isExpanded={expandedStep === 8} onToggle={() => toggleStep(8)} onContinue={() => markComplete(8)} isLast>
             <QuizModule 
               moduleId={2}
               title="Final Assessment" 
@@ -445,7 +423,7 @@ export function WebLesson2() {
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/3" 
-              onPass={() => markComplete(6)} 
+              onPass={() => markComplete(8)} 
             />
           </StepContainer>
         </div>
@@ -460,7 +438,7 @@ export function WebLesson2() {
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== STEPS.length - 1 && (
+          {expandedStep !== WEB_STEPS.length - 1 && (
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -471,6 +449,8 @@ export function WebLesson2() {
           </Link>
         </div>
       </div>
+
+      <InstructionModal isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
     </div>
   );
 }
@@ -485,6 +465,7 @@ interface DetailPanelProps {
 function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) {
   const { v, rect } = data;
   const pm = POSITION_META[v.position as Position];
+  const pngConfig = MARK_CONFIG[v.mark.trim()];
 
   return (
     <DraggablePanel rect={rect} title={`Vowel · ${v.translit}`} onClose={onClose}>
@@ -506,10 +487,13 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) 
           <div className={`font-serif text-sm font-bold ${pm.text}`}>{pm.label}</div>
         </div>
         
-        <div className="p-3 border bg-surface border-border-strong">
-          <div className="text-eyebrow mb-1">Mark Name</div>
-          <div className="font-serif text-base text-ink tibetan">{v.markTib}</div>
-          <div className="text-[10px] italic text-ink-light mt-1">{v.markTranslit}</div>
+        <div className="p-3 border bg-surface border-border-strong flex flex-col justify-center items-center relative">
+          <div className="text-eyebrow mb-2 self-start w-full absolute top-2 left-3">Mark</div>
+          {pngConfig ? (
+             <img src={pngConfig.src} alt={v.markTib} className="h-10 w-auto object-contain opacity-80 mt-4" />
+          ) : (
+             <div className="font-serif text-3xl text-ink tibetan mt-4">{v.markTib}</div>
+          )}
         </div>
       </div>
 

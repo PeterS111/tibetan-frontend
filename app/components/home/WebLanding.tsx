@@ -32,19 +32,21 @@ export function WebLanding() {
               </SignInButton>
               
 			  
+			  
 			  <SignUpButton mode="modal">
-                <button className="bg-brand hover:bg-brand-dark text-ink text-sm font-bold px-5 py-2.5 transition-colors shadow-sm">
+                <button className="bg-ink hover:bg-ink-light text-white text-sm font-bold px-5 py-2.5 transition-colors shadow-sm">
                   Sign Up
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
-                <button className="bg-brand hover:bg-brand-dark text-ink text-sm font-bold px-5 py-2.5 transition-colors shadow-sm flex items-center gap-2">
+                <button className="bg-ink hover:bg-ink-light text-white text-sm font-bold px-5 py-2.5 transition-colors shadow-sm flex items-center gap-2">
                   Dashboard <ArrowRight size={16} strokeWidth={2} />
                 </button>
               </Link>
             </SignedIn>
+			  
 			  
           </div>
         </div>
@@ -68,17 +70,19 @@ export function WebLanding() {
             master the script, and build a robust vocabulary through spaced repetition.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          
+		  
+		  <div className="flex flex-col sm:flex-row items-center gap-4">
             <SignedOut>
               <SignUpButton mode="modal">
-                <button className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-ink font-bold px-8 py-4 text-sm rounded-full transition-colors shadow-sm flex items-center justify-center gap-2">
+                <button className="w-full sm:w-auto bg-ink hover:bg-ink-light text-white font-bold px-8 py-4 text-sm rounded-full transition-colors shadow-xl flex items-center justify-center gap-2">
                   Start Learning Free <ArrowRight size={16} />
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-ink font-bold px-8 py-4 text-sm rounded-full transition-colors shadow-sm flex items-center justify-center gap-2">
+                <button className="w-full sm:w-auto bg-ink hover:bg-ink-light text-white font-bold px-8 py-4 text-sm rounded-full transition-colors shadow-xl flex items-center justify-center gap-2">
                   Continue to Dashboard <ArrowRight size={16} />
                 </button>
               </Link>
@@ -97,14 +101,15 @@ export function WebLanding() {
           </div>
         </div>
 
-        {/* Mountain Images (Full bleed, banner crop) */}
+        {/* Mountain Images (Enlarged) */}
         <div className="w-full mt-12 pointer-events-none translate-y-1 flex justify-center z-10">
           <img 
             src="/hero-landscape.jpg" 
             alt="Himalayan Mountains" 
-            className="w-full h-[120px] sm:h-[150px] md:h-[300px] lg:h-[400px] object-cover object-[50%_75%] md:object-center mix-blend-multiply" 
+            className="w-full h-[200px] sm:h-[300px] md:h-[450px] lg:h-[600px] object-cover object-[50%_75%] md:object-center mix-blend-multiply" 
           />
         </div>
+		  
       </header>
 
       

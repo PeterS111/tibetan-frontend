@@ -19,8 +19,9 @@ export function Button({
   
   
   const variants = {
-    primary: "bg-brand text-ink hover:bg-brand-dark",
-    secondary: "bg-ink text-surface hover:bg-ink-light",
+    // Swapped: Primary is now Dark Blue, Secondary is Yellow
+    primary: "bg-ink text-white hover:bg-ink-light",
+    secondary: "bg-brand text-ink hover:bg-brand-dark",
   
     outline: "bg-transparent text-ink border border-border-subtle hover:border-ink",
     ghost: "bg-transparent text-ink-light hover:text-ink",

@@ -1,7 +1,7 @@
 // app/components/lesson/1/MobileLesson1.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Volume2, Sparkles, Layers, CheckCircle2 } from "lucide-react";
 
@@ -23,13 +23,14 @@ import {
 import { MobileStepPlayer } from "../MobileStepPlayer";
 import QuizModule from "@/app/components/QuizModule";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
+import { InstructionModal } from "@/app/components/ui/InstructionModal";
 
 export function MobileLesson1() {
   const router = useRouter();
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete } = useLessonProgress(STEPS.length);
 
-  const totalSteps = 12; 
+  const totalSteps = 11; 
   const MODULE_ID = 1;
 
   // Initialize from saved step so "Resume lesson" jumps to the exact point
@@ -47,11 +48,23 @@ export function MobileLesson1() {
   // State for the Bottom Sheet Inspector
   const [selectedConsonant, setSelectedConsonant] = useState<Consonant | null>(null);
 
-  // Filter state for Step 3 (The Alphabet)
+  // Filter state for Step 2 (The Alphabet)
   const [alphabetFilter, setAlphabetFilter] = useState<"all" | Tone>("all");
 
-  // Sync mobile steps to web progress (Steps 0, 1, and 2 all map to Web Step 0)
-  const webStepMap = [0, 0, 0, 1, 1, 2, 3, 4, 5, 5, 6, 7]; 
+  // Instruction Modal State
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
+
+  // Auto-trigger the App Guide on the Alphabet Step
+  useEffect(() => {
+    if (currentStep === 2 && !hasSeenInstructions) {
+      setShowInstructions(true);
+      setHasSeenInstructions(true);
+    }
+  }, [currentStep, hasSeenInstructions]);
+
+  // Sync mobile steps to web progress
+  const webStepMap = [0, 0, 1, 1, 2, 3, 4, 5, 5, 6, 7]; 
 
   const handleNext = () => {
     markComplete(webStepMap[currentStep]); 
@@ -101,12 +114,11 @@ export function MobileLesson1() {
 
   const openInspector = (c: Consonant) => {
     setSelectedConsonant(c);
-    playAudio(c.tib); // Auto-plays audio immediately when the modal opens
+    playAudio(c.tib); 
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
-      
       // ---------------------------------------------------------
       // STEP 0: WELCOME HERO CARD
       // ---------------------------------------------------------
@@ -114,22 +126,27 @@ export function MobileLesson1() {
         return (
           <div className="pb-4">
             <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
-              <div className="w-full h-28 sm:h-32 bg-surface-muted overflow-hidden relative">
+              <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
                 <img 
                   src="/loplao-hero-scene.jpg" 
                   alt="Himalayan Monastery and Mountains" 
-                  className="w-full h-full object-cover object-[50%_75%]"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
 
-              <div className="p-5 pt-4">
-                <h2 className="font-serif text-xl font-bold text-ink mb-1.5">
-                  Welcome to the 30 consonants.
+              <div className="p-5 pt-5">
+                <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
+                  The 30 Consonants
                 </h2>
-                <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
+                <div className="font-serif text-xl text-ink-light italic tibetan mb-4">
+                  གསལ་བྱེད་སུམ་ཅུ།
+                </div>
+                <p className="text-[14px] leading-relaxed text-ink/80 mb-4">
                   The Tibetan alphabet is built on thirty root letters — the foundation of every word you will read, write, and speak. Move through the lesson one step at a time; every section stays available for review whenever you want to jump ahead.
                 </p>
+
                 <hr className="border-border-subtle mb-3.5" />
+
                 <div className="grid grid-cols-3 divide-x divide-border-subtle text-center py-0.5">
                   <div className="px-2">
                     <div className="font-serif text-2xl text-ink">30</div>
@@ -182,41 +199,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 2: HOW TO USE THIS APP
+      // STEP 2: THE ALPHABET
       // ---------------------------------------------------------
       case 2:
-        return (
-          <div className="pb-6">
-            <div className="bg-surface rounded-[1.5rem] p-6 sm:p-8 shadow-sm border border-border-subtle">
-              <h2 className="font-serif text-2xl font-bold text-ink mb-6">How to use this app</h2>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm">
-                    <Sparkles size={20} />
-                  </div>
-                  <p className="text-[15px] leading-relaxed text-ink/80 pt-1 font-medium">Tap any letter card to hear its sound and see its details.</p>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm">
-                    <Layers size={20} />
-                  </div>
-                  <p className="text-[15px] leading-relaxed text-ink/80 pt-1 font-medium">Steps unlock as you continue, but you can peek ahead.</p>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-brand-light border border-amber-200/60 flex items-center justify-center shrink-0 text-brand-dark shadow-sm">
-                    <CheckCircle2 size={20} />
-                  </div>
-                  <p className="text-[15px] leading-relaxed text-ink/80 pt-1 font-medium">Completed steps are marked and stay open for review.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      // ---------------------------------------------------------
-      // STEP 3: THE ALPHABET
-      // ---------------------------------------------------------
-      case 3:
         return (
           <div className="space-y-5 pb-6 flex flex-col">
             <div className="flex flex-wrap gap-2">
@@ -254,9 +239,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 4: FIRST MASTERY CHECK
+      // STEP 3: FIRST MASTERY CHECK
       // ---------------------------------------------------------
-      case 4:
+      case 3:
         return (
           <div className="pb-6">
             <QuizModule 
@@ -276,9 +261,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 5: UNDERSTANDING TONE (REFACTORED)
+      // STEP 4: UNDERSTANDING TONE
       // ---------------------------------------------------------
-      case 5:
+      case 4:
         return (
           <div className="pb-6">
             <div className="bg-white rounded-[1.5rem] border border-border-subtle shadow-sm flex flex-col overflow-hidden divide-y divide-border-subtle">
@@ -314,9 +299,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 6: THE THREE ROOT SOUNDS (REFACTORED)
+      // STEP 5: THE THREE ROOT SOUNDS
       // ---------------------------------------------------------
-      case 6:
+      case 5:
         return (
           <div className="pb-6">
             <p className="text-[15px] leading-relaxed text-ink/80 mb-6">
@@ -373,9 +358,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 7: GENDER CLASSIFICATION (REFACTORED)
+      // STEP 6: GENDER CLASSIFICATION
       // ---------------------------------------------------------
-      case 7:
+      case 6:
         return (
           <div className="pb-6">
             <div className="bg-white rounded-[1.5rem] border border-border-subtle shadow-sm flex flex-col overflow-hidden divide-y divide-border-subtle">
@@ -411,9 +396,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 8: VOCABULARY
+      // STEP 7: VOCABULARY
       // ---------------------------------------------------------
-      case 8:
+      case 7:
         return (
           <div className="pb-6">
             <div className="grid grid-cols-2 gap-3">
@@ -434,9 +419,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 9: VOCABULARY MASTERY CHECK
+      // STEP 8: VOCABULARY MASTERY CHECK
       // ---------------------------------------------------------
-      case 9:
+      case 8:
         return (
           <div className="pb-6">
             <QuizModule
@@ -455,9 +440,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 10: PRACTICE DRILLS
+      // STEP 9: PRACTICE DRILLS
       // ---------------------------------------------------------
-      case 10:
+      case 9:
         return (
           <div className="pb-6">
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isLesson1={true} />
@@ -465,9 +450,9 @@ export function MobileLesson1() {
         );
 
       // ---------------------------------------------------------
-      // STEP 11: FINAL MASTERY CHECK
+      // STEP 10: FINAL MASTERY CHECK
       // ---------------------------------------------------------
-      case 11:
+      case 10:
         return (
           <div className="pb-6">
             <QuizModule 
@@ -481,7 +466,7 @@ export function MobileLesson1() {
               isUnlockTest={true} 
               isLesson1={true} 
               nextLessonPath="/dashboard/lessons/2" 
-              onPass={() => markComplete(11)} 
+              onPass={() => markComplete(10)} 
               hideHeader={true}
             />
           </div>
@@ -492,7 +477,6 @@ export function MobileLesson1() {
   const stepTitles = [
     "Welcome to the 30 consonants", 
     "What you'll learn", 
-    "How to use this app",
     "The alphabet", 
     "Mastery check", 
     "Understanding tone", 
@@ -520,9 +504,7 @@ export function MobileLesson1() {
         {renderStepContent()}
       </MobileStepPlayer>
 
-      {/* ======================================================== */}
-      {/* THE BOTTOM SHEET (INSPECTOR)                             */}
-      {/* ======================================================== */}
+      {/* THE BOTTOM SHEET (INSPECTOR) */}
       {selectedConsonant && (
         <>
           <div 
@@ -576,6 +558,8 @@ export function MobileLesson1() {
           </div>
         </>
       )}
+
+      <InstructionModal isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
     </>
   );
 }
