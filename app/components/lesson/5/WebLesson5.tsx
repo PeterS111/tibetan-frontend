@@ -26,7 +26,7 @@ export default function WebLesson5() {
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(7);
 
   const [activeTab, setActiveTab] = useState<PrefixKey>("ga");
-  const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
   
   const [isBypassing, setIsBypassing] = useState(false);
 
@@ -72,40 +72,54 @@ export default function WebLesson5() {
           <span className="text-ink">Prefixes</span>
         </div>
 
-        <Card className="mb-12 grid gap-8 md:grid-cols-[1fr,auto] md:items-end">
-          <div>
-            <div className="mb-3 text-eyebrow text-brand-dark">Lesson 05 · Foundations</div>
-            <h1 className="font-serif text-4xl md:text-5xl text-ink leading-tight tracking-tight">
-              The Five Prefixes
-            </h1>
-            <p className="mt-2 font-tibetan text-3xl text-ink-light">སྔོན་འཇུག་ལྔ།</p>
-            <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-light">
-              Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter. They shape both <span className="font-bold text-ink">spelling</span> and <span className="font-bold text-ink">pronunciation</span> (deepening feminine roots, adding a nasal onset with <span className="font-serif text-xl">མ</span> and <span className="font-serif text-xl">འ</span>).
-            </p> 
+        <Card className="mb-12 p-0 overflow-hidden flex flex-col">
+          <div className="h-48 w-full relative">
+            <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent flex flex-col justify-end p-6 md:p-8">
+              <div className="mb-2 text-brand font-bold text-[10px] tracking-widest uppercase">Lesson 05 · Foundations</div>
+              <h1 className="font-serif text-3xl md:text-4xl text-white leading-tight tracking-tight">The Five Prefixes</h1>
+              <p className="mt-1 font-tibetan text-2xl text-white/90">སྔོན་འཇུག་ལྔ།</p>
+            </div>
           </div>
-          <div className="w-full md:w-72">
-            <div className="mb-3 flex items-center justify-between text-eyebrow">
-              <span>Lesson progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, 7)} of 7 sections</span>
+          
+          <div className="p-6 md:p-8 grid gap-8 md:grid-cols-[1fr,auto] md:items-start bg-surface">
+            <div>
+              <div className="grid grid-cols-3 divide-x divide-border-subtle border border-border-subtle rounded-xl mb-6">
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
+                  <div className="font-serif text-lg text-ink">45m</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Prefixes</div>
+                  <div className="font-serif text-lg text-ink">5</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
+                  <div className="font-serif text-lg text-ink">20</div>
+                </div>
+              </div>
+              <p className="text-[15px] leading-relaxed text-ink-light">
+                Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter. They shape both <span className="font-bold text-ink">spelling</span> and <span className="font-bold text-ink">pronunciation</span>.
+              </p> 
             </div>
-            <div className="h-1.5 w-full bg-border-subtle overflow-hidden">
-              <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
-            </div>
-            <div className="mt-6 grid grid-cols-5 gap-2 text-center">
-              {PREFIXES.map((s) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => playAudio(s.nameTib)}
-                  disabled={playingItem !== null}
-                  className="group flex flex-col items-center gap-1 border border-border-strong p-2 text-center transition hover:bg-surface-muted hover:border-brand"
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="font-serif text-2xl" style={{ color: s.accent.hex }}>{s.head}</span>
-                    <span className="text-[9px] uppercase tracking-widest text-ink-muted">{s.latin}</span>
-                  </div>
-                </button>
-              ))}
+            <div className="w-full md:w-72">
+              <div className="mb-3 flex items-center justify-between text-eyebrow">
+                <span>Lesson progress</span>
+                <span className="text-brand-dark">{Math.min(unlockedStep, 7)} of 7 sections</span>
+              </div>
+              <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
+                <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <div className="mt-6 grid grid-cols-5 gap-2 text-center">
+                {PREFIXES.map((s) => (
+                  <button key={s.key} type="button" onClick={() => playAudio(s.nameTib)} disabled={playingItem !== null} className="group flex flex-col items-center gap-1 border border-border-strong p-2 rounded-xl text-center transition hover:bg-surface-muted hover:border-brand">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="font-serif text-2xl" style={{ color: s.accent.hex }}>{s.head}</span>
+                      <span className="text-[9px] uppercase tracking-widest text-ink-muted">{s.latin}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </Card>
@@ -229,10 +243,7 @@ export default function WebLesson5() {
 
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[2].title}</h2>
-              <Button variant="outline" onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))} className="text-[10px] uppercase tracking-widest px-3 py-1.5">
-                {studyMode === "paper" ? <Moon size={14} /> : <Sun size={14} />} {studyMode === "paper" ? "Study mode" : "Paper mode"}
-              </Button>
+              <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
             </div>
 
             <div className="mb-6 flex flex-wrap gap-2">
@@ -250,7 +261,7 @@ export default function WebLesson5() {
               })}
             </div>
 
-            <PrefixPanel p={PREFIXES.find(p => p.key === activeTab)!} night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <PrefixPanel p={PREFIXES.find(p => p.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
@@ -374,72 +385,72 @@ export default function WebLesson5() {
   );
 }
 
-function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
+function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
   return (
-    <div className={`relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
+    <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1 w-full" style={{ backgroundColor: p.accent.hex }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: night ? `${p.accent.hex}20` : `${p.accent.hex}15`, color: p.accent.hex }}>{p.head}</div>
+          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${p.accent.hex}15`, color: p.accent.hex }}>{p.head}</div>
           <div>
-            <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Prefix · {p.family === "nasal" ? "Nasalising" : "Silent"}</div>
+            <div className="text-eyebrow mb-2">Prefix · {p.family === "nasal" ? "Nasalising" : "Silent"}</div>
             <div className="font-serif text-3xl font-bold">{p.title}</div>
-            <div className={`mt-1 font-tibetan text-2xl ${night ? "text-stone-400" : "text-ink-light"}`}>{p.nameTib}</div>
+            <div className="mt-1 font-tibetan text-2xl text-ink-light">{p.nameTib}</div>
           </div>
         </div>
         
         <div>
-          <p className={`text-[15px] leading-relaxed p-5 border rounded-2xl ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
+          <p className="text-[15px] leading-relaxed p-5 border rounded-2xl bg-surface-muted border-border-strong text-ink-light">
             {p.intro}<br /><br />
-            <span className={night ? "text-white font-bold" : "text-ink font-bold"}>Followed by </span>
-            <span className={`font-serif text-xl font-bold ${night ? "text-white" : "text-ink"}`}>{p.followedBy}</span>
+            <span className="text-ink font-bold">Followed by </span>
+            <span className="font-serif text-xl font-bold text-ink">{p.followedBy}</span>
           </p>
-          <div className={`mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm rounded-r-2xl border-y border-r ${night ? "bg-white/5 text-stone-300 border-white/10" : "bg-surface-muted border-border-strong text-ink-light"}`} style={{ borderLeftColor: p.accent.hex }}>
+          <div className="mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm rounded-r-2xl border-y border-r bg-surface-muted border-border-strong text-ink-light" style={{ borderLeftColor: p.accent.hex }}>
             <Info className="mt-0.5 size-4 shrink-0" style={{ color: p.accent.hex }} />
             <span className="font-medium leading-relaxed">{p.usage}</span>
           </div>
         </div>
       </div>
-      <div className={`grid grid-cols-2 gap-px border-b sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 ${night ? "border-white/10 bg-white/10" : "border-border-strong bg-border-strong"}`}>
+      <div className="grid grid-cols-2 gap-px border-b sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 border-border-strong bg-border-strong">
         {p.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
           return (
-            <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-surface hover:bg-surface-muted"}`}>
+            <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
               <span className="absolute left-0 top-0 h-0.5 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: p.accent.hex }} />
-              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.word}</span>
-              <span className={`font-mono text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}>[{c.read}]</span>
-              {c.gloss && <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-500" : "text-ink-muted"}`}>{c.gloss}</span>}
+              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{c.word}</span>
+              <span className="font-mono text-xs font-bold text-ink-light">[{c.read}]</span>
+              {c.gloss && <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{c.gloss}</span>}
               <span className="mt-2 inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
               {playingItem === c.word && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
             </button>
           )
         })}
       </div>
-      <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
-        <div className={`text-eyebrow mb-6 ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
+      <div className="p-6 md:p-8 border-b border-border-strong bg-surface">
+        <div className="text-eyebrow mb-6">Spelling walkthrough</div>
         
         <div className="space-y-2">
           {p.combos.slice(0, 6).map((c: any) => {
             const M = TONE_META[c.tone as Tone];
             return (
-              <div key={c.word + c.read} className={`flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
+              <div key={c.word + c.read} className="flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
                 
                 <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{c.word}</span>
                 
                 <SpellingFormula parts={c.parts} />
 
-                <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
+                <ArrowRight size={16} className="text-border-strong" />
                 
                 <div className="flex items-center gap-2">
                   <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: p.accent.hex }}>{c.word}</span>
-                  <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
+                  <span className="font-mono text-lg font-bold text-ink">[{c.read}]</span>
                 </div>
                 
                 <div className="ml-auto flex items-center gap-3">
-                  <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} disabled={playingItem !== null} className={`px-3 py-2 rounded-full ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
-                    {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
+                  <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
+                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} disabled={playingItem !== null} className="px-3 py-2 rounded-full">
+                    {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />}
                   </Button>
                 </div>
               </div>
@@ -448,18 +459,18 @@ function PrefixPanel({ p, night, playAudio, playingItem, playErrorBeep }: any) {
         </div>
       </div>
       
-      <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
+      <div className="p-6 md:p-8 bg-surface-muted">
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: p.accent.hex }} />
-          <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · Prefix {p.latin}</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Prefix {p.latin}</span>
         </div>
-        <PrefixMiniMasteryLoader p={p} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <PrefixMiniMasteryLoader p={p} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function PrefixMiniMasteryLoader({ p, night, playAudio, playingItem, playErrorBeep }: any) {
+function PrefixMiniMasteryLoader({ p, playAudio, playingItem, playErrorBeep }: any) {
   const [seed, setSeed] = useState(0);
 
   const questions = useMemo(() => {
@@ -491,7 +502,6 @@ function PrefixMiniMasteryLoader({ p, night, playAudio, playingItem, playErrorBe
       moduleId={5}
       title={prefixDisplayTitle}
       variant="panel"
-      isNightMode={night}
       accentColor={p.accent.hex}
       questions={questions}
       playAudio={playAudio}

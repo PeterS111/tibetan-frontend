@@ -12,6 +12,7 @@ import { DEV_BYPASS_LOCKS } from "@/app/config";
 import { usePlatform } from "@/hooks/usePlatform";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
 import { Button } from "@/app/components/ui/Button";
+import { Haptics, NotificationType } from "@capacitor/haptics"; 
 
 export interface QuizChoice {
   value: string;
@@ -71,7 +72,6 @@ interface QuizModuleProps {
   onPass?: () => void;
   variant?: "default" | "panel";
   accentColor?: string;
-  isNightMode?: boolean;
   hideHeader?: boolean;
 }
 
@@ -94,7 +94,6 @@ export default function QuizModule({
   onPass,
   variant = "default",
   accentColor,
-  isNightMode = false,
   hideHeader = false
 }: QuizModuleProps) {
 
@@ -293,11 +292,11 @@ export default function QuizModule({
   if (step >= total) {
     if (variant === 'panel') {
       return (
-        <div className={`flex flex-wrap items-center justify-between gap-4 p-5 border bg-surface ${isNative ? 'rounded-[1.25rem]' : ''}`} style={isNightMode ? { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' } : { borderColor: 'var(--color-border-strong)' }}>
-          <div className={`text-[15px] font-bold ${isNightMode ? "text-stone-200" : "text-ink"}`}>
+        <div className={`flex flex-wrap items-center justify-between gap-4 p-5 border bg-surface ${isNative ? 'rounded-[1.25rem]' : ''}`} style={{ borderColor: 'var(--color-border-strong)' }}>
+          <div className="text-[15px] font-bold text-ink">
             Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: accentColor || 'var(--color-brand)' }}>{score}</span> / {total}.
           </div>
-          <button onClick={resetQuiz} className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium border transition-colors ${isNative ? 'rounded-full' : ''} ${isNightMode ? "bg-white/10 text-white border-white/20 hover:bg-white/20" : "bg-transparent text-ink border-border-strong hover:bg-surface-muted"}`}>
+          <button onClick={resetQuiz} className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium border transition-colors bg-transparent text-ink border-border-strong hover:bg-surface-muted ${isNative ? 'rounded-full' : ''}`}>
             <Shuffle size={14} /> Try again
           </button>
         </div>
@@ -347,9 +346,10 @@ export default function QuizModule({
     setPicked(val);
     if (val === currentQ.answer) {
       setScore(s => s + 1);
+      if (isNative) try { Haptics.notification({ type: NotificationType.Success }); } catch (e) {}
       if (!currentQ.noAudio) playAudio(currentQ.audioTarget || currentQ.audioString || currentQ.answer);
     } else {
-      playErrorBeep();
+      playErrorBeep(); // Automatically triggers the Error haptic we just built!
     }
   };
 
@@ -369,13 +369,15 @@ export default function QuizModule({
     <div className={containerClass}>
       
       {/* 1. Progress Bar & Header */}
-      <div ref={topOfQuizRef} className={`scroll-mt-24 mb-6 px-1`}>
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-ink-muted pb-2">
-          <span>{variant === 'panel' && title ? `${title} · ` : ''}Question {step + 1} of {total}</span>
-          <span className="text-brand-dark">Score {score}</span>
+      {!hideHeader && (
+        <div ref={topOfQuizRef} className={`scroll-mt-24 mb-6 px-1`}>
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-ink-muted pb-2">
+            <span>{variant === 'panel' && title ? `${title} · ` : ''}Question {step + 1} of {total}</span>
+            <span className="text-brand-dark">Score {score}</span>
+          </div>
+          <ProgressBar progress={step + 1} total={total} className="h-1.5" />
         </div>
-        <ProgressBar progress={step + 1} total={total} className="h-1.5" />
-      </div>
+      )}
 
       {/* 2. Question Bubble (`bg-ink`) */}
       <div className="w-full mb-6">
@@ -513,7 +515,6 @@ export default function QuizModule({
                     const correctC = currentQ.choices.find(ch => ch.value === currentQ.answer);
                     if (!correctC) return currentQ.answer;
                     
-                    // Smart formatting to prevent [[bracket]] overlap
                     const formatBracketed = (str: string) => {
                       const clean = str.trim();
                       if (clean.startsWith('[') && clean.endsWith(']')) return clean;
@@ -544,9 +545,9 @@ export default function QuizModule({
               setPicked(null); 
               setStep((s) => s + 1); 
             }} 
-            className="self-center inline-flex items-center justify-center gap-2 px-10 py-3.5 mt-2 text-[15px] font-bold transition shadow-sm shrink-0 bg-ink text-white hover:bg-ink-light rounded-full active:scale-95"
+            className="self-center inline-flex items-center justify-center gap-2 px-8 py-3 mt-1 text-[14px] font-bold transition shadow-sm shrink-0 bg-ink text-white hover:bg-ink-light rounded-full active:scale-95"
           >
-            {step + 1 === total ? 'See Results' : 'Next'} <ArrowRight size={18} />
+            {step + 1 === total ? 'See Results' : 'Next Question'} <ArrowRight size={16} />
           </button>
 
         </div>

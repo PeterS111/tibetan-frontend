@@ -206,19 +206,21 @@ export function WebLesson3() {
             </div>
           </StepContainer>
 
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+          
+		  <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <VocabGrid 
               items={VOCAB.map(v => {
                 const sup = SUPERS.find(s => s.key === v.sup)!;
                 return {
                   tib: v.tib, pron: `[${v.translit}]`, en: v.en, emoji: v.emoji,
                   groupId: sup.key,
-                  badge: { text: sup.headLabel, hex: sup.accent.hex, bg: sup.accent.bg, border: sup.accent.border }
+                  badge: { text: sup.name, hex: sup.accent.hex, bg: sup.accent.bg, border: sup.accent.border }
                 };
               })}
-              groups={SUPERS.map(s => ({ id: s.key, label: s.headLabel, hex: s.accent.hex }))}
+              groups={SUPERS.map(s => ({ id: s.key, label: s.name, hex: s.accent.hex }))}
               playAudio={playAudio} playingItem={playingItem}
             />
+		  
             <div className="mt-10">
               <QuizModule moduleId={3} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch isUnlockTest={true} onPass={() => saveWords(VOCAB.length, 3)} />
             </div>

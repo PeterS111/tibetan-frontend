@@ -306,14 +306,13 @@ export function MobileLesson4() {
             <div className="flex flex-col mb-6 bg-white p-6 rounded-[1.5rem] border border-border-subtle shadow-sm">
               <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-6 text-center">Spelling Walkthrough</div>
               
-              <div className="flex items-center justify-center mb-6">
-  <SpellingFormula parts={`${selectedCombo.root} + ${selectedCombo.sub.headLarge} + བཏགས་`} />
-</div>
-
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <ArrowRight className="text-border-strong opacity-50" size={20} />
-                <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink" style={{ color: selectedCombo.sub.accent.hex }}>{selectedCombo.stack}</span>
-                <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
+              <div className="flex flex-col items-center justify-center mb-8">
+                <SpellingFormula parts={`${selectedCombo.root} + ${selectedCombo.sub.headLarge} + བཏགས་`} />
+                <div className="flex items-center justify-center gap-4 mt-5">
+                  <span className="text-2xl font-bold text-border-strong opacity-70">=</span>
+                  <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink" style={{ color: selectedCombo.sub.accent.hex }}>{selectedCombo.stack}</span>
+                  <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
+                </div>
               </div>
 
               {(() => {
@@ -330,7 +329,7 @@ export function MobileLesson4() {
             <div className="flex gap-3">
               <button onClick={() => playAudio(selectedCombo.stack + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === (selectedCombo.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
-                <span className="text-sm">Spelling</span>
+                <span className="text-sm">Spelling Audio</span>
               </button>
               <button onClick={() => playAudio(selectedCombo.stack)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === selectedCombo.stack ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
@@ -368,29 +367,27 @@ export function MobileLesson4() {
 
                   return (
                     <>
-                      
-					  
-					 <div className="flex items-center justify-center gap-2 mb-4">
-  <SpellingFormula parts={`${superL} + ${rootL} + བཏགས་`} />
-  <ArrowRight size={14} className="mx-1 text-border-strong" />
-  <TibetanPart part={intermediate.tib} />
-</div>
+                      <div className="flex flex-col items-center justify-center mb-8">
+                        <div className="flex items-center justify-center gap-2 mb-3">
+                          <SpellingFormula parts={`${superL} + ${rootL} + བཏགས་`} />
+                          <span className="text-xl font-bold text-border-strong opacity-70 mx-1">=</span>
+                          <TibetanPart part={intermediate.tib} />
+                        </div>
 
-<div className="flex items-center justify-center gap-2 mb-6 border-b border-border-subtle pb-6">
-  <div className="opacity-60"><TibetanPart part={intermediate.tib} /></div>
-  <span className="text-xs opacity-50 mx-1">+</span>
-  <SpellingFormula parts={`${subL} + བཏགས་`} />
-</div> 
-					  
+                        <div className="flex items-center justify-center gap-2 mb-5">
+                          <div className="opacity-60"><TibetanPart part={intermediate.tib} /></div>
+                          <span className="text-lg font-sans opacity-40 text-ink-light mx-1">+</span>
+                          <SpellingFormula parts={`${subL} + བཏགས་`} />
+                        </div> 
 
-                      {/* Result */}
-                      <div className="flex items-center justify-center gap-4 mb-8">
-                        <ArrowRight className="text-border-strong opacity-50" size={20} />
-                        <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-teal-700">{selectedTriple.stack}</span>
-                        <span className="font-mono text-2xl font-bold text-ink">[{selectedTriple.read}]</span>
+                        <div className="flex items-center justify-center gap-4 mt-2 pt-5 border-t border-border-subtle w-full">
+                          <span className="text-2xl font-bold text-border-strong opacity-70">=</span>
+                          <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-teal-700">{selectedTriple.stack}</span>
+                          <span className="font-mono text-2xl font-bold text-ink">[{selectedTriple.read}]</span>
+                        </div>
                       </div>
                       
-                      <div className={`mx-auto w-fit px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 ${TM.bg} ${TM.text} border ${TM.border}`}>
+                      <div className={`mx-auto w-fit px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 mb-2 ${TM.bg} ${TM.text} border ${TM.border}`}>
                         <Icon size={14} strokeWidth={3} /> {TM.label}
                       </div>
                     </>
@@ -401,7 +398,7 @@ export function MobileLesson4() {
             <div className="flex gap-3">
               <button onClick={() => playAudio(selectedTriple.stack + " spelling")} className="flex-1 py-4 bg-teal-50 text-teal-700 font-bold rounded-full border border-teal-200 active:bg-teal-100 transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === (selectedTriple.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
-                <span className="text-sm">Spelling</span>
+                <span className="text-sm">Spelling Audio</span>
               </button>
               <button onClick={() => playAudio(selectedTriple.stack)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === selectedTriple.stack ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}

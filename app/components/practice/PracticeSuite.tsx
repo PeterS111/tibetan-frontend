@@ -1,7 +1,8 @@
 // app/components/practice/PracticeSuite.tsx
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "@clerk/clerk-react"; // <-- Added this
 import { 
   Layers, Shuffle, BookOpen, CheckCircle2, ArrowRight, ArrowLeft, 
   Play, Loader2, Volume2 
@@ -9,6 +10,7 @@ import {
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 import { usePlatform } from "@/hooks/usePlatform";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 export interface PracticeItem {
   id: string;
@@ -43,6 +45,7 @@ const getReading = (item: PracticeItem, isLesson1: boolean) => {
 export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
   const [tab, setTab] = useState<"flash" | "match" | "listen" | "srs">("flash");
   const { isNative } = usePlatform();
+  const { getToken } = useAuth(); // <-- Added this
 
   const allItems = useMemo(() => {
     const flat = groups.flatMap(g => g.items);
@@ -90,7 +93,7 @@ export default function PracticeSuite({ groups, playAudio, playingItem, playErro
         {tab === "flash" && <Flashcards groups={groups} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} isNative={isNative} />}
         {tab === "match" && <MatchGame items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isLesson1={isLesson1} isNative={isNative} />}
         {tab === "listen" && <ListenSelect items={allItems} speak={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isNative={isNative} />}
-        {tab === "srs" && <MemoryReview items={allItems} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} isNative={isNative} />}
+        {tab === "srs" && <MemoryReview items={allItems} speak={playAudio} playingItem={playingItem} isLesson1={isLesson1} isNative={isNative} getToken={getToken} />}
       </div>
     </Card>
   );
@@ -134,7 +137,13 @@ function Flashcards({ groups, speak, playingItem, isLesson1, isNative }: Flashca
         <span>Card {(idx % items.length) + 1} of {items.length}</span>
       </div>
 
-      <button onClick={() => setFlipped(!flipped)} className={`w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-border-strong shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden ${isNative ? 'rounded-2xl' : ''}`}>
+      <button 
+        onClick={() => {
+          setFlipped(!flipped);
+          if (isNative) try { Haptics.impact({ style: ImpactStyle.Medium }); } catch(e) {}
+        }} 
+        className={`w-full max-w-2xl aspect-[3/2] sm:aspect-[2/1] bg-white border border-border-strong shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center relative group overflow-hidden ${isNative ? 'rounded-2xl' : ''}`}
+      >
         {!flipped ? (
           <div className="flex flex-col items-center gap-4 group-hover:scale-105 transition-transform">
             <span className="text-tibetan-display">{card.tibetan}</span>
@@ -405,28 +414,118 @@ interface MemoryReviewProps {
   playingItem: string | null;
   isLesson1: boolean;
   isNative: boolean;
+  getToken: () => Promise<string | null>;
 }
 
-function MemoryReview({ items, speak, playingItem, isLesson1, isNative }: MemoryReviewProps) {
-  const [deck, setDeck] = useState(() => [...items].sort(() => 0.5 - Math.random()));
+function MemoryReview({ items, speak, playingItem, isLesson1, isNative, getToken }: MemoryReviewProps) {
+  const [deck, setDeck] = useState<PracticeItem[]>([]);
   const [reviewedCount, setReviewedCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 1. Fetch memory data from the server on load
+  useEffect(() => {
+    const fetchSRS = async () => {
+      let srsData: Record<string, { dueDate: number }> = {};
+      
+      try {
+        const token = await getToken();
+        if (token) {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/srs`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (data.srs_data) srsData = data.srs_data;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch server SRS, using local.");
+        srsData = JSON.parse(localStorage.getItem('tibetan_srs') || '{}');
+      }
+
+      // 2. Filter out cards that are not due yet
+      const now = Date.now();
+      const dueItems = items.filter(item => {
+        const dueDate = srsData[item.id]?.dueDate || 0;
+        return dueDate <= now; // Only include if it's new or overdue
+      });
+
+      // 3. Sort so the oldest/most overdue cards are first
+      const sortedDeck = dueItems.sort((a, b) => {
+        const dueA = srsData[a.id]?.dueDate || 0;
+        const dueB = srsData[b.id]?.dueDate || 0;
+        return dueA - dueB; // Ascending (oldest first)
+      });
+
+      setDeck(sortedDeck);
+      setIsLoading(false);
+    };
+
+    fetchSRS();
+  }, [items, getToken]);
+
+  const syncToServer = useCallback(async (data: any) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const formData = new FormData();
+      formData.append('srs_data', JSON.stringify(data));
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/srs`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+    } catch (e) { console.warn("Background sync failed"); }
+  }, [getToken]);
 
   const handleRating = (selectedRating: 'Hard' | 'Good' | 'Easy') => {
     if (deck.length === 0) return;
+    if (isNative) try { Haptics.impact({ style: ImpactStyle.Light }); } catch(e) {}
+
     const currentCard = deck[0]; 
+    const now = Date.now();
+    let nextDue = now;
+
     let newDeck = deck.slice(1);
-    if (selectedRating === 'Hard') { newDeck.splice(Math.min(Math.floor(Math.random() * 3) + 1, newDeck.length), 0, currentCard); } 
-    else if (selectedRating === 'Good') { newDeck.push(currentCard); }
-    setDeck(newDeck); setReviewedCount(p => p + 1);
+
+    if (selectedRating === 'Hard') { 
+      // Return it to the deck in 3 cards to review again now
+      newDeck.splice(Math.min(Math.floor(Math.random() * 3) + 1, newDeck.length), 0, currentCard); 
+      nextDue = now + (60 * 1000); // Due again in 1 minute
+    } 
+    else if (selectedRating === 'Good') { 
+      nextDue = now + (1000 * 60 * 60 * 24); // Due in 1 day
+    }
+    else if (selectedRating === 'Easy') {
+      nextDue = now + (1000 * 60 * 60 * 24 * 4); // Due in 4 days
+    }
+
+    setDeck(newDeck); 
+    setReviewedCount(p => p + 1);
+
+    // Save to local storage for instant offline resilience
+    const existing = JSON.parse(localStorage.getItem('tibetan_srs') || '{}');
+    existing[currentCard.id] = { dueDate: nextDue };
+    localStorage.setItem('tibetan_srs', JSON.stringify(existing));
+
+    // Fire and forget server sync
+    syncToServer(existing);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[300px]">
+        <Loader2 size={32} className="animate-spin text-brand mb-4" />
+        <p className="text-ink-muted font-bold text-sm">Loading your memory graph...</p>
+      </div>
+    );
+  }
 
   if (deck.length === 0) return (
     <div className="flex flex-col items-center justify-center text-center h-[400px] animate-in zoom-in-95">
       <div className="w-20 h-20 bg-emerald-100 rounded-full text-emerald-600 flex items-center justify-center mb-6 shadow-sm"><CheckCircle2 size={40} /></div>
-      <h3 className="text-3xl font-serif font-bold text-ink mb-4">Deck Complete!</h3>
-      <p className="text-ink-light font-bold mb-8">You have successfully mastered all {items.length} cards.</p>
+      <h3 className="text-3xl font-serif font-bold text-ink mb-4">You're all caught up!</h3>
+      <p className="text-ink-light font-bold mb-8">You have successfully mastered all due cards in this unit. Come back tomorrow for your next review.</p>
       <Button variant="secondary" onClick={() => { setDeck([...items].sort(() => 0.5 - Math.random())); setReviewedCount(0); }}>
-        <Shuffle size={18} /> Review Again
+        <Shuffle size={18} /> Review Ahead Anyway
       </Button>
     </div>
   );
@@ -435,7 +534,8 @@ function MemoryReview({ items, speak, playingItem, isLesson1, isNative }: Memory
     <div className="flex flex-col items-center w-full animate-in fade-in">
       <div className="w-full max-w-4xl">
         <div className="flex justify-between items-center mb-6 text-eyebrow border-b border-border-strong pb-4">
-          <span>Spaced repetition · rate your recall</span><span>{reviewedCount} reviewed</span>
+          <span>Spaced repetition · rate your recall</span>
+          <span className="text-brand-dark">{deck.length} remaining</span>
         </div>
         
         <div className={`bg-white border border-border-strong p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden ${isNative ? 'rounded-2xl' : ''}`}>
@@ -446,9 +546,9 @@ function MemoryReview({ items, speak, playingItem, isLesson1, isNative }: Memory
         </div>
         
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <button onClick={() => handleRating('Hard')} className={`py-4 border font-bold text-sm transition-colors ${isNative ? 'rounded-2xl' : ''} bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95`}>Hard</button>
-          <button onClick={() => handleRating('Good')} className={`py-4 border font-bold text-sm transition-colors ${isNative ? 'rounded-2xl' : ''} bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 active:scale-95`}>Good</button>
-          <button onClick={() => handleRating('Easy')} className={`py-4 border font-bold text-sm transition-colors ${isNative ? 'rounded-2xl' : ''} bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 active:scale-95`}>Easy</button>
+          <button onClick={() => handleRating('Hard')} className={`py-4 border font-bold text-sm transition-colors shadow-sm ${isNative ? 'rounded-2xl' : ''} bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95`}>Hard</button>
+          <button onClick={() => handleRating('Good')} className={`py-4 border font-bold text-sm transition-colors shadow-sm ${isNative ? 'rounded-2xl' : ''} bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 active:scale-95`}>Good</button>
+          <button onClick={() => handleRating('Easy')} className={`py-4 border font-bold text-sm transition-colors shadow-sm ${isNative ? 'rounded-2xl' : ''} bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 active:scale-95`}>Easy</button>
         </div>
         
         <div className="flex justify-center mt-6">

@@ -3,6 +3,7 @@ import { useState, useCallback, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { Capacitor } from "@capacitor/core";
 import { NativeAudio } from "@capacitor-community/native-audio";
+import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { AUDIO_MAP } from "@/app/data/audioMap";
 
 export function useAudio() {
@@ -27,9 +28,12 @@ export function useAudio() {
     const cleanText = text.replace(/[’'`]/g, ""); 
 
     // ==========================================
-    // MOBILE: ZERO-LATENCY HARDWARE AUDIO
+    // MOBILE: ZERO-LATENCY HARDWARE AUDIO & HAPTICS
     // ==========================================
     if (Capacitor.isNativePlatform()) {
+      // Add a subtle tactile tick every time audio is triggered!
+      try { await Haptics.impact({ style: ImpactStyle.Light }); } catch(e) {}
+      
       let fileName = AUDIO_MAP[cleanText];
       if (!fileName && AUDIO_MAP[cleanText + '་']) {
           fileName = AUDIO_MAP[cleanText + '་'];
@@ -90,6 +94,12 @@ export function useAudio() {
   }, [safeGetToken, playingItem]);
 
   const playErrorBeep = useCallback(() => {
+    // Heavy error buzz on mobile!
+    if (Capacitor.isNativePlatform()) {
+      try { Haptics.notification({ type: NotificationType.Error }); } catch (e) {}
+    }
+
+    // Standard audio beep
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();

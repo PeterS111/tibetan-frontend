@@ -18,11 +18,10 @@ export const MARK_CONFIG: Record<string, { src: string; imgClass: string }> = {
 
 interface TibetanPartProps {
   part: string;
-  isNightMode?: boolean;
   textClass?: string;
 }
 
-export function TibetanPart({ part, isNightMode = false, textClass = "text-[1.75rem]" }: TibetanPartProps) {
+export function TibetanPart({ part, textClass = "text-[1.75rem]" }: TibetanPartProps) {
   const cleanPart = part.trim();
   
   // 1. If it's in our dictionary, render the image perfectly sized
@@ -33,7 +32,6 @@ export function TibetanPart({ part, isNightMode = false, textClass = "text-[1.75
         src={src} 
         alt="Tibetan mark" 
         className={`object-contain ${imgClass}`}
-        style={{ filter: isNightMode ? 'invert(1) brightness(2)' : 'none' }}
       />
     );
   }
@@ -49,7 +47,7 @@ export function TibetanPart({ part, isNightMode = false, textClass = "text-[1.75
 
   // 3. Render standard text, sitting flat on the baseline
   return (
-    <span className={`font-tibetan leading-none pt-1 ${textClass}`} style={{ color: isNightMode ? '#fff' : 'inherit' }}>
+    <span className={`font-tibetan leading-none pt-1 ${textClass}`}>
       {displayPart}
     </span>
   );
@@ -57,21 +55,19 @@ export function TibetanPart({ part, isNightMode = false, textClass = "text-[1.75
 
 interface SpellingFormulaProps {
   parts: string; 
-  isNightMode?: boolean;
   textClass?: string;
 }
 
-export function SpellingFormula({ parts, isNightMode = false, textClass }: SpellingFormulaProps) {
+export function SpellingFormula({ parts, textClass }: SpellingFormulaProps) {
   const tokens = parts.split(' + ');
 
   return (
     <span className="flex flex-wrap items-center justify-center gap-y-3">
       {tokens.map((part, idx) => (
         <div key={idx} className="flex items-center gap-2 md:gap-3">
-          {idx > 0 && <span className={`text-lg font-sans opacity-40 mt-1 ${isNightMode ? "text-stone-400" : "text-ink-light"}`}>+</span>}
-          {/* min-w-[28px] and px-1 guarantees generous spacing around the plus signs */}
+          {idx > 0 && <span className="text-lg font-sans opacity-40 mt-1 text-ink-light">+</span>}
           <span className="flex items-center justify-center min-w-[28px] px-1">
-            <TibetanPart part={part} isNightMode={isNightMode} textClass={textClass} />
+            <TibetanPart part={part} textClass={textClass} />
           </span>
         </div>
       ))}

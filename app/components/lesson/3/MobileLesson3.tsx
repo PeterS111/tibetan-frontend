@@ -284,11 +284,13 @@ export function MobileLesson3() {
         const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.sup === vocabFilter);
         return (
           <div className="space-y-5 pb-6 flex flex-col">
-            <div className="flex flex-wrap gap-2">
+            
+			
+			<div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => setVocabFilter("all")}
                 className={`inline-flex items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${
-                  vocabFilter === "all" ? "bg-ink text-white border-ink shadow-sm" : "bg-surface border-border-strong text-ink-muted hover:text-ink active:scale-95"
+                  vocabFilter === "all" ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
                 }`}
               >
                 All {VOCAB.length}
@@ -297,12 +299,12 @@ export function MobileLesson3() {
                 <button 
                   key={s.key}
                   onClick={() => setVocabFilter(s.key)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
-                    vocabFilter === s.key ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink active:scale-95"
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                    vocabFilter === s.key ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
                   }`}
                 >
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.accent.hex }} />
-                  <span>{s.headLabel}</span>
+                  <span>{s.name}</span>
                 </button>
               ))}
             </div>

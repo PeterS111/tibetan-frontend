@@ -152,33 +152,42 @@ export function MobileLesson5() {
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-6 pb-6">
-            <div className="mb-2 px-1">
-              <h1 className="font-serif text-4xl text-ink leading-tight tracking-tight mb-2">
-                The Five Prefixes
-              </h1>
-              <div className="font-tibetan text-[2rem] text-ink-light mb-6">སྔོན་འཇུག་ལྔ།</div>
-              <p className="text-[16px] leading-relaxed text-ink/90">
-                Five consonants — <span className="font-tibetan text-xl">ག ད བ མ འ</span> — may sit <strong>before</strong> a root letter. They shape both <strong>spelling</strong> and <strong>pronunciation</strong> (deepening feminine roots, adding a nasal onset with <span className="font-tibetan text-xl">མ</span> and <span className="font-tibetan text-xl">འ</span>).
-              </p>
+          <div className="pb-6">
+            <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm mb-6 bg-surface relative">
+              <div className="h-40 w-full relative">
+                <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+                <div className="absolute bottom-4 left-5 right-5">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand mb-1">Unit 05</div>
+                  <h1 className="font-serif text-3xl text-white leading-tight">The Five Prefixes</h1>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 divide-x divide-border-subtle bg-white">
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
+                  <div className="font-serif text-lg text-ink">45m</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Prefixes</div>
+                  <div className="font-serif text-lg text-ink">5</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
+                  <div className="font-serif text-lg text-ink">20</div>
+                </div>
+              </div>
             </div>
 
             <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-4 text-center">The 5 Prefixes</div>
-              <div className="grid grid-cols-5 gap-2">
-                {PREFIXES.map((s) => (
-                  <button
-                    key={s.key}
-                    type="button"
-                    onClick={() => playAudio(s.nameTib)}
-                    disabled={playingItem !== null}
-                    className="flex flex-col items-center justify-center gap-1.5 bg-white border border-border-strong py-3 rounded-[1rem] active:scale-95 transition-all shadow-sm"
-                  >
-                    <span className="font-serif text-[1.75rem] leading-none pt-1" style={{ color: s.accent.hex }}>{s.head}</span>
-                    <span className="text-[9px] uppercase tracking-widest text-ink-muted">{s.latin}</span>
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen size={18} className="text-brand-dark" />
+                <h2 className="font-bold text-ink">What you'll learn</h2>
               </div>
+              <ul className="space-y-3 text-[14px] text-ink-light font-medium">
+                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 mt-1.5"></div><p>The 5 letters that can act as prefixes</p></li>
+                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 mt-1.5"></div><p>How prefixes affect the root letter's tone</p></li>
+                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 mt-1.5"></div><p>Which letters <strong>never</strong> take a prefix</p></li>
+              </ul>
             </div>
           </div>
         );

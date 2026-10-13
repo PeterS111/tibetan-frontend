@@ -104,44 +104,41 @@ export function MobileLesson6() {
     switch (currentStep) {
       case 0: 
         return (
-          <div className="space-y-6 pb-6">
-            <p className="text-[15px] leading-relaxed text-ink/90">
-              Ten letters may follow the root — the <strong>suffix</strong> closes the syllable. A further <strong>two</strong> may sit beyond that suffix as a <strong>post-suffix</strong>. Together they shape the reading, the tense, and often the meaning of a word.
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setRevealIntro("ten")} className={`flex-1 py-3.5 rounded-full font-bold text-[13px] border transition-colors shadow-sm ${revealIntro === "ten" ? "bg-brand-light text-brand-dark border-brand" : "bg-white text-ink-muted border-border-subtle"}`}>10 suffixes</button>
-              <button onClick={() => setRevealIntro("two")} className={`flex-1 py-3.5 rounded-full font-bold text-[13px] border transition-colors shadow-sm ${revealIntro === "two" ? "bg-brand-light text-brand-dark border-brand" : "bg-white text-ink-muted border-border-subtle"}`}>2 post-suffixes</button>
+          <div className="pb-6">
+            <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm mb-6 bg-surface relative">
+              <div className="h-40 w-full relative">
+                <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+                <div className="absolute bottom-4 left-5 right-5">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand mb-1">Unit 06</div>
+                  <h1 className="font-serif text-3xl text-white leading-tight">Suffixes & Post-suffixes</h1>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 divide-x divide-border-subtle bg-white">
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
+                  <div className="font-serif text-lg text-ink">45m</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Suffixes</div>
+                  <div className="font-serif text-lg text-ink">10 + 2</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
+                  <div className="font-serif text-lg text-ink">12</div>
+                </div>
+              </div>
             </div>
 
-            {revealIntro === "ten" && (
-              <div className="bg-surface-muted p-4 rounded-[1.5rem] border border-border-subtle grid grid-cols-5 gap-2 animate-in fade-in">
-                {SUFFIXES.map(x => (
-                   <button key={x.key} onClick={() => playAudio(x.head)} className="aspect-[4/5] border border-border-strong bg-white rounded-xl flex flex-col items-center justify-center active:scale-95 transition-transform shadow-sm">
-                     <span className="font-serif text-2xl leading-none pt-1" style={{ color: x.accent }}>{x.head}</span>
-                     <span className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-1">{x.latin}</span>
-                   </button>
-                ))}
+            <div className="bg-surface-muted p-4 rounded-[1.5rem] border border-border-subtle flex flex-col gap-3 animate-in fade-in">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen size={18} className="text-brand-dark" />
+                <h2 className="font-bold text-ink">The Suffixes</h2>
               </div>
-            )}
-
-            {revealIntro === "two" && (
-              <div className="bg-surface-muted p-4 rounded-[1.5rem] border border-border-subtle flex flex-col gap-3 animate-in fade-in">
-                <button onClick={() => playAudio('ད')} className="flex items-center gap-4 bg-white border border-border-strong rounded-2xl p-4 active:scale-95 transition-transform shadow-sm">
-                  <span className="font-serif text-3xl text-fuchsia-600">ད</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-ink">da · historical</div>
-                    <div className="text-[10px] uppercase tracking-widest text-ink-muted">silent · classical only</div>
-                  </div>
-                </button>
-                <button onClick={() => playAudio('ས')} className="flex items-center gap-4 bg-white border border-border-strong rounded-2xl p-4 active:scale-95 transition-transform shadow-sm">
-                  <span className="font-serif text-3xl text-sky-600">ས</span>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-ink">sa · modern</div>
-                    <div className="text-[10px] uppercase tracking-widest text-ink-muted">silent · still written</div>
-                  </div>
-                </button>
-              </div>
-            )}
+              <p className="text-[14px] leading-relaxed text-ink/90 mb-2">
+                Ten letters may follow the root — the <strong>suffix</strong> closes the syllable. A further <strong>two</strong> may sit beyond that suffix as a <strong>post-suffix</strong>.
+              </p>
+            </div>
           </div>
         );
 

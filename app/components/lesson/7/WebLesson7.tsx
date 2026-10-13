@@ -42,24 +42,43 @@ export function WebLesson7() {
           <span className="text-ink">Capstone</span>
         </div>
 
-        <Card className="mb-12">
-          <div className="mb-3 inline-flex text-eyebrow text-brand-dark bg-brand-light px-3 py-1.5 rounded-full border border-brand/20">
-            Beginner 1 · Capstone
-          </div>
-          <h1 className="font-serif text-4xl md:text-5xl text-ink leading-tight tracking-tight mt-4 mb-6">
-            Show what you've learned.
-          </h1>
-          <p className="max-w-3xl text-[16px] leading-relaxed text-ink-light">
-            A comprehensive assessment drawing on all six units — letter recognition, tone and gender, vowels, stacks, prefixes and suffixes, plus reading, spelling, word building, similar words and listening. Score <strong>80%</strong> or higher to unlock your Certificate of Completion.
-          </p>
-
-          <div className="mt-10">
-            <div className="mb-3 flex items-center justify-between text-eyebrow">
-              <span>Step progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, 3)} of 3 sections</span>
+        <Card className="mb-12 p-0 overflow-hidden flex flex-col">
+          <div className="h-56 w-full relative">
+            <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover object-bottom" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent flex flex-col justify-end p-6 md:p-8">
+              <div className="mb-2 text-brand font-bold text-[10px] tracking-widest uppercase">Beginner 1 · Capstone</div>
+              <h1 className="font-serif text-3xl md:text-4xl text-white leading-tight tracking-tight">Show what you've learned.</h1>
             </div>
-            <div className="h-2 w-full bg-border-subtle overflow-hidden rounded-full">
-              <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
+          </div>
+          
+          <div className="p-6 md:p-8 grid gap-8 md:grid-cols-[1fr,auto] md:items-start bg-surface">
+            <div>
+              <div className="grid grid-cols-3 divide-x divide-border-subtle border border-border-subtle rounded-xl mb-6">
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
+                  <div className="font-serif text-lg text-ink">35m</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Sections</div>
+                  <div className="font-serif text-lg text-ink">10</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Questions</div>
+                  <div className="font-serif text-lg text-ink">60</div>
+                </div>
+              </div>
+              <p className="max-w-3xl text-[15px] leading-relaxed text-ink-light">
+                A comprehensive assessment drawing on all six units. Score <strong>80%</strong> or higher to officially complete Beginner 1.
+              </p>
+            </div>
+            <div className="w-full md:w-72">
+              <div className="mb-3 flex items-center justify-between text-eyebrow">
+                <span>Step progress</span>
+                <span className="text-brand-dark">{Math.min(unlockedStep, 3)} of 3 sections</span>
+              </div>
+              <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
+                <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
+              </div>
             </div>
           </div>
         </Card>
@@ -123,9 +142,14 @@ export function WebLesson7() {
                 <div className="w-20 h-20 bg-emerald-100 border border-emerald-200 rounded-full text-emerald-600 flex items-center justify-center mb-6 shadow-sm"><CheckCircle2 size={40} /></div>
                 <h3 className="text-3xl font-serif font-bold text-ink mb-4">Assessment Complete</h3>
                 <p className="text-ink-light font-bold mb-8">You have successfully passed the Beginner 1 Capstone Assessment.</p>
-                <Link href="/dashboard">
-                  <Button>Return to Dashboard <ArrowRight size={16} /></Button>
-                </Link>
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <Link href="/dashboard">
+                    <Button variant="outline" className="bg-white border-border-strong">Return to Dashboard</Button>
+                  </Link>
+                  <Link href="/dashboard/certificate">
+                    <Button className="bg-emerald-600 text-white hover:bg-emerald-700">View Certificate <ArrowRight size={16} /></Button>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="p-12 text-center border border-border-subtle rounded-[1.25rem] bg-surface">

@@ -26,7 +26,7 @@ export function WebLesson6() {
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(8);
 
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
-  const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
   const [reveal, setReveal] = useState<null | "ten" | "two">(null);
   
   const [isBypassing, setIsBypassing] = useState(false);
@@ -75,70 +75,52 @@ export function WebLesson6() {
           <span className="text-ink">Suffixes & Post-suffixes</span>
         </div>
 
-        <Card className="mb-12 grid gap-8 md:grid-cols-[1fr,auto] md:items-end">
-          <div>
-            <div className="mb-3 text-eyebrow text-brand-dark">Lesson 06 · Foundations</div>
-            <h1 className="font-serif text-4xl md:text-5xl text-ink leading-tight tracking-tight">
-              Suffixes & Post-suffixes
-            </h1>
-            <p className="mt-2 font-tibetan text-3xl not-italic text-ink-light">རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།</p>
-            <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-light">
-              Ten letters may follow the root — the <span className="font-bold text-ink">suffix</span> closes the syllable. A further <span className="font-bold text-ink">two</span> may sit beyond that suffix as a <span className="font-bold text-ink">post-suffix</span>. Together they shape the reading, the tense, and often the meaning of a word.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-widest">
-              <Button variant="outline" onClick={() => setReveal((r) => (r === "ten" ? null : "ten"))} className={reveal === "ten" ? "bg-brand-light text-brand-dark border-amber-300" : ""}>10 suffixes</Button>
-              <Button variant="outline" onClick={() => setReveal((r) => (r === "two" ? null : "two"))} className={reveal === "two" ? "bg-brand-light text-brand-dark border-amber-300" : ""}>2 post-suffixes</Button>
+        <Card className="mb-12 p-0 overflow-hidden flex flex-col">
+          <div className="h-48 w-full relative">
+            <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent flex flex-col justify-end p-6 md:p-8">
+              <div className="mb-2 text-brand font-bold text-[10px] tracking-widest uppercase">Lesson 06 · Foundations</div>
+              <h1 className="font-serif text-3xl md:text-4xl text-white leading-tight tracking-tight">Suffixes & Post-suffixes</h1>
+              <p className="mt-1 font-tibetan text-2xl text-white/90">རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།</p>
             </div>
-
-            {reveal === "ten" && (
-              <div className="mt-4 flex flex-wrap gap-2 border border-border-strong bg-surface-muted p-4 shadow-inner rounded-2xl">
+          </div>
+          
+          <div className="p-6 md:p-8 grid gap-8 md:grid-cols-[1fr,auto] md:items-start bg-surface">
+            <div>
+              <div className="grid grid-cols-3 divide-x divide-border-subtle border border-border-subtle rounded-xl mb-6">
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
+                  <div className="font-serif text-lg text-ink">45m</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Suffixes</div>
+                  <div className="font-serif text-lg text-ink">10 + 2</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
+                  <div className="font-serif text-lg text-ink">12</div>
+                </div>
+              </div>
+              <p className="text-[15px] leading-relaxed text-ink-light">
+                Ten letters may follow the root — the <span className="font-bold text-ink">suffix</span> closes the syllable. A further <span className="font-bold text-ink">two</span> may sit beyond that suffix as a <span className="font-bold text-ink">post-suffix</span>. Together they shape the reading, the tense, and often the meaning of a word.
+              </p> 
+            </div>
+            <div className="w-full md:w-72">
+              <div className="mb-3 flex items-center justify-between text-eyebrow">
+                <span>Lesson progress</span>
+                <span className="text-brand-dark">{Math.min(unlockedStep, 8)} of 8 sections</span>
+              </div>
+              <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
+                <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
+              </div>
+              <div className="grid grid-cols-5 gap-2 mt-6">
                 {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }} className="flex items-center gap-2 border border-border-strong bg-surface px-3 py-2 transition hover:border-brand shadow-sm text-left rounded-xl">
-                    <span className="font-serif leading-none text-2xl" style={{ color: x.accent }}>{x.head}</span>
-                    <span className="text-[10px] uppercase tracking-widest text-ink-muted font-bold">{x.latin}</span>
+                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }} className={`aspect-square border rounded-xl p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-brand-light" : "border-border-strong hover:bg-surface-muted hover:border-amber-300 bg-surface"}`}>
+                    <div className="font-serif leading-none text-2xl" style={{ color: x.accent }}>{x.head}</div>
+                    <div className="mt-1 text-[9px] uppercase tracking-widest text-ink-muted font-bold">{x.latin}</div>
                   </button>
                 ))}
               </div>
-            )}
-            {reveal === "two" && (
-              <div className="mt-4 flex flex-wrap gap-4 border border-border-strong bg-surface-muted p-4 shadow-inner rounded-2xl">
-                <button onClick={() => playAudio('ད')} className="flex items-center gap-4 border border-border-strong bg-surface px-5 py-3 shadow-sm text-left hover:border-brand transition-colors rounded-xl">
-                  <span className="font-serif leading-none text-3xl text-fuchsia-600">ད</span>
-                  <div>
-                    <div className="text-xs font-bold text-ink">da · historical</div>
-                    <div className="text-[10px] uppercase tracking-widest text-ink-muted font-bold">silent · classical only</div>
-                  </div>
-                </button>
-                <button onClick={() => playAudio('ས')} className="flex items-center gap-4 border border-border-strong bg-surface px-5 py-3 shadow-sm text-left hover:border-brand transition-colors rounded-xl">
-                  <span className="font-serif leading-none text-3xl text-sky-600">ས</span>
-                  <div>
-                    <div className="text-xs font-bold text-ink">sa · modern</div>
-                    <div className="text-[10px] uppercase tracking-widest text-ink-muted font-bold">silent · still written</div>
-                  </div>
-                </button>
-              </div>
-            )}
-          </div>
-          
-          <div className="w-full md:w-72">
-            <div className="mb-3 flex items-center justify-between text-eyebrow">
-              <span>Lesson progress</span>
-              <span className="text-brand-dark">{Math.min(unlockedStep, 8)} of 8 sections</span>
-            </div>
-            <div className="h-1.5 w-full bg-border-subtle overflow-hidden mb-6 rounded-full">
-              <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {SUFFIXES.map((x) => (
-                <button
-                  key={x.key}
-                  onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }}
-                  className={`aspect-square border rounded-xl p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-brand-light" : "border-border-strong hover:bg-surface-muted hover:border-amber-300 bg-surface"}`}
-                >
-                  <div className="font-serif leading-none text-2xl" style={{ color: x.accent }}>{x.head}</div>
-                  <div className="mt-1 text-[9px] uppercase tracking-widest text-ink-muted font-bold">{x.latin}</div>
-                </button>
-              ))}
             </div>
           </div>
         </Card>
@@ -178,9 +160,6 @@ export function WebLesson6() {
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[1].title}</h2>
-              <Button variant="outline" onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))} className="text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full">
-                {studyMode === "paper" ? <Moon size={14} /> : <Sun size={14} />} {studyMode === "paper" ? "Study mode" : "Paper mode"}
-              </Button>
             </div>
             <div className="mb-6 flex flex-wrap gap-2">
               {SUFFIXES.map((s) => {
@@ -196,7 +175,7 @@ export function WebLesson6() {
                 );
               })}
             </div>
-            <SuffixPanel s={SUFFIXES.find(x => x.key === activeTab)!} night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <SuffixPanel s={SUFFIXES.find(x => x.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
@@ -492,68 +471,63 @@ export function WebLesson6() {
   );
 }
 
-function SuffixPanel({ s, night, playAudio, playingItem, playErrorBeep }: any) {
+function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
   return (
-    <div className={`relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
+    <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1 w-full" style={{ backgroundColor: s.accent }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: night ? `${s.accent}20` : `${s.accent}15`, color: s.accent }}>{s.head}</div>
+          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${s.accent}15`, color: s.accent }}>{s.head}</div>
           <div>
-            <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Suffix · {FAMILY_META[s.family as Family].label}</div>
+            <div className="text-eyebrow mb-2">Suffix · {FAMILY_META[s.family as Family].label}</div>
             <div className="font-serif text-3xl font-bold">{s.latin}</div>
-            <div className={`text-sm mt-2 font-bold ${night ? "text-stone-300" : "text-ink-light"}`}>Reads as <span style={{ color: s.accent }}>{s.reads}</span></div>
+            <div className="text-sm mt-2 font-bold text-ink-light">Reads as <span style={{ color: s.accent }}>{s.reads}</span></div>
           </div>
         </div>
         <div>
-          <p className={`text-[15px] leading-relaxed p-5 border rounded-2xl ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
+          <p className="text-[15px] leading-relaxed p-5 border rounded-2xl bg-surface-muted border-border-strong text-ink-light">
             {s.hint}
           </p>
           {s.note && (
-            <div className={`mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm font-bold rounded-r-xl border-y border-r ${night ? "border-white/10 text-stone-300 bg-white/5" : "border-border-strong text-ink-light bg-brand-light/50"}`} style={{ borderLeftColor: '#f59e0b' }}>
+            <div className="mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm font-bold rounded-r-xl border-y border-r border-border-strong text-ink-light bg-brand-light/50" style={{ borderLeftColor: '#f59e0b' }}>
               <Info className="mt-0.5 size-4 shrink-0 text-brand" /><span>{s.note}</span>
             </div>
           )}
           {s.vowelShift && (
-            <div className={`mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm font-bold rounded-r-xl border-y border-r ${night ? "border-white/10 text-stone-300 bg-white/5" : "border-border-strong text-ink-light bg-sky-50/50"}`} style={{ borderLeftColor: '#0ea5e9' }}>
+            <div className="mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm font-bold rounded-r-xl border-y border-r border-border-strong text-ink-light bg-sky-50/50" style={{ borderLeftColor: '#0ea5e9' }}>
               <Sparkles className="mt-0.5 size-4 shrink-0 text-sky-500" /><span>{s.vowelShift}</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className={`grid grid-cols-2 gap-px border-b sm:grid-cols-3 ${night ? "border-white/10 bg-white/10" : "border-border-strong bg-border-strong"}`}>
+      <div className="grid grid-cols-2 gap-px border-b sm:grid-cols-3 border-border-strong bg-border-strong">
         {s.examples.map((ex: any) => (
-          <button key={ex.word} onClick={() => playAudio(ex.word)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-surface hover:bg-surface-muted"}`}>
+          <button key={ex.word} onClick={() => playAudio(ex.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
             <span className="absolute left-0 top-0 h-0.5 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: s.accent }} />
-            <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{ex.word}</span>
-            <span className={`font-mono text-xs font-bold ${night ? "text-stone-400" : "text-ink-light"}`}>[{ex.read}]</span>
-            {ex.gloss && <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-500" : "text-ink-muted"}`}>{ex.gloss}</span>}
+            <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{ex.word}</span>
+            <span className="font-mono text-xs font-bold text-ink-light">[{ex.read}]</span>
+            {ex.gloss && <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{ex.gloss}</span>}
             {playingItem === ex.word && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
           </button>
         ))}
       </div>
 
-      <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
-        <div className={`text-eyebrow mb-6 ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
-        
-		<div className="space-y-2">
+      <div className="p-6 md:p-8 border-b border-border-strong bg-surface">
+        <div className="text-eyebrow mb-6">Spelling walkthrough</div>
+        <div className="space-y-2">
           {s.examples.map((ex: any) => (
-            <div key={ex.word} className={`flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
-              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-20 sm:w-24 shrink-0 text-left text-ink" style={{ color: night ? '#fff' : '#1c1917' }}>{ex.word}</span>
-		
+            <div key={ex.word} className="flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
+              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-20 sm:w-24 shrink-0 text-left text-ink text-[#1c1917]">{ex.word}</span>
               <SpellingFormula parts={ex.parts} />
-
-              <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
-              
+              <ArrowRight size={16} className="text-border-strong" />
               <div className="flex items-center gap-2">
                 <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: s.accent }}>{ex.word}</span>
-                <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{ex.read}]</span>
+                <span className="font-mono text-lg font-bold text-ink">[{ex.read}]</span>
               </div>
-              
               <div className="ml-auto flex items-center gap-3">
-                <Button variant="outline" onClick={() => playAudio(ex.word + " spelling")} disabled={playingItem !== null} className={`px-3 py-2 rounded-full ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
-                  {playingItem === (ex.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
+                <Button variant="outline" onClick={() => playAudio(ex.word + " spelling")} disabled={playingItem !== null} className="px-3 py-2 rounded-full">
+                  {playingItem === (ex.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />}
                 </Button>
               </div>
             </div>
@@ -561,18 +535,18 @@ function SuffixPanel({ s, night, playAudio, playingItem, playErrorBeep }: any) {
         </div>
       </div>
 
-      <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
+      <div className="p-6 md:p-8 bg-surface-muted">
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: s.accent }} />
-          <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · Suffix {s.latin}</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Suffix {s.latin}</span>
         </div>
-        <SuffixMiniMasteryLoader key={s.key} s={s} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SuffixMiniMasteryLoader key={s.key} s={s} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function SuffixMiniMasteryLoader({ s, night, playAudio, playingItem, playErrorBeep }: any) {
+function SuffixMiniMasteryLoader({ s, playAudio, playingItem, playErrorBeep }: any) {
   const [seed, setSeed] = useState(0);
 
   const questions = useMemo(() => {
@@ -603,7 +577,6 @@ function SuffixMiniMasteryLoader({ s, night, playAudio, playingItem, playErrorBe
       moduleId={6}
       title={`Mastery Check · Suffix ${s.latin}`}
       variant="panel"
-      isNightMode={night}
       accentColor={s.accent}
       questions={questions}
       playAudio={playAudio}

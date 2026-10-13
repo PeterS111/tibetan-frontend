@@ -29,7 +29,8 @@ export function MobileLesson7() {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      router.push("/dashboard");
+      // Instead of going back to dashboard, take them straight to their prize!
+      router.push("/dashboard/certificate");
     }
   };
 
@@ -51,20 +52,47 @@ export function MobileLesson7() {
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-6 pb-6">
-            <p className="text-[15px] text-ink-light leading-relaxed mb-6">
-              Ten labelled sections, ordered from recognition to reading, spelling and application.
-            </p>
-            <div className="flex flex-col gap-6">
-              {SKILLS.map(s => (
-                <div key={s.num} className="flex gap-4">
-                  <span className="font-bold text-brand-dark text-[15px] pt-0.5">{s.num}</span>
-                  <div>
-                    <div className="font-bold text-[16px] text-ink mb-1">{s.title}</div>
-                    <div className="text-[14px] text-ink-light leading-relaxed">{s.desc}</div>
-                  </div>
+          <div className="pb-6">
+            <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm mb-6 bg-surface relative">
+              <div className="h-40 w-full relative">
+                <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover object-bottom" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+                <div className="absolute bottom-4 left-5 right-5">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand mb-1">Beginner 1 · Capstone</div>
+                  <h1 className="font-serif text-3xl text-white leading-tight">Show what you've learned.</h1>
                 </div>
-              ))}
+              </div>
+              <div className="grid grid-cols-3 divide-x divide-border-subtle bg-white">
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
+                  <div className="font-serif text-lg text-ink">35m</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Sections</div>
+                  <div className="font-serif text-lg text-ink">10</div>
+                </div>
+                <div className="p-3 text-center">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Questions</div>
+                  <div className="font-serif text-lg text-ink">60</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-[14px] text-ink/90 font-medium leading-relaxed">
+                Ten labelled sections, ordered from recognition to reading, spelling and application.
+              </p>
+              <div className="flex flex-col gap-6">
+                {SKILLS.map(s => (
+                  <div key={s.num} className="flex gap-4">
+                    <span className="font-bold text-brand-dark text-[15px] pt-0.5">{s.num}</span>
+                    <div>
+                      <div className="font-bold text-[15px] text-ink mb-1">{s.title}</div>
+                      <div className="text-[13px] text-ink-light leading-relaxed">{s.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         );

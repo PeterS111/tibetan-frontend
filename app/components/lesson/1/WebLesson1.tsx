@@ -41,7 +41,7 @@ export function WebLesson1() {
 
   const [selected, setSelected] = useState<{ c: Consonant, rect: DOMRect } | null>(null);
   const [filter, setFilter] = useState<"all" | Tone>("all");
-  const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
   const [isBypassing, setIsBypassing] = useState(false);
   
   // Auto-Trigger Modal State
@@ -212,13 +212,10 @@ export function WebLesson1() {
                   </button>
                 ))}
               </div>
-              <Button variant="outline" onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))} className="text-[10px] uppercase tracking-widest px-4 py-2">
-                {studyMode === "paper" ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />} {studyMode === "paper" ? "Study mode" : "Paper mode"}
-              </Button>
             </div>
 
-            <div className={`relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 ${studyMode === "night" ? "border-white/5 bg-[#0f0d0a]" : "border-border-subtle bg-gradient-to-br from-stone-50 to-white"}`}>
-              <div aria-hidden className={`pointer-events-none absolute inset-0 opacity-[0.06] ${studyMode === "night" ? "opacity-[0.08]" : ""}`} style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: studyMode === "night" ? "#FFB600" : "#1c1917" }} />
+            <div className="relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 border-border-subtle bg-gradient-to-br from-stone-50 to-white">
+              <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: "#1c1917" }} />
               
               <div className="relative grid grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-3xl mx-auto">
                 {filtered.map((c) => (
@@ -228,14 +225,14 @@ export function WebLesson1() {
                       if (!isNative) setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); 
                       playAudio(c.tib); 
                     }} 
-                    className={`group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 ${studyMode === "night" ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]" : "border-border-strong bg-white hover:border-amber-300 hover:shadow-md"}`}
+                    className="group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 border-border-strong bg-white hover:border-amber-300 hover:shadow-md"
                   >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: TONE_HEX[c.tone] }} />
-                    <span className={`flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] ${studyMode === "night" ? "text-amber-500" : "text-ink"}`} style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
+                    <span className="flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] text-ink" style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
                       {c.tib}
                     </span>
                     <div className="mt-2 flex items-end justify-between">
-                      <span className={`text-[11px] font-bold uppercase tracking-[0.22em] ${studyMode === "night" ? "text-white/80" : "text-ink"}`}>{c.translit}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink">{c.translit}</span>
                     </div>
                     {playingItem === c.tib && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
                   </button>

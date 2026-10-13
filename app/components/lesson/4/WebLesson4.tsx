@@ -25,7 +25,7 @@ export function WebLesson4() {
   const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(6);
 
   const [activeTab, setActiveTab] = useState<SubKey>("ya");
-  const [studyMode, setStudyMode] = useState<"paper" | "night">("paper");
+  
   
   const [isBypassing, setIsBypassing] = useState(false);
 
@@ -195,9 +195,6 @@ export function WebLesson4() {
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
               <h2 className="font-serif text-2xl text-ink">{STEPS[1].title}</h2>
-              <Button variant="outline" onClick={() => setStudyMode((m) => (m === "paper" ? "night" : "paper"))} className="text-[10px] uppercase tracking-widest px-3 py-1.5">
-                {studyMode === "paper" ? <Moon size={14} /> : <Sun size={14} />} {studyMode === "paper" ? "Study mode" : "Paper mode"}
-              </Button>
             </div>
 
             <div className="mb-6 flex flex-wrap gap-2">
@@ -215,7 +212,7 @@ export function WebLesson4() {
               })}
             </div>
 
-            <SubPanel sub={SUBS.find(s => s.key === activeTab)!} night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <SubPanel sub={SUBS.find(s => s.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
@@ -266,25 +263,24 @@ export function WebLesson4() {
                     <div key={"spell-" + t.stack + t.parts} className="flex flex-wrap items-center gap-x-4 gap-y-3 border border-border-strong bg-surface px-5 py-4 shadow-sm rounded-2xl">
                       <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{t.stack}</span>
                       
-					  
 					  <SpellingFormula parts={`${superL} + ${rootL} + བཏགས་`} />
-<ArrowRight size={16} className="text-border-strong" />
-<div className="flex items-center gap-1.5">
-  <TibetanPart part={intermediate.tib} />
-  <span className="font-mono text-sm sm:text-base font-bold text-ink-muted">[{intermediate.read}]</span>
-</div>
-<span className="text-lg font-sans opacity-40 text-ink-light mx-1">+</span>
-<SpellingFormula parts={`${subL} + བཏགས་`} />
+                      <span className="text-lg font-bold text-border-strong opacity-70">=</span>
+                      <div className="flex items-center gap-1.5">
+                        <TibetanPart part={intermediate.tib} />
+                        <span className="font-mono text-sm sm:text-base font-bold text-ink-muted">[{intermediate.read}]</span>
+                      </div>
+                      <span className="text-lg font-sans opacity-40 text-ink-light mx-1">+</span>
+                      <SpellingFormula parts={`${subL} + བཏགས་`} />
 					  
-                      <ArrowRight size={16} className="text-border-strong" />
+                      <span className="text-lg font-bold text-border-strong opacity-70">=</span>
                       <div className="flex items-center gap-2">
                         <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: TRIPLE_ACCENT }}>{t.stack}</span>
                         <span className="font-mono text-lg font-bold text-ink">[{t.read}]</span>
                       </div>
                       <div className="ml-auto flex items-center gap-3">
                         <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                        <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-3 py-2 rounded-full">
-                          {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                        <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                          {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Spelling Audio
                         </Button>
                       </div>
                     </div>
@@ -293,12 +289,12 @@ export function WebLesson4() {
               </div>
             </div>
 
-            <div className={`mt-8 p-6 md:p-8 border border-border-strong rounded-[1.5rem] ${studyMode === "night" ? "bg-black/40" : "bg-surface-muted"}`}>
+            <div className="mt-8 p-6 md:p-8 border border-border-strong rounded-[1.5rem] bg-surface-muted">
               <div className="mb-6 flex items-center gap-2">
                 <CheckCircle2 size={18} style={{ color: TRIPLE_ACCENT }} />
-                <span className={`text-[11px] font-bold uppercase tracking-widest ${studyMode === "night" ? "text-stone-200" : "text-ink"}`}>Mastery check · Triple Stacks</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Triple Stacks</span>
               </div>
-              <TripleMiniMasteryLoader night={studyMode === "night"} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+              <TripleMiniMasteryLoader playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
             </div>
           </StepContainer>
           
@@ -385,87 +381,83 @@ export function WebLesson4() {
   );
 }
 
-function SubPanel({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
+function SubPanel({ sub, playAudio, playingItem, playErrorBeep }: any) {
   return (
-    <div className={`relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] ${night ? "border-white/10 bg-[#0f0d0a] text-stone-100" : "border-border-strong bg-surface"}`}>
+    <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1.5 w-full" style={{ backgroundColor: sub.accent.hex }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-tibetan text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: night ? `${sub.accent.hex}20` : `${sub.accent.hex}15`, color: sub.accent.hex }}>{sub.headLarge}</div>
+          <div className="grid size-28 place-items-center font-tibetan text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${sub.accent.hex}15`, color: sub.accent.hex }}>{sub.headLarge}</div>
           <div>
-            <div className={`text-eyebrow mb-2 ${night ? "text-stone-400" : ""}`}>Subscript</div>
+            <div className="text-eyebrow mb-2">Subscript</div>
             <div className="font-serif text-3xl font-bold">{sub.title}</div>
-            <div className={`mt-1 font-tibetan text-2xl ${night ? "text-stone-400" : "text-ink-light"}`}>{sub.nameTib}</div>
+            <div className="mt-1 font-tibetan text-2xl text-ink-light">{sub.nameTib}</div>
           </div>
         </div>
         <div className="flex flex-col gap-4">
-          <div className={`text-[15px] leading-relaxed p-5 border flex flex-col gap-4 rounded-2xl ${night ? "bg-white/5 border-white/10 text-stone-300" : "bg-surface-muted border-border-strong text-ink-light"}`}>
+          <div className="text-[15px] leading-relaxed p-5 border flex flex-col gap-4 rounded-2xl bg-surface-muted border-border-strong text-ink-light">
             <p>{sub.intro}</p>
-            <div className={`flex items-center flex-wrap gap-4 pt-2 ${night ? "text-white" : "text-ink"}`}>
+            <div className="flex items-center flex-wrap gap-4 pt-2 text-ink">
               <span className="font-tibetan text-3xl sm:text-4xl leading-relaxed tracking-wider">{sub.rootLetters}</span>
               <span className="text-xl font-sans opacity-40">+</span>
               <span className="font-tibetan text-3xl sm:text-4xl">{sub.headLarge}</span>
             </div>
           </div>
-          <div className={`flex items-start gap-3 border-l-4 px-4 py-3 text-sm rounded-r-xl border-y border-r ${night ? "bg-white/5 text-stone-300 border-white/10" : sub.accent.bg + " " + sub.accent.text + " border-border-strong"}`} style={{ borderLeftColor: sub.accent.hex }}>
+          <div className={`flex items-start gap-3 border-l-4 px-4 py-3 text-sm rounded-r-xl border-y border-r ${sub.accent.bg} ${sub.accent.text} border-border-strong`} style={{ borderLeftColor: sub.accent.hex }}>
             <Info className="mt-0.5 size-4 shrink-0" style={{ color: sub.accent.hex }} />
             <span className="font-medium leading-relaxed">{sub.usage}</span>
           </div>
         </div>
       </div>
-      <div className={`grid grid-cols-3 gap-px border-b sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 ${night ? "border-white/10 bg-white/10" : "border-border-strong bg-border-strong"}`}>
+      <div className="grid grid-cols-3 gap-px border-b sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 border-border-strong bg-border-strong">
         {sub.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
           return (
-            <button key={c.stack} onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className={`group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors ${night ? "bg-[#0f0d0a] hover:bg-[#1a1712]" : "bg-surface hover:bg-surface-muted"}`}>
+            <button key={c.stack} onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors bg-surface hover:bg-surface-muted">
               <span className="absolute left-0 top-0 h-1 w-full opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: sub.accent.hex }} />
-              <span className="font-tibetan text-[3rem] leading-none" style={{ color: night ? '#fcd34d' : '#1c1917' }}>{c.stack}</span>
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${night ? "text-stone-400" : "text-ink-muted"}`}>{c.read}</span>
+              <span className="font-tibetan text-[3rem] leading-none text-[#1c1917]">{c.stack}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{c.read}</span>
               <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
               {playingItem === c.stack && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
             </button>
           )
         })}
       </div>
-      <div className={`p-6 md:p-8 border-b ${night ? "border-white/10 bg-[#0f0d0a]" : "border-border-strong bg-surface"}`}>
-        <div className={`text-eyebrow mb-6 ${night ? "text-stone-400" : ""}`}>Spelling walkthrough</div>
+      <div className="p-6 md:p-8 border-b border-border-strong bg-surface">
+        <div className="text-eyebrow mb-6">Spelling walkthrough</div>
         <div className="space-y-2">
           {sub.combos.map((c: any) => {
             const M = TONE_META[c.tone as Tone];
             return (
-              <div key={c.stack} className={`flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 rounded-2xl ${night ? "border-white/10 bg-white/5" : "border-border-strong bg-surface shadow-sm"}`}>
+              <div key={c.stack} className="flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
                 <span className="font-tibetan text-[2.5rem] leading-none w-12 text-center">{c.stack}</span>
-                
-				
-				<SpellingFormula parts={`${c.root} + ${sub.headLarge} + བཏགས་`} />
-				
-                <ArrowRight size={16} className={night ? "text-stone-600" : "text-border-strong"} />
+                <SpellingFormula parts={`${c.root} + ${sub.headLarge} + བཏགས་`} />
+                <span className="text-xl font-bold opacity-70 text-border-strong">=</span>
                 <div className="flex items-center gap-2">
                   <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: sub.accent.hex }}>{c.stack}</span>
-                  <span className={`font-mono text-lg font-bold ${night ? "text-stone-100" : "text-ink"}`}>[{c.read}]</span>
+                  <span className="font-mono text-lg font-bold text-ink">[{c.read}]</span>
                 </div>
-                <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${night ? "bg-black/30" : M.bg} ${M.text}`} style={{ color: night ? M.hex : undefined }}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} disabled={playingItem !== null} className={`px-3 py-1.5 rounded-full ${night ? "bg-white/10 border-white/20 hover:bg-white/20 text-amber-400" : ""}`}>
-                  {playingItem === (c.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className={night ? "text-brand" : "text-brand-dark"} />}
+                <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
+                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                  {playingItem === (c.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                 </Button>
               </div>
             );
           })}
         </div>
       </div>
-      
-      <div className={`p-6 md:p-8 ${night ? "bg-black/40" : "bg-surface-muted"}`}>
+      <div className="p-6 md:p-8 bg-surface-muted">
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 size={18} style={{ color: sub.accent.hex }} />
-          <span className={`text-[11px] font-bold uppercase tracking-widest ${night ? "text-stone-200" : "text-ink"}`}>Mastery check · {sub.name}</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · {sub.name}</span>
         </div>
-        <SubMiniMasteryLoader sub={sub} night={night} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SubMiniMasteryLoader sub={sub} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function SubMiniMasteryLoader({ sub, night, playAudio, playingItem, playErrorBeep }: any) {
+function SubMiniMasteryLoader({ sub, playAudio, playingItem, playErrorBeep }: any) {
   const [seed, setSeed] = useState(0);
   const questions = useMemo(() => generateSubscriptQuiz(sub.key), [sub.key, seed]);
   return (
@@ -474,7 +466,6 @@ function SubMiniMasteryLoader({ sub, night, playAudio, playingItem, playErrorBee
       moduleId={4}
       title={`Mastery Check · ${sub.name}`} 
       variant="panel" 
-      isNightMode={night} 
       accentColor={sub.accent.hex} 
       questions={questions} 
       playAudio={playAudio} 
@@ -485,13 +476,12 @@ function SubMiniMasteryLoader({ sub, night, playAudio, playingItem, playErrorBee
 }
 
 interface TripleMiniMasteryProps {
-  night: boolean;
   playAudio: (text: string) => void;
   playingItem: string | null;
   playErrorBeep: () => void;
 }
 
-function TripleMiniMasteryLoader({ night, playAudio, playingItem, playErrorBeep }: TripleMiniMasteryProps) {
+function TripleMiniMasteryLoader({ playAudio, playingItem, playErrorBeep }: TripleMiniMasteryProps) {
   const [seed, setSeed] = useState(0);
   const questions = useMemo(() => generateTripleQuiz(), [seed]);
   return (
@@ -500,7 +490,6 @@ function TripleMiniMasteryLoader({ night, playAudio, playingItem, playErrorBeep 
       moduleId={4}
       title="Mastery Check · Triple Stacks" 
       variant="panel" 
-      isNightMode={night} 
       accentColor={TRIPLE_ACCENT} 
       questions={questions} 
       playAudio={playAudio} 

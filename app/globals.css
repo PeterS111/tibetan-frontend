@@ -87,3 +87,19 @@
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom)) !important;
   }
 }
+
+@media print {
+  @page { margin: 0; size: landscape; }
+  body * { visibility: hidden; }
+  #print-certificate, #print-certificate * { visibility: visible; }
+  #print-certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+  }
+  .no-print { display: none !important; }
+}
