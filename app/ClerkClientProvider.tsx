@@ -2,11 +2,21 @@
 
 import { ClerkProvider } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 
 const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default function ClerkClientProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+
+  // Hide the native splash screen once the React tree has mounted
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      SplashScreen.hide().catch(console.warn);
+    }
+  }, []);
 
   return (
     <ClerkProvider 

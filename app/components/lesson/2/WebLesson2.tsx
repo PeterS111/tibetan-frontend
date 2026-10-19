@@ -20,6 +20,7 @@ import {
   generateSpellingQuiz, 
   generateFinalQuiz, 
   type Vowel, 
+  type VowelKey,
   type Position 
 } from "@/app/data/lesson2";
 
@@ -33,16 +34,22 @@ import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 import { InstructionModal } from "@/app/components/ui/InstructionModal";
 import { MARK_CONFIG, SpellingFormula } from "@/app/components/ui/SpellingFormula";
 
-// Redefined local steps to match our new restructured flow
+const VOWEL_STYLE_META: Record<VowelKey, { label: string; swatch: string; text: string; hex: string }> = {
+  i: { label: "GI-GU · ABOVE ROOT", swatch: "bg-sky-50", text: "text-sky-800", hex: "#0ea5e9" },
+  u: { label: "SHAB-KYU · BELOW ROOT", swatch: "bg-amber-50", text: "text-amber-800", hex: "#f59e0b" },
+  e: { label: "DRENG-BU · ABOVE ROOT", swatch: "bg-violet-50", text: "text-violet-800", hex: "#8b5cf6" },
+  o: { label: "NA-RO · ABOVE ROOT", swatch: "bg-rose-50", text: "text-rose-800", hex: "#f43f5e" },
+};
+
+// Combined Marks & Sounds Mastery and Spelling Mastery into a single step after Spelling
 const WEB_STEPS = [
   { id: "marks", eyebrow: "Step 01", title: "The diacritic marks", description: "Names, positions, and how each mark is written." },
   { id: "pronunciation", eyebrow: "Step 02", title: "Pronouncing the vowels", description: "Map each vowel to a familiar English sound." },
-  { id: "quiz1", eyebrow: "Step 03", title: "Marks & Sounds Mastery", description: "Test your recognition of the vowel marks." },
-  { id: "spelling", eyebrow: "Step 04", title: "Spelling rules", description: "Combine any consonant with the four vowel marks." },
-  { id: "spelling_quiz", eyebrow: "Step 05", title: "Spelling Mastery", description: "Check your spelling before moving to vocabulary." },
-  { id: "vocab", eyebrow: "Step 06", title: "Vocabulary", description: "Read and hear real words using vowels only." },
-  { id: "vocab_quiz", eyebrow: "Step 07", title: "Vocabulary Mastery", description: "Score 80% or higher to add words to your profile." },
-  { id: "practice", eyebrow: "Step 08", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
+  { id: "spelling", eyebrow: "Step 03", title: "Spelling rules", description: "Combine any consonant with the four vowel marks." },
+  { id: "spelling_quiz", eyebrow: "Step 04", title: "Marks & Spelling Mastery", description: "Test your recognition of the vowel marks, sounds, and spelling." },
+  { id: "vocab", eyebrow: "Step 05", title: "Vocabulary", description: "Read and hear real words using vowels only." },
+  { id: "vocab_quiz", eyebrow: "Step 06", title: "Vocabulary Mastery", description: "Score 80% or higher to add words to your profile." },
+  { id: "practice", eyebrow: "Step 07", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
   { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." },
 ];
 
@@ -62,7 +69,6 @@ export function WebLesson2() {
   const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
 
   useEffect(() => {
-    // Trigger modal automatically when they reach the first interactive step (Diacritic Marks)
     if (expandedStep === 0 && !hasSeenInstructions) {
       setShowInstructions(true);
       setHasSeenInstructions(true);
@@ -196,15 +202,21 @@ export function WebLesson2() {
 
         <div className="space-y-4">
           
-          {/* Step 0: Marks (Using PNGs) */}
+          {/* Step 0: Marks (Plays individual mark name audio: Gigu, Zhabkyu, etc.) */}
           <StepContainer index={0} step={WEB_STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {VOWELS.map((v) => {
                 const pm = POSITION_META[v.position];
                 const pngConfig = MARK_CONFIG[v.mark.trim()];
                 return (
-                  <div key={v.key} className={`p-6 border bg-surface ${pm.ring} shadow-sm flex flex-col`}>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 w-fit ${pm.swatch} ${pm.text}`}>
+                  <button
+                    key={v.key}
+                    type="button"
+                    onClick={() => playAudio(v.markTranslit)}
+                    disabled={playingItem !== null}
+                    className={`p-6 border bg-surface ${pm.ring} shadow-sm flex flex-col text-left transition-all hover:-translate-y-1 hover:shadow-md rounded-2xl`}
+                  >
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full w-fit ${pm.swatch} ${pm.text}`}>
                       {v.position === "above" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
                       <span className="text-eyebrow">{pm.label}</span>
                     </div>
@@ -217,82 +229,85 @@ export function WebLesson2() {
                        )}
                     </div>
 
-                    <div className="border-t border-border-strong pt-4 flex-1">
+                    <div className="border-t border-border-strong pt-4 flex-1 w-full">
                       <div className="text-eyebrow mb-3">Mark name</div>
-                      
-                      <button 
-                        onClick={() => playAudio(v.markTranslit)}
+                      <div className="flex items-center gap-2">
+                        <span className="font-tibetan text-3xl text-ink">{v.markTib}</span>
+                        <span className="inline-grid size-6 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted">
+                          {playingItem === v.markTranslit ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
+                        </span>
+                      </div>
+                      <div className="text-sm italic text-ink-light mt-1.5 font-medium">{v.markTranslit}</div>
+                    </div>
+                    <p className="mt-4 text-[13px] leading-relaxed text-ink-light bg-surface-muted p-3 border border-border-strong rounded-xl w-full">{v.note}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </StepContainer>
+
+          {/* Step 1: Pronouncing the Vowels (Redesigned to Match Lesson 1 Root Cards!) */}
+          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+            <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm mb-6 rounded-2xl">
+              <Info className="mt-0.5 size-5 shrink-0 text-brand" />
+              <div className="text-sm font-bold leading-relaxed text-ink-light">
+                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example ཀ is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
+              </div>
+            </div>
+
+            <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm rounded-2xl flex flex-col divide-y divide-border-subtle">
+              {VOWELS.map((v) => {
+                const styleMeta = VOWEL_STYLE_META[v.key];
+                return (
+                  <div key={v.key} className="p-6 md:p-8 flex flex-col md:flex-row gap-8" style={{ borderLeft: `4px solid ${styleMeta.hex}` }}>
+                    <div className="w-full md:w-1/3 shrink-0">
+                      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 ${styleMeta.swatch} ${styleMeta.text}`}>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{styleMeta.label}</span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          if (!isNative) setSelected({ v, rect: e.currentTarget.getBoundingClientRect() });
+                          playAudio(v.translit);
+                        }}
                         disabled={playingItem !== null}
-                        className="group flex flex-col text-left transition-colors"
+                        className="flex items-center gap-4 group transition-all text-left mb-6"
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="font-tibetan text-3xl text-ink group-hover:text-brand">{v.markTib}</span>
-                          <span className="inline-grid size-6 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
-                            {playingItem === v.markTranslit ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
+                        <span className="font-tibetan text-[4rem] leading-none text-ink group-hover:opacity-80 transition-opacity pt-1" style={{ color: styleMeta.hex }}>{v.tib}</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-serif text-2xl italic text-ink-muted">{v.key}</span>
+                          <span className="inline-grid size-8 place-items-center rounded-full bg-surface-muted border border-border-strong text-ink-muted group-hover:text-brand group-hover:border-brand/30 transition-colors">
+                            {playingItem === v.translit ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} />}
                           </span>
                         </div>
-                        <div className="text-sm italic text-ink-light mt-1.5 font-medium">{v.markTranslit}</div>
                       </button>
+                      <p className="text-[14px] leading-relaxed text-ink-light">
+                        <strong className="text-ink">{v.english}</strong> {v.note}
+                      </p>
                     </div>
-                    <p className="mt-4 text-[13px] leading-relaxed text-ink-light bg-surface-muted p-3 border border-border-strong">{v.note}</p>
+
+                    <div className="flex-1 flex flex-col justify-center border-t md:border-t-0 md:border-l border-border-subtle pt-6 md:pt-0 md:pl-8">
+                      <div className="text-eyebrow mb-4">Examples</div>
+                      <div className="flex flex-wrap gap-2">
+                        {v.examples.map((ex) => (
+                          <button
+                            key={ex}
+                            onClick={() => playAudio(ex)}
+                            className="w-12 h-12 flex items-center justify-center rounded-full font-tibetan text-2xl pt-1 hover:scale-105 transition-transform active:scale-95"
+                            style={{ backgroundColor: `${styleMeta.hex}15`, color: styleMeta.hex, border: `1px solid ${styleMeta.hex}40` }}
+                          >
+                            {ex}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
             </div>
           </StepContainer>
 
-          {/* Step 1: Pronunciation & Specimen Combined */}
-          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
-            <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm mb-6">
-              <Info className="mt-0.5 size-5 shrink-0 text-brand" />
-              <div className="text-sm font-bold leading-relaxed text-ink-light">
-                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example ཀ is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {VOWELS.map((v) => (
-                <div key={v.key} className="bg-surface rounded-2xl p-6 shadow-sm border border-border-subtle flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-5">
-                       <button onClick={(e) => {
-                          if (!isNative) setSelected({ v, rect: e.currentTarget.getBoundingClientRect() });
-                          playAudio(v.tib);
-                       }} className="w-20 h-20 bg-surface-muted border border-border-subtle rounded-2xl flex items-center justify-center font-tibetan text-5xl leading-none pt-2 text-ink shadow-sm hover:border-brand transition-colors">{v.tib}</button>
-                       <div className="flex flex-col gap-1">
-                         <span className="font-mono font-bold text-xl text-ink">[{v.translit.toLowerCase()}]</span>
-                         <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted">{v.markTranslit}</span>
-                       </div>
-                     </div>
-                     <button onClick={() => playAudio(v.translit)} className="w-12 h-12 shrink-0 rounded-full bg-brand-light border border-brand/20 flex items-center justify-center text-brand-dark hover:bg-brand/40 transition-colors shadow-sm">
-                       {playingItem === v.translit ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />}
-                     </button>
-                  </div>
-                  <div className="pt-4 border-t border-border-subtle">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted block mb-1">As in English</span>
-                    <div className="text-base font-medium text-ink">{v.english}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </StepContainer>
-
-          {/* Step 2: Interim Quiz */}
+          {/* Step 2: Spelling */}
           <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
-            <QuizModule
-              moduleId={2}
-              title="Mastery Check · Marks & Sounds" 
-              intro="Test your recognition of the vowel marks." 
-              data={VOWELS.map(v => ({ tib: v.tib, pron: v.translit, en: v.markTranslit }))} 
-              playAudio={playAudio} 
-              playingItem={playingItem} 
-              playErrorBeep={playErrorBeep} 
-              questionCount={8} 
-              isUnlockTest={false}
-            />
-          </StepContainer>
-
-          {/* Step 3: Spelling (Fixed Typo) */}
-          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="space-y-8 mb-10">
               {VOWELS.map((v) => (
                 <div key={v.key} className="bg-surface-muted rounded-[1.5rem] p-6 border border-border-subtle shadow-sm">
@@ -305,7 +320,6 @@ export function WebLesson2() {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-3 bg-white border border-border-subtle shadow-sm rounded-[1.25rem] px-6 py-5 mb-6">
                     <span className="font-tibetan text-[3rem] leading-none pt-1 w-12 text-center text-ink">{v.tib}</span>
 
-                    {/* FIX: Using ཨ (A) instead of མ (Ma) */}
                     <SpellingFormula parts={`ཨ + ${v.markTib}`} />
 
                     <ArrowRight size={16} className="text-border-strong mx-2" />
@@ -358,12 +372,12 @@ export function WebLesson2() {
             </div>
           </StepContainer>
 
-          {/* Step 4: Spelling Quiz */}
-          <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
+          {/* Step 3: Combined Marks, Sounds & Spelling Quiz */}
+          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <QuizModule 
               moduleId={2}
-              title="Mastery Check · Vowel Spelling" 
-              intro="Check your spelling and pronunciation before moving to vocabulary." 
+              title="Mastery Check · Marks, Sounds & Spelling" 
+              intro="Check your recognition of the four diacritic marks, vowel sounds, and syllable spelling." 
               questions={spellingQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
@@ -372,8 +386,8 @@ export function WebLesson2() {
             />
           </StepContainer>
 
-          {/* Step 5: Vocabulary */}
-          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+          {/* Step 4: Vocabulary */}
+          <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="mb-10">
               <VocabGrid 
                 items={VOCAB.map(v => {
@@ -389,8 +403,8 @@ export function WebLesson2() {
             </div>
           </StepContainer>
 
-          {/* Step 6: Vocabulary Quiz */}
-          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
+          {/* Step 5: Vocabulary Quiz */}
+          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <QuizModule
               moduleId={2}
               title="Mastery Check · Vocabulary" 
@@ -402,17 +416,17 @@ export function WebLesson2() {
               questionCount={16} 
               isVocabMatch
               isUnlockTest={true} 
-              onPass={() => saveWords(VOCAB.length, 6)} 
+              onPass={() => saveWords(VOCAB.length, 5)} 
             />
           </StepContainer>
 
-          {/* Step 7: Practice */}
-          <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)}>
+          {/* Step 6: Practice */}
+          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 8: Final Assessment */}
-          <StepContainer index={8} step={WEB_STEPS[8]} status={statusOf(8)} isExpanded={expandedStep === 8} onToggle={() => toggleStep(8)} onContinue={() => markComplete(8)} isLast>
+          {/* Step 7: Final Assessment */}
+          <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
             <QuizModule 
               moduleId={2}
               title="Final Assessment" 
@@ -423,7 +437,7 @@ export function WebLesson2() {
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/3" 
-              onPass={() => markComplete(8)} 
+              onPass={() => markComplete(7)} 
             />
           </StepContainer>
         </div>
@@ -474,10 +488,16 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) 
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <div className="text-xl font-mono font-bold text-ink">[{v.translit.toLowerCase()}]</div>
+            <div className="text-sm font-bold uppercase tracking-widest text-ink-muted">· {v.markTranslit}</div>
           </div>
-          <Button variant="primary" onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-4 py-1.5 text-xs">
-            {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Play
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => onSpeak(v.markTranslit)} disabled={playingItem !== null} className="w-fit px-3.5 py-1.5 text-xs">
+              {playingItem === v.markTranslit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Mark
+            </Button>
+            <Button variant="primary" onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-3.5 py-1.5 text-xs">
+              {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Sound
+            </Button>
+          </div>
         </div>
       </div>
 

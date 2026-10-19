@@ -92,40 +92,84 @@ export const STEPS = [
   { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." },
 ];
 
+/**
+ * COMBINED MASTERY CHECK: Diacritic Marks (Gigu, Zhabkyu, etc.) + Vowel Sounds + Spelling
+ */
 export function generateSpellingQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
   
-  // 1. Mark Recognition
-  const vTargets = shuffle([...VOWELS]);
-  for (const v of vTargets) {
-    const wrongs = shuffle(VOWELS.filter(x => x.key !== v.key)).slice(0, 3);
+  // 1. Diacritic Mark Name Audio -> Select Diacritic Mark Name in Tibetan (གི་གུ, ཞབས་ཀྱུ, འགྲེང་བུ, ན་རོ)
+  for (const v of shuffle([...VOWELS])) {
+    const wrongs = shuffle(VOWELS.filter(x => x.key !== v.key));
     qs.push({
+      isAudioType: true,
       type: 'base',
-      questionText: `Which vowel is called ${v.markTib} (${v.markTranslit})?`,
-      answer: v.tib,
-      audioString: v.markTranslit, // Prompt plays "gi-gu"
-      audioTarget: v.tib, // Correct choice plays "I"
-      choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.tib, value: x.tib }))
+      questionText: "Listen to the diacritic mark name and select the matching mark.",
+      answer: v.markTib,
+      audioString: v.markTranslit, // Plays "Gigu ( ི).wav", "Zhabkyu (  ུ. ).wav", etc.
+      audioTarget: v.markTranslit,
+      choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.markTib, value: x.markTib, pron: x.markTranslit }))
     });
   }
 
-  // 2. Spelling Math
-  const spellTargets = shuffle(VOWELS.flatMap(v => (v.spellings || []).map(s => ({s, v}))));
-  for (const {s, v} of spellTargets) {
-    const baseLetter = s.word.charAt(0);
-    const wrongs = VOWELS.filter(x => x.key !== v.key).map(x => {
-      return { word: baseLetter + x.mark }; 
+  // 2. Visual Diacritic Mark Name -> Read its Name ([gi-gu], [shab-kyu], [dreng-bu], [na-ro])
+  for (const v of shuffle([...VOWELS])) {
+    const wrongs = shuffle(VOWELS.filter(x => x.key !== v.key));
+    qs.push({
+      type: 'base',
+      questionText: `What is the name of the diacritic mark ${v.markTib}?`,
+      prominentTibetan: v.markTib,
+      answer: v.markTranslit,
+      audioString: v.markTranslit,
+      audioTarget: v.markTranslit,
+      choices: shuffle([v, ...wrongs]).map(x => ({ value: x.markTranslit, label: `[${x.markTranslit}]` }))
     });
+  }
+
+  // 3. Connect Diacritic Mark Name -> Vowel Carrier (ཨི, ཨུ, ཨེ, ཨོ)
+  for (const v of shuffle([...VOWELS])) {
+    const wrongs = shuffle(VOWELS.filter(x => x.key !== v.key));
+    qs.push({
+      type: 'base',
+      questionText: `Which vowel is formed with ${v.markTib} (${v.markTranslit})?`,
+      answer: v.tib,
+      audioString: v.markTranslit, // Prompt plays "gi-gu"
+      audioTarget: v.translit,     // Correct choice plays "I ཨི.wav"
+      choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.tib, value: x.tib, pron: x.key }))
+    });
+  }
+
+  // 4. Vowel Sound Audio -> Select Vowel (ཨི, ཨུ, ཨེ, ཨོ)
+  for (const v of shuffle([...VOWELS])) {
+    const wrongs = shuffle(VOWELS.filter(x => x.key !== v.key));
+    qs.push({
+      isAudioType: true,
+      type: 'base',
+      questionText: "Listen to the vowel sound and select the matching vowel.",
+      answer: v.tib,
+      audioString: v.translit, // Plays "I ཨི.wav", "U ཨུ.wav", etc.
+      audioTarget: v.translit,
+      choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.tib, value: x.tib, pron: x.key }))
+    });
+  }
+
+  // 5. Syllable Spelling Audio -> Select Spelled Syllable (མི, རི, ཤི, སུ, etc.)
+  const spellTargets = shuffle(VOWELS.flatMap(v => (v.spellings || []).map(s => ({ s, v })))).slice(0, 8);
+  for (const { s, v } of spellTargets) {
+    const baseLetter = s.word.charAt(0);
+    const wrongs = VOWELS.filter(x => x.key !== v.key).map(x => ({
+      word: baseLetter + x.mark
+    }));
     
     qs.push({
       isAudioType: true,
       type: 'base',
-      questionText: "Listen and select the matching option.",
+      questionText: "Listen to the spelling and select the matching syllable.",
       answer: s.word,
       audioString: s.audio || s.word, 
       audioTarget: s.word,
-      choices: shuffle([{word: s.word}, ...wrongs]).map(x => ({ tib: x.word, value: x.word }))
+      choices: shuffle([{ word: s.word }, ...wrongs]).map(x => ({ tib: x.word, value: x.word }))
     });
   }
 
@@ -153,23 +197,35 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 3. markQs
+  // 3. listenMarkNameQs (Tests diacritic mark audio directly)
+  shuffle(VOWELS).forEach(v => {
+    qs.push({
+      isAudioType: true,
+      questionText: "Listen to the diacritic mark name and select the matching mark.",
+      answer: v.markTib,
+      audioString: v.markTranslit,
+      audioTarget: v.markTranslit,
+      choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTib, tib: x.markTib, pron: x.markTranslit }))
+    });
+  });
+
+  // 4. markQs
   shuffle(VOWELS).slice(0, 3).forEach(v => {
     qs.push({
-      questionText: `Which vowel is called ${v.markTib} (${v.markTranslit})?`, answer: v.tib, audioString: v.markTranslit, audioTarget: v.tib,
+      questionText: `Which vowel is called ${v.markTib} (${v.markTranslit})?`, answer: v.tib, audioString: v.markTranslit, audioTarget: v.translit,
       choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
     });
   });
 
-  // 4. nameQs
+  // 5. nameQs
   shuffle(VOWELS).slice(0, 3).forEach(v => {
     qs.push({
-      questionText: `What is the name of the vowel ${v.tib}?`, prominentTibetan: v.tib, answer: v.markTranslit, audioString: v.tib, audioTarget: v.markTranslit,
+      questionText: `What is the name of the vowel mark in ${v.tib}?`, prominentTibetan: v.tib, answer: v.markTranslit, audioString: v.markTranslit, audioTarget: v.markTranslit,
       choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTranslit, label: `${x.markTib} (${x.markTranslit})` }))
     });
   });
 
-  // 5. positionQs
+  // 6. positionQs
   shuffle(VOWELS).slice(0, 3).forEach(v => {
     const answerLabel = POSITION_META[v.position as Position].label;
     const wrongs = Object.keys(POSITION_META).filter(k => k !== v.position).map(k => POSITION_META[k as Position].label);
@@ -182,15 +238,15 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 6. soundQs
+  // 7. soundQs
   shuffle(VOWELS).slice(0, 3).forEach(v => {
     qs.push({
-      questionText: `Which vowel sounds ${v.english.replace(/^As in /i, "as in ")}`, answer: v.tib, audioString: v.translit, audioTarget: v.tib,
+      questionText: `Which vowel sounds ${v.english.replace(/^As in /i, "as in ")}`, answer: v.tib, audioString: v.translit, audioTarget: v.translit,
       choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.tib, tib: x.tib }))
     });
   });
 
-  // 7. combineQs
+  // 8. combineQs
   const allSpellings = VOWELS.flatMap(v => (v.spellings || []).map(s => ({ v, s })));
   shuffle(allSpellings).slice(0, 5).forEach(({ v, s }) => {
     const baseLetter = s.word.charAt(0);
@@ -198,7 +254,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
       questionText: `${baseLetter} + ${v.markTranslit} = ?`, 
       prominentTibetan: `${baseLetter} + ${v.markTib}`, 
       answer: s.word, 
-      audioString: s.word,
+      audioString: s.audio || s.word,
       audioTarget: s.word,
       choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => {
         const wrongWord = baseLetter + x.mark;
@@ -207,23 +263,23 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 8. vocabReadQs
+  // 9. vocabReadQs
   shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
-      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib, audioTarget: v.translit,
+      questionText: `How does ${v.tib} read?`, prominentTibetan: v.tib, answer: v.translit, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.translit, label: x.translit }))
     });
   });
 
-  // 9. vocabMeanQs
+  // 10. vocabMeanQs
   shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
-      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
     });
   });
 
-  // 10. vocabWordQs
+  // 11. vocabWordQs
   shuffle(VOCAB).slice(0, 3).forEach(v => {
     qs.push({
       questionText: `Which word means "${v.en}"?`, answer: v.tib, audioString: v.tib, audioTarget: v.tib,
@@ -231,17 +287,17 @@ export function generateFinalQuiz(): QuizQuestion[] {
     });
   });
 
-  // 11. whichVowelQs
+  // 12. whichVowelQs
   const nonParticleVocab = VOCAB.filter(w => !w.tib.includes("་"));
-  shuffle(nonParticleVocab).slice(0, 4).forEach(w => {
+  shuffle(nonParticleVocab).slice(0, 3).forEach(w => {
     const v = VOWELS.find(x => x.key === w.vowel)!;
     qs.push({
-      questionText: `Which vowel is written in ${w.tib}?`, prominentTibetan: w.tib, answer: v.markTranslit, audioString: w.tib, audioTarget: v.markTranslit,
+      questionText: `Which vowel mark is written in ${w.tib}?`, prominentTibetan: w.tib, answer: v.markTranslit, audioString: w.tib, audioTarget: v.markTranslit,
       choices: shuffle([v, ...pickWrongs(VOWELS, v, 3)]).map(x => ({ value: x.markTranslit, label: `${x.markTib} (${x.markTranslit})` }))
     });
   });
 
-  // 12. ruleQs - ADDED noAudio: true
+  // 13. ruleQs
   const allRules = [
     { q: "A root letter written with no vowel mark carries which inherent vowel?", a: "[a]", w: ["[i]", "[u]", "no vowel at all"], noAudio: true },
     { q: "Which of the four vowel marks is written below the root letter?", a: "zhabs-kyu (ཞབས་ཀྱུ)", w: ["gi-gu (གི་གུ)", "'dreng-bu (འགྲེང་བུ)", "na-ro (ན་རོ)"], noAudio: true },

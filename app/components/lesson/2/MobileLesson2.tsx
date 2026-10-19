@@ -5,8 +5,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
-  Loader2, Volume2, Sparkles, CheckCircle2, 
-  ArrowRight, ArrowUp, ArrowDown, Info 
+  Loader2, Volume2, ArrowRight, Info 
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -18,7 +17,7 @@ import {
   generateSpellingQuiz, 
   generateFinalQuiz, 
   Vowel, 
-  Position 
+  VowelKey 
 } from "@/app/data/lesson2";
 
 import { MobileStepPlayer } from "../MobileStepPlayer";
@@ -27,6 +26,13 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import { InstructionModal } from "@/app/components/ui/InstructionModal";
 import { MARK_CONFIG, SpellingFormula } from "@/app/components/ui/SpellingFormula";
 
+const VOWEL_STYLE_META: Record<VowelKey, { label: string; swatch: string; text: string; hex: string }> = {
+  i: { label: "GI-GU · ABOVE ROOT", swatch: "bg-sky-50", text: "text-sky-800", hex: "#0ea5e9" },
+  u: { label: "SHAB-KYU · BELOW ROOT", swatch: "bg-amber-50", text: "text-amber-800", hex: "#f59e0b" },
+  e: { label: "DRENG-BU · ABOVE ROOT", swatch: "bg-violet-50", text: "text-violet-800", hex: "#8b5cf6" },
+  o: { label: "NA-RO · ABOVE ROOT", swatch: "bg-rose-50", text: "text-rose-800", hex: "#f43f5e" },
+};
+
 export function MobileLesson2() {
   const router = useRouter();
   const { user } = useUser();
@@ -34,9 +40,9 @@ export function MobileLesson2() {
   
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   
-  // Total steps updated for new structure
-  const totalSteps = 11; 
-  const { markComplete, completed } = useLessonProgress(totalSteps);
+  // Total steps is now 10 (Marks & Sounds Mastery + Spelling Mastery combined into 1 step!)
+  const totalSteps = 10; 
+  const { markComplete, completed } = useLessonProgress(8);
   const MODULE_ID = 2;
 
   // Initialize from saved step so "Resume lesson" opens at the exact point
@@ -63,8 +69,8 @@ export function MobileLesson2() {
     }
   }, [currentStep, hasSeenInstructions]);
 
-  // Sync mobile isolated steps to the 9 underlying Web Steps
-  const webStepMap = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8]; 
+  // Sync mobile isolated steps to the 8 underlying Web Steps
+  const webStepMap = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7]; 
 
   const saveWords = async (wordCount: number) => {
     if (user) {
@@ -91,8 +97,8 @@ export function MobileLesson2() {
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
-    // Save words on the Vocabulary quiz step (Step 8)
-    if (currentStep === 8 && !completed.has(currentWebStep)) {
+    // Save words on the Vocabulary quiz step (Step 7)
+    if (currentStep === 7 && !completed.has(currentWebStep)) {
       saveWords(VOCAB.length);
     }
 
@@ -151,9 +157,14 @@ export function MobileLesson2() {
     }
   ], []);
 
-  const openInspector = (v: Vowel) => {
+  const combinedMasteryQuestions = useMemo(() => generateSpellingQuiz(), []);
+  const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
+
+  // Plays the individual mark name ("gi-gu", "shab-kyu", etc.) when tapped on Step 2,
+  // or the vowel sound ("I", "U", etc.) when tapped on Step 3!
+  const openInspector = (v: Vowel, mode: "mark" | "sound" = "mark") => {
     setSelectedVowel(v);
-    playAudio(v.translit);
+    playAudio(mode === "mark" ? v.markTranslit : v.translit);
   };
 
   const renderStepContent = () => {
@@ -220,10 +231,9 @@ export function MobileLesson2() {
                 {[
                   { mod: "MODULE 01", title: "The four diacritic marks" },
                   { mod: "MODULE 02", title: "Pronouncing the vowels" },
-                  { mod: "MODULE 03", title: "Marks & Sounds Mastery" },
-                  { mod: "MODULE 04", title: "Spelling rules" },
-                  { mod: "MODULE 05", title: "Spelling Mastery" },
-                  { mod: "MODULE 06", title: "Vocabulary & Practice" },
+                  { mod: "MODULE 03", title: "Spelling rules" },
+                  { mod: "MODULE 04", title: "Marks, Sounds & Spelling Mastery" },
+                  { mod: "MODULE 05", title: "Vocabulary & Practice" },
                 ].map((item, idx) => (
                   <div 
                     key={item.mod} 
@@ -246,7 +256,7 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 2: THE DIACRITIC MARKS (PNGs Only)
+      // STEP 2: THE DIACRITIC MARKS (Plays Individual Mark Name Audio: Gigu, Zhabkyu, etc.)
       // ---------------------------------------------------------
       case 2:
         return (
@@ -258,13 +268,12 @@ export function MobileLesson2() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               {VOWELS.map((v) => {
-                const pm = POSITION_META[v.position];
                 const pngConfig = MARK_CONFIG[v.mark.trim()]; 
                 return (
                   <button 
                     key={v.key}
-                    onClick={() => openInspector(v)}
-                    className="bg-white rounded-[1.5rem] shadow-sm border border-border-subtle flex flex-col items-center justify-center p-6 active:scale-95 transition-transform"
+                    onClick={() => openInspector(v, "mark")}
+                    className="bg-white rounded-[1.5rem] shadow-sm border border-border-subtle flex flex-col items-center justify-center p-6 active:scale-95 transition-transform relative"
                   >
                      <div className="h-16 flex items-center justify-center mb-4">
                        {pngConfig ? (
@@ -275,6 +284,9 @@ export function MobileLesson2() {
                      </div>
                      <span className="font-tibetan text-2xl text-ink leading-none mb-1">{v.markTib}</span>
                      <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{v.markTranslit}</span>
+                     {playingItem === v.markTranslit && (
+                       <Loader2 size={14} className="absolute top-3 right-3 animate-spin text-brand" />
+                     )}
                   </button>
                 );
               })}
@@ -283,65 +295,71 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 3: TYPE SPECIMEN + PRONOUNCING
+      // STEP 3: PRONOUNCING THE VOWELS (Redesigned to Match Lesson 1 Root Cards!)
       // ---------------------------------------------------------
       case 3:
         return (
-          <div className="space-y-4 pb-6">
-            <div className="flex gap-4 p-5 bg-surface rounded-[1.5rem] border border-border-strong shadow-sm mb-6">
-              <Info className="mt-0.5 size-5 shrink-0 text-brand" />
-              <div className="text-[14px] font-bold leading-relaxed text-ink-light">
-                The four diacritics replace the inherent [a] of the root letter.
-              </div>
+          <div className="pb-6">
+            <p className="text-[15px] leading-relaxed text-ink/80 mb-6">
+              The absence of a vowel mark on a Tibetan letter carries an inherent <strong>[a]</strong>. The four diacritic marks replace that inherent vowel with a new sound.
+            </p>
+            <div className="bg-white rounded-[1.5rem] border border-border-subtle shadow-sm flex flex-col overflow-hidden divide-y divide-border-subtle">
+              {VOWELS.map((v) => {
+                const styleMeta = VOWEL_STYLE_META[v.key];
+                return (
+                  <div key={v.key} className="p-6 relative" style={{ borderLeft: `4px solid ${styleMeta.hex}` }}>
+                    <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6 ${styleMeta.swatch} ${styleMeta.text}`}>
+                      {styleMeta.label}
+                    </div>
+                    
+                    <div className="flex items-center gap-5 mb-4">
+                      <button 
+                        onClick={() => openInspector(v, "sound")} 
+                        className="font-tibetan text-5xl text-ink active:opacity-50 pt-1 leading-none"
+                      >
+                        {v.tib}
+                      </button>
+                      <div className="flex flex-col gap-1">
+                        <div className="font-serif text-2xl italic text-ink-muted">{v.key}</div>
+                        <button 
+                          onClick={() => playAudio(v.translit)}
+                          className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center border border-border-strong text-ink-muted active:text-brand"
+                        >
+                          {playingItem === v.translit ? <Loader2 size={14} className="animate-spin text-brand" /> : <Volume2 size={14} />}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <p className="text-[14px] text-ink/80 leading-relaxed mb-6">
+                      <strong className="text-ink">{v.english}</strong> {v.note}
+                    </p>
+                    
+                    <div className="pt-5 border-t border-border-subtle">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-3">Examples</div>
+                      <div className="flex flex-wrap gap-2">
+                        {v.examples.map((ex) => (
+                          <button 
+                            key={ex} 
+                            onClick={() => playAudio(ex)} 
+                            className="w-11 h-11 flex items-center justify-center rounded-full font-tibetan text-2xl pt-1 transition-transform active:scale-95"
+                            style={{ backgroundColor: `${styleMeta.hex}15`, color: styleMeta.hex, border: `1px solid ${styleMeta.hex}40` }}
+                          >
+                            {ex}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            {VOWELS.map((v) => (
-              <div key={v.key} className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-border-subtle flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-4">
-                     <button onClick={() => openInspector(v)} className="w-16 h-16 bg-surface-muted border border-border-subtle rounded-[1.25rem] flex items-center justify-center font-tibetan text-4xl leading-none pt-2 text-ink shadow-sm">{v.tib}</button>
-                     <div className="flex flex-col gap-1">
-                       <span className="font-mono font-bold text-[18px] text-ink">[{v.translit.toLowerCase()}]</span>
-                       <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted">{v.markTranslit}</span>
-                     </div>
-                   </div>
-                   <button onClick={() => playAudio(v.translit)} className="w-12 h-12 shrink-0 rounded-full bg-brand-light border border-brand/20 flex items-center justify-center text-brand-dark active:scale-95 transition-transform shadow-sm">
-                     {playingItem === v.translit ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />}
-                   </button>
-                </div>
-                <div className="pt-3 border-t border-border-subtle">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted block mb-1">As in English</span>
-                  <div className="text-[15px] font-medium text-ink">{v.english}</div>
-                </div>
-              </div>
-            ))}
           </div>
         );
 
       // ---------------------------------------------------------
-      // STEP 4: INTERIM MASTERY CHECK
+      // STEP 4: SPELLING MATH
       // ---------------------------------------------------------
       case 4:
-        return (
-          <div className="pb-6">
-            <QuizModule
-              moduleId={2}
-              title="Mastery Check · Marks & Sounds" 
-              intro="Test your recognition of the vowel marks." 
-              data={VOWELS.map(v => ({ tib: v.tib, pron: v.translit, en: v.markTranslit }))} 
-              playAudio={playAudio} 
-              playingItem={playingItem} 
-              playErrorBeep={playErrorBeep} 
-              questionCount={8} 
-              hideHeader={true}
-              isUnlockTest={false}
-            />
-          </div>
-        );
-
-      // ---------------------------------------------------------
-      // STEP 5: SPELLING MATH (Typo Fixed to ཨ)
-      // ---------------------------------------------------------
-      case 5:
         return (
           <div className="space-y-6 pb-6">
             {VOWELS.map((v) => (
@@ -353,7 +371,6 @@ export function MobileLesson2() {
                 
                 <div className="bg-white rounded-[1.25rem] p-4 sm:p-5 flex items-center justify-between border border-border-subtle shadow-sm mb-6">
                   <span className="font-tibetan text-4xl leading-none pt-1 text-ink text-center">{v.tib}</span>
-                  {/* FIX: Set base letter to ཨ explicitly */}
                   <SpellingFormula parts={`ཨ + ${v.markTib}`} />
                   <ArrowRight size={14} className="text-border-strong hidden sm:block" />
                   <div className="flex flex-col items-center gap-0.5">
@@ -392,16 +409,16 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 6: SPELLING MASTERY CHECK
+      // STEP 5: COMBINED MARKS, SOUNDS & SPELLING MASTERY CHECK
       // ---------------------------------------------------------
-      case 6:
+      case 5:
         return (
           <div className="pb-6">
             <QuizModule 
               moduleId={2}
-              title="Mastery Check · Vowel Spelling" 
-              intro="Check your spelling and pronunciation before moving to vocabulary." 
-              questions={generateSpellingQuiz()} 
+              title="Mastery Check · Marks, Sounds & Spelling" 
+              intro="Check your recognition of the four diacritic marks, vowel sounds, and syllable spelling." 
+              questions={combinedMasteryQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
@@ -412,9 +429,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 7: VOCABULARY
+      // STEP 6: VOCABULARY
       // ---------------------------------------------------------
-      case 7:
+      case 6:
         return (
           <div className="pb-6">
             <div className="grid grid-cols-2 gap-3">
@@ -435,9 +452,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 8: VOCABULARY MASTERY CHECK
+      // STEP 7: VOCABULARY MASTERY CHECK
       // ---------------------------------------------------------
-      case 8:
+      case 7:
         return (
           <div className="pb-6">
             <QuizModule
@@ -457,9 +474,9 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 9: PRACTICE DRILLS
+      // STEP 8: PRACTICE DRILLS
       // ---------------------------------------------------------
-      case 9:
+      case 8:
         return (
           <div className="pb-6">
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
@@ -467,23 +484,23 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 10: FINAL ASSESSMENT
+      // STEP 9: FINAL ASSESSMENT
       // ---------------------------------------------------------
-      case 10:
+      case 9:
         return (
           <div className="pb-6">
             <QuizModule 
               moduleId={2}
               title="Final Assessment" 
               intro="Score 80% or higher to unlock the next step: The Three Superscripts." 
-              questions={generateFinalQuiz()} 
+              questions={finalQuizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               hideHeader={true}
               nextLessonPath="/dashboard/lessons/3" 
-              onPass={() => markComplete(8)} 
+              onPass={() => markComplete(7)} 
             />
           </div>
         );
@@ -495,9 +512,8 @@ export function MobileLesson2() {
     "What you'll learn", 
     "The diacritic marks", 
     "Pronouncing the vowels", 
-    "Marks & Sounds Mastery", 
     "Spelling rules", 
-    "Spelling Mastery", 
+    "Marks & Spelling Mastery", 
     "Vocabulary", 
     "Vocabulary Mastery", 
     "Practice & exercises", 
@@ -520,7 +536,7 @@ export function MobileLesson2() {
         {renderStepContent()}
       </MobileStepPlayer>
 
-      {/* INSPECTOR */}
+      {/* INSPECTOR WITH DUAL AUDIO BUTTONS (Mark Name + Vowel Sound) */}
       {selectedVowel && (
         <>
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedVowel(null)}></div>
@@ -531,20 +547,21 @@ export function MobileLesson2() {
                 <span className="font-tibetan text-[5rem] leading-none text-ink pt-2">{selectedVowel.tib}</span>
                 <div className="flex flex-col gap-1 mt-2">
                   <div className="font-mono text-2xl font-bold text-ink">[{selectedVowel.translit.toLowerCase()}]</div>
-                  <div className="text-[12px] font-bold uppercase tracking-widest text-ink-muted">{selectedVowel.markTranslit}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-tibetan text-xl text-ink-light">{selectedVowel.markTib}</span>
+                    <span className="text-[12px] font-bold uppercase tracking-widest text-ink-muted">· {selectedVowel.markTranslit}</span>
+                  </div>
                 </div>
               </div>
-              <button onClick={() => playAudio(selectedVowel.translit)} className="w-14 h-14 rounded-full bg-brand flex items-center justify-center text-ink shadow-sm active:scale-95 transition-transform">
-                {playingItem === selectedVowel.translit ? <Loader2 size={24} className="animate-spin" /> : <Volume2 size={24} />}
-              </button>
             </div>
+
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className={`p-4 rounded-2xl ${POSITION_META[selectedVowel.position].swatch} bg-opacity-50 border`} style={{ borderColor: POSITION_META[selectedVowel.position].hex + "40" }}>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">Position</div>
                 <div className={`font-bold text-sm ${POSITION_META[selectedVowel.position].text}`}>{POSITION_META[selectedVowel.position].label}</div>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-border-subtle relative overflow-hidden flex flex-col justify-center items-center h-20">
-                <div className="absolute top-2 left-3 text-[10px] font-bold uppercase tracking-widest text-ink-muted">Mark Name</div>
+                <div className="absolute top-2 left-3 text-[10px] font-bold uppercase tracking-widest text-ink-muted">Mark Shape</div>
                 {MARK_CONFIG[selectedVowel.mark.trim()] ? (
                    <img src={MARK_CONFIG[selectedVowel.mark.trim()].src} alt={selectedVowel.markTib} className="h-8 w-auto object-contain opacity-80 mt-3" />
                 ) : (
@@ -552,15 +569,35 @@ export function MobileLesson2() {
                 )}
               </div>
             </div>
+
             <div className="bg-white rounded-[1.25rem] p-5 border border-border-subtle mb-4 shadow-sm">
               <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-2">Pronunciation</div>
               <p className="text-[16px] font-bold text-ink leading-relaxed">{selectedVowel.english}</p>
             </div>
-            <div className="bg-surface-muted rounded-[1.25rem] p-5 border border-border-subtle">
+
+            <div className="bg-surface-muted rounded-[1.25rem] p-5 border border-border-subtle mb-6">
               <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-2">Textbook Note</div>
               <p className="text-[14px] leading-relaxed text-ink/90 italic">"{selectedVowel.note}"</p>
             </div>
-            <button onClick={() => setSelectedVowel(null)} className="w-full mt-6 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
+
+            <div className="flex gap-3">
+              <button 
+                onClick={() => playAudio(selectedVowel.markTranslit)} 
+                className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                {playingItem === selectedVowel.markTranslit ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
+                <span className="text-sm">Mark ({selectedVowel.markTranslit})</span>
+              </button>
+              <button 
+                onClick={() => playAudio(selectedVowel.translit)} 
+                className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                {playingItem === selectedVowel.translit ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
+                <span className="text-sm">Sound [{selectedVowel.key}]</span>
+              </button>
+            </div>
+
+            <button onClick={() => setSelectedVowel(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
         </>
       )}
