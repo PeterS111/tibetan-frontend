@@ -1,5 +1,4 @@
-
-
+// app/components/lesson/StepContainer.tsx
 import { ReactNode } from "react";
 import { ChevronDown, Check, ChevronRight, ChevronLeft } from "lucide-react";
 import { Badge } from "@/app/components/ui/Badge";
@@ -7,7 +6,13 @@ import { Button } from "@/app/components/ui/Button";
 
 interface StepContainerProps {
   index: number;
-  step: { eyebrow: string; title: string; description?: string };
+  step: { 
+    eyebrow: string; 
+    title: string; 
+    tibetanTitle?: string;
+    description?: string; 
+    desc?: string;
+  };
   status: "done" | "current" | "upcoming";
   isExpanded: boolean;
   onToggle: () => void;
@@ -35,9 +40,10 @@ export function StepContainer({
   
   const isUnlocked = status !== "upcoming";
   const stepNumber = index + 1 < 10 ? `0${index + 1}` : index + 1;
+  const caption = step.description || step.desc;
 
   // Determine container styling based on state
-  let containerClasses = "flex flex-col transition-all duration-200 border bg-surface ";
+  let containerClasses = "flex flex-col transition-all duration-200 border bg-surface rounded-[1.25rem] overflow-hidden ";
   
   if (status === "current") {
     containerClasses += "border-2 border-brand shadow-sm z-10 relative";
@@ -48,7 +54,7 @@ export function StepContainer({
   }
 
   // Determine number box styling
-  let numberBoxClasses = "w-12 h-12 flex items-center justify-center font-serif text-lg mr-5 transition-colors ";
+  let numberBoxClasses = "w-12 h-12 shrink-0 flex items-center justify-center font-serif text-lg mr-5 rounded-xl transition-colors ";
   
   if (status === "current") {
     numberBoxClasses += "border border-brand text-brand-dark bg-brand/5";
@@ -78,12 +84,22 @@ export function StepContainer({
             {status === "current" && <Badge variant="brand">In Progress</Badge>}
             {status === "upcoming" && <span className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">Up Next</span>}
           </div>
-          <div className={`text-xl font-serif font-bold ${status === 'upcoming' ? 'text-ink-light' : 'text-ink'}`}>
-            {step.title}
+          <div className={`text-xl font-serif font-bold flex flex-wrap items-baseline gap-x-2.5 ${status === 'upcoming' ? 'text-ink-light' : 'text-ink'}`}>
+            <span>{step.title}</span>
+            {step.tibetanTitle && (
+              <span className="font-tibetan text-2xl font-normal text-ink-light leading-none">
+                {step.tibetanTitle}
+              </span>
+            )}
           </div>
+          {caption && (
+            <p className="text-sm text-ink-light mt-1.5 font-normal leading-relaxed max-w-3xl">
+              {caption}
+            </p>
+          )}
         </div>
         
-        <div className="ml-4 pl-4 border-l border-border-subtle h-8 flex items-center justify-center">
+        <div className="ml-4 pl-4 border-l border-border-subtle h-8 flex items-center justify-center shrink-0">
           <ChevronDown className={`text-ink-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
         </div>
       </button>

@@ -1,11 +1,9 @@
 "use client";
 
-
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Mail, Globe } from "lucide-react";
 
 export default function AboutPage() {
-
   const router = useRouter();
 
   return (
@@ -44,8 +42,7 @@ export default function AboutPage() {
             The platform is structured into <strong className="text-ink">Six Levels of Proficiency</strong> across three main courses. It guides students from their very first encounter with the thirty consonants, straight through everyday conversation, and ultimately into reading complex classical texts.
           </p>
           
-		  
-		  <p>
+          <p>
             Whether you are an academic researcher, a practitioner of Tibetan Buddhism, or someone exploring their heritage, this platform is built to support your journey without compromise.
           </p>
         </div>
@@ -63,15 +60,13 @@ export default function AboutPage() {
                 <img src="/icon.png" alt="LopLao Logo" className="w-full h-full object-contain mix-blend-multiply" />
               </div>
               
-			  
-			  <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full">
                 <h3 className="font-serif text-2xl text-ink">Tenzin Choephel Ju</h3>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-brand-dark mb-4 mt-1">Curriculum & Design · LopLao</div>
                 <p className="text-sm text-ink-light mb-6 leading-relaxed flex-1">
                   Responsible for the visual design, traditional Tibetan language curriculum, academic structure, and all educational content.
                 </p>
                 <div className="flex flex-col gap-3 pt-4 border-t border-border-subtle">
-			  
                   <a href="mailto:loplaoacademy@gmail.com" className="inline-flex items-center gap-3 text-xs font-bold text-ink-muted hover:text-ink transition-colors">
                     <Mail size={16} /> loplaoacademy@gmail.com
                   </a>
@@ -84,11 +79,11 @@ export default function AboutPage() {
 
             {/* Peter Smith Card */}
             <div className="bg-surface border border-border-subtle p-6 flex flex-col gap-6 shadow-sm">
-              <div className="w-20 h-20 shrink-0 border border-border-strong bg-[#F5F5F5] overflow-hidden">
-                <img src="/peter.jpg" alt="Dr. Peter Smith" className="w-full h-full object-cover grayscale contrast-125 mix-blend-multiply" />
+              <div className="w-20 h-20 shrink-0 border border-border-strong bg-white overflow-hidden">
+                <img src="/peter.jpg" alt="Peter Smith" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col h-full">
-                <h3 className="font-serif text-2xl text-ink">Dr. Peter Smith</h3>
+                <h3 className="font-serif text-2xl text-ink">Peter Smith</h3>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-4 mt-1">Lead Developer</div>
                 <p className="text-sm text-ink-light mb-6 leading-relaxed flex-1">
                   Programmer and platform architect. Responsible for building the code, native applications, and digital infrastructure.

@@ -1,11 +1,11 @@
 // app/components/lesson/1/WebLesson1.tsx
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { 
-  ChevronRight, ChevronLeft, Sparkles, CheckCircle2, 
-  Moon, Sun, Volume2, Loader2, ArrowRight
+  ChevronRight, ChevronLeft, Sparkles, Layers, CheckCircle2, 
+  Volume2, Loader2, ArrowRight
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -32,7 +32,6 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
-import { InstructionModal } from "@/app/components/ui/InstructionModal";
 
 export function WebLesson1() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
@@ -43,18 +42,6 @@ export function WebLesson1() {
   const [filter, setFilter] = useState<"all" | Tone>("all");
   
   const [isBypassing, setIsBypassing] = useState(false);
-  
-  // Auto-Trigger Modal State
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
-
-  useEffect(() => {
-    // Pop up automatically when they open Step 1 (The Alphabet)
-    if (expandedStep === 1 && !hasSeenInstructions) {
-      setShowInstructions(true);
-      setHasSeenInstructions(true);
-    }
-  }, [expandedStep, hasSeenInstructions]);
 
   const filtered = useMemo(() => (filter === "all" ? CONSONANTS : CONSONANTS.filter((c) => c.tone === filter)), [filter]);
 
@@ -89,7 +76,7 @@ export function WebLesson1() {
             }, 1000);
           }} 
           disabled={isBypassing}
-          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50 rounded-2xl"
         >
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
@@ -155,47 +142,70 @@ export function WebLesson1() {
         </Card>
 
         <div className="space-y-4">
+          {/* Step 01: Introduction / Welcome */}
           <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
-            <div className="grid gap-8 md:grid-cols-[1.1fr,1fr] items-start">
+            <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
+              <div className="space-y-6">
+                <p className="text-[15px] leading-relaxed text-ink-light">
+                  Over the next few steps you'll meet all thirty consonants — first as a full type specimen, then broken down by <strong className="text-ink">tone</strong>, <strong className="text-ink">root sound</strong>, and <strong className="text-ink">traditional gender</strong>. Along the way you'll hear each letter, read real vocabulary built from them, and finish with a short practice suite.
+                </p>
+
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Sparkles size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Tap any letter card to hear its sound and read the pronunciation notes.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Layers size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Steps unlock as you continue, but you can peek at any section from its header.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <CheckCircle2 size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Completed steps are marked and stay open for review.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-surface rounded-2xl p-6 sm:p-7 border border-border-strong shadow-sm">
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-6">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-5">
                   What you'll learn
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[
-                    { mod: "MODULE 01", title: "The alphabet, as a type specimen" },
-                    { mod: "MODULE 02", title: "Understanding tone" },
-                    { mod: "MODULE 03", title: "The three root sounds" },
-                    { mod: "MODULE 04", title: "Traditional gender classification" },
-                    { mod: "MODULE 05", title: "Vocabulary built from the 30 consonants" },
-                    { mod: "MODULE 06", title: "Practice & exercises" },
-                  ].map((item, idx) => (
-                    <div key={item.mod} className={`flex flex-col gap-1 ${idx !== 0 ? "pt-3.5 border-t border-border-subtle" : ""}`}>
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-ink-muted">{item.mod}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="w-2 h-2 rounded-full bg-brand shrink-0"></span>
-                        <span className="font-serif text-[16px] font-bold text-ink leading-snug">{item.title}</span>
-                      </div>
+                    "The alphabet, as a type specimen",
+                    "Understanding tone",
+                    "The three root sounds",
+                    "Traditional gender classification",
+                    "Nouns formed from the 30 consonants",
+                    "Practice & exercises",
+                  ].map((title, idx) => (
+                    <div key={title} className={`flex items-center gap-3.5 ${idx !== 0 ? "pt-3 border-t border-border-subtle" : ""}`}>
+                      <span className="w-6 h-6 rounded-md bg-brand-light border border-brand/30 text-brand-dark text-xs font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-serif text-[15px] font-bold text-ink leading-snug">{title}</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              <div className="bg-brand-light rounded-2xl p-6 sm:p-7 border border-brand/20 shadow-sm flex flex-col justify-center items-start">
-                <div className="w-12 h-12 rounded-full bg-brand text-ink flex items-center justify-center mb-4 shadow-sm">
-                  <Sparkles size={20} />
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-ink mb-2">App Guide</h3>
-                <p className="text-[15px] text-ink/80 mb-6 leading-relaxed">
-                  Learn how to interact with flashcards, pronunciation guides, and progression locks.
-                </p>
-                <Button onClick={() => setShowInstructions(true)} variant="secondary" className="w-full">
-                  How to use this app
-                </Button>
-              </div>
             </div>
           </StepContainer>
 
+          {/* Step 02: The alphabet, as a type specimen */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">
@@ -214,7 +224,7 @@ export function WebLesson1() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 border-border-subtle bg-gradient-to-br from-stone-50 to-white">
+            <div className="relative overflow-hidden border p-3 sm:p-5 transition-colors duration-500 border-border-subtle rounded-2xl bg-gradient-to-br from-stone-50 to-white">
               <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "48px 48px", color: "#1c1917" }} />
               
               <div className="relative grid grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-3xl mx-auto">
@@ -225,7 +235,7 @@ export function WebLesson1() {
                       if (!isNative) setSelected({ c, rect: e.currentTarget.getBoundingClientRect() }); 
                       playAudio(c.tib); 
                     }} 
-                    className="group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 border-border-strong bg-white hover:border-amber-300 hover:shadow-md"
+                    className="group relative flex aspect-square flex-col overflow-hidden border p-3 text-left transition-all duration-300 hover:-translate-y-1 border-border-strong bg-white hover:border-amber-300 hover:shadow-md rounded-xl"
                   >
                     <span className="absolute inset-x-0 top-0 h-[4px] transition-all duration-300 group-hover:h-[6px]" style={{ backgroundColor: TONE_HEX[c.tone] }} />
                     <span className="flex flex-1 items-center justify-center text-tibetan-display transition-transform duration-500 group-hover:scale-[1.1] text-ink" style={{ fontSize: "clamp(2.25rem, 6vw, 3.25rem)" }}>
@@ -266,7 +276,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Tone */}
+          {/* Step 03: Understanding tone */}
           <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm rounded-2xl flex flex-col divide-y divide-border-subtle">
               {(Object.keys(TONE_META) as Tone[]).map((t) => {
@@ -300,11 +310,8 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Roots */}
+          {/* Step 04: The three root sounds */}
           <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <p className="mb-8 max-w-3xl text-[15px] text-ink-light leading-relaxed">
-              Traditional Tibetan phonology traces every consonant back to one of three <em>root sounds</em> — seed syllables that anchor a whole tone family.
-            </p>
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm rounded-2xl flex flex-col divide-y divide-border-subtle">
               {[
                 { tib: "ཨ", translit: "a", label: "Neutral root · High", swatch: "bg-sky-50", text: "text-sky-800", hex: "#0ea5e9", members: "ཨ ཀ ཅ ཏ པ ཙ", description: "The neutral vowel carrier — a clean ‘a’ with no consonantal onset. Anchors the plain, unaspirated stops." },
@@ -358,7 +365,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Gender */}
+          {/* Step 05: Traditional gender classification */}
           <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="overflow-hidden border border-border-subtle bg-surface shadow-sm rounded-2xl flex flex-col divide-y divide-border-subtle">
               {(Object.keys(GENDER_META) as Gender[]).map((g) => {
@@ -401,6 +408,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
+          {/* Step 06: Nouns formed from the 30 consonants */}
           <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <VocabGrid 
               items={VOCAB.map(v => ({ tib: v.tib, pron: v.translit, en: v.en, emoji: v.emoji }))}
@@ -422,15 +430,17 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
+          {/* Step 07: Practice & exercises */}
           <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isLesson1={true} />
           </StepContainer>
 
+          {/* Step 08: Final Test */}
           <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
             <QuizModule 
               moduleId={1}
-              title="Final Assessment" 
-              intro="Score 80% or higher to unlock the next step: The Four Vowels." 
+              title="Final Test" 
+              intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the next lesson: The Four Vowels." 
               questions={quizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
@@ -461,8 +471,6 @@ export function WebLesson1() {
           </Link>
         </div>
       </div>
-
-      <InstructionModal isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
     </div>
   );
 }

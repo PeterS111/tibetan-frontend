@@ -93,12 +93,12 @@ export const STEPS = [
 ];
 
 /**
- * COMBINED MASTERY CHECK: Diacritic Marks (Gigu, Zhabkyu, etc.) + Vowel Sounds + Spelling
+ * WEB STEP 03 MASTERY CHECK: Diacritic Marks & Vowel Sounds
  */
-export function generateSpellingQuiz(): QuizQuestion[] {
+export function generateMarksAndSoundsQuiz(): QuizQuestion[] {
   const qs: QuizQuestion[] = [];
   const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
-  
+
   // 1. Diacritic Mark Name Audio -> Select Diacritic Mark Name in Tibetan (གི་གུ, ཞབས་ཀྱུ, འགྲེང་བུ, ན་རོ)
   for (const v of shuffle([...VOWELS])) {
     const wrongs = shuffle(VOWELS.filter(x => x.key !== v.key));
@@ -107,7 +107,7 @@ export function generateSpellingQuiz(): QuizQuestion[] {
       type: 'base',
       questionText: "Listen to the diacritic mark name and select the matching mark.",
       answer: v.markTib,
-      audioString: v.markTranslit, // Plays "Gigu ( ི).wav", "Zhabkyu (  ུ. ).wav", etc.
+      audioString: v.markTranslit,
       audioTarget: v.markTranslit,
       choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.markTib, value: x.markTib, pron: x.markTranslit }))
     });
@@ -134,8 +134,8 @@ export function generateSpellingQuiz(): QuizQuestion[] {
       type: 'base',
       questionText: `Which vowel is formed with ${v.markTib} (${v.markTranslit})?`,
       answer: v.tib,
-      audioString: v.markTranslit, // Prompt plays "gi-gu"
-      audioTarget: v.translit,     // Correct choice plays "I ཨི.wav"
+      audioString: v.markTranslit,
+      audioTarget: v.translit,
       choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.tib, value: x.tib, pron: x.key }))
     });
   }
@@ -148,31 +148,72 @@ export function generateSpellingQuiz(): QuizQuestion[] {
       type: 'base',
       questionText: "Listen to the vowel sound and select the matching vowel.",
       answer: v.tib,
-      audioString: v.translit, // Plays "I ཨི.wav", "U ཨུ.wav", etc.
+      audioString: v.translit,
       audioTarget: v.translit,
       choices: shuffle([v, ...wrongs]).map(x => ({ tib: x.tib, value: x.tib, pron: x.key }))
     });
   }
 
-  // 5. Syllable Spelling Audio -> Select Spelled Syllable (མི, རི, ཤི, སུ, etc.)
-  const spellTargets = shuffle(VOWELS.flatMap(v => (v.spellings || []).map(s => ({ s, v })))).slice(0, 8);
-  for (const { s, v } of spellTargets) {
+  return shuffle(qs);
+}
+
+/**
+ * WEB STEP 04 MASTERY CHECK: Vowel Spelling
+ */
+export function generateVowelSpellingQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [];
+  const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
+
+  const allSpellings = VOWELS.flatMap(v => (v.spellings || []).map(s => ({ s, v })));
+
+  // 1. Syllable Spelling Audio -> Select Spelled Syllable
+  for (const { s, v } of shuffle([...allSpellings]).slice(0, 8)) {
     const baseLetter = s.word.charAt(0);
     const wrongs = VOWELS.filter(x => x.key !== v.key).map(x => ({
       word: baseLetter + x.mark
     }));
-    
+
     qs.push({
       isAudioType: true,
       type: 'base',
       questionText: "Listen to the spelling and select the matching syllable.",
       answer: s.word,
-      audioString: s.audio || s.word, 
+      audioString: s.audio || s.word,
       audioTarget: s.word,
       choices: shuffle([{ word: s.word }, ...wrongs]).map(x => ({ tib: x.word, value: x.word }))
     });
   }
 
+  // 2. Visual Formula -> Select Spelled Syllable
+  for (const { s, v } of shuffle([...allSpellings]).slice(0, 4)) {
+    const baseLetter = s.word.charAt(0);
+    const wrongs = VOWELS.filter(x => x.key !== v.key).map(x => ({
+      word: baseLetter + x.mark
+    }));
+
+    qs.push({
+      type: 'base',
+      questionText: `${baseLetter} + ${v.markTranslit} = ?`,
+      prominentTibetan: `${baseLetter} + ${v.markTib}`,
+      answer: s.word,
+      audioString: s.audio || s.word,
+      audioTarget: s.word,
+      choices: shuffle([{ word: s.word }, ...wrongs]).map(x => ({ tib: x.word, value: x.word }))
+    });
+  }
+
+  return shuffle(qs);
+}
+
+/**
+ * COMBINED MASTERY CHECK (Kept for backward-compatibility with MobileLesson2)
+ */
+export function generateSpellingQuiz(): QuizQuestion[] {
+  const qs: QuizQuestion[] = [
+    ...generateMarksAndSoundsQuiz(),
+    ...generateVowelSpellingQuiz(),
+  ];
+  const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
   return shuffle(qs).slice(0, 16);
 }
 

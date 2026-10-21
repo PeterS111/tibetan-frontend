@@ -1,18 +1,27 @@
 // app/components/lesson/5/WebLesson5.tsx
 "use client";
 
-
 import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Volume2, ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown,
-  Info, CheckCircle2, Moon, Sun, BookOpen, Loader2, AlertTriangle
+  Volume2, ChevronRight, ChevronLeft, ArrowRight,
+  Info, CheckCircle2, BookOpen, Loader2, AlertTriangle, Sparkles, Layers
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
-import { PREFIXES, VOCAB, NEVER_TAKE, STEPS, TONE_META, generateVocabQuiz, generateFinalQuiz, type PrefixKey, type Tone } from "@/app/data/lesson5";
+import { 
+  PREFIXES, 
+  VOCAB, 
+  NEVER_TAKE, 
+  TONE_META, 
+  generateExceptionsQuiz,
+  generateVocabQuiz, 
+  generateFinalQuiz, 
+  type PrefixKey, 
+  type Tone 
+} from "@/app/data/lesson5";
 
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
@@ -21,13 +30,69 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
+const WEB_STEPS = [
+  { 
+    id: "syllabus", 
+    eyebrow: "Introduction", 
+    title: "Welcome to the five prefixes", 
+    description: "A short orientation before you meet the five prefix letters." 
+  },
+  { 
+    id: "anatomy", 
+    eyebrow: "Step 02", 
+    title: "Word formation — the anatomy of a syllable", 
+    tibetanTitle: "ཚིག་གི་གྲུབ་སྟངས།",
+    description: "How up to seven letter slots arrange around a single root letter." 
+  },
+  { 
+    id: "intro", 
+    eyebrow: "Step 03", 
+    title: "What is a prefix?", 
+    tibetanTitle: "སྔོན་འཇུག",
+    description: "How prefix letters sit before the root and shape spelling and tone." 
+  },
+  { 
+    id: "family", 
+    eyebrow: "Step 04", 
+    title: "Meet the five prefixes", 
+    tibetanTitle: "སྔོན་འཇུག་ལྔ།",
+    description: "Study each prefix, the roots it precedes, and its aloud-spelling walkthrough." 
+  },
+  { 
+    id: "exceptions", 
+    eyebrow: "Step 05", 
+    title: "Exceptions worth memorising", 
+    tibetanTitle: "དམིགས་བསལ།",
+    description: "Three special prefix + root combinations with unique Lhasa readings." 
+  },
+  { 
+    id: "vocab", 
+    eyebrow: "Step 06", 
+    title: "Vocabulary built from prefixes", 
+    tibetanTitle: "ཚིག་གསར།",
+    description: "Read and hear 20 essential words built with prefix letters." 
+  },
+  { 
+    id: "practice", 
+    eyebrow: "Step 07", 
+    title: "Practice & exercises", 
+    tibetanTitle: "སྦྱོང་ཚན།",
+    description: "Flashcards, listening, matching, and memory review." 
+  },
+  { 
+    id: "complete", 
+    eyebrow: "Final step", 
+    title: "Final Test", 
+    tibetanTitle: "རྒྱུགས་སྤྲོད།",
+    description: "Take the final test to unlock the next lesson." 
+  }
+];
+
 export default function WebLesson5() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(7);
+  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<PrefixKey>("ga");
-  
-  
   const [isBypassing, setIsBypassing] = useState(false);
 
   const practiceGroups = useMemo(() => [
@@ -45,6 +110,7 @@ export default function WebLesson5() {
     }
   ], []);
 
+  const exceptionsQuestions = useMemo(() => generateExceptionsQuiz(), []);
   const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
   const quizQuestions = useMemo(() => generateFinalQuiz(), []);
 
@@ -55,68 +121,68 @@ export default function WebLesson5() {
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(6);
+            await markComplete(WEB_STEPS.length - 1);
             setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
-          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50 rounded-2xl"
         >
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
 
-        <div className="mb-8 flex items-center gap-2 text-eyebrow">
-          <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
-          <ChevronRight size={14} />
+        <div className="mb-6 flex items-center gap-2 text-eyebrow">
+          <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Steps</Link>
+          <ChevronRight className="size-3" />
           <span>Unit 05</span>
-          <ChevronRight size={14} />
-          <span className="text-ink">Prefixes</span>
+          <ChevronRight className="size-3" />
+          <span className="text-ink font-bold">Prefixes</span>
         </div>
 
-        <Card className="mb-12 p-0 overflow-hidden flex flex-col">
-          <div className="h-48 w-full relative">
-            <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent flex flex-col justify-end p-6 md:p-8">
-              <div className="mb-2 text-brand font-bold text-[10px] tracking-widest uppercase">Lesson 05 · Foundations</div>
-              <h1 className="font-serif text-3xl md:text-4xl text-white leading-tight tracking-tight">The Five Prefixes</h1>
-              <p className="mt-1 font-tibetan text-2xl text-white/90">སྔོན་འཇུག་ལྔ།</p>
-            </div>
+        {/* Hero Section (Harmonized with Lessons 1–4) */}
+        <Card className="mb-8 p-0 overflow-hidden shadow-sm border border-border-subtle">
+          <div className="w-full h-72 sm:h-96 md:h-[400px] bg-surface-muted overflow-hidden relative">
+            <img 
+              src="/loplao-hero-scene.jpg" 
+              alt="Himalayan Monastery Scene" 
+              className="w-full h-full object-cover object-center" 
+            />
           </div>
           
-          <div className="p-6 md:p-8 grid gap-8 md:grid-cols-[1fr,auto] md:items-start bg-surface">
+          <div className="p-6 md:p-10 grid gap-6 md:grid-cols-[1fr,auto] md:items-end">
             <div>
-              <div className="grid grid-cols-3 divide-x divide-border-subtle border border-border-subtle rounded-xl mb-6">
-                <div className="p-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
-                  <div className="font-serif text-lg text-ink">45m</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Prefixes</div>
-                  <div className="font-serif text-lg text-ink">5</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
-                  <div className="font-serif text-lg text-ink">20</div>
-                </div>
-              </div>
-              <p className="text-[15px] leading-relaxed text-ink-light">
-                Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter. They shape both <span className="font-bold text-ink">spelling</span> and <span className="font-bold text-ink">pronunciation</span>.
+              <div className="mb-2 text-eyebrow text-brand-dark">Lesson 05 · Foundations</div>
+              <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">The Five Prefixes</h1>
+              <p className="mt-2 font-tibetan text-3xl text-ink-light">སྔོན་འཇུག་ལྔ།</p>
+              <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
+                Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter on the baseline. Silent on their own, they disambiguate homophones on the page and reshape the <span className="font-bold text-ink">tone</span> and <span className="font-bold text-ink">nasality</span> of the root that follows.
               </p> 
             </div>
-            <div className="w-full md:w-72">
-              <div className="mb-3 flex items-center justify-between text-eyebrow">
+            <div className="w-full md:w-80">
+              <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, 7)} of 7 sections</span>
+                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
               </div>
-              <div className="mt-6 grid grid-cols-5 gap-2 text-center">
+              <div className="mt-4 grid grid-cols-5 gap-2 text-center">
                 {PREFIXES.map((s) => (
-                  <button key={s.key} type="button" onClick={() => playAudio(s.nameTib)} disabled={playingItem !== null} className="group flex flex-col items-center gap-1 border border-border-strong p-2 rounded-xl text-center transition hover:bg-surface-muted hover:border-brand">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="font-serif text-2xl" style={{ color: s.accent.hex }}>{s.head}</span>
-                      <span className="text-[9px] uppercase tracking-widest text-ink-muted">{s.latin}</span>
+                  <button 
+                    key={s.key} 
+                    type="button" 
+                    onClick={() => playAudio(s.nameTib)} 
+                    disabled={playingItem !== null} 
+                    className="group flex flex-col items-center gap-1 border border-border-strong p-2 bg-surface rounded-xl text-center transition hover:bg-surface-muted hover:border-brand"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="font-tibetan text-2xl leading-none pt-1" style={{ color: s.accent.hex }}>{s.head}</span>
+                      {playingItem === s.nameTib ? (
+                        <Loader2 size={10} className="animate-spin text-brand" />
+                      ) : (
+                        <Volume2 size={10} className="text-brand opacity-50 group-hover:opacity-100 transition-opacity" />
+                      )}
                     </div>
+                    <span className="text-[9px] uppercase tracking-widest text-ink-muted font-bold">{s.latin}</span>
                   </button>
                 ))}
               </div>
@@ -125,14 +191,75 @@ export default function WebLesson5() {
         </Card>
 
         <div className="space-y-4">
-          
-          <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
-            <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink mb-1">How a Tibetan word is built <span className="font-tibetan not-italic text-ink-light ml-2">ཚིག་གི་གྲུབ་སྟངས།</span></h2>
+
+          {/* Step 0: Orientation / What You Will Learn */}
+          <StepContainer index={0} step={WEB_STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
+            <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
+              <div className="space-y-6">
+                <p className="text-[15px] leading-relaxed text-ink-light">
+                  Now that you know how letters stack vertically with superscripts and subscripts, we move horizontally across the baseline. In this lesson you'll see the full <strong className="text-ink">seven-slot anatomy of a Tibetan syllable</strong> and master the <strong className="text-ink">five prefix letters</strong> (<span className="font-tibetan text-lg text-ink">ག ད བ མ འ</span>) that sit to the left of the root.
+                </p>
+
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Sparkles size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Distinguish between the three purely silent prefixes (ག ད བ) and the two nasalising prefixes (མ འ).
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Layers size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Practise the aloud-spelling walkthroughs and memorise the three classic Lhasa pronunciation exceptions.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <CheckCircle2 size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Complete the mastery checks inside each prefix tab before taking the 40-question Final Test.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-surface rounded-2xl p-6 sm:p-7 border border-border-strong shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-5">
+                  What you will learn
+                </div>
+                <div className="space-y-3">
+                  {[
+                    "Word formation — the anatomy of a syllable",
+                    "What is a prefix?",
+                    "Meet the five prefixes",
+                    "Exceptions worth memorising",
+                    "Vocabulary built from prefixes",
+                    "Practice & exercises",
+                  ].map((title, idx) => (
+                    <div key={title} className={`flex items-center gap-3.5 ${idx !== 0 ? "pt-3 border-t border-border-subtle" : ""}`}>
+                      <span className="w-6 h-6 rounded-md bg-brand-light border border-brand/30 text-brand-dark text-xs font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-serif text-[15px] font-bold text-ink leading-snug">{title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
+          </StepContainer>
+          
+          {/* Step 1: Word formation — the anatomy of a syllable */}
+          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">A Tibetan syllable is built from up to <span className="font-bold text-ink">seven slots</span> arranged around a single <span className="font-bold text-ink">root letter</span>. Each slot has a name, a position, and a job. The <span className="font-bold text-brand-dark">prefix</span> is the leftmost of them.</p>
 
-            <Card className="p-0 overflow-hidden mb-6">
+            <Card className="p-0 overflow-hidden mb-6 rounded-[1.5rem]">
               <div className="border-b border-border-strong bg-gradient-to-b from-stone-50 to-white px-6 pb-10 pt-8 text-center md:pb-14 relative group">
                 <div className="mb-8 text-eyebrow">A full syllable</div>
                 
@@ -161,24 +288,22 @@ export default function WebLesson5() {
                   { letter: "བ", role: "Prefix", pos: "Before root", accent: "#c2410c", highlight: true, tib: "སྔོན་འཇུག" },
                   { letter: "ས", role: "Superscript", pos: "Above root", accent: "#7c3aed", tib: "མགོ་ཅན" },
                   { letter: "ག", role: "Root letter", pos: "The heart", accent: "#111827", tib: "མིང་གཞི" },
-                  // 🚀 FIXED: Now using images for the problematic combining marks
                   { imgSrc: "/slot-subscript.png", role: "Subscript", pos: "Below root", accent: "#0284c7", tib: "འདོགས་ཅན" },
                   { imgSrc: "/slot-vowel.png", role: "Vowel", pos: "Above / below", accent: "#059669", tib: "དབྱངས" },
                   { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309", tib: "རྗེས་འཇུག" },
                   { letter: "ས", role: "Post-suffix", pos: "Far right", accent: "#9333ea", tib: "ཡང་འཇུག" },
                 ].map((s) => (
                   <div key={s.role} className={`relative p-5 flex flex-col items-center justify-start ${s.highlight ? "bg-brand-light" : "bg-surface"}`}>
-                    {s.highlight && <span className="absolute top-2 right-2 bg-amber-200 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-brand-dark shadow-sm">This lesson</span>}
+                    {s.highlight && <span className="absolute top-2 right-2 bg-amber-200 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-brand-dark shadow-sm rounded-full">This lesson</span>}
                     
                     <div className="relative flex items-center justify-center h-16 w-full mb-3 mt-2 overflow-hidden">
-                      {/* 🚀 Render the PNG if provided, otherwise render the standard text letter */}
                       {s.imgSrc ? (
-  <img src={s.imgSrc} alt={s.role} className="w-16 h-16 p-1 object-contain relative z-10" />
-) : (
-  <span className="relative z-10 leading-none flex items-center justify-center font-tibetan" style={{ color: s.accent, fontSize: "2.5rem" }}>
-    {s.letter}
-  </span>
-)}
+                        <img src={s.imgSrc} alt={s.role} className="w-16 h-16 p-1 object-contain relative z-10" />
+                      ) : (
+                        <span className="relative z-10 leading-none flex items-center justify-center font-tibetan" style={{ color: s.accent, fontSize: "2.5rem" }}>
+                          {s.letter}
+                        </span>
+                      )}
                     </div>
 
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5" style={{ color: s.accent }}>{s.role}</div>
@@ -190,33 +315,34 @@ export default function WebLesson5() {
             </Card>
           </StepContainer>
 
-          <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+          {/* Step 2: What is a prefix? */}
+          <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
-                <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
                   <ChevronLeft size={14} /> Before the root
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">A prefix is a letter written <span className="font-bold text-ink">to the left</span> of the root. Only five letters — <span className="font-serif text-lg">ག ད བ མ འ</span> — may take that seat.</p>
               </Card>
               <Card className="p-6 bg-surface">
-                <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
                   <BookOpen size={14} /> Writing
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">Prefixes disambiguate words on the page — e.g. <span className="font-serif text-lg">བཞི་</span> vs <span className="font-serif text-lg">གཞི་</span>.</p>
               </Card>
               <Card className="p-6 bg-surface">
-                <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark">
+                <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
                   <Volume2 size={14} /> Pronunciation
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">Prefixes never change <span className="font-bold text-ink">masculine</span> letters. They <span className="font-bold text-sky-700">deepen</span> feminine roots and <span className="font-bold text-rose-700">nasalise</span> very-feminine roots.</p>
               </Card>
             </div>
 
-            <div className="mt-6 border border-border-strong bg-surface overflow-hidden">
+            <div className="mt-6 border border-border-strong bg-surface overflow-hidden rounded-[1.5rem]">
               <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
                 {PREFIXES.map((s) => (
                   <button key={s.key} onClick={() => playAudio(s.nameTib)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
-                    <span className="h-1 w-10" style={{ backgroundColor: s.accent.hex }} />
+                    <span className="h-1 w-10 rounded-full" style={{ backgroundColor: s.accent.hex }} />
                     <span className="mt-2 font-serif leading-none" style={{ fontSize: "3rem", color: s.accent.hex }}>{s.head}</span>
                     <div className="flex items-center gap-1.5 text-sm font-bold text-ink">
                       {s.latin}
@@ -232,27 +358,28 @@ export default function WebLesson5() {
               </div>
             </div>
 
-            <div className="mt-6 p-6 border border-border-strong bg-surface">
+            <div className="mt-6 p-6 border border-border-strong bg-surface-muted rounded-[1.5rem]">
               <div className="mb-4 flex items-center gap-2 text-eyebrow"><Info size={14} className="text-brand" /> Two rules of writing</div>
               <ol className="space-y-4 text-[15px] text-ink-light font-bold">
-                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded bg-surface-muted border border-border-strong text-[11px] text-ink-light">1</span><span>Only five letters — <span className="font-serif text-xl text-ink mx-1 px-2 py-0.5 bg-surface-muted border border-border-strong">{NEVER_TAKE}</span> — <em>never</em> take a prefix.</span></li>
-                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded bg-surface-muted border border-border-strong text-[11px] text-ink-light">2</span><span>A root that follows a prefix must carry <em>at least</em> a vowel, superscript, subscript, or suffix.</span></li>
+                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface border border-border-strong text-[11px] text-ink-light">1</span><span>Only five letters — <span className="font-serif text-xl text-ink mx-1 px-2.5 py-0.5 bg-surface border border-border-strong rounded-lg">{NEVER_TAKE}</span> — <em>never</em> take a prefix.</span></li>
+                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface border border-border-strong text-[11px] text-ink-light">2</span><span>A root that follows a prefix must carry <em>at least</em> a vowel, superscript, subscript, or suffix.</span></li>
               </ol>
             </div>
           </StepContainer>
 
-          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+          {/* Step 3: Meet the five prefixes */}
+          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[3].title}</h2>
+              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[3].title}</h2>
             </div>
 
             <div className="mb-6 flex flex-wrap gap-2">
               {PREFIXES.map((p) => {
                 const on = p.key === activeTab;
                 return (
-                  <button key={p.key} onClick={() => setActiveTab(p.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-all ${on ? "border-brand bg-brand text-ink shadow-sm" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
+                  <button key={p.key} onClick={() => setActiveTab(p.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-all rounded-full ${on ? "border-brand bg-brand text-ink shadow-sm" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
                     <span className="grid size-9 place-items-center font-serif text-2xl leading-none" style={{ color: on ? '#1c1917' : p.accent.hex }}>{p.head}</span>
-                    <span className="flex-1">
+                    <span className="flex-1 pr-1">
                       <span className="block text-sm font-bold">Prefix {p.latin}</span>
                       <span className={`block text-[10px] font-bold uppercase tracking-widest ${on ? "text-ink-light mix-blend-multiply" : "text-ink-light"}`}>{p.count}</span>
                     </span>
@@ -264,7 +391,8 @@ export default function WebLesson5() {
             <PrefixPanel p={PREFIXES.find(p => p.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
+          {/* Step 4: Exceptions worth memorising + Embedded Mastery Check */}
+          <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface flex flex-col h-full">
                 <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100 rounded-full">
@@ -275,7 +403,7 @@ export default function WebLesson5() {
                   <button onClick={() => playAudio('དབྱེ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྱེ་</button>
                   <button onClick={() => playAudio('དབྲ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྲ་</button>
                 </div>
-                <p className="mt-auto text-sm text-ink-light leading-relaxed">When ད precedes root བ, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [ra].</p>
+                <p className="mt-auto text-sm text-ink-light leading-relaxed">When ད precedes root བ, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [dra].</p>
               </Card>
 
               <Card className="p-6 bg-surface flex flex-col h-full">
@@ -302,12 +430,30 @@ export default function WebLesson5() {
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">Prefix ག lifts the feminine ཡ to a <span className="font-bold text-ink">high</span> tone.</p>
               </Card>
             </div>
+
+            <div className="mt-8 p-6 md:p-8 border border-border-strong rounded-[1.5rem] bg-surface-muted">
+              <div className="mb-6 flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-rose-700" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Prefix Exceptions</span>
+              </div>
+              <QuizModule 
+                moduleId={5}
+                title="Mastery Check · Exceptions"
+                variant="panel"
+                accentColor="#b91c1c"
+                questions={exceptionsQuestions}
+                playAudio={playAudio}
+                playingItem={playingItem}
+                playErrorBeep={playErrorBeep}
+              />
+            </div>
           </StepContainer>
 
-          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
+          {/* Step 5: Vocabulary built from prefixes */}
+          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[4].title}</h2>
-              <span className="text-xs font-bold text-ink-light bg-surface-muted px-2 py-1 border border-border-strong rounded-full">{VOCAB.length} words</span>
+              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[5].title}</h2>
+              <span className="text-xs font-bold text-ink-light bg-surface-muted px-2.5 py-1 border border-border-strong rounded-full">{VOCAB.length} words</span>
             </div>
             
             <div className="mb-10">
@@ -338,28 +484,34 @@ export default function WebLesson5() {
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
             />
-			
           </StepContainer>
 
-          <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+          {/* Step 6: Practice & exercises */}
+          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
+             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
+               <h2 className="font-serif text-2xl text-ink mb-3">{WEB_STEPS[6].title}</h2>
+               <p className="max-w-3xl text-[15px] text-ink-light leading-relaxed">
+                 Each prefix has its own <span className="font-bold text-ink">mastery check</span> inside its panel above. Below is a <span className="font-bold text-ink">cumulative review</span> mixing all five prefixes and vocabulary words.
+               </p>
+             </div>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
+          {/* Step 7: Final Test */}
+          <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
             <QuizModule 
               moduleId={5}
-              title="Final Assessment" 
-              intro="Score 80% or higher to unlock the next step: Suffixes & Post-suffixes." 
+              title="Final Test" 
+              intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the next unit: Suffixes & Post-suffixes." 
               questions={quizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/6" 
-              onPass={() => markComplete(6)} 
+              onPass={() => markComplete(7)} 
             />
           </StepContainer>
-		  
 
         </div>
       </div>
@@ -370,7 +522,7 @@ export default function WebLesson5() {
             <ChevronLeft size={16} /> Previous
           </Link>
           
-          {expandedStep !== 6 && ( 
+          {expandedStep !== WEB_STEPS.length - 1 && ( 
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -388,7 +540,7 @@ export default function WebLesson5() {
 function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
-      <div className="h-1 w-full" style={{ backgroundColor: p.accent.hex }} />
+      <div className="h-1.5 w-full" style={{ backgroundColor: p.accent.hex }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         
         <div className="flex items-center gap-6">
@@ -417,7 +569,7 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
           const M = TONE_META[c.tone as Tone];
           return (
             <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
-              <span className="absolute left-0 top-0 h-0.5 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: p.accent.hex }} />
+              <span className="absolute left-0 top-0 h-1 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: p.accent.hex }} />
               <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{c.word}</span>
               <span className="font-mono text-xs font-bold text-ink-light">[{c.read}]</span>
               {c.gloss && <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{c.gloss}</span>}
@@ -431,7 +583,7 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
         <div className="text-eyebrow mb-6">Spelling walkthrough</div>
         
         <div className="space-y-2">
-          {p.combos.slice(0, 6).map((c: any) => {
+          {p.combos.map((c: any) => {
             const M = TONE_META[c.tone as Tone];
             return (
               <div key={c.word + c.read} className="flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
@@ -449,8 +601,8 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
                 
                 <div className="ml-auto flex items-center gap-3">
                   <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} disabled={playingItem !== null} className="px-3 py-2 rounded-full">
-                    {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />}
+                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                    {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                   </Button>
                 </div>
               </div>
@@ -471,7 +623,7 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
 }
 
 function PrefixMiniMasteryLoader({ p, playAudio, playingItem, playErrorBeep }: any) {
-  const [seed, setSeed] = useState(0);
+  const [seed] = useState(0);
 
   const questions = useMemo(() => {
     const shuffledCombos = [...p.combos].sort(() => 0.5 - Math.random());
@@ -498,7 +650,7 @@ function PrefixMiniMasteryLoader({ p, playAudio, playingItem, playErrorBeep }: a
 
   return (
     <QuizModule 
-      key={`prefix-quiz-${seed}`}
+      key={`prefix-quiz-${p.key}-${seed}`}
       moduleId={5}
       title={prefixDisplayTitle}
       variant="panel"

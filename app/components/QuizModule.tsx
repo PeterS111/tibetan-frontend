@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/clerk-react";
 import { 
-  Loader2, Volume2, ChevronRight, Trophy, Sparkles, 
+  Loader2, Volume2, ChevronRight, Trophy, 
   Lock, CheckCircle2, XCircle, Check, X, Shuffle, ArrowRight 
 } from "lucide-react";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
@@ -264,18 +264,18 @@ export default function QuizModule({
 
   if (!hasStarted) {
     return (
-      <div className={`border p-6 md:p-8 ${isNative ? 'rounded-[1.25rem]' : ''} ${isUnlockTest ? 'bg-white border-border-subtle shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
+      <div className={`border p-6 md:p-8 rounded-[1.25rem] ${isUnlockTest ? 'bg-white border-border-subtle shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-4">
           <Trophy className="size-3.5" /> Step Complete
         </div>
         <h3 className="text-2xl font-serif text-ink mb-2">Ready to complete this step?</h3>
         <p className="text-sm text-ink-light mb-6">
-          {total} questions drawn from everything you covered in this lesson.
+          {intro || `${total} questions drawn from everything you covered in this lesson.`}
         </p>
-        <button onClick={() => setHasStarted(true)} className={`bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600 shadow-sm ${isNative ? 'rounded-full' : ''}`}>
+        <button onClick={() => setHasStarted(true)} className="bg-amber-500 text-stone-900 font-bold px-6 py-2.5 flex items-center gap-2 hover:bg-amber-400 transition-colors mb-8 border border-amber-600 shadow-sm rounded-full">
           Start <ChevronRight size={16} />
         </button>
-        <div className={`border border-border-subtle p-5 bg-surface-muted ${isNative ? 'rounded-[1.25rem]' : ''}`}>
+        <div className="border border-border-subtle p-5 bg-surface-muted rounded-[1.25rem]">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-3">
              <Lock size={14} /> Progression
           </div>
@@ -292,11 +292,11 @@ export default function QuizModule({
   if (step >= total) {
     if (variant === 'panel') {
       return (
-        <div className={`flex flex-wrap items-center justify-between gap-4 p-5 border bg-surface ${isNative ? 'rounded-[1.25rem]' : ''}`} style={{ borderColor: 'var(--color-border-strong)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-4 p-5 border bg-surface rounded-[1.25rem]" style={{ borderColor: 'var(--color-border-strong)' }}>
           <div className="text-[15px] font-bold text-ink">
             Nicely done. You scored <span className="font-serif text-2xl mx-1" style={{ color: accentColor || 'var(--color-brand)' }}>{score}</span> / {total}.
           </div>
-          <button onClick={resetQuiz} className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium border transition-colors bg-transparent text-ink border-border-strong hover:bg-surface-muted ${isNative ? 'rounded-full' : ''}`}>
+          <button onClick={resetQuiz} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium border transition-colors bg-transparent text-ink border-border-strong hover:bg-surface-muted rounded-full">
             <Shuffle size={14} /> Try again
           </button>
         </div>
@@ -311,7 +311,7 @@ export default function QuizModule({
     };
 
     return (
-      <div className={`flex flex-col items-center justify-center text-center p-8 border ${isNative ? 'rounded-[1.25rem] mb-4' : ''} ${isUnlockTest ? 'bg-white border-border-subtle shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
+      <div className={`flex flex-col items-center justify-center text-center p-8 border rounded-[1.25rem] ${isNative ? 'mb-4' : ''} ${isUnlockTest ? 'bg-white border-border-subtle shadow-sm' : 'bg-[#fffdf5] border-[#fde68a]'}`}>
         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm border ${passed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
           {passed ? <CheckCircle2 size={40} /> : <XCircle size={40} />}
         </div>
@@ -319,23 +319,23 @@ export default function QuizModule({
         <p className="text-ink-light mb-8 font-bold text-lg">You scored <span className={passed ? "text-emerald-600" : "text-rose-600"}>{score}</span> out of {total}.</p>
         
         <div className="flex flex-wrap justify-center gap-4 w-full max-w-sm">
-          <button onClick={() => { resetQuiz(); if(isUnlockTest) setHasStarted(false); }} className={`w-full py-4 bg-white border border-border-strong font-bold hover:bg-surface-muted transition-colors text-ink flex items-center justify-center gap-2 disabled:opacity-50 ${isNative ? 'rounded-full' : ''}`} disabled={isSaving}>
+          <button onClick={() => { resetQuiz(); if(isUnlockTest) setHasStarted(false); }} className="w-full py-4 bg-white border border-border-strong font-bold hover:bg-surface-muted transition-colors text-ink flex items-center justify-center gap-2 disabled:opacity-50 rounded-full" disabled={isSaving}>
             <Shuffle size={18} /> Retake
           </button>
           
           {passed && isUnlockTest && nextLessonPath && (
-            <button onClick={handleUnlock} disabled={isSaving} className={`w-full py-4 bg-ink text-white font-bold hover:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-75 ${isNative ? 'rounded-full' : ''}`}>
+            <button onClick={handleUnlock} disabled={isSaving} className="w-full py-4 bg-ink text-white font-bold hover:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-75 rounded-full">
               {isSaving ? <Loader2 size={18} className="animate-spin" /> : <>Unlock Next Step <ArrowRight size={18} /></>}
             </button>
           )}
           {passed && isUnlockTest && !nextLessonPath && (
-            <button onClick={handleUnlock} disabled={isSaving} className={`w-full py-4 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center justify-center gap-2 border border-amber-600 disabled:opacity-75 ${isNative ? 'rounded-full' : ''}`}>
+            <button onClick={handleUnlock} disabled={isSaving} className="w-full py-4 bg-amber-500 text-stone-900 font-bold hover:bg-amber-400 transition-colors shadow-sm flex items-center justify-center gap-2 border border-amber-600 disabled:opacity-75 rounded-full">
               {isSaving ? <Loader2 size={18} className="animate-spin" /> : <>Lesson Complete <ArrowRight size={18} /></>}
             </button>
           )}
         </div>
         {DEV_BYPASS_LOCKS && !passed && isUnlockTest && (
-          <div className={`mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 border border-rose-200 ${isNative ? 'rounded-full' : ''}`}>DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
+          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 border border-rose-200 rounded-full">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
         )}
       </div>
     );
@@ -349,7 +349,7 @@ export default function QuizModule({
       if (isNative) try { Haptics.notification({ type: NotificationType.Success }); } catch (e) {}
       if (!currentQ.noAudio) playAudio(currentQ.audioTarget || currentQ.audioString || currentQ.answer);
     } else {
-      playErrorBeep(); // Automatically triggers the Error haptic we just built!
+      playErrorBeep();
     }
   };
 

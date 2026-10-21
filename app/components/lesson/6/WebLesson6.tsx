@@ -1,18 +1,17 @@
 // app/components/lesson/6/WebLesson6.tsx
 "use client";
 
-
 import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Volume2, ChevronRight, ChevronLeft, ArrowRight, Info, CheckCircle2, 
-  Moon, Sun, BookOpen, Loader2, History, Sparkles
+  BookOpen, Loader2, History, Sparkles, Layers
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
-import { SUFFIXES, VOCAB, QUIZ, STEPS, FAMILY_META, VOWEL_SHIFTS, generateVocabQuiz, generateFinalQuiz, POST_SUFFIX_QUESTIONS, ROOT_LETTER_QUESTIONS, type SuffixKey, type Family } from "@/app/data/lesson6";
+import { SUFFIXES, VOCAB, QUIZ, FAMILY_META, VOWEL_SHIFTS, generateVocabQuiz, generateFinalQuiz, POST_SUFFIX_QUESTIONS, ROOT_LETTER_QUESTIONS, type SuffixKey, type Family } from "@/app/data/lesson6";
 
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
@@ -21,14 +20,76 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
+const WEB_STEPS = [
+  { 
+    id: "syllabus", 
+    eyebrow: "Introduction", 
+    title: "Welcome to suffixes & post-suffixes", 
+    description: "A short orientation before you meet the ten suffixes and two post-suffixes." 
+  },
+  { 
+    id: "intro", 
+    eyebrow: "Step 02", 
+    title: "What is a suffix?", 
+    tibetanTitle: "རྗེས་འཇུག",
+    description: "The ten suffixes and how they close a Tibetan syllable." 
+  },
+  { 
+    id: "suffixes", 
+    eyebrow: "Step 03", 
+    title: "Meet the ten suffixes", 
+    tibetanTitle: "རྗེས་འཇུག་བཅུ།",
+    description: "Study each suffix, its ending sound, and its aloud-spelling walkthrough." 
+  },
+  { 
+    id: "vowel", 
+    eyebrow: "Step 04", 
+    title: "When the vowel meets the suffix", 
+    tibetanTitle: "དབྱངས་དང་རྗེས་འཇུག",
+    description: "How the four suffixes ད ན ལ ས reshape the preceding vowel." 
+  },
+  { 
+    id: "post", 
+    eyebrow: "Step 05", 
+    title: "Post-suffixes", 
+    tibetanTitle: "ཡང་འཇུག་གཉིས།",
+    description: "The silent closers ད and ས, historical and active." 
+  },
+  { 
+    id: "root", 
+    eyebrow: "Step 06", 
+    title: "How to recognise the root letter", 
+    tibetanTitle: "མིང་གཞི་ངོས་འཛིན།",
+    description: "Four practical rules for parsing multi-letter Tibetan syllables." 
+  },
+  { 
+    id: "vocab", 
+    eyebrow: "Step 07", 
+    title: "Vocabulary built from suffixes", 
+    tibetanTitle: "ཚིག་གསར།",
+    description: "Words that use the suffixes and post-suffixes you just learned." 
+  },
+  { 
+    id: "practice", 
+    eyebrow: "Step 08", 
+    title: "Practice & exercises", 
+    tibetanTitle: "སྦྱོང་ཚན།",
+    description: "Flashcards, quiz, and matching drills." 
+  },
+  { 
+    id: "test", 
+    eyebrow: "Final step", 
+    title: "Final Test", 
+    tibetanTitle: "རྒྱུགས་སྤྲོད།",
+    description: "Take the final test to unlock the Capstone." 
+  }
+];
+
 export function WebLesson6() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(8);
+  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
-  
-  const [reveal, setReveal] = useState<null | "ten" | "two">(null);
-  
   const [isBypassing, setIsBypassing] = useState(false);
 
   const practiceGroups = useMemo(() => [
@@ -58,7 +119,7 @@ export function WebLesson6() {
         <button 
           onClick={async () => {
             setIsBypassing(true);
-            await markComplete(7);
+            await markComplete(WEB_STEPS.length - 1);
             setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
           }} 
           disabled={isBypassing}
@@ -67,56 +128,49 @@ export function WebLesson6() {
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
 
-        <div className="mb-8 flex items-center gap-2 text-eyebrow">
-          <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Lessons</Link>
-          <ChevronRight size={14} />
+        <div className="mb-6 flex items-center gap-2 text-eyebrow">
+          <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Steps</Link>
+          <ChevronRight className="size-3" />
           <span>Unit 06</span>
-          <ChevronRight size={14} />
-          <span className="text-ink">Suffixes & Post-suffixes</span>
+          <ChevronRight className="size-3" />
+          <span className="text-ink font-bold">Suffixes & Post-suffixes</span>
         </div>
 
-        <Card className="mb-12 p-0 overflow-hidden flex flex-col">
-          <div className="h-48 w-full relative">
-            <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent flex flex-col justify-end p-6 md:p-8">
-              <div className="mb-2 text-brand font-bold text-[10px] tracking-widest uppercase">Lesson 06 · Foundations</div>
-              <h1 className="font-serif text-3xl md:text-4xl text-white leading-tight tracking-tight">Suffixes & Post-suffixes</h1>
-              <p className="mt-1 font-tibetan text-2xl text-white/90">རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།</p>
-            </div>
+        {/* Hero Section (Harmonized with Lessons 1–5) */}
+        <Card className="mb-8 p-0 overflow-hidden shadow-sm border border-border-subtle">
+          <div className="w-full h-72 sm:h-96 md:h-[400px] bg-surface-muted overflow-hidden relative">
+            <img 
+              src="/loplao-hero-scene.jpg" 
+              alt="Himalayan Monastery Scene" 
+              className="w-full h-full object-cover object-center" 
+            />
           </div>
           
-          <div className="p-6 md:p-8 grid gap-8 md:grid-cols-[1fr,auto] md:items-start bg-surface">
+          <div className="p-6 md:p-10 grid gap-6 md:grid-cols-[1fr,auto] md:items-end">
             <div>
-              <div className="grid grid-cols-3 divide-x divide-border-subtle border border-border-subtle rounded-xl mb-6">
-                <div className="p-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
-                  <div className="font-serif text-lg text-ink">45m</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Suffixes</div>
-                  <div className="font-serif text-lg text-ink">10 + 2</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
-                  <div className="font-serif text-lg text-ink">12</div>
-                </div>
-              </div>
-              <p className="text-[15px] leading-relaxed text-ink-light">
-                Ten letters may follow the root — the <span className="font-bold text-ink">suffix</span> closes the syllable. A further <span className="font-bold text-ink">two</span> may sit beyond that suffix as a <span className="font-bold text-ink">post-suffix</span>. Together they shape the reading, the tense, and often the meaning of a word.
+              <div className="mb-2 text-eyebrow text-brand-dark">Lesson 06 · Foundations</div>
+              <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">Suffixes & Post-suffixes</h1>
+              <p className="mt-2 font-tibetan text-3xl text-ink-light">རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།</p>
+              <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
+                Ten letters may follow the root — the <span className="font-bold text-ink">suffix</span> closes the syllable. A further <span className="font-bold text-ink">two</span> may sit beyond that suffix as a <span className="font-bold text-ink">post-suffix</span>. Together they shape the reading, the vowel colour, and the grammatical tense of a word.
               </p> 
             </div>
-            <div className="w-full md:w-72">
-              <div className="mb-3 flex items-center justify-between text-eyebrow">
+            <div className="w-full md:w-80">
+              <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, 8)} of 8 sections</span>
+                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
               </div>
-              <div className="grid grid-cols-5 gap-2 mt-6">
+              <div className="grid grid-cols-5 gap-2 mt-4">
                 {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => { setActiveTab(x.key); markComplete(0); playAudio(x.head); }} className={`aspect-square border rounded-xl p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-brand-light" : "border-border-strong hover:bg-surface-muted hover:border-amber-300 bg-surface"}`}>
-                    <div className="font-serif leading-none text-2xl" style={{ color: x.accent }}>{x.head}</div>
+                  <button 
+                    key={x.key} 
+                    onClick={() => { setActiveTab(x.key); playAudio(x.head); }} 
+                    className={`border rounded-xl p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-brand-light" : "border-border-strong hover:bg-surface-muted hover:border-amber-300 bg-surface"}`}
+                  >
+                    <div className="font-tibetan leading-none text-xl pt-1" style={{ color: x.accent }}>{x.head}</div>
                     <div className="mt-1 text-[9px] uppercase tracking-widest text-ink-muted font-bold">{x.latin}</div>
                   </button>
                 ))}
@@ -126,7 +180,72 @@ export function WebLesson6() {
         </Card>
 
         <div className="space-y-4">
-          <StepContainer index={0} step={STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
+
+          {/* Step 0: Orientation / What You Will Learn */}
+          <StepContainer index={0} step={WEB_STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
+            <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
+              <div className="space-y-6">
+                <p className="text-[15px] leading-relaxed text-ink-light">
+                  In this final instructional unit of Beginner 1, you will complete the Tibetan syllable by learning the <strong className="text-ink">ten suffixes</strong> (<span className="font-tibetan text-lg text-ink">ག་ང་ད་ན་བ་མ་འ་ར་ལ་ས</span>) and the <strong className="text-ink">two post-suffixes</strong> (<span className="font-tibetan text-lg text-ink">ད་ས</span>). You'll also learn the four golden rules for spotting the root letter in any word at a glance.
+                </p>
+
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Sparkles size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Hear how each of the ten suffixes closes a syllable, and how ད ན ལ ས shift back vowels toward [e / ü / ö].
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Layers size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Master the 4 Root-Letter Recognition Rules so you can parse 2-, 3-, and 4-letter words effortlessly.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <CheckCircle2 size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Pass the Final Test to unlock Unit 07: the Beginner 1 Capstone Assessment & Certificate.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-surface rounded-2xl p-6 sm:p-7 border border-border-strong shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-5">
+                  What you will learn
+                </div>
+                <div className="space-y-3">
+                  {[
+                    "What is a suffix?",
+                    "Meet the ten suffixes",
+                    "When the vowel meets the suffix",
+                    "Post-suffixes (ད and ས)",
+                    "How to recognise the root letter",
+                    "Vocabulary & Practice",
+                  ].map((title, idx) => (
+                    <div key={title} className={`flex items-center gap-3.5 ${idx !== 0 ? "pt-3 border-t border-border-subtle" : ""}`}>
+                      <span className="w-6 h-6 rounded-md bg-brand-light border border-brand/30 text-brand-dark text-xs font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-serif text-[15px] font-bold text-ink leading-snug">{title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </StepContainer>
+
+          {/* Step 1: What is a suffix? */}
+          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full"><ArrowRight size={14} /> After the root</div>
@@ -157,9 +276,10 @@ export function WebLesson6() {
             </div>
           </StepContainer>
 
-          <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+          {/* Step 2: Meet the ten suffixes */}
+          <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[1].title}</h2>
+              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[2].title}</h2>
             </div>
             <div className="mb-6 flex flex-wrap gap-2">
               {SUFFIXES.map((s) => {
@@ -178,9 +298,10 @@ export function WebLesson6() {
             <SuffixPanel s={SUFFIXES.find(x => x.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          <StepContainer index={2} step={STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+          {/* Step 3: When the vowel meets the suffix */}
+          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[2].title}</h2>
+              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[3].title}</h2>
             </div>
             <p className="mb-6 max-w-3xl text-[15px] leading-relaxed text-ink-light">Four suffixes — <span className="font-serif font-bold text-ink">ད ན ལ ས</span> — recolour the vowel that precedes them. Find a vowel on the left, follow the row across, and hear how each suffix reshapes it.</p>
             <div className="border border-border-strong bg-surface shadow-sm overflow-hidden rounded-[1.5rem]">
@@ -233,10 +354,8 @@ export function WebLesson6() {
             </div>
           </StepContainer>
 
-          <StepContainer index={3} step={STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink mb-1">The two post-suffixes <span className="font-tibetan text-2xl not-italic text-ink-muted ml-2">ཡང་འཇུག་གཉིས།</span></h2>
-            </div>
+          {/* Step 4: Post-suffixes */}
+          <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">Only two letters — <span className="font-serif font-bold text-ink">ད</span> and <span className="font-serif font-bold text-ink">ས</span> — may sit <em>after</em> a suffix, becoming the very last letter of the word. They are <span className="font-bold text-ink">silent</span> — they don’t change how the word is pronounced.</p>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -301,7 +420,6 @@ export function WebLesson6() {
                     <table className="w-full text-xs">
                       <thead className="bg-surface-muted border-b border-border-strong">
                         <tr>
-                          {/* PERFECTLY SIZED HEADERS ON WEB */}
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest">
                             <div className="flex items-center gap-1.5">
                               WITHOUT <span className="font-tibetan text-xl normal-case pt-1">ས</span>
@@ -361,10 +479,8 @@ export function WebLesson6() {
             </div>
           </StepContainer>
 
-          <StepContainer index={4} step={STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
-             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[4].title}</h2>
-            </div>
+          {/* Step 5: How to recognise the root letter */}
+          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">Now that words can stretch to four horizontal letters, the eye needs a strategy. With practice, finding the root becomes automatic.</p>
             
             <div className="grid gap-4 md:grid-cols-2">
@@ -409,9 +525,10 @@ export function WebLesson6() {
             </div>
           </StepContainer>
 
-          <StepContainer index={5} step={STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+          {/* Step 6: Vocabulary built from suffixes */}
+          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
             <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{STEPS[5].title}</h2>
+              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[6].title}</h2>
               <span className="text-xs font-bold text-ink-light bg-surface-muted px-3 py-1.5 border border-border-strong rounded-full">{VOCAB.length} words</span>
             </div>
             <div className="mb-10">
@@ -428,7 +545,7 @@ export function WebLesson6() {
               />
             </div>
             
-			<QuizModule
+            <QuizModule
               moduleId={6}
               title="Mastery Check · Vocabulary" 
               intro="Check your memory of the new suffix words before moving on. This check tests all vocabulary words." 
@@ -436,16 +553,25 @@ export function WebLesson6() {
             />
           </StepContainer>
 
-          <StepContainer index={6} step={STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
+          {/* Step 7: Practice & exercises */}
+          <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)}>
+             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
+               <h2 className="font-serif text-2xl text-ink mb-3">{WEB_STEPS[7].title}</h2>
+               <p className="max-w-3xl text-[15px] text-ink-light leading-relaxed">
+                 Each suffix has its own <span className="font-bold text-ink">mastery check</span> inside its panel above. Below is a <span className="font-bold text-ink">cumulative review</span> mixing all ten suffixes and vocabulary words.
+               </p>
+             </div>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          <StepContainer index={7} step={STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
+          {/* Step 8: Final Test */}
+          <StepContainer index={8} step={WEB_STEPS[8]} status={statusOf(8)} isExpanded={expandedStep === 8} onToggle={() => toggleStep(8)} onContinue={() => markComplete(8)} isLast>
             <QuizModule 
               moduleId={6}
-              title="Final Assessment" intro="Score 80% or higher to unlock the next step: Capstone." 
+              title="Final Test" 
+              intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the Beginner 1 Capstone Assessment." 
               questions={quizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
-              isUnlockTest={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(7)} 
+              isUnlockTest={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(8)} 
             />
           </StepContainer>
 
@@ -457,7 +583,7 @@ export function WebLesson6() {
           <Link href="/dashboard/lessons/5" className="hidden sm:flex items-center gap-2 text-sm font-bold text-ink-light hover:text-ink transition-colors">
             <ChevronLeft size={16} /> Previous
           </Link>
-          {expandedStep !== 7 && (
+          {expandedStep !== WEB_STEPS.length - 1 && (
             <Button className="flex-1 sm:flex-none" onClick={() => markComplete(expandedStep)}>
               <CheckCircle2 size={18} /> Mark step complete
             </Button>
@@ -474,7 +600,7 @@ export function WebLesson6() {
 function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
-      <div className="h-1 w-full" style={{ backgroundColor: s.accent }} />
+      <div className="h-1.5 w-full" style={{ backgroundColor: s.accent }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
           <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${s.accent}15`, color: s.accent }}>{s.head}</div>
@@ -504,7 +630,7 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
       <div className="grid grid-cols-2 gap-px border-b sm:grid-cols-3 border-border-strong bg-border-strong">
         {s.examples.map((ex: any) => (
           <button key={ex.word} onClick={() => playAudio(ex.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
-            <span className="absolute left-0 top-0 h-0.5 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: s.accent }} />
+            <span className="absolute left-0 top-0 h-1 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: s.accent }} />
             <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{ex.word}</span>
             <span className="font-mono text-xs font-bold text-ink-light">[{ex.read}]</span>
             {ex.gloss && <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{ex.gloss}</span>}
@@ -526,8 +652,8 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
                 <span className="font-mono text-lg font-bold text-ink">[{ex.read}]</span>
               </div>
               <div className="ml-auto flex items-center gap-3">
-                <Button variant="outline" onClick={() => playAudio(ex.word + " spelling")} disabled={playingItem !== null} className="px-3 py-2 rounded-full">
-                  {playingItem === (ex.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />}
+                <Button variant="outline" onClick={() => playAudio(ex.word + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                  {playingItem === (ex.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                 </Button>
               </div>
             </div>
@@ -547,7 +673,7 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
 }
 
 function SuffixMiniMasteryLoader({ s, playAudio, playingItem, playErrorBeep }: any) {
-  const [seed, setSeed] = useState(0);
+  const [seed] = useState(0);
 
   const questions = useMemo(() => {
     const shuffled = [...s.examples].sort(() => 0.5 - Math.random());
@@ -573,7 +699,7 @@ function SuffixMiniMasteryLoader({ s, playAudio, playingItem, playErrorBeep }: a
 
   return (
     <QuizModule 
-      key={`suffix-quiz-${seed}`}
+      key={`suffix-quiz-${s.key}-${seed}`}
       moduleId={6}
       title={`Mastery Check · Suffix ${s.latin}`}
       variant="panel"

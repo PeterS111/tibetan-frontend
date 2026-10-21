@@ -128,7 +128,7 @@ export const VOCAB: Vocab[] = [
   { tib: "སྐྲ", translit: "tra", en: "hair", emoji: "💇", sup: "sa" },
   { tib: "སྟ་རེ", translit: "ta-re", en: "axe", emoji: "🪓", sup: "sa" },
   { tib: "སྐུ", translit: "ku", en: "body", emoji: "🧍", sup: "sa" },
-  { tib: "སྤུ", translit: "pu", en: "body hair", emoji: "🧑‍🦱", sup: "sa" },
+  { tib: "སྤུ", translit: "pu", en: "body hair", emoji: "🧑‍", sup: "sa" },
   { tib: "སྔ་མོ", translit: "nga-mo", en: "early", emoji: "🌅", sup: "sa" },
   { tib: "སྐེ", translit: "ke", en: "neck", emoji: "🦒", sup: "sa" },
 ];

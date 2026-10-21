@@ -1,12 +1,12 @@
 // app/components/lesson/2/WebLesson2.tsx
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
-  Info, Volume2, Loader2, CheckCircle2
+  Info, Volume2, Loader2, CheckCircle2, Sparkles, Layers
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -17,7 +17,8 @@ import {
   VOWELS, 
   VOCAB, 
   POSITION_META, 
-  generateSpellingQuiz, 
+  generateMarksAndSoundsQuiz,
+  generateVowelSpellingQuiz,
   generateFinalQuiz, 
   type Vowel, 
   type VowelKey,
@@ -31,7 +32,6 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import QuizModule from "@/app/components/QuizModule";
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
-import { InstructionModal } from "@/app/components/ui/InstructionModal";
 import { MARK_CONFIG, SpellingFormula } from "@/app/components/ui/SpellingFormula";
 
 const VOWEL_STYLE_META: Record<VowelKey, { label: string; swatch: string; text: string; hex: string }> = {
@@ -41,16 +41,56 @@ const VOWEL_STYLE_META: Record<VowelKey, { label: string; swatch: string; text: 
   o: { label: "NA-RO · ABOVE ROOT", swatch: "bg-rose-50", text: "text-rose-800", hex: "#f43f5e" },
 };
 
-// Combined Marks & Sounds Mastery and Spelling Mastery into a single step after Spelling
+// 7 Web Steps (matches server.py lesson_count = 7 for Module 2, with Mastery Checks embedded inside their sections)
 const WEB_STEPS = [
-  { id: "marks", eyebrow: "Step 01", title: "The diacritic marks", description: "Names, positions, and how each mark is written." },
-  { id: "pronunciation", eyebrow: "Step 02", title: "Pronouncing the vowels", description: "Map each vowel to a familiar English sound." },
-  { id: "spelling", eyebrow: "Step 03", title: "Spelling rules", description: "Combine any consonant with the four vowel marks." },
-  { id: "spelling_quiz", eyebrow: "Step 04", title: "Marks & Spelling Mastery", description: "Test your recognition of the vowel marks, sounds, and spelling." },
-  { id: "vocab", eyebrow: "Step 05", title: "Vocabulary", description: "Read and hear real words using vowels only." },
-  { id: "vocab_quiz", eyebrow: "Step 06", title: "Vocabulary Mastery", description: "Score 80% or higher to add words to your profile." },
-  { id: "practice", eyebrow: "Step 07", title: "Practice & exercises", description: "Flashcards, listening, matching, and tracing." },
-  { id: "complete", eyebrow: "Final step", title: "Lesson complete", description: "Take the final test to unlock the next lesson." },
+  { 
+    id: "intro", 
+    eyebrow: "Introduction", 
+    title: "Welcome to the four vowels", 
+    description: "A short orientation before you meet the four vowel marks." 
+  },
+  { 
+    id: "marks", 
+    eyebrow: "Step 02", 
+    title: "The Four Diacritic Marks", 
+    tibetanTitle: "དབྱངས་བཞི།",
+    description: "Each vowel has its own traditional Tibetan name. Three sit above the root letter; only shabkyu is written beneath it." 
+  },
+  { 
+    id: "pronunciation", 
+    eyebrow: "Step 03", 
+    title: "Pronouncing the Vowels", 
+    tibetanTitle: "བསྡུས་ཀློག",
+    description: "Pronouncing the Tibetan vowels isn't difficult. Look at the equivalent pronunciation in English — each vowel maps cleanly to sounds you already say every day." 
+  },
+  { 
+    id: "spelling", 
+    eyebrow: "Step 04", 
+    title: "Spelling — root letter + vowel mark", 
+    tibetanTitle: "སྦྱོར་ཀློག",
+    description: "Spelling may not seem very important to you but it actually plays a key role in your reading skills. Remember, the more you practise spelling words, the more fluent you will be in reading in no time." 
+  },
+  { 
+    id: "vocab", 
+    eyebrow: "Step 05", 
+    title: "Vocabulary", 
+    tibetanTitle: "ཚིག་གསར།",
+    description: "Read and hear real words using vowels only." 
+  },
+  { 
+    id: "practice", 
+    eyebrow: "Step 06", 
+    title: "Practice & Exercises", 
+    tibetanTitle: "སྦྱོང་བརྡར།",
+    description: "Flashcards, Listening, matching, and tracing" 
+  },
+  { 
+    id: "complete", 
+    eyebrow: "Final step", 
+    title: "Final Test", 
+    tibetanTitle: "རྒྱུགས་སྤྲོད།",
+    description: "40 questions drawn from everything you covered in this lesson. Score 80% or higher to pass. You can retake the test as many times as you like — your best score is saved." 
+  },
 ];
 
 export function WebLesson2() {
@@ -63,17 +103,6 @@ export function WebLesson2() {
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
   const [isBypassing, setIsBypassing] = useState(false);
-
-  // Auto-Trigger Modal State
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
-
-  useEffect(() => {
-    if (expandedStep === 0 && !hasSeenInstructions) {
-      setShowInstructions(true);
-      setHasSeenInstructions(true);
-    }
-  }, [expandedStep, hasSeenInstructions]);
 
   const saveWords = async (wordCount: number, stepIndex: number) => {
     if (!completed.has(stepIndex) && user) {
@@ -121,7 +150,8 @@ export function WebLesson2() {
     }
   ], []);
 
-  const spellingQuestions = useMemo(() => generateSpellingQuiz(), []);
+  const marksAndSoundsQuestions = useMemo(() => generateMarksAndSoundsQuiz(), []);
+  const vowelSpellingQuestions = useMemo(() => generateVowelSpellingQuiz(), []);
   const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
 
   return (
@@ -138,7 +168,7 @@ export function WebLesson2() {
             }, 1000);
           }} 
           disabled={isBypassing}
-          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50"
+          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50 rounded-2xl"
         >
           {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
         </button>
@@ -170,7 +200,8 @@ export function WebLesson2() {
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
                 Every Tibetan syllable is voiced through a vowel. Just four diacritic marks — three
                 above the letter and one below — turn the thirty consonants into the full range of
-                spoken sound. 
+                spoken sound. Learn each mark's shape, position, and pronunciation, then practise
+                spelling and reading with vocabulary built from these vowels alone.
               </p>
             </div>
             
@@ -201,9 +232,72 @@ export function WebLesson2() {
         </Card>
 
         <div className="space-y-4">
-          
-          {/* Step 0: Marks (Plays individual mark name audio: Gigu, Zhabkyu, etc.) */}
+
+          {/* Step 0: Orientation / What You Will Learn */}
           <StepContainer index={0} step={WEB_STEPS[0]} status={statusOf(0)} isExpanded={expandedStep === 0} onToggle={() => toggleStep(0)} onContinue={() => markComplete(0)}>
+            <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
+              <div className="space-y-6">
+                <p className="text-[15px] leading-relaxed text-ink-light">
+                  In this lesson you will meet the <strong className="text-ink">four diacritic vowel marks</strong> that bring every Tibetan consonant to life. You'll learn each mark's traditional name and position, hear how it maps to familiar English sounds, and practise combining root letters with vowels to spell and read real Tibetan words.
+                </p>
+
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Sparkles size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Tap any mark or example card to hear its traditional name and spoken sound.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <Layers size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Practise the traditional Tibetan aloud-spelling formula: root letter + vowel mark = syllable.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-8 h-8 rounded-full bg-brand-light border border-brand/30 flex items-center justify-center shrink-0 text-brand-dark mt-0.5">
+                      <CheckCircle2 size={15} />
+                    </div>
+                    <p className="text-sm leading-relaxed text-ink-light pt-1">
+                      Complete the mastery checks at the end of each section to lock in your recall.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-surface rounded-2xl p-6 sm:p-7 border border-border-strong shadow-sm">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-5">
+                  What you will learn
+                </div>
+                <div className="space-y-3">
+                  {[
+                    "The Four Diacritic Marks",
+                    "Pronouncing the Vowels",
+                    "Spelling Rules",
+                    "Vocabulary",
+                    "Practice & Exercises",
+                    "Final Test",
+                  ].map((title, idx) => (
+                    <div key={title} className={`flex items-center gap-3.5 ${idx !== 0 ? "pt-3 border-t border-border-subtle" : ""}`}>
+                      <span className="w-6 h-6 rounded-md bg-brand-light border border-brand/30 text-brand-dark text-xs font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-serif text-[15px] font-bold text-ink leading-snug">{title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </StepContainer>
+          
+          {/* Step 1: The Four Diacritic Marks (Plays individual mark name audio: Gigu, Zhabkyu, etc.) */}
+          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {VOWELS.map((v) => {
                 const pm = POSITION_META[v.position];
@@ -221,9 +315,9 @@ export function WebLesson2() {
                       <span className="text-eyebrow">{pm.label}</span>
                     </div>
                     
-                    <div className="mt-8 mb-6 h-20 flex items-center justify-start">
+                    <div className="mt-8 mb-6 h-24 w-full flex items-center justify-center">
                       {pngConfig ? (
-                         <img src={pngConfig.src} alt={v.markTib} className="h-full w-auto object-contain opacity-90" />
+                         <img src={pngConfig.src} alt={v.markTib} className="h-full w-auto mx-auto object-contain opacity-90" />
                        ) : (
                          <span className="font-tibetan text-6xl text-ink">{v.mark}</span>
                        )}
@@ -246,8 +340,8 @@ export function WebLesson2() {
             </div>
           </StepContainer>
 
-          {/* Step 1: Pronouncing the Vowels (Redesigned to Match Lesson 1 Root Cards!) */}
-          <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
+          {/* Step 2: Pronouncing the Vowels + Embedded Mastery Check · Marks & Sounds */}
+          <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
             <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm mb-6 rounded-2xl">
               <Info className="mt-0.5 size-5 shrink-0 text-brand" />
               <div className="text-sm font-bold leading-relaxed text-ink-light">
@@ -304,10 +398,26 @@ export function WebLesson2() {
                 );
               })}
             </div>
+
+            <div className="mt-10 p-6 md:p-8 border border-border-strong rounded-[1.5rem] bg-surface-muted">
+              <div className="mb-6 flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-brand-dark" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery Check · Marks & Sounds</span>
+              </div>
+              <QuizModule 
+                moduleId={2}
+                title="Mastery Check · Marks & Sounds" 
+                variant="panel"
+                questions={marksAndSoundsQuestions} 
+                playAudio={playAudio} 
+                playingItem={playingItem} 
+                playErrorBeep={playErrorBeep} 
+              />
+            </div>
           </StepContainer>
 
-          {/* Step 2: Spelling */}
-          <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
+          {/* Step 3: Spelling + Embedded Mastery Check · Vowel Spelling */}
+          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
             <div className="space-y-8 mb-10">
               {VOWELS.map((v) => (
                 <div key={v.key} className="bg-surface-muted rounded-[1.5rem] p-6 border border-border-subtle shadow-sm">
@@ -370,23 +480,25 @@ export function WebLesson2() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-10 p-6 md:p-8 border border-border-strong rounded-[1.5rem] bg-surface-muted">
+              <div className="mb-6 flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-brand-dark" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery Check · Vowel Spelling</span>
+              </div>
+              <QuizModule 
+                moduleId={2}
+                title="Mastery Check · Vowel Spelling" 
+                variant="panel"
+                questions={vowelSpellingQuestions} 
+                playAudio={playAudio} 
+                playingItem={playingItem} 
+                playErrorBeep={playErrorBeep} 
+              />
+            </div>
           </StepContainer>
 
-          {/* Step 3: Combined Marks, Sounds & Spelling Quiz */}
-          <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <QuizModule 
-              moduleId={2}
-              title="Mastery Check · Marks, Sounds & Spelling" 
-              intro="Check your recognition of the four diacritic marks, vowel sounds, and syllable spelling." 
-              questions={spellingQuestions} 
-              playAudio={playAudio} 
-              playingItem={playingItem} 
-              playErrorBeep={playErrorBeep} 
-              isUnlockTest={false}
-            />
-          </StepContainer>
-
-          {/* Step 4: Vocabulary */}
+          {/* Step 4: Vocabulary + Embedded Mastery Check · Vocabulary */}
           <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
             <div className="mb-10">
               <VocabGrid 
@@ -401,43 +513,41 @@ export function WebLesson2() {
                 playingItem={playingItem}
               />
             </div>
+
+            <div className="mt-10">
+              <QuizModule
+                moduleId={2}
+                title="Mastery Check · Vocabulary" 
+                intro="Check your memory of the new vowel words before moving on." 
+                data={VOCAB} 
+                playAudio={playAudio} 
+                playingItem={playingItem} 
+                playErrorBeep={playErrorBeep} 
+                questionCount={16} 
+                isVocabMatch={true}
+                onPass={() => saveWords(VOCAB.length, 4)} 
+              />
+            </div>
           </StepContainer>
 
-          {/* Step 5: Vocabulary Quiz */}
-          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
-            <QuizModule
-              moduleId={2}
-              title="Mastery Check · Vocabulary" 
-              intro="Score 80% or higher to prove you know these words and add them to your profile." 
-              data={VOCAB} 
-              playAudio={playAudio} 
-              playingItem={playingItem} 
-              playErrorBeep={playErrorBeep} 
-              questionCount={16} 
-              isVocabMatch
-              isUnlockTest={true} 
-              onPass={() => saveWords(VOCAB.length, 5)} 
-            />
-          </StepContainer>
-
-          {/* Step 6: Practice */}
-          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
+          {/* Step 5: Practice & Exercises */}
+          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
-          {/* Step 7: Final Assessment */}
-          <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)} isLast>
+          {/* Step 6: Final Test */}
+          <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)} isLast>
             <QuizModule 
               moduleId={2}
-              title="Final Assessment" 
-              intro="Score 80% or higher to unlock the next step: The Three Superscripts." 
+              title="Final Test" 
+              intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to pass. You can retake the test as many times as you like — your best score is saved." 
               questions={finalQuizQuestions} 
               playAudio={playAudio} 
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
               nextLessonPath="/dashboard/lessons/3" 
-              onPass={() => markComplete(7)} 
+              onPass={() => markComplete(6)} 
             />
           </StepContainer>
         </div>
@@ -463,8 +573,6 @@ export function WebLesson2() {
           </Link>
         </div>
       </div>
-
-      <InstructionModal isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
     </div>
   );
 }

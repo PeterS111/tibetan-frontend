@@ -13,6 +13,7 @@ export const MARK_CONFIG: Record<string, { src: string; imgClass: string }> = {
   'ོ': { src: '/image_o.png',     imgClass: 'h-8 w-8 object-top' },
   'ྱ': { src: '/image_yatak.png', imgClass: 'h-8 w-8 object-bottom' },
   'ྲ': { src: '/image_ratak.png', imgClass: 'h-8 w-8 object-bottom' },
+  'ླ': { src: '/image latak.png', imgClass: 'h-8 w-8 object-bottom' },
   'ྭ': { src: '/image_wazur.png', imgClass: 'h-8 w-8 object-bottom' },
 };
 

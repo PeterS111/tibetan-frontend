@@ -5,7 +5,7 @@ import { useUser, useClerk } from "@clerk/clerk-react";
 import Link from "next/link";
 import { 
   Settings, HelpCircle, Heart, Shield, FileText, 
-  LogOut, ChevronRight, User as UserIcon, Flame, BookOpen 
+  LogOut, ChevronRight, User as UserIcon, Flame, BookOpen, Info 
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
@@ -132,6 +132,15 @@ export default function ProfilePage() {
         About & Help
       </div>
       <div className={menuGroupClass}>
+        <Link href="/about" className={`${menuItemClass} border-b border-border-subtle`}>
+          <div className="flex items-center gap-3 text-ink">
+            <div className="w-8 h-8 rounded-full bg-brand-light text-brand-dark flex items-center justify-center">
+              <Info size={16} />
+            </div>
+            <span className="font-medium text-[15px]">About the Project</span>
+          </div>
+          <ChevronRight size={18} className="text-ink-muted" />
+        </Link>
         <Link href="/support" className={`${menuItemClass} border-b border-border-subtle`}>
           <div className="flex items-center gap-3 text-ink">
             <div className="w-8 h-8 rounded-full bg-surface-muted text-ink-muted flex items-center justify-center">
