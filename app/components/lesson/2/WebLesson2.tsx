@@ -531,7 +531,7 @@ export function WebLesson2() {
           </StepContainer>
 
           {/* Step 5: Practice & Exercises */}
-          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
+          <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
