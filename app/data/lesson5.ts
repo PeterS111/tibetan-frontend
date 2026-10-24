@@ -37,7 +37,7 @@ export const TONE_META: Record<Tone, { label: string; hex: string; Icon: any; te
 
 export const PREFIXES: Prefix[] = [
   {
-    key: "ga", head: "ག", latin: "ga", nameTib: "ག་སྔོན་འཇུག", title: "The Prefix ག", count: "10 roots",
+    key: "ga", head: "ག", latin: "ga", nameTib: "སྔོན་འཇུག་ག", title: "The Prefix ག", count: "10 roots",
     intro: "Prefix ག sits before ten root letters, mostly of the ca, ta, tsa and sha families. It never changes masculine sounds; with feminine roots it deepens the tone; with the letter ཡ it produces a high [yo].",
     followedBy: "ཅ ཉ ཏ ད ན ཙ ཞ ཟ ཡ ཤ ས", usage: "Silent in speech. Written-only role for most masculine roots — same sound, same tone. Deepens ད, ཞ, ཟ; raises ཡ to a high tone.", accent: { hex: "#b45309" }, family: "silent",
     combos: [
@@ -51,7 +51,7 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "da", head: "ད", latin: "da", nameTib: "ད་སྔོན་འཇུག", title: "The Prefix ད", count: "5 roots",
+    key: "da", head: "ད", latin: "da", nameTib: "སྔོན་འཇུག་ད", title: "The Prefix ད", count: "5 roots",
     intro: "Prefix ད precedes ཀ ག ང པ བ མ — five letters after excluding ba's own group. With the very-feminine ང it produces a nasal high tone. With root བ, the whole syllable becomes [wa] in a high tone.",
     followedBy: "ཀ ག ང པ བ མ", usage: "Deepens ག; raises ང to a nasal high tone. The stack ད + བ is the classical way to write the [wa] syllable — always high tone.", accent: { hex: "#7c3aed" }, family: "silent",
     combos: [
@@ -63,7 +63,7 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "ba", head: "བ", latin: "ba", nameTib: "བ་སྔོན་འཇུག", title: "The Prefix བ", count: "14 roots",
+    key: "ba", head: "བ", latin: "ba", nameTib: "སྔོན་འཇུག་བ", title: "The Prefix བ", count: "14 roots",
     intro: "Prefix བ can precede fourteen root letters spanning several families. It is silent in speech, but on the page distinguishes verbs of different tense.",
     followedBy: "ཀ ག ཅ ཇ ཏ ད ན ཙ ཛ ཞ ཟ ཉ ཤ ས", usage: "No pronunciation change for masculine roots. Feminine ག ཇ ད ཞ ཟ deepen; the shift is often subtle in Lhasa speech but decisive in spelling.", accent: { hex: "#0f766e" }, family: "silent",
     combos: [
@@ -76,7 +76,7 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "ma", head: "མ", latin: "ma", nameTib: "མ་སྔོན་འཇུག", title: "The Prefix མ", count: "6 roots",
+    key: "ma", head: "མ", latin: "ma", nameTib: "སྔོན་འཇུག་མ", title: "The Prefix མ", count: "6 roots",
     intro: "Prefix མ turns the root letter into a nasalized sound. It attaches to six letters — mostly of the ka, ca, ta, tsa families — creating recognisable [m’-] onsets in speech.",
     followedBy: "ཁ ག ང ཆ ཇ ཉ ཐ ད ན ཚ ཛ", usage: "Nasalises the root. Feminine roots take a lower nasal tone (ma + go → [m'go]); very-feminine roots take a higher nasal tone (ma + no → [m'no]).", accent: { hex: "#b91c1c" }, family: "nasal",
     combos: [
@@ -88,7 +88,7 @@ export const PREFIXES: Prefix[] = [
     ],
   },
   {
-    key: "a", head: "འ", latin: "'a", nameTib: "འ་སྔོན་འཇུག", title: "The Prefix འ", count: "10 roots",
+    key: "a", head: "འ", latin: "'a", nameTib: "སྔོན་འཇུག་འ", title: "The Prefix འ", count: "10 roots",
     intro: "Prefix འ (‘a-chung) attaches to ten root letters. Like མ, it produces a nasal onset — commonly transcribed as [ng’-]. Very common in verbs and future forms.",
     followedBy: "ཁ ག ཆ ཇ ཐ ད ཕ བ ཚ ཛ", usage: "Nasalises the root. Feminine roots deepen (’a + gu → [ng’gu]); very-feminine roots rise ([ng’no]). Root ba is a special case: ’a + ba stays [ba] in a low nasal tone.", accent: { hex: "#0284c7" }, family: "nasal",
     combos: [

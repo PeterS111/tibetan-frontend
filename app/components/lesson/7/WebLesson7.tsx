@@ -38,7 +38,7 @@ const WEB_STEPS = [
 
 export function WebLesson7() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
+  const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
   const [isBypassing, setIsBypassing] = useState(false);
 
   const quizQuestions = useMemo(() => generateCapstoneQuiz(), []);
@@ -88,7 +88,7 @@ export function WebLesson7() {
             <div className="w-full md:w-72">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Step progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />

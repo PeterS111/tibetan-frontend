@@ -75,11 +75,24 @@ const WEB_STEPS = [
   }
 ];
 
+function renderTibetanText(text: string) {
+  const parts = text.split(/([\u0F00-\u0FFF]+)/g);
+  return parts.map((part, idx) =>
+    /[\u0F00-\u0FFF]/.test(part) ? (
+      <span key={idx} className="font-tibetan font-normal text-xl text-ink leading-none">
+        {part}
+      </span>
+    ) : (
+      <span key={idx}>{part}</span>
+    )
+  );
+}
+
 export function WebLesson3() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
+  const { expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
   const [isBypassing, setIsBypassing] = useState(false);
@@ -145,15 +158,15 @@ export function WebLesson3() {
             <div>
               <div className="text-eyebrow text-brand-dark mb-2">Lesson 03 · Foundations</div>
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">The Three Superscripts</h1>
-              <p className="mt-2 font-serif text-3xl text-ink-light italic tibetan">མགོ་ཅན་གསུམ།</p>
+              <p className="mt-2 font-tibetan font-normal text-3xl text-ink-light">མགོ་ཅན་གསུམ།</p>
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
-                Only three letters — ར, ལ, ས — may sit above another consonant. When they do, they fall silent themselves and quietly reshape the tone of the root letter beneath. Learn each superscript in turn: which consonants it stacks with, how the pronunciation shifts, and the everyday vocabulary each family unlocks.
+                Only three letters — <span className="font-tibetan font-normal text-xl text-ink">ར</span>, <span className="font-tibetan font-normal text-xl text-ink">ལ</span>, <span className="font-tibetan font-normal text-xl text-ink">ས</span> — may sit above another consonant. When they do, they fall silent themselves and quietly reshape the tone of the root letter beneath. Learn each superscript in turn: which consonants it stacks with, how the pronunciation shifts, and the everyday vocabulary each family unlocks.
               </p>
             </div>
             <div className="w-full md:w-72">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Step progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
@@ -168,7 +181,7 @@ export function WebLesson3() {
                      className="group flex flex-col items-center gap-1 border border-border-strong p-2.5 bg-surface hover:bg-surface-muted hover:border-brand transition rounded-xl"
                    >
                      <div className="flex items-center gap-1.5">
-                       <span className="font-tibetan text-xl text-ink leading-none pt-1">{s.headLabel}</span>
+                       <span className="font-tibetan font-normal text-xl text-ink leading-none pt-1">{s.headLabel}</span>
                        {playingItem === s.headLabel ? (
                          <Loader2 size={11} className="animate-spin text-brand" />
                        ) : (
@@ -249,18 +262,13 @@ export function WebLesson3() {
 
           {/* Step 1: What is a superscript? */}
           <StepContainer index={1} step={WEB_STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
-            <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-brand-dark mb-1">Section 01</div>
-              <h2 className="font-serif text-2xl text-ink">What is a superscript?</h2>
-            </div>
-
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
                   <Layers size={14} /> Stacking
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">
-                  A superscript is a small consonant written <span className="font-bold text-ink">on top of</span> a root letter. Only three consonants — <span className="font-tibetan text-lg text-ink">ར ལ ས</span> — are permitted to occupy this position.
+                  A superscript is a small consonant written <span className="font-bold text-ink">on top of</span> a root letter. Only three consonants — <span className="font-tibetan font-normal text-xl text-ink">ར ལ ས</span> — are permitted to occupy this position.
                 </p>
               </Card>
               <Card className="p-6 bg-surface">
@@ -309,13 +317,13 @@ export function WebLesson3() {
             </div>
           </StepContainer>
 
-          {/* Step 2: Meet the three superscripts (Full SubPanel-style layout without pop-up cards!) */}
+          {/* Step 2: Meet the three superscripts */}
           <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
-            <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-dark mb-1">Section 02</div>
-                <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[2].title}</h2>
-              </div>
+            <div className="mb-6 flex gap-4 p-5 bg-surface-muted border border-border-strong rounded-2xl">
+              <Info className="mt-0.5 size-5 shrink-0 text-brand-dark" />
+              <p className="text-[15px] leading-relaxed text-ink-light">
+                Once the 12 Ra-go (<span className="font-tibetan font-normal text-xl text-ink">ར་མགོ</span>) combinations are mastered, you'll already know about 95% of La-go (<span className="font-tibetan font-normal text-xl text-ink">ལ་མགོ</span>) and Sa-go (<span className="font-tibetan font-normal text-xl text-ink">ས་མགོ</span>), as they share the same sounds. Only a few combinations, such as (<span className="font-tibetan font-normal text-xl text-ink">ལྷ</span>), are unique.
+              </p>
             </div>
 
             <div className="mb-6 flex flex-wrap gap-2">
@@ -330,7 +338,7 @@ export function WebLesson3() {
                     }`}
                   >
                     <span 
-                      className="grid px-2.5 h-9 place-items-center font-tibetan text-lg leading-none rounded-lg pt-1" 
+                      className="grid px-2.5 h-9 place-items-center font-tibetan font-normal text-lg leading-none rounded-lg pt-1" 
                       style={{ backgroundColor: on ? 'rgba(255,255,255,0.12)' : `${s.accent.hex}15`, color: on ? s.accent.hex : s.accent.hex }}
                     >
                       {s.headLabel}
@@ -349,14 +357,6 @@ export function WebLesson3() {
 
           {/* Step 3: Vocabulary built from superscripts */}
           <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-dark mb-1">Section 03</div>
-                <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[3].title}</h2>
-              </div>
-              <span className="text-xs font-bold text-ink-light bg-surface-muted px-2.5 py-1 border border-border-strong rounded-full">{VOCAB.length} words</span>
-            </div>
-
             <VocabGrid 
               items={VOCAB.map(v => {
                 const sup = SUPERS.find(s => s.key === v.sup)!;
@@ -389,13 +389,9 @@ export function WebLesson3() {
 
           {/* Step 4: Practice & mastery check */}
           <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
-            <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-brand-dark mb-1">Section 04</div>
-              <h2 className="font-serif text-2xl text-ink mb-3">{WEB_STEPS[4].title}</h2>
-              <p className="max-w-3xl text-[15px] text-ink-light leading-relaxed">
-                Each superscript has its own <span className="font-bold text-ink">mastery check</span> — a short focused quiz on just those stacks — followed by a <span className="font-bold text-ink">cumulative review</span> that mixes all three families together. This layered approach prevents cognitive overload and reinforces the differences between Ra-go, La-go, and Sa-go.
-              </p>
-            </div>
+            <p className="mb-6 max-w-3xl text-[15px] text-ink-light leading-relaxed">
+              Each superscript has its own <span className="font-bold text-ink">mastery check</span> inside its panel above, followed by this <span className="font-bold text-ink">cumulative review</span> that mixes all three families together.
+            </p>
             <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
@@ -437,22 +433,22 @@ function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super
       {/* Top Header & Intro Block */}
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-24 sm:size-28 place-items-center font-tibetan text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${sup.accent.hex}15`, color: sup.accent.hex }}>
+          <div className="grid size-24 sm:size-28 place-items-center font-tibetan font-normal text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${sup.accent.hex}15`, color: sup.accent.hex }}>
             {sup.head}
           </div>
           <div>
             <div className="text-eyebrow mb-2">Superscript</div>
             <div className="font-serif text-2xl sm:text-3xl font-bold text-ink">{sup.title}</div>
-            <div className="mt-1 font-tibetan text-2xl text-ink-light">{sup.nameTib}</div>
+            <div className="mt-1 font-tibetan font-normal text-2xl text-ink-light">{sup.nameTib}</div>
           </div>
         </div>
         <div className="flex flex-col justify-center">
           <div className="text-[15px] leading-relaxed p-5 border flex flex-col gap-3 rounded-2xl bg-surface-muted border-border-strong text-ink-light">
-            <p>{sup.intro}</p>
+            <p>{renderTibetanText(sup.intro)}</p>
             <div className="flex items-center flex-wrap gap-3 pt-2 text-ink">
-              <span className="font-tibetan text-3xl sm:text-4xl" style={{ color: sup.accent.hex }}>{sup.head}</span>
+              <span className="font-tibetan font-normal text-3xl sm:text-4xl" style={{ color: sup.accent.hex }}>{sup.head}</span>
               <span className="text-xl font-sans opacity-40">+</span>
-              <span className="font-tibetan text-2xl sm:text-3xl leading-relaxed tracking-wider">{sup.rootLetters}</span>
+              <span className="font-tibetan font-normal text-2xl sm:text-3xl leading-relaxed tracking-wider">{sup.rootLetters}</span>
             </div>
           </div>
         </div>
@@ -470,7 +466,7 @@ function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super
               className="group relative flex flex-col items-center justify-center gap-2.5 p-6 transition-colors bg-surface hover:bg-surface-muted"
             >
               <span className="absolute left-0 top-0 h-1 w-full opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: sup.accent.hex }} />
-              <span className="font-tibetan text-[3rem] leading-none text-[#1c1917] pt-1">{c.stack}</span>
+              <span className="font-tibetan font-normal text-[3rem] leading-none text-[#1c1917] pt-1">{c.stack}</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{c.read}</span>
               <span className="inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}>
                 <M.Icon size={12} strokeWidth={3} />
@@ -489,11 +485,11 @@ function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super
             const M = TONE_META[c.tone as Tone];
             return (
               <div key={c.stack} className="flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
-                <span className="font-tibetan text-[2.5rem] leading-none w-12 text-center pt-1">{c.stack}</span>
+                <span className="font-tibetan font-normal text-[2.5rem] leading-none w-12 text-center pt-1">{c.stack}</span>
                 <SpellingFormula parts={`${sup.head} + ${c.root} + བཏགས་`} />
                 <span className="text-xl font-bold opacity-70 text-border-strong">=</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: sup.accent.hex }}>{c.stack}</span>
+                  <span className="font-tibetan font-normal text-3xl leading-none pt-1" style={{ color: sup.accent.hex }}>{c.stack}</span>
                   <span className="font-mono text-lg font-bold text-ink">[{c.read}]</span>
                 </div>
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}>

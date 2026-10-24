@@ -85,9 +85,23 @@ const WEB_STEPS = [
   }
 ];
 
+// Helper to ensure inline Tibetan characters in strings render with font-tibetan font-normal
+function renderTibetanText(text: string) {
+  const parts = text.split(/([\u0F00-\u0FFF]+)/g);
+  return parts.map((part, idx) =>
+    /[\u0F00-\u0FFF]/.test(part) ? (
+      <span key={idx} className="font-tibetan font-normal text-xl text-ink leading-none">
+        {part}
+      </span>
+    ) : (
+      <span key={idx}>{part}</span>
+    )
+  );
+}
+
 export function WebLesson6() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
+  const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
   const [isBypassing, setIsBypassing] = useState(false);
@@ -150,7 +164,7 @@ export function WebLesson6() {
             <div>
               <div className="mb-2 text-eyebrow text-brand-dark">Lesson 06 · Foundations</div>
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">Suffixes & Post-suffixes</h1>
-              <p className="mt-2 font-tibetan text-3xl text-ink-light">རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།</p>
+              <p className="mt-2 font-tibetan font-normal text-3xl text-ink-light">རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།</p>
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
                 Ten letters may follow the root — the <span className="font-bold text-ink">suffix</span> closes the syllable. A further <span className="font-bold text-ink">two</span> may sit beyond that suffix as a <span className="font-bold text-ink">post-suffix</span>. Together they shape the reading, the vowel colour, and the grammatical tense of a word.
               </p> 
@@ -158,7 +172,7 @@ export function WebLesson6() {
             <div className="w-full md:w-80">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -170,7 +184,7 @@ export function WebLesson6() {
                     onClick={() => { setActiveTab(x.key); playAudio(x.head); }} 
                     className={`border rounded-xl p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-brand-light" : "border-border-strong hover:bg-surface-muted hover:border-amber-300 bg-surface"}`}
                   >
-                    <div className="font-tibetan leading-none text-xl pt-1" style={{ color: x.accent }}>{x.head}</div>
+                    <div className="font-tibetan font-normal leading-none text-xl pt-1" style={{ color: x.accent }}>{x.head}</div>
                     <div className="mt-1 text-[9px] uppercase tracking-widest text-ink-muted font-bold">{x.latin}</div>
                   </button>
                 ))}
@@ -186,7 +200,7 @@ export function WebLesson6() {
             <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
               <div className="space-y-6">
                 <p className="text-[15px] leading-relaxed text-ink-light">
-                  In this final instructional unit of Beginner 1, you will complete the Tibetan syllable by learning the <strong className="text-ink">ten suffixes</strong> (<span className="font-tibetan text-lg text-ink">ག་ང་ད་ན་བ་མ་འ་ར་ལ་ས</span>) and the <strong className="text-ink">two post-suffixes</strong> (<span className="font-tibetan text-lg text-ink">ད་ས</span>). You'll also learn the four golden rules for spotting the root letter in any word at a glance.
+                  In this final instructional unit of Beginner 1, you will complete the Tibetan syllable by learning the <strong className="text-ink">ten suffixes</strong> (<span className="font-tibetan font-normal text-xl text-ink">ག་ང་ད་ན་བ་མ་འ་ར་ལ་ས</span>) and the <strong className="text-ink">two post-suffixes</strong> (<span className="font-tibetan font-normal text-xl text-ink">ད་ས</span>). You'll also learn the four golden rules for spotting the root letter in any word at a glance.
                 </p>
 
                 <div className="space-y-4 pt-2">
@@ -195,7 +209,7 @@ export function WebLesson6() {
                       <Sparkles size={15} />
                     </div>
                     <p className="text-sm leading-relaxed text-ink-light pt-1">
-                      Hear how each of the ten suffixes closes a syllable, and how ད ན ལ ས shift back vowels toward [e / ü / ö].
+                      Hear how each of the ten suffixes closes a syllable, and how <span className="font-tibetan font-normal text-lg text-ink">ད ན ལ ས</span> shift back vowels toward [e / ü / ö].
                     </p>
                   </div>
 
@@ -236,7 +250,7 @@ export function WebLesson6() {
                       <span className="w-6 h-6 rounded-md bg-brand-light border border-brand/30 text-brand-dark text-xs font-bold flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
-                      <span className="font-serif text-[15px] font-bold text-ink leading-snug">{title}</span>
+                      <span className="font-serif text-[15px] font-bold text-ink leading-snug">{renderTibetanText(title)}</span>
                     </div>
                   ))}
                 </div>
@@ -249,15 +263,15 @@ export function WebLesson6() {
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full"><ArrowRight size={14} /> After the root</div>
-                <p className="text-[15px] leading-relaxed text-ink-light">A suffix — <span className="font-tibetan text-xl not-italic text-ink">རྗེས་འཇུག</span> — is a letter written <span className="font-bold text-ink">immediately after</span> the root. Only ten letters may take this seat.</p>
+                <p className="text-[15px] leading-relaxed text-ink-light">A suffix — <span className="font-tibetan font-normal text-xl not-italic text-ink">རྗེས་འཇུག</span> — is a letter written <span className="font-bold text-ink">immediately after</span> the root. Only ten letters may take this seat.</p>
               </Card>
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full"><BookOpen size={14} /> Writing</div>
-                <p className="text-[15px] leading-relaxed text-ink-light">Any consonant — even itself — may be followed by a suffix (e.g. <span className="font-tibetan text-xl not-italic text-ink">དད་</span>). Suffix <span className="font-tibetan text-xl not-italic text-ink">འ</span> is special: it may only appear when the root also carries a prefix.</p>
+                <p className="text-[15px] leading-relaxed text-ink-light">Any consonant — even itself — may be followed by a suffix (e.g. <span className="font-tibetan font-normal text-xl not-italic text-ink">དད་</span>). Suffix <span className="font-tibetan font-normal text-xl not-italic text-ink">འ</span> is special: it may only appear when the root also carries a prefix.</p>
               </Card>
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full"><Volume2 size={14} /> Pronunciation</div>
-                <p className="text-[15px] leading-relaxed text-ink-light">A suffix closes the syllable. Four of them — <span className="font-tibetan text-xl not-italic font-bold text-ink">ད ན ལ ས</span> — recolour the preceding vowel into a fronted <em>[e / ü / ö]</em>.</p>
+                <p className="text-[15px] leading-relaxed text-ink-light">A suffix closes the syllable. Four of them — <span className="font-tibetan font-normal text-xl not-italic text-ink">ད ན ལ ས</span> — recolour the preceding vowel into a fronted <em>[e / ü / ö]</em>.</p>
               </Card>
             </div>
             <div className="mt-6 border border-border-strong bg-surface overflow-hidden rounded-[1.5rem]">
@@ -265,7 +279,7 @@ export function WebLesson6() {
                 {SUFFIXES.map((x) => (
                   <button key={x.key} onClick={() => playAudio(x.head)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-4 transition hover:bg-surface-muted">
                     <span className="h-1 w-8 rounded-full" style={{ backgroundColor: x.accent }} />
-                    <span className="mt-2 font-serif leading-none" style={{ fontSize: "2.5rem", color: x.accent }}>{x.head}</span>
+                    <span className="mt-2 font-tibetan font-normal leading-none pt-1" style={{ fontSize: "2.5rem", color: x.accent }}>{x.head}</span>
                     <div className="flex items-center gap-1 text-[11px] font-bold text-ink">
                       {x.latin}
                       {playingItem === x.head ? <Loader2 size={10} className="animate-spin text-brand" /> : <Volume2 size={10} className="text-brand opacity-0 group-hover:opacity-100 transition-opacity" />}
@@ -278,15 +292,12 @@ export function WebLesson6() {
 
           {/* Step 2: Meet the ten suffixes */}
           <StepContainer index={2} step={WEB_STEPS[2]} status={statusOf(2)} isExpanded={expandedStep === 2} onToggle={() => toggleStep(2)} onContinue={() => markComplete(2)}>
-            <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
-              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[2].title}</h2>
-            </div>
             <div className="mb-6 flex flex-wrap gap-2">
               {SUFFIXES.map((s) => {
                 const on = s.key === activeTab;
                 return (
                   <button key={s.key} onClick={() => setActiveTab(s.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-all rounded-full ${on ? "border-brand bg-brand text-ink shadow-sm" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
-                    <span className="grid size-9 place-items-center font-serif text-2xl leading-none" style={{ color: on ? '#1c1917' : s.accent }}>{s.head}</span>
+                    <span className="grid size-9 place-items-center font-tibetan font-normal text-2xl leading-none pt-1" style={{ color: on ? '#1c1917' : s.accent }}>{s.head}</span>
                     <span className="flex-1 pr-2">
                       <span className="block text-[13px] font-bold">Suffix {s.latin}</span>
                       <span className={`block text-[9px] font-bold uppercase tracking-widest mt-0.5 ${on ? "text-ink-light mix-blend-multiply" : "text-ink-muted"}`}>{s.reads}</span>
@@ -300,10 +311,7 @@ export function WebLesson6() {
 
           {/* Step 3: When the vowel meets the suffix */}
           <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[3].title}</h2>
-            </div>
-            <p className="mb-6 max-w-3xl text-[15px] leading-relaxed text-ink-light">Four suffixes — <span className="font-serif font-bold text-ink">ད ན ལ ས</span> — recolour the vowel that precedes them. Find a vowel on the left, follow the row across, and hear how each suffix reshapes it.</p>
+            <p className="mb-6 max-w-3xl text-[15px] leading-relaxed text-ink-light">Four suffixes — <span className="font-tibetan font-normal text-xl text-ink">ད ན ལ ས</span> — recolour the vowel that precedes them. Find a vowel on the left, follow the row across, and hear how each suffix reshapes it.</p>
             <div className="border border-border-strong bg-surface shadow-sm overflow-hidden rounded-[1.5rem]">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] border-collapse">
@@ -316,9 +324,9 @@ export function WebLesson6() {
                         { suf: "ད", latin: "da", accent: "#0891b2", family: "silent · fronts vowel" },
                         { suf: "ས", latin: "sa", accent: "#0284c7", family: "silent · fronts vowel" },
                       ].map((c) => (
-                        <th key={c.suf} className="border-l border-border-strong px-4 py-4 text-center">
+                        <th key={c.suf} className="border-l border-border-strong px-4 py-4 text-center font-normal">
                           <div className="flex flex-col items-center gap-1.5">
-                            <span className="font-serif leading-none text-3xl" style={{ color: c.accent }}>{c.suf}</span>
+                            <span className="font-tibetan font-normal leading-none text-3xl pt-1" style={{ color: c.accent }}>{c.suf}</span>
                             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: c.accent }}>{c.latin}</span>
                             <span className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">{c.family}</span>
                           </div>
@@ -327,27 +335,45 @@ export function WebLesson6() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-strong">
-                    {VOWEL_SHIFTS.map((r) => (
-                      <tr key={r.label} className="hover:bg-surface-muted transition-colors">
-                        <td className="px-5 py-5 border-r border-border-strong">
-                          <div className="flex items-center gap-4">
-                            <button onClick={() => playAudio(r.audioTarget)} disabled={playingItem !== null} className="group relative flex items-center justify-center hover:opacity-80 transition-opacity">
-                              <span className="font-tibetan leading-none text-[2.5rem] text-brand">{r.vowel}</span>
-                              {playingItem === r.audioTarget && <Loader2 size={16} className="absolute -top-1 -right-4 animate-spin text-brand" />}
-                            </button>
-                            <span className="text-[15px] font-bold text-ink">{r.label}</span>
-                          </div>
-                        </td>
-                        {r.cells.map((cell, i) => (
-                          <td key={i} className="border-l border-border-strong px-4 py-5 text-center">
-                            <button onClick={() => playAudio(cell.word)} className="flex w-full flex-col items-center justify-center gap-1 hover:opacity-80 transition-opacity">
-                              <span className="inline-block font-tibetan text-[2rem] font-bold" style={{ color: ["#7c3aed", "#0369a1", "#0891b2", "#0284c7"][i] }}>{cell.word}</span>
-                              <span className="text-xs font-mono font-bold text-ink-muted">[{cell.read}]</span>
+                    {VOWEL_SHIFTS.map((r) => {
+                      const isRowVowelPlaying = playingItem === r.audioTarget;
+                      return (
+                        <tr key={r.label}>
+                          <td className={`px-5 py-5 border-r border-border-strong transition-colors ${isRowVowelPlaying ? "bg-brand-light/70" : "hover:bg-surface-muted"}`}>
+                            <button onClick={() => playAudio(r.audioTarget)} disabled={playingItem !== null} className="group relative flex w-full items-center gap-4 text-left">
+                              <span className="font-tibetan font-normal leading-none text-[2.5rem] text-brand pt-1">{r.vowel}</span>
+                              <span className="text-[15px] font-bold text-ink">{r.label}</span>
+                              {isRowVowelPlaying && <Loader2 size={15} className="ml-auto animate-spin text-brand-dark" />}
                             </button>
                           </td>
-                        ))}
-                      </tr>
-                    ))}
+                          {r.cells.map((cell, i) => {
+                            const isCellPlaying = playingItem === cell.word;
+                            return (
+                              <td 
+                                key={i} 
+                                className={`border-l border-border-strong p-0 text-center transition-colors ${
+                                  isCellPlaying ? "bg-brand-light/70" : "hover:bg-surface-muted"
+                                }`}
+                              >
+                                <button 
+                                  onClick={() => playAudio(cell.word)} 
+                                  disabled={playingItem !== null}
+                                  className="relative flex w-full h-full px-4 py-5 flex-col items-center justify-center gap-1 transition-transform active:scale-95"
+                                >
+                                  <span className="inline-block font-tibetan font-normal text-[2.25rem] leading-none pt-1" style={{ color: ["#7c3aed", "#0369a1", "#0891b2", "#0284c7"][i] }}>
+                                    {cell.word}
+                                  </span>
+                                  <span className="text-xs font-mono font-bold text-ink-muted">[{cell.read}]</span>
+                                  {isCellPlaying && (
+                                    <Loader2 size={14} className="absolute top-2.5 right-2.5 animate-spin text-brand-dark" />
+                                  )}
+                                </button>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -356,7 +382,7 @@ export function WebLesson6() {
 
           {/* Step 4: Post-suffixes */}
           <StepContainer index={4} step={WEB_STEPS[4]} status={statusOf(4)} isExpanded={expandedStep === 4} onToggle={() => toggleStep(4)} onContinue={() => markComplete(4)}>
-            <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">Only two letters — <span className="font-serif font-bold text-ink">ད</span> and <span className="font-serif font-bold text-ink">ས</span> — may sit <em>after</em> a suffix, becoming the very last letter of the word. They are <span className="font-bold text-ink">silent</span> — they don’t change how the word is pronounced.</p>
+            <p className="mb-8 max-w-3xl text-[15px] leading-relaxed text-ink-light">Only two letters — <span className="font-tibetan font-normal text-xl text-ink">ད</span> and <span className="font-tibetan font-normal text-xl text-ink">ས</span> — may sit <em>after</em> a suffix, becoming the very last letter of the word. They are <span className="font-bold text-ink">silent</span> — they don’t change how the word is pronounced.</p>
 
             <div className="grid gap-6 md:grid-cols-2">
               <Card className="p-0 flex flex-col h-full rounded-[1.5rem] overflow-hidden">
@@ -364,11 +390,14 @@ export function WebLesson6() {
                   <History className="size-5 text-fuchsia-700" />
                   <div>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-fuchsia-700">Historical</div>
-                    <div className="font-serif text-xl font-bold">Post-suffix <span className="text-3xl text-fuchsia-600 ml-1">ད</span></div>
+                    <div className="font-serif text-xl font-bold flex items-baseline gap-1.5">
+                      <span>Post-suffix</span>
+                      <span className="font-tibetan font-normal text-3xl text-fuchsia-600 leading-none">ད</span>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
-                  <p className="text-[13px] font-bold leading-relaxed text-ink-light mb-6"><span className="font-serif text-lg">ད</span> is <span className="text-ink">no longer written</span> in modern Tibetan spelling. Grammatically, words still behave <em>as if</em> the ད were present.</p>
+                  <p className="text-[13px] font-bold leading-relaxed text-ink-light mb-6"><span className="font-tibetan font-normal text-xl text-ink">ད</span> is <span className="text-ink">no longer written</span> in modern Tibetan spelling. Grammatically, words still behave <em>as if</em> the <span className="font-tibetan font-normal text-xl text-ink">ད</span> were present.</p>
                   <div className="mt-auto border border-border-strong overflow-hidden rounded-2xl">
                     <table className="w-full text-xs">
                       <thead className="bg-surface-muted border-b border-border-strong">
@@ -387,13 +416,13 @@ export function WebLesson6() {
                           <tr key={r[0]} className="hover:bg-surface-muted transition-colors">
                             <td className="px-4 py-3">
                               <button onClick={() => playAudio(r[0])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink-muted hover:text-fuchsia-600 transition-colors">
-                                <span className="font-tibetan not-italic text-[1.5rem] leading-none pt-1">{r[0]}</span>
+                                <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[0]}</span>
                                 {playingItem === r[0] ? <Loader2 size={12} className="animate-spin text-fuchsia-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
                             </td>
                             <td className="px-4 py-3 border-l border-border-strong">
                               <button onClick={() => playAudio(r[1])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink hover:text-fuchsia-600 transition-colors">
-                                <span className="font-tibetan not-italic text-[1.5rem] leading-none pt-1">{r[1]}</span>
+                                <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[1]}</span>
                                 {playingItem === r[1] ? <Loader2 size={12} className="animate-spin text-fuchsia-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
                             </td>
@@ -411,23 +440,26 @@ export function WebLesson6() {
                   <CheckCircle2 className="size-5 text-sky-700" />
                   <div>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-sky-700">Still in use</div>
-                    <div className="font-serif text-xl font-bold">Post-suffix <span className="text-3xl text-sky-600 ml-1">ས</span></div>
+                    <div className="font-serif text-xl font-bold flex items-baseline gap-1.5">
+                      <span>Post-suffix</span>
+                      <span className="font-tibetan font-normal text-3xl text-sky-600 leading-none">ས</span>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
-                  <p className="text-[13px] font-bold leading-relaxed text-ink-light mb-6"><span className="font-serif text-lg">ས</span> is <span className="text-ink">still written</span> today. Its role is to differentiate near-identical words. The pronunciation is <span className="text-ink">the same</span> with or without it.</p>
+                  <p className="text-[13px] font-bold leading-relaxed text-ink-light mb-6"><span className="font-tibetan font-normal text-xl text-ink">ས</span> is <span className="text-ink">still written</span> today. Its role is to differentiate near-identical words. The pronunciation is <span className="text-ink">the same</span> with or without it.</p>
                   <div className="mt-auto border border-border-strong overflow-hidden rounded-2xl">
                     <table className="w-full text-xs">
                       <thead className="bg-surface-muted border-b border-border-strong">
                         <tr>
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest">
                             <div className="flex items-center gap-1.5">
-                              WITHOUT <span className="font-tibetan text-xl normal-case pt-1">ས</span>
+                              WITHOUT <span className="font-tibetan font-normal text-xl normal-case pt-1">ས</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">
                             <div className="flex items-center gap-1.5">
-                              WITH <span className="font-tibetan text-xl normal-case pt-1">ས</span>
+                              WITH <span className="font-tibetan font-normal text-xl normal-case pt-1">ས</span>
                             </div>
                           </th>
                           <th className="px-4 py-3 text-left font-bold text-ink-muted uppercase tracking-widest border-l border-border-strong">Meaning</th>
@@ -442,13 +474,13 @@ export function WebLesson6() {
                           <tr key={r[0]} className="hover:bg-surface-muted transition-colors">
                             <td className="px-4 py-3">
                               <button onClick={() => playAudio(r[0])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink-muted hover:text-sky-600 transition-colors">
-                                <span className="font-tibetan not-italic text-[1.5rem] leading-none pt-1">{r[0]}</span>
+                                <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[0]}</span>
                                 {playingItem === r[0] ? <Loader2 size={12} className="animate-spin text-sky-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
                             </td>
                             <td className="px-4 py-3 border-l border-border-strong">
                               <button onClick={() => playAudio(r[1])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink hover:text-sky-600 transition-colors">
-                                <span className="font-tibetan not-italic text-[1.5rem] leading-none pt-1">{r[1]}</span>
+                                <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[1]}</span>
                                 {playingItem === r[1] ? <Loader2 size={12} className="animate-spin text-sky-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
                             </td>
@@ -495,14 +527,14 @@ export function WebLesson6() {
                     <span className="grid size-5 place-items-center rounded-full bg-brand text-white">{r.n}</span>
                     Rule {r.n}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                  <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
                     {r.words.map((w) => (
                       <button key={w} onClick={() => playAudio(w)} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] shadow-sm bg-white rounded-2xl">
                         {w}
                       </button>
                     ))}
                   </div>
-                  <p className="mt-auto text-[13px] font-bold leading-relaxed text-ink-light border-t border-border-strong pt-4">{r.rule}</p>
+                  <p className="mt-auto text-[13px] font-bold leading-relaxed text-ink-light border-t border-border-strong pt-4">{renderTibetanText(r.rule)}</p>
                 </Card>
               ))}
             </div>
@@ -527,10 +559,6 @@ export function WebLesson6() {
 
           {/* Step 6: Vocabulary built from suffixes */}
           <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
-            <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[6].title}</h2>
-              <span className="text-xs font-bold text-ink-light bg-surface-muted px-3 py-1.5 border border-border-strong rounded-full">{VOCAB.length} words</span>
-            </div>
             <div className="mb-10">
               <VocabGrid 
                 items={VOCAB.map(v => ({
@@ -555,12 +583,9 @@ export function WebLesson6() {
 
           {/* Step 7: Practice & exercises */}
           <StepContainer index={7} step={WEB_STEPS[7]} status={statusOf(7)} isExpanded={expandedStep === 7} onToggle={() => toggleStep(7)} onContinue={() => markComplete(7)}>
-             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-               <h2 className="font-serif text-2xl text-ink mb-3">{WEB_STEPS[7].title}</h2>
-               <p className="max-w-3xl text-[15px] text-ink-light leading-relaxed">
-                 Each suffix has its own <span className="font-bold text-ink">mastery check</span> inside its panel above. Below is a <span className="font-bold text-ink">cumulative review</span> mixing all ten suffixes and vocabulary words.
-               </p>
-             </div>
+             <p className="mb-6 max-w-3xl text-[15px] text-ink-light leading-relaxed">
+               Each suffix has its own <span className="font-bold text-ink">mastery check</span> inside its panel above. Below is a <span className="font-bold text-ink">cumulative review</span> mixing all ten suffixes and vocabulary words.
+             </p>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
@@ -603,7 +628,7 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
       <div className="h-1.5 w-full" style={{ backgroundColor: s.accent }} />
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${s.accent}15`, color: s.accent }}>{s.head}</div>
+          <div className="grid size-28 place-items-center font-tibetan font-normal text-[4rem] leading-none pt-1 rounded-[1.25rem]" style={{ backgroundColor: `${s.accent}15`, color: s.accent }}>{s.head}</div>
           <div>
             <div className="text-eyebrow mb-2">Suffix · {FAMILY_META[s.family as Family].label}</div>
             <div className="font-serif text-3xl font-bold">{s.latin}</div>
@@ -612,16 +637,16 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
         </div>
         <div>
           <p className="text-[15px] leading-relaxed p-5 border rounded-2xl bg-surface-muted border-border-strong text-ink-light">
-            {s.hint}
+            {renderTibetanText(s.hint)}
           </p>
           {s.note && (
             <div className="mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm font-bold rounded-r-xl border-y border-r border-border-strong text-ink-light bg-brand-light/50" style={{ borderLeftColor: '#f59e0b' }}>
-              <Info className="mt-0.5 size-4 shrink-0 text-brand" /><span>{s.note}</span>
+              <Info className="mt-0.5 size-4 shrink-0 text-brand" /><span>{renderTibetanText(s.note)}</span>
             </div>
           )}
           {s.vowelShift && (
             <div className="mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm font-bold rounded-r-xl border-y border-r border-border-strong text-ink-light bg-sky-50/50" style={{ borderLeftColor: '#0ea5e9' }}>
-              <Sparkles className="mt-0.5 size-4 shrink-0 text-sky-500" /><span>{s.vowelShift}</span>
+              <Sparkles className="mt-0.5 size-4 shrink-0 text-sky-500" /><span>{renderTibetanText(s.vowelShift)}</span>
             </div>
           )}
         </div>
@@ -631,7 +656,7 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
         {s.examples.map((ex: any) => (
           <button key={ex.word} onClick={() => playAudio(ex.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
             <span className="absolute left-0 top-0 h-1 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: s.accent }} />
-            <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{ex.word}</span>
+            <span className="font-tibetan font-normal text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{ex.word}</span>
             <span className="font-mono text-xs font-bold text-ink-light">[{ex.read}]</span>
             {ex.gloss && <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{ex.gloss}</span>}
             {playingItem === ex.word && <Loader2 size={16} className="absolute top-3 right-3 animate-spin text-brand" />}
@@ -644,11 +669,11 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
         <div className="space-y-2">
           {s.examples.map((ex: any) => (
             <div key={ex.word} className="flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
-              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-20 sm:w-24 shrink-0 text-left text-ink text-[#1c1917]">{ex.word}</span>
+              <span className="font-tibetan font-normal text-[2.5rem] leading-normal pb-2 w-20 sm:w-24 shrink-0 text-left text-ink text-[#1c1917]">{ex.word}</span>
               <SpellingFormula parts={ex.parts} />
               <ArrowRight size={16} className="text-border-strong" />
               <div className="flex items-center gap-2">
-                <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: s.accent }}>{ex.word}</span>
+                <span className="font-tibetan font-normal text-3xl leading-none pt-1" style={{ color: s.accent }}>{ex.word}</span>
                 <span className="font-mono text-lg font-bold text-ink">[{ex.read}]</span>
               </div>
               <div className="ml-auto flex items-center gap-3">

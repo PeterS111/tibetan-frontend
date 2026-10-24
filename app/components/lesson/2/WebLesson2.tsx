@@ -98,7 +98,7 @@ export function WebLesson2() {
   const { getToken } = useAuth();
 
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
+  const { expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
   const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
@@ -196,7 +196,7 @@ export function WebLesson2() {
             <div>
               <div className="text-eyebrow text-brand-dark mb-2">Lesson 02 · Foundations</div>
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">The Four Vowels</h1>
-              <p className="mt-2 font-serif text-3xl text-ink-light italic tibetan">དབྱངས་བཞི།</p>
+              <p className="mt-2 font-tibetan text-3xl text-ink-light">དབྱངས་བཞི།</p>
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
                 Every Tibetan syllable is voiced through a vowel. Just four diacritic marks — three
                 above the letter and one below — turn the thirty consonants into the full range of
@@ -208,7 +208,7 @@ export function WebLesson2() {
             <div className="w-full md:w-72">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
@@ -345,7 +345,7 @@ export function WebLesson2() {
             <div className="flex gap-4 p-5 bg-surface border border-border-strong shadow-sm mb-6 rounded-2xl">
               <Info className="mt-0.5 size-5 shrink-0 text-brand" />
               <div className="text-sm font-bold leading-relaxed text-ink-light">
-                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example ཀ is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
+                The absence of a vowel mark on a Tibetan letter is treated as an inherent <span className="font-mono font-bold text-ink">[a]</span> — for example <span className="font-tibetan text-lg text-ink">ཀ</span> is read <em>[ka]</em>, not <em>k</em>. The four diacritics replace that inherent [a].
               </div>
             </div>
 
@@ -620,7 +620,7 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) 
           {pngConfig ? (
              <img src={pngConfig.src} alt={v.markTib} className="h-10 w-auto object-contain opacity-80 mt-4" />
           ) : (
-             <div className="font-serif text-3xl text-ink tibetan mt-4">{v.markTib}</div>
+             <div className="font-tibetan text-3xl text-ink mt-4">{v.markTib}</div>
           )}
         </div>
       </div>

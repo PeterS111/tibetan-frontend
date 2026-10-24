@@ -25,6 +25,19 @@ interface StepContainerProps {
   totalSteps?: number;
 }
 
+function renderCaptionWithTibetan(text: string) {
+  const parts = text.split(/([\u0F00-\u0FFF]+)/g);
+  return parts.map((part, idx) =>
+    /[\u0F00-\u0FFF]/.test(part) ? (
+      <span key={idx} className="font-tibetan font-normal text-lg text-ink leading-none">
+        {part}
+      </span>
+    ) : (
+      <span key={idx}>{part}</span>
+    )
+  );
+}
+
 export function StepContainer({ 
   index, 
   step, 
@@ -94,7 +107,7 @@ export function StepContainer({
           </div>
           {caption && (
             <p className="text-sm text-ink-light mt-1.5 font-normal leading-relaxed max-w-3xl">
-              {caption}
+              {renderCaptionWithTibetan(caption)}
             </p>
           )}
         </div>

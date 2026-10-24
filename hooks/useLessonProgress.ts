@@ -1,3 +1,4 @@
+// hooks/useLessonProgress.ts
 import { useState, useCallback, useEffect } from "react";
 import { DEV_BYPASS_LOCKS } from "@/app/config";
 import { useAuth } from "@clerk/clerk-react"; 
@@ -37,19 +38,18 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
     const localProgress = parseInt(localStorage.getItem(`tibetan_lesson_${id}_progress`) || '0', 10);
     
     const applyProgress = (stepValue: number) => {
-      setActualProgress(stepValue);
-      const finalStep = DEV_BYPASS_LOCKS ? (bypassAmount || totalSteps) : stepValue;
+      const clampedStep = Math.min(Math.max(stepValue, 0), totalSteps);
+      setActualProgress(clampedStep);
+      const finalStep = DEV_BYPASS_LOCKS ? (bypassAmount || totalSteps) : clampedStep;
       setUnlockedStep(finalStep);
       
       const completedSet = new Set<number>();
-      for(let i = 0; i < stepValue; i++) completedSet.add(i);
-      
-      if (DEV_BYPASS_LOCKS) {
-        for(let i = 0; i < finalStep; i++) completedSet.add(i);
+      for (let i = 0; i < clampedStep; i++) {
+        completedSet.add(i);
       }
       
       setCompleted(completedSet);
-      setExpandedStep(Math.min(stepValue, totalSteps - 1));
+      setExpandedStep(Math.min(clampedStep, totalSteps - 1));
     };
 
     // 🛠️ CRITICAL FIX: APPLY LOCAL PROGRESS INSTANTLY. DO NOT WAIT FOR CLERK.
@@ -95,22 +95,25 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
 
   const markComplete = useCallback(async (index: number) => {
     // INSTANT UI UPDATE
+    let updatedCount = 0;
     setCompleted(prev => {
       const next = new Set(prev);
       next.add(index);
+      updatedCount = next.size;
       return next;
     });
 
     const nextIndex = index + 1;
+    const progressToSave = Math.max(nextIndex, updatedCount);
     
     if (nextIndex < totalSteps) setExpandedStep(nextIndex);
     if (nextIndex > unlockedStep) setUnlockedStep(nextIndex);
-    if (nextIndex > actualProgress) setActualProgress(nextIndex);
+    if (progressToSave > actualProgress) setActualProgress(progressToSave);
     
     if (typeof window !== 'undefined') {
       const currentLocal = parseInt(localStorage.getItem(`tibetan_lesson_${lessonId}_progress`) || '0', 10);
-      if (nextIndex > currentLocal) {
-        localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, nextIndex.toString());
+      if (progressToSave > currentLocal) {
+        localStorage.setItem(`tibetan_lesson_${lessonId}_progress`, progressToSave.toString());
       }
     }
     
@@ -120,7 +123,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
       if (token) {
         const formData = new FormData();
         formData.append('module_id', lessonId.toString());
-        formData.append('unlocked_step', nextIndex.toString());
+        formData.append('unlocked_step', progressToSave.toString());
         
         await fetch(`${apiUrl}/api/update-lesson-progress`, {
           method: 'POST',

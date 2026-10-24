@@ -53,14 +53,20 @@
   /* Fix overlaps: Changed leading-none to leading-normal and added pb-4 for subscript clearance */
   .text-tibetan-display {
     @apply font-tibetan text-[4rem] md:text-[5rem] leading-normal pb-4 text-ink not-italic;
+    font-weight: 400 !important;
   }
 
   .text-tibetan-card {
     @apply font-tibetan text-3xl md:text-4xl leading-normal pb-2 text-ink not-italic;
+    font-weight: 400 !important;
   }
 }
 
+/* Force Jomolhari (400 weight, non-italic) on all Tibetan classes so OS bold fallback fonts never trigger */
+.font-tibetan,
 .tibetan {
+  font-family: var(--font-tibetan), "Jomolhari", serif !important;
+  font-weight: 400 !important;
   font-style: normal !important;
 }
 

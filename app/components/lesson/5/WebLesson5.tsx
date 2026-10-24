@@ -90,7 +90,7 @@ const WEB_STEPS = [
 
 export default function WebLesson5() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
+  const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<PrefixKey>("ga");
   const [isBypassing, setIsBypassing] = useState(false);
@@ -152,15 +152,15 @@ export default function WebLesson5() {
             <div>
               <div className="mb-2 text-eyebrow text-brand-dark">Lesson 05 · Foundations</div>
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">The Five Prefixes</h1>
-              <p className="mt-2 font-tibetan text-3xl text-ink-light">སྔོན་འཇུག་ལྔ།</p>
+              <p className="mt-2 font-tibetan font-normal text-3xl text-ink-light">སྔོན་འཇུག་ལྔ།</p>
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
-                Five consonants — <span className="font-serif text-xl">ག ད བ མ འ</span> — may sit <em>before</em> a root letter on the baseline. Silent on their own, they disambiguate homophones on the page and reshape the <span className="font-bold text-ink">tone</span> and <span className="font-bold text-ink">nasality</span> of the root that follows.
+                Five consonants — <span className="font-tibetan font-normal text-2xl text-ink">ག ད བ མ འ</span> — may sit <em>before</em> a root letter on the baseline. Silent on their own, they disambiguate homophones on the page and reshape the <span className="font-bold text-ink">tone</span> and <span className="font-bold text-ink">nasality</span> of the root that follows.
               </p> 
             </div>
             <div className="w-full md:w-80">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -175,7 +175,7 @@ export default function WebLesson5() {
                     className="group flex flex-col items-center gap-1 border border-border-strong p-2 bg-surface rounded-xl text-center transition hover:bg-surface-muted hover:border-brand"
                   >
                     <div className="flex items-center gap-1">
-                      <span className="font-tibetan text-2xl leading-none pt-1" style={{ color: s.accent.hex }}>{s.head}</span>
+                      <span className="font-tibetan font-normal text-2xl leading-none pt-1" style={{ color: s.accent.hex }}>{s.head}</span>
                       {playingItem === s.nameTib ? (
                         <Loader2 size={10} className="animate-spin text-brand" />
                       ) : (
@@ -197,7 +197,7 @@ export default function WebLesson5() {
             <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
               <div className="space-y-6">
                 <p className="text-[15px] leading-relaxed text-ink-light">
-                  Now that you know how letters stack vertically with superscripts and subscripts, we move horizontally across the baseline. In this lesson you'll see the full <strong className="text-ink">seven-slot anatomy of a Tibetan syllable</strong> and master the <strong className="text-ink">five prefix letters</strong> (<span className="font-tibetan text-lg text-ink">ག ད བ མ འ</span>) that sit to the left of the root.
+                  Now that you know how letters stack vertically with superscripts and subscripts, we move horizontally across the baseline. In this lesson you'll see the full <strong className="text-ink">seven-slot anatomy of a Tibetan syllable</strong> and master the <strong className="text-ink">five prefix letters</strong> (<span className="font-tibetan font-normal text-xl text-ink">ག ད བ མ འ</span>) that sit to the left of the root.
                 </p>
 
                 <div className="space-y-4 pt-2">
@@ -206,7 +206,7 @@ export default function WebLesson5() {
                       <Sparkles size={15} />
                     </div>
                     <p className="text-sm leading-relaxed text-ink-light pt-1">
-                      Distinguish between the three purely silent prefixes (ག ད བ) and the two nasalising prefixes (མ འ).
+                      Distinguish between the three purely silent prefixes (<span className="font-tibetan font-normal text-lg text-ink">ག ད བ</span>) and the two nasalising prefixes (<span className="font-tibetan font-normal text-lg text-ink">མ འ</span>).
                     </p>
                   </div>
 
@@ -300,14 +300,14 @@ export default function WebLesson5() {
                       {s.imgSrc ? (
                         <img src={s.imgSrc} alt={s.role} className="w-16 h-16 p-1 object-contain relative z-10" />
                       ) : (
-                        <span className="relative z-10 leading-none flex items-center justify-center font-tibetan" style={{ color: s.accent, fontSize: "2.5rem" }}>
+                        <span className="relative z-10 leading-none flex items-center justify-center font-tibetan font-normal" style={{ color: s.accent, fontSize: "2.5rem" }}>
                           {s.letter}
                         </span>
                       )}
                     </div>
 
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1.5" style={{ color: s.accent }}>{s.role}</div>
-                    <div className="font-tibetan text-[15px] font-medium text-ink not-italic mb-1.5 leading-tight">{s.tib}</div>
+                    <div className="font-tibetan font-normal text-[15px] text-ink not-italic mb-1.5 leading-tight">{s.tib}</div>
                     <div className="mt-auto text-[10px] text-ink-light font-bold uppercase tracking-widest">{s.pos}</div>
                   </div>
                 ))}
@@ -322,13 +322,13 @@ export default function WebLesson5() {
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
                   <ChevronLeft size={14} /> Before the root
                 </div>
-                <p className="text-sm leading-relaxed text-ink-light">A prefix is a letter written <span className="font-bold text-ink">to the left</span> of the root. Only five letters — <span className="font-serif text-lg">ག ད བ མ འ</span> — may take that seat.</p>
+                <p className="text-sm leading-relaxed text-ink-light">A prefix is a letter written <span className="font-bold text-ink">to the left</span> of the root. Only five letters — <span className="font-tibetan font-normal text-xl text-ink">ག ད བ མ འ</span> — may take that seat.</p>
               </Card>
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
                   <BookOpen size={14} /> Writing
                 </div>
-                <p className="text-sm leading-relaxed text-ink-light">Prefixes disambiguate words on the page — e.g. <span className="font-serif text-lg">བཞི་</span> vs <span className="font-serif text-lg">གཞི་</span>.</p>
+                <p className="text-sm leading-relaxed text-ink-light">Prefixes disambiguate words on the page — e.g. <span className="font-tibetan font-normal text-xl text-ink">བཞི་</span> vs <span className="font-tibetan font-normal text-xl text-ink">གཞི་</span>.</p>
               </Card>
               <Card className="p-6 bg-surface">
                 <div className="mb-3 inline-flex items-center gap-2 bg-brand-light px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark rounded-full">
@@ -343,7 +343,7 @@ export default function WebLesson5() {
                 {PREFIXES.map((s) => (
                   <button key={s.key} onClick={() => playAudio(s.nameTib)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10 rounded-full" style={{ backgroundColor: s.accent.hex }} />
-                    <span className="mt-2 font-serif leading-none" style={{ fontSize: "3rem", color: s.accent.hex }}>{s.head}</span>
+                    <span className="mt-2 font-tibetan font-normal leading-none pt-1" style={{ fontSize: "3rem", color: s.accent.hex }}>{s.head}</span>
                     <div className="flex items-center gap-1.5 text-sm font-bold text-ink">
                       {s.latin}
                       {playingItem === s.nameTib ? (
@@ -360,25 +360,31 @@ export default function WebLesson5() {
 
             <div className="mt-6 p-6 border border-border-strong bg-surface-muted rounded-[1.5rem]">
               <div className="mb-4 flex items-center gap-2 text-eyebrow"><Info size={14} className="text-brand" /> Two rules of writing</div>
-              <ol className="space-y-4 text-[15px] text-ink-light font-bold">
-                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface border border-border-strong text-[11px] text-ink-light">1</span><span>Only five letters — <span className="font-serif text-xl text-ink mx-1 px-2.5 py-0.5 bg-surface border border-border-strong rounded-lg">{NEVER_TAKE}</span> — <em>never</em> take a prefix.</span></li>
-                <li className="flex gap-4"><span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface border border-border-strong text-[11px] text-ink-light">2</span><span>A root that follows a prefix must carry <em>at least</em> a vowel, superscript, subscript, or suffix.</span></li>
+              <ol className="space-y-4 text-[15px] text-ink-light">
+                <li className="flex items-center gap-4">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface border border-border-strong text-[11px] font-bold text-ink-light">1</span>
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <span>Only five letters —</span>
+                    <span className="font-tibetan font-normal text-2xl text-ink mx-1 px-3 py-1 bg-surface border border-border-strong rounded-lg leading-none pt-2">{NEVER_TAKE}</span>
+                    <span>— <em>never</em> take a prefix.</span>
+                  </span>
+                </li>
+                <li className="flex items-center gap-4">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface border border-border-strong text-[11px] font-bold text-ink-light">2</span>
+                  <span>A root that follows a prefix must carry <em>at least</em> a vowel, superscript, subscript, or suffix.</span>
+                </li>
               </ol>
             </div>
           </StepContainer>
 
           {/* Step 3: Meet the five prefixes */}
           <StepContainer index={3} step={WEB_STEPS[3]} status={statusOf(3)} isExpanded={expandedStep === 3} onToggle={() => toggleStep(3)} onContinue={() => markComplete(3)}>
-            <div className="mb-6 flex flex-wrap items-center justify-between border-b border-border-strong pb-4 gap-4">
-              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[3].title}</h2>
-            </div>
-
             <div className="mb-6 flex flex-wrap gap-2">
               {PREFIXES.map((p) => {
                 const on = p.key === activeTab;
                 return (
                   <button key={p.key} onClick={() => setActiveTab(p.key)} className={`group flex items-center gap-3 border px-4 py-3 text-left transition-all rounded-full ${on ? "border-brand bg-brand text-ink shadow-sm" : "border-border-strong bg-surface text-ink hover:border-brand hover:bg-brand-light"}`}>
-                    <span className="grid size-9 place-items-center font-serif text-2xl leading-none" style={{ color: on ? '#1c1917' : p.accent.hex }}>{p.head}</span>
+                    <span className="grid size-9 place-items-center font-tibetan font-normal text-2xl leading-none pt-1" style={{ color: on ? '#1c1917' : p.accent.hex }}>{p.head}</span>
                     <span className="flex-1 pr-1">
                       <span className="block text-sm font-bold">Prefix {p.latin}</span>
                       <span className={`block text-[10px] font-bold uppercase tracking-widest ${on ? "text-ink-light mix-blend-multiply" : "text-ink-light"}`}>{p.count}</span>
@@ -396,38 +402,38 @@ export default function WebLesson5() {
             <div className="grid gap-4 md:grid-cols-3">
               <Card className="p-6 bg-surface flex flex-col h-full">
                 <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100 rounded-full">
-                  <AlertTriangle size={18} /> <span className="font-tibetan text-2xl font-normal normal-case leading-none pt-1">ད + བ</span> <ArrowRight size={16} /> [WA]
+                  <AlertTriangle size={18} /> <span className="font-tibetan font-normal text-2xl normal-case leading-none pt-1">ད + བ</span> <ArrowRight size={16} /> [WA]
                 </div>
-                <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
                   <button onClick={() => playAudio('དབུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབུ་</button>
                   <button onClick={() => playAudio('དབྱེ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྱེ་</button>
                   <button onClick={() => playAudio('དབྲ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྲ་</button>
                 </div>
-                <p className="mt-auto text-sm text-ink-light leading-relaxed">When ད precedes root བ, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [dra].</p>
+                <p className="mt-auto text-sm text-ink-light leading-relaxed">When <span className="font-tibetan font-normal text-lg text-ink">ད</span> precedes root <span className="font-tibetan font-normal text-lg text-ink">བ</span>, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [dra].</p>
               </Card>
 
               <Card className="p-6 bg-surface flex flex-col h-full">
                 <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100 rounded-full">
-                  <AlertTriangle size={18} /> <span className="font-tibetan text-2xl font-normal normal-case leading-none pt-1">འ + བ</span> <ArrowRight size={16} /> [BA]
+                  <AlertTriangle size={18} /> <span className="font-tibetan font-normal text-2xl normal-case leading-none pt-1">འ + བ</span> <ArrowRight size={16} /> [BA]
                 </div>
-                <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
                   <button onClick={() => playAudio('འབུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབུ་</button>
                   <button onClick={() => playAudio('འབྲི་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབྲི་</button>
                   <button onClick={() => playAudio('འབྲུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབྲུ་</button>
                 </div>
-                <p className="mt-auto text-sm text-ink-light leading-relaxed">With prefix འ the root བ retains its [b-] onset in a low nasal tone: [ng’bu], [ng’dri].</p>
+                <p className="mt-auto text-sm text-ink-light leading-relaxed">With prefix <span className="font-tibetan font-normal text-lg text-ink">འ</span> the root <span className="font-tibetan font-normal text-lg text-ink">བ</span> retains its [b-] onset in a low nasal tone: [ng’bu], [ng’dri].</p>
               </Card>
 
               <Card className="p-6 bg-surface flex flex-col h-full">
                 <div className="mb-6 inline-flex items-center gap-3 bg-rose-50 px-4 py-2 text-sm font-bold uppercase tracking-widest text-rose-700 self-start shadow-sm border border-rose-100 rounded-full">
-                  <AlertTriangle size={18} /> <span className="font-tibetan text-2xl font-normal normal-case leading-none pt-1">ག + ཡ</span> <ArrowRight size={16} /> [YO]
+                  <AlertTriangle size={18} /> <span className="font-tibetan font-normal text-2xl normal-case leading-none pt-1">ག + ཡ</span> <ArrowRight size={16} /> [YO]
                 </div>
-                <div className="flex flex-wrap items-center gap-2 font-tibetan text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
+                <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
                   <button onClick={() => playAudio('གཡོ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡོ་</button>
                   <button onClick={() => playAudio('གཡུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡུ་</button>
                   <button onClick={() => playAudio('གཡི་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡི་</button>
                 </div>
-                <p className="mt-auto text-sm text-ink-light leading-relaxed">Prefix ག lifts the feminine ཡ to a <span className="font-bold text-ink">high</span> tone.</p>
+                <p className="mt-auto text-sm text-ink-light leading-relaxed">Prefix <span className="font-tibetan font-normal text-lg text-ink">ག</span> lifts the feminine <span className="font-tibetan font-normal text-lg text-ink">ཡ</span> to a <span className="font-bold text-ink">high</span> tone.</p>
               </Card>
             </div>
 
@@ -451,11 +457,6 @@ export default function WebLesson5() {
 
           {/* Step 5: Vocabulary built from prefixes */}
           <StepContainer index={5} step={WEB_STEPS[5]} status={statusOf(5)} isExpanded={expandedStep === 5} onToggle={() => toggleStep(5)} onContinue={() => markComplete(5)}>
-            <div className="mb-6 flex items-center justify-between border-b border-border-strong pb-4">
-              <h2 className="font-serif text-2xl text-ink">{WEB_STEPS[5].title}</h2>
-              <span className="text-xs font-bold text-ink-light bg-surface-muted px-2.5 py-1 border border-border-strong rounded-full">{VOCAB.length} words</span>
-            </div>
-            
             <div className="mb-10">
               <VocabGrid 
                 items={VOCAB.map(v => ({
@@ -470,7 +471,7 @@ export default function WebLesson5() {
                 <div className="bg-surface border border-border-strong p-4 shadow-sm shrink-0 rounded-[1.25rem]"><Info size={24} className="text-brand" /></div>
                 <div>
                   <div className="text-eyebrow mb-2">Reminder · Letters that never take a prefix</div>
-                  <p className="font-tibetan text-3xl font-bold text-ink tracking-[0.2em] leading-normal pb-2">{NEVER_TAKE}</p>
+                  <p className="font-tibetan font-normal text-3xl text-ink tracking-[0.2em] leading-normal pb-2">{NEVER_TAKE}</p>
                 </div>
               </div>
             </div>
@@ -488,12 +489,9 @@ export default function WebLesson5() {
 
           {/* Step 6: Practice & exercises */}
           <StepContainer index={6} step={WEB_STEPS[6]} status={statusOf(6)} isExpanded={expandedStep === 6} onToggle={() => toggleStep(6)} onContinue={() => markComplete(6)}>
-             <div className="mb-6 flex flex-col border-b border-border-strong pb-4">
-               <h2 className="font-serif text-2xl text-ink mb-3">{WEB_STEPS[6].title}</h2>
-               <p className="max-w-3xl text-[15px] text-ink-light leading-relaxed">
-                 Each prefix has its own <span className="font-bold text-ink">mastery check</span> inside its panel above. Below is a <span className="font-bold text-ink">cumulative review</span> mixing all five prefixes and vocabulary words.
-               </p>
-             </div>
+             <p className="mb-6 max-w-3xl text-[15px] text-ink-light leading-relaxed">
+               Each prefix has its own <span className="font-bold text-ink">mastery check</span> inside its panel above. Below is a <span className="font-bold text-ink">cumulative review</span> mixing all five prefixes and vocabulary words.
+             </p>
              <PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
@@ -537,6 +535,20 @@ export default function WebLesson5() {
   );
 }
 
+// Helper to wrap Tibetan characters in a string with font-tibetan font-normal
+function renderTibetanText(text: string) {
+  const parts = text.split(/([\u0F00-\u0FFF]+)/g);
+  return parts.map((part, idx) =>
+    /[\u0F00-\u0FFF]/.test(part) ? (
+      <span key={idx} className="font-tibetan font-normal text-xl text-ink leading-none">
+        {part}
+      </span>
+    ) : (
+      <span key={idx}>{part}</span>
+    )
+  );
+}
+
 function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
@@ -544,23 +556,26 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
       <div className="grid gap-6 p-6 md:grid-cols-[auto,1fr] md:p-8 border-b border-border-strong">
         
         <div className="flex items-center gap-6">
-          <div className="grid size-28 place-items-center font-serif text-[4rem] leading-none rounded-[1.25rem]" style={{ backgroundColor: `${p.accent.hex}15`, color: p.accent.hex }}>{p.head}</div>
+          <div className="grid size-28 place-items-center font-tibetan font-normal text-[4rem] leading-none pt-1 rounded-[1.25rem]" style={{ backgroundColor: `${p.accent.hex}15`, color: p.accent.hex }}>{p.head}</div>
           <div>
             <div className="text-eyebrow mb-2">Prefix · {p.family === "nasal" ? "Nasalising" : "Silent"}</div>
-            <div className="font-serif text-3xl font-bold">{p.title}</div>
-            <div className="mt-1 font-tibetan text-2xl text-ink-light">{p.nameTib}</div>
+            <div className="font-serif text-3xl font-bold flex items-baseline gap-2">
+              <span>The Prefix</span>
+              <span className="font-tibetan font-normal text-4xl leading-none">{p.head}</span>
+            </div>
+            <div className="mt-1 font-tibetan font-normal text-2xl text-ink-light">{p.nameTib}</div>
           </div>
         </div>
         
         <div>
           <p className="text-[15px] leading-relaxed p-5 border rounded-2xl bg-surface-muted border-border-strong text-ink-light">
-            {p.intro}<br /><br />
+            {renderTibetanText(p.intro)}<br /><br />
             <span className="text-ink font-bold">Followed by </span>
-            <span className="font-serif text-xl font-bold text-ink">{p.followedBy}</span>
+            <span className="font-tibetan font-normal text-2xl text-ink tracking-wider">{p.followedBy}</span>
           </p>
           <div className="mt-4 flex items-start gap-3 border-l-4 px-4 py-3 text-sm rounded-r-2xl border-y border-r bg-surface-muted border-border-strong text-ink-light" style={{ borderLeftColor: p.accent.hex }}>
             <Info className="mt-0.5 size-4 shrink-0" style={{ color: p.accent.hex }} />
-            <span className="font-medium leading-relaxed">{p.usage}</span>
+            <span className="font-medium leading-relaxed">{renderTibetanText(p.usage)}</span>
           </div>
         </div>
       </div>
@@ -570,7 +585,7 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
           return (
             <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
               <span className="absolute left-0 top-0 h-1 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: p.accent.hex }} />
-              <span className="font-tibetan text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{c.word}</span>
+              <span className="font-tibetan font-normal text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{c.word}</span>
               <span className="font-mono text-xs font-bold text-ink-light">[{c.read}]</span>
               {c.gloss && <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{c.gloss}</span>}
               <span className="mt-2 inline-flex size-5 items-center justify-center rounded-full text-white shadow-sm" style={{ backgroundColor: M.hex }} title={M.label}><M.Icon size={12} strokeWidth={3} /></span>
@@ -588,14 +603,14 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
             return (
               <div key={c.word + c.read} className="flex flex-wrap items-center gap-x-4 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
                 
-                <span className="font-tibetan text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{c.word}</span>
+                <span className="font-tibetan font-normal text-[2.5rem] leading-normal pb-2 w-12 text-center text-ink">{c.word}</span>
                 
                 <SpellingFormula parts={c.parts} />
 
                 <ArrowRight size={16} className="text-border-strong" />
                 
                 <div className="flex items-center gap-2">
-                  <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: p.accent.hex }}>{c.word}</span>
+                  <span className="font-tibetan font-normal text-3xl leading-none pt-1" style={{ color: p.accent.hex }}>{c.word}</span>
                   <span className="font-mono text-lg font-bold text-ink">[{c.read}]</span>
                 </div>
                 

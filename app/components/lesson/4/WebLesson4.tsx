@@ -52,7 +52,7 @@ const WEB_STEPS = [
     id: "super-sub", 
     eyebrow: "Step 04", 
     title: "Roots with a superscript and subscript", 
-    tibetanTitle: "མགོ་འདོགས་གཉིས་ལྡན།",
+    tibetanTitle: "བརྩེགས་མའི་ཡི་གེ།",
     description: "Three-letter stacks combining both." 
   },
   { 
@@ -80,7 +80,7 @@ const WEB_STEPS = [
 
 export function WebLesson4() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
+  const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SubKey>("ya");
   const [isBypassing, setIsBypassing] = useState(false);
@@ -144,7 +144,7 @@ export function WebLesson4() {
               </h1>
               <p className="mt-2 font-tibetan text-3xl text-ink-light">འདོགས་ཅན་བཞི།</p>
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
-                Four consonants — <span className="font-serif text-xl">ཡ ར ལ ཝ</span> — may tuck beneath a root letter
+                Four consonants — <span className="font-tibetan text-2xl text-ink">ཡ ར ལ ཝ</span> — may tuck beneath a root letter
                 as a small subjoined mark. Each subscript governs a different family of stacks and its
                 own set of rules: some transform the pronunciation entirely, some only shift the tone,
                 and one — <em>Wa-zur</em> — is completely silent, existing solely to distinguish
@@ -154,7 +154,7 @@ export function WebLesson4() {
             <div className="w-full md:w-[27rem]">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Lesson progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, WEB_STEPS.length)} of {WEB_STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
@@ -257,7 +257,7 @@ export function WebLesson4() {
                   <Anchor size={14} /> Subjoining
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">
-                  A subscript is a small consonant written <span className="font-bold text-ink">beneath</span> a root letter. Only four consonants — <span className="font-serif text-lg">ཡ ར ལ ཝ</span> — take this position.
+                  A subscript is a small consonant written <span className="font-bold text-ink">beneath</span> a root letter. Only four consonants — <span className="font-tibetan text-xl text-ink">ཡ ར ལ ཝ</span> — take this position.
                 </p>
               </Card>
               <Card className="p-6 bg-surface">
@@ -265,7 +265,7 @@ export function WebLesson4() {
                   <Volume2 size={14} /> Sound change
                 </div>
                 <p className="text-sm leading-relaxed text-ink-light">
-                  With Ya-tak and Ra-tak, the whole syllable can be pronounced <span className="font-bold text-ink">differently</span> from either letter alone — e.g. <span className="font-serif text-lg">པྱ</span> reads <span className="font-mono font-bold">[cha]</span>.
+                  With Ya-tak and Ra-tak, the whole syllable can be pronounced <span className="font-bold text-ink">differently</span> from either letter alone — e.g. <span className="font-tibetan text-xl text-ink">པྱ</span> reads <span className="font-mono font-bold">[cha]</span>.
                 </p>
               </Card>
               <Card className="p-6 bg-surface">

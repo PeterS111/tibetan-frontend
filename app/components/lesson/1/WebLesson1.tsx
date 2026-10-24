@@ -35,7 +35,7 @@ import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export function WebLesson1() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
-  const { unlockedStep, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
+  const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
   const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ c: Consonant, rect: DOMRect } | null>(null);
@@ -106,7 +106,7 @@ export function WebLesson1() {
               <h1 className="font-serif text-3xl md:text-5xl text-ink leading-tight tracking-tight">
                 The 30 Consonants
               </h1>
-              <p className="mt-2 font-serif text-3xl text-ink-light italic tibetan">གསལ་བྱེད་སུམ་ཅུ།</p>
+              <p className="mt-2 font-tibetan text-3xl text-ink-light">གསལ་བྱེད་སུམ་ཅུ།</p>
 		
               <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-light">
                 The Tibetan alphabet is built on thirty root letters — the foundation of every word you
@@ -118,7 +118,7 @@ export function WebLesson1() {
             <div className="w-full md:w-72">
               <div className="mb-2 flex items-center justify-between text-eyebrow">
                 <span>Step progress</span>
-                <span className="text-brand-dark">{Math.min(unlockedStep, STEPS.length)} of {STEPS.length} sections</span>
+                <span className="text-brand-dark">{Math.min(completed.size, STEPS.length)} of {STEPS.length} sections</span>
               </div>
               <div className="h-1.5 w-full bg-border-subtle overflow-hidden rounded-full">
                 <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progressPercent}%` }} />
@@ -147,7 +147,7 @@ export function WebLesson1() {
             <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] items-start">
               <div className="space-y-6">
                 <p className="text-[15px] leading-relaxed text-ink-light">
-                  Over the next few steps you'll meet all thirty consonants — first as a full type specimen, then broken down by <strong className="text-ink">tone</strong>, <strong className="text-ink">root sound</strong>, and <strong className="text-ink">traditional gender</strong>. Along the way you'll hear each letter, read real vocabulary built from them, and finish with a short practice suite.
+                  Over the next few steps you'll meet all thirty consonants — first as the full alphabet, then broken down by <strong className="text-ink">tone</strong>, <strong className="text-ink">root sound</strong>, and <strong className="text-ink">traditional gender</strong>. Along the way you'll hear each letter, read real vocabulary built from them, and finish with a short practice suite.
                 </p>
 
                 <div className="space-y-4 pt-2">
@@ -186,7 +186,7 @@ export function WebLesson1() {
                 </div>
                 <div className="space-y-3">
                   {[
-                    "The alphabet, as a type specimen",
+                    "The alphabet",
                     "Understanding tone",
                     "The three root sounds",
                     "Traditional gender classification",
@@ -205,7 +205,7 @@ export function WebLesson1() {
             </div>
           </StepContainer>
 
-          {/* Step 02: The alphabet, as a type specimen */}
+          {/* Step 02: The alphabet */}
           <StepContainer index={1} step={STEPS[1]} status={statusOf(1)} isExpanded={expandedStep === 1} onToggle={() => toggleStep(1)} onContinue={() => markComplete(1)}>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2">

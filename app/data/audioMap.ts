@@ -139,6 +139,8 @@ export const AUDIO_MAP: Record<string, string> = {
   "བསྒྲིམས་": "Step 01 (Bsgrims) Individual .wav",
   "ག་སྔོན་འཇུག": "Foundation _Ga_Individual .wav", "ད་སྔོན་འཇུག": "Foundation _Da_Individual.wav",
   "བ་སྔོན་འཇུག": "Foundation _Ba_Individual.wav", "མ་སྔོན་འཇུག": "Foundation _Ma_Individual.wav", "འ་སྔོན་འཇུག": "Foundation __a_Individual.wav",
+  "སྔོན་འཇུག་ག": "Foundation _Ga_Individual .wav", "སྔོན་འཇུག་ད": "Foundation _Da_Individual.wav",
+  "སྔོན་འཇུག་བ": "Foundation _Ba_Individual.wav", "སྔོན་འཇུག་མ": "Foundation _Ma_Individual.wav", "སྔོན་འཇུག་འ": "Foundation __a_Individual.wav",
   "གཙོ་": "Section 02_Prefix g_tso_Individual .wav", "གཙོ་ spelling": "Section 02_Tso_spelling .wav",
   "གཡོ་": "Section 02_Yo_Individual .wav", "གཡོ་ spelling": "Section 02_Yo_spelling .m4a.wav",
   "གཡུ་": "Section 02_Yu_Individual .m4a.wav", "གཡུ་ spelling": "Section 02_Yu_Spelling .m4a.wav",

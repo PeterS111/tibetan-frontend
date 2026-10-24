@@ -140,10 +140,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // DESKTOP WEB LAYOUT
   // ==========================================
   return (
-    <div className="min-h-screen flex bg-paper text-ink font-sans">
+    <div className="h-screen overflow-hidden flex bg-paper text-ink font-sans">
       
-      <aside className="w-64 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0">
-        <Link href="/" className="flex items-center gap-3 px-6 py-8 hover:opacity-80 transition-opacity">
+      <aside className="w-64 h-screen sticky top-0 border-r border-border-subtle bg-paper hidden md:flex flex-col shrink-0 z-30">
+        <Link href="/" className="flex items-center gap-3 px-6 py-8 hover:opacity-80 transition-opacity shrink-0">
           <img src="/icon.png" alt="Learn Tibetan Logo" className="w-11 h-11 object-contain mix-blend-multiply opacity-90" />
           <div>
             <div className="font-serif font-medium text-lg leading-none text-ink">Learn Tibetan</div>
@@ -183,7 +183,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
         
-        <div className="p-6 border-t border-border-subtle bg-paper flex items-center gap-4">
+        <div className="p-6 border-t border-border-subtle bg-paper flex items-center gap-4 shrink-0">
           <div className="w-8 h-8 rounded-full bg-brand overflow-hidden flex items-center justify-center shrink-0">
             <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8 rounded-full" } }} />
           </div>
@@ -195,7 +195,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         
         {/* Desktop Meta Links Footer */}
-        <div className="px-6 py-4 border-t border-border-subtle bg-surface-muted flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-ink-muted uppercase tracking-wider font-bold">
+        <div className="px-6 py-4 border-t border-border-subtle bg-surface-muted flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-ink-muted uppercase tracking-wider font-bold shrink-0">
           <Link href="/about" className="hover:text-ink transition-colors">About</Link>
           <Link href="/privacy" className="hover:text-ink transition-colors">Privacy</Link>
           <Link href="/terms" className="hover:text-ink transition-colors">Terms</Link>
@@ -227,7 +227,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+      <main className="flex-1 flex flex-col h-screen min-h-0 overflow-hidden relative">
         <header className="h-24 border-b border-border-subtle bg-paper flex items-center justify-between px-8 md:px-12 shrink-0">
           <div>
             <div className="text-eyebrow text-ink-muted mb-2">Welcome back, {user?.firstName?.toUpperCase() || "STUDENT"}</div>

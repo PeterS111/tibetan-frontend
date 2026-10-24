@@ -100,7 +100,7 @@ export const STEPS = [
   { 
     id: "grid", 
     eyebrow: "Step 02", 
-    title: "The alphabet, as a type specimen", 
+    title: "The alphabet", 
     tibetanTitle: "གསལ་བྱེད་སུམ་ཅུ།",
     description: "Tap each letter to hear its sound and see its details." 
   },
