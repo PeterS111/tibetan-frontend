@@ -97,7 +97,7 @@ export function WebLesson2() {
   const { user } = useUser();
   const { getToken } = useAuth();
 
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
   const { isNative } = usePlatform();
 
@@ -307,7 +307,6 @@ export function WebLesson2() {
                     key={v.key}
                     type="button"
                     onClick={() => playAudio(v.markTranslit)}
-                    disabled={playingItem !== null}
                     className={`p-6 border bg-surface ${pm.ring} shadow-sm flex flex-col text-left transition-all hover:-translate-y-1 hover:shadow-md rounded-2xl`}
                   >
                     <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full w-fit ${pm.swatch} ${pm.text}`}>
@@ -363,7 +362,6 @@ export function WebLesson2() {
                           if (!isNative) setSelected({ v, rect: e.currentTarget.getBoundingClientRect() });
                           playAudio(v.translit);
                         }}
-                        disabled={playingItem !== null}
                         className="flex items-center gap-4 group transition-all text-left mb-6"
                       >
                         <span className="font-tibetan text-[4rem] leading-none text-ink group-hover:opacity-80 transition-opacity pt-1" style={{ color: styleMeta.hex }}>{v.tib}</span>
@@ -410,6 +408,7 @@ export function WebLesson2() {
                 variant="panel"
                 questions={marksAndSoundsQuestions} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
               />
@@ -440,7 +439,7 @@ export function WebLesson2() {
                     </div>
 
                     <div className="ml-auto">
-                       <Button variant="outline" onClick={() => playAudio(v.tib)} disabled={playingItem !== null} className="px-4 py-2.5 rounded-full">
+                       <Button variant="outline" onClick={() => playAudio(v.tib)} className="px-4 py-2.5 rounded-full">
                          {playingItem === v.tib ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand-dark" />}
                        </Button>
                     </div>
@@ -466,7 +465,6 @@ export function WebLesson2() {
                             <div className="ml-auto">
                               <button 
                                 onClick={() => playAudio(s.audio || s.word)} 
-                                disabled={playingItem !== null} 
                                 className="w-10 h-10 rounded-full bg-brand-light border border-brand/20 flex items-center justify-center text-brand-dark hover:bg-brand/40 transition-colors"
                               >
                                 {playingItem === (s.audio || s.word) ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
@@ -492,6 +490,7 @@ export function WebLesson2() {
                 variant="panel"
                 questions={vowelSpellingQuestions} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
               />
@@ -521,6 +520,7 @@ export function WebLesson2() {
                 intro="Check your memory of the new vowel words before moving on." 
                 data={VOCAB} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
                 questionCount={16} 
@@ -543,6 +543,7 @@ export function WebLesson2() {
               intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to pass. You can retake the test as many times as you like — your best score is saved." 
               questions={finalQuizQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -553,7 +554,7 @@ export function WebLesson2() {
         </div>
       </div>
 
-      {selected && <DetailPanel data={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
+      {selected && <DetailPanel data={selected} onClose={() => { stopAudio(); setSelected(null); }} onSpeak={playAudio} playingItem={playingItem} />}
       
       {/* Sticky Footer */}
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
@@ -599,10 +600,10 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) 
             <div className="text-sm font-bold uppercase tracking-widest text-ink-muted">· {v.markTranslit}</div>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => onSpeak(v.markTranslit)} disabled={playingItem !== null} className="w-fit px-3.5 py-1.5 text-xs">
+            <Button variant="secondary" onClick={() => onSpeak(v.markTranslit)} className="w-fit px-3.5 py-1.5 text-xs">
               {playingItem === v.markTranslit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Mark
             </Button>
-            <Button variant="primary" onClick={() => onSpeak(v.translit)} disabled={playingItem !== null} className="w-fit px-3.5 py-1.5 text-xs">
+            <Button variant="primary" onClick={() => onSpeak(v.translit)} className="w-fit px-3.5 py-1.5 text-xs">
               {playingItem === v.translit ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Sound
             </Button>
           </div>

@@ -20,7 +20,7 @@ export function MobileLesson3() {
   const { user } = useUser();
   const { getToken } = useAuth();
   
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(STEPS.length);
 
   const totalSteps = 13; 
@@ -44,6 +44,7 @@ export function MobileLesson3() {
   const webStepMap = [0, 0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 4, 5]; 
 
   const handleNext = () => {
+    stopAudio();
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
@@ -68,6 +69,7 @@ export function MobileLesson3() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -79,6 +81,7 @@ export function MobileLesson3() {
   };
 
   const handleClose = () => {
+    stopAudio();
     router.push("/dashboard/lessons");
   };
 
@@ -116,6 +119,11 @@ export function MobileLesson3() {
   const openInspector = (c: Combo, sup: Super) => {
     setSelectedCombo({ ...c, sup });
     playAudio(c.stack);
+  };
+
+  const closeInspector = () => {
+    stopAudio();
+    setSelectedCombo(null);
   };
 
   const renderSuperscriptGrid = (supIndex: number) => {
@@ -289,21 +297,21 @@ export function MobileLesson3() {
       case 3: return renderSuperscriptGrid(0); // Ra-go
       case 4: return (
         <div className="pb-6">
-          <QuizModule moduleId={3} title="Mastery Check · Ra-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("ra")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
+          <QuizModule moduleId={3} title="Mastery Check · Ra-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("ra")} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
         </div>
       );
 
       case 5: return renderSuperscriptGrid(1); // La-go
       case 6: return (
         <div className="pb-6">
-          <QuizModule moduleId={3} title="Mastery Check · La-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("la")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
+          <QuizModule moduleId={3} title="Mastery Check · La-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("la")} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
         </div>
       );
 
       case 7: return renderSuperscriptGrid(2); // Sa-go
       case 8: return (
         <div className="pb-6">
-          <QuizModule moduleId={3} title="Mastery Check · Sa-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("sa")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
+          <QuizModule moduleId={3} title="Mastery Check · Sa-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("sa")} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
         </div>
       );
 
@@ -355,7 +363,7 @@ export function MobileLesson3() {
       case 10:
         return (
           <div className="pb-6">
-            <QuizModule moduleId={3} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} />
+            <QuizModule moduleId={3} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} />
           </div>
         );
 
@@ -369,7 +377,7 @@ export function MobileLesson3() {
       case 12:
         return (
           <div className="pb-6">
-            <QuizModule moduleId={3} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Subscripts." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/4" onPass={() => markComplete(5)} />
+            <QuizModule moduleId={3} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Subscripts." questions={generateFinalQuiz()} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/4" onPass={() => markComplete(5)} />
           </div>
         );
     }
@@ -429,7 +437,7 @@ export function MobileLesson3() {
       {/* BOTTOM SHEET INSPECTOR */}
       {selectedCombo && (
         <>
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedCombo(null)}></div>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={closeInspector}></div>
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom-full duration-300">
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
@@ -473,7 +481,7 @@ export function MobileLesson3() {
               </button>
             </div>
 
-            <button onClick={() => setSelectedCombo(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
+            <button onClick={closeInspector} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
         </>
       )}

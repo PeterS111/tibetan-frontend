@@ -20,7 +20,7 @@ export function MobileLesson5() {
   const { user } = useUser();
   const { getToken } = useAuth();
   
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(7);
 
   const totalSteps = 20; 
@@ -44,6 +44,7 @@ export function MobileLesson5() {
   const webStepMap = [0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 5, 6]; 
 
   const handleNext = () => {
+    stopAudio();
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
@@ -69,6 +70,7 @@ export function MobileLesson5() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -80,6 +82,7 @@ export function MobileLesson5() {
   };
 
   const handleClose = () => {
+    stopAudio();
     router.push("/dashboard/lessons");
   };
 
@@ -117,6 +120,11 @@ export function MobileLesson5() {
   const openComboInspector = (c: Combo, pref: Prefix) => {
     setSelectedCombo({ ...c, pref });
     playAudio(c.word);
+  };
+
+  const closeComboInspector = () => {
+    stopAudio();
+    setSelectedCombo(null);
   };
 
   const gaQuiz = useMemo(() => generatePrefixQuiz("ga"), []);
@@ -278,7 +286,6 @@ export function MobileLesson5() {
                
                <button 
                  onClick={() => playAudio("བསྒྲིམས་")} 
-                 disabled={playingItem !== null} 
                  className="relative w-full max-w-[240px] mx-auto h-[120px] my-4 flex items-center justify-center active:scale-95 transition-transform"
                >
                  <img 
@@ -393,19 +400,19 @@ export function MobileLesson5() {
         );
 
       case 4: return renderPrefixGrid(0); // Ga
-      case 5: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ga" questions={gaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 5: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ga" questions={gaQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 6: return renderPrefixGrid(1); // Da
-      case 7: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Da" questions={daQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 7: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Da" questions={daQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 8: return renderPrefixGrid(2); // Ba
-      case 9: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ba" questions={baQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 9: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ba" questions={baQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 10: return renderPrefixGrid(3); // Ma
-      case 11: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ma" questions={maQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 11: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ma" questions={maQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
       
       case 12: return renderPrefixGrid(4); // 'A
-      case 13: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix 'A" questions={aQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 13: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix 'A" questions={aQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 14: // Exceptions
         return (
@@ -415,9 +422,9 @@ export function MobileLesson5() {
                 <AlertTriangle size={16} /> <span className="font-tibetan text-xl font-normal normal-case leading-none pt-1">ད + བ</span> <ArrowRight size={14} /> [WA]
               </div>
               <div className="flex items-center gap-2 font-tibetan text-[2rem] leading-normal text-ink">
-                <button onClick={() => playAudio('དབུ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">དབུ་</button>
-                <button onClick={() => playAudio('དབྱེ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">དབྱེ་</button>
-                <button onClick={() => playAudio('དབྲ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">དབྲ་</button>
+                <button onClick={() => playAudio('དབུ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">དབུ་</button>
+                <button onClick={() => playAudio('དབྱེ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">དབྱེ་</button>
+                <button onClick={() => playAudio('དབྲ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">དབྲ་</button>
               </div>
               <p className="text-[15px] text-ink-light leading-relaxed">When ད precedes བ, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [ra].</p>
             </div>
@@ -427,9 +434,9 @@ export function MobileLesson5() {
                 <AlertTriangle size={16} /> <span className="font-tibetan text-xl font-normal normal-case leading-none pt-1">འ + བ</span> <ArrowRight size={14} /> [BA]
               </div>
               <div className="flex items-center gap-2 font-tibetan text-[2rem] leading-normal text-ink">
-                <button onClick={() => playAudio('འབུ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">འབུ་</button>
-                <button onClick={() => playAudio('འབྲི་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">འབྲི་</button>
-                <button onClick={() => playAudio('འབྲུ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">འབྲུ་</button>
+                <button onClick={() => playAudio('འབུ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">འབུ་</button>
+                <button onClick={() => playAudio('འབྲི་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">འབྲི་</button>
+                <button onClick={() => playAudio('འབྲུ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">འབྲུ་</button>
               </div>
               <p className="text-[15px] text-ink-light leading-relaxed">With prefix འ the root བ retains its [b-] onset in a low nasal tone.</p>
             </div>
@@ -439,16 +446,16 @@ export function MobileLesson5() {
                 <AlertTriangle size={16} /> <span className="font-tibetan text-xl font-normal normal-case leading-none pt-1">ག + ཡ</span> <ArrowRight size={14} /> [YO]
               </div>
               <div className="flex items-center gap-2 font-tibetan text-[2rem] leading-normal text-ink">
-                <button onClick={() => playAudio('གཡོ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">གཡོ་</button>
-                <button onClick={() => playAudio('གཡུ་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">གཡུ་</button>
-                <button onClick={() => playAudio('གཡི་')} disabled={playingItem !== null} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">གཡི་</button>
+                <button onClick={() => playAudio('གཡོ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">གཡོ་</button>
+                <button onClick={() => playAudio('གཡུ་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">གཡུ་</button>
+                <button onClick={() => playAudio('གཡི་')} className="border border-border-strong rounded-2xl px-3 pt-3 pb-4 active:bg-surface-muted transition-all">གཡི་</button>
               </div>
               <p className="text-[15px] text-ink-light leading-relaxed">Prefix ག lifts the feminine ཡ to a <span className="font-bold text-ink">high</span> tone.</p>
             </div>
           </div>
         );
 
-      case 15: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Exceptions" questions={exceptionsQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 15: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Exceptions" questions={exceptionsQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 16: { // Vocab (With Prefix Filter Pills)
         const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.prefix === vocabFilter);
@@ -495,11 +502,11 @@ export function MobileLesson5() {
         );
       }
 
-      case 17: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
+      case 17: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
 
       case 18: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
 
-      case 19: return <div className="pb-6"><QuizModule moduleId={5} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/6" onPass={() => markComplete(6)} /></div>;
+      case 19: return <div className="pb-6"><QuizModule moduleId={5} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/6" onPass={() => markComplete(6)} /></div>;
     }
   };
 
@@ -572,7 +579,7 @@ export function MobileLesson5() {
       {/* BOTTOM SHEET INSPECTOR FOR PREFIX COMBOS */}
       {selectedCombo && (
         <>
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedCombo(null)}></div>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={closeComboInspector}></div>
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom-full duration-300">
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
@@ -616,7 +623,7 @@ export function MobileLesson5() {
               </button>
             </div>
 
-            <button onClick={() => setSelectedCombo(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
+            <button onClick={closeComboInspector} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
         </>
       )}

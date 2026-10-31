@@ -100,7 +100,7 @@ function renderTibetanText(text: string) {
 }
 
 export function WebLesson6() {
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
@@ -279,7 +279,7 @@ export function WebLesson6() {
             <div className="mt-6 border border-border-strong bg-surface overflow-hidden rounded-[1.5rem]">
               <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
                 {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => playAudio(x.head)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-4 transition hover:bg-surface-muted">
+                  <button key={x.key} onClick={() => playAudio(x.head)} className="group flex flex-col items-center gap-2 p-4 transition hover:bg-surface-muted">
                     <span className="h-1 w-8 rounded-full" style={{ backgroundColor: x.accent }} />
                     <span className="mt-2 font-tibetan font-normal leading-none pt-1" style={{ fontSize: "2.5rem", color: x.accent }}>{x.head}</span>
                     <div className="flex items-center gap-1 text-[11px] font-bold text-ink">
@@ -308,7 +308,7 @@ export function WebLesson6() {
                 );
               })}
             </div>
-            <SuffixPanel s={SUFFIXES.find(x => x.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <SuffixPanel s={SUFFIXES.find(x => x.key === activeTab)!} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           {/* Step 3: When the vowel meets the suffix */}
@@ -342,7 +342,7 @@ export function WebLesson6() {
                       return (
                         <tr key={r.label}>
                           <td className={`px-5 py-5 border-r border-border-strong transition-colors ${isRowVowelPlaying ? "bg-brand-light/70" : "hover:bg-surface-muted"}`}>
-                            <button onClick={() => playAudio(r.audioTarget)} disabled={playingItem !== null} className="group relative flex w-full items-center gap-4 text-left">
+                            <button onClick={() => playAudio(r.audioTarget)} className="group relative flex w-full items-center gap-4 text-left">
                               <span className="font-tibetan font-normal leading-none text-[2.5rem] text-brand pt-1">{r.vowel}</span>
                               <span className="text-[15px] font-bold text-ink">{r.label}</span>
                               {isRowVowelPlaying && <Loader2 size={15} className="ml-auto animate-spin text-brand-dark" />}
@@ -359,7 +359,6 @@ export function WebLesson6() {
                               >
                                 <button 
                                   onClick={() => playAudio(cell.word)} 
-                                  disabled={playingItem !== null}
                                   className="relative flex w-full h-full px-4 py-5 flex-col items-center justify-center gap-1 transition-transform active:scale-95"
                                 >
                                   <span className="inline-block font-tibetan font-normal text-[2.25rem] leading-none pt-1" style={{ color: ["#7c3aed", "#0369a1", "#0891b2", "#0284c7"][i] }}>
@@ -417,13 +416,13 @@ export function WebLesson6() {
                         ].map((r) => (
                           <tr key={r[0]} className="hover:bg-surface-muted transition-colors">
                             <td className="px-4 py-3">
-                              <button onClick={() => playAudio(r[0])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink-muted hover:text-fuchsia-600 transition-colors">
+                              <button onClick={() => playAudio(r[0])} className="group flex items-center gap-2 text-ink-muted hover:text-fuchsia-600 transition-colors">
                                 <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[0]}</span>
                                 {playingItem === r[0] ? <Loader2 size={12} className="animate-spin text-fuchsia-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
                             </td>
                             <td className="px-4 py-3 border-l border-border-strong">
-                              <button onClick={() => playAudio(r[1])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink hover:text-fuchsia-600 transition-colors">
+                              <button onClick={() => playAudio(r[1])} className="group flex items-center gap-2 text-ink hover:text-fuchsia-600 transition-colors">
                                 <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[1]}</span>
                                 {playingItem === r[1] ? <Loader2 size={12} className="animate-spin text-fuchsia-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
@@ -475,13 +474,13 @@ export function WebLesson6() {
                         ].map((r) => (
                           <tr key={r[0]} className="hover:bg-surface-muted transition-colors">
                             <td className="px-4 py-3">
-                              <button onClick={() => playAudio(r[0])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink-muted hover:text-sky-600 transition-colors">
+                              <button onClick={() => playAudio(r[0])} className="group flex items-center gap-2 text-ink-muted hover:text-sky-600 transition-colors">
                                 <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[0]}</span>
                                 {playingItem === r[0] ? <Loader2 size={12} className="animate-spin text-sky-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
                             </td>
                             <td className="px-4 py-3 border-l border-border-strong">
-                              <button onClick={() => playAudio(r[1])} disabled={playingItem !== null} className="group flex items-center gap-2 text-ink hover:text-sky-600 transition-colors">
+                              <button onClick={() => playAudio(r[1])} className="group flex items-center gap-2 text-ink hover:text-sky-600 transition-colors">
                                 <span className="font-tibetan font-normal not-italic text-[1.5rem] leading-none pt-1">{r[1]}</span>
                                 {playingItem === r[1] ? <Loader2 size={12} className="animate-spin text-sky-600" /> : <Volume2 size={12} className="opacity-0 group-hover:opacity-100" />}
                               </button>
@@ -507,6 +506,7 @@ export function WebLesson6() {
                 accentColor="#0369a1"
                 questions={postSuffixQuestions} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
               />
@@ -531,7 +531,7 @@ export function WebLesson6() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
                     {r.words.map((w) => (
-                      <button key={w} onClick={() => playAudio(w)} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] shadow-sm bg-white rounded-2xl">
+                      <button key={w} onClick={() => playAudio(w)} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] shadow-sm bg-white rounded-2xl">
                         {w}
                       </button>
                     ))}
@@ -553,6 +553,7 @@ export function WebLesson6() {
                 accentColor="var(--color-brand-dark)"
                 questions={rootLetterQuestions} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
               />
@@ -579,7 +580,7 @@ export function WebLesson6() {
               moduleId={6}
               title="Mastery Check · Vocabulary" 
               intro="Check your memory of the new suffix words before moving on. This check tests all vocabulary words." 
-              questions={vocabQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
+              questions={vocabQuestions} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
             />
           </StepContainer>
 
@@ -597,7 +598,7 @@ export function WebLesson6() {
               moduleId={6}
               title="Final Test" 
               intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the Beginner 1 Capstone Assessment." 
-              questions={quizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
+              questions={quizQuestions} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} 
               isUnlockTest={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(8)} 
             />
           </StepContainer>
@@ -624,7 +625,7 @@ export function WebLesson6() {
   );
 }
 
-function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
+function SuffixPanel({ s, playAudio, stopAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1.5 w-full" style={{ backgroundColor: s.accent }} />
@@ -656,7 +657,7 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
 
       <div className="grid grid-cols-2 gap-px border-b sm:grid-cols-3 border-border-strong bg-border-strong">
         {s.examples.map((ex: any) => (
-          <button key={ex.word} onClick={() => playAudio(ex.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
+          <button key={ex.word} onClick={() => playAudio(ex.word)} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
             <span className="absolute left-0 top-0 h-1 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: s.accent }} />
             <span className="font-tibetan font-normal text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{ex.word}</span>
             <span className="font-mono text-xs font-bold text-ink-light">[{ex.read}]</span>
@@ -679,7 +680,7 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
                 <span className="font-mono text-lg font-bold text-ink">[{ex.read}]</span>
               </div>
               <div className="ml-auto flex items-center gap-3">
-                <Button variant="outline" onClick={() => playAudio(ex.word + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                <Button variant="outline" onClick={() => playAudio(ex.word + " spelling")} className="px-4 py-2 rounded-full">
                   {playingItem === (ex.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                 </Button>
               </div>
@@ -693,13 +694,13 @@ function SuffixPanel({ s, playAudio, playingItem, playErrorBeep }: any) {
           <CheckCircle2 size={18} style={{ color: s.accent }} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Suffix {s.latin}</span>
         </div>
-        <SuffixMiniMasteryLoader key={s.key} s={s} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SuffixMiniMasteryLoader key={s.key} s={s} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function SuffixMiniMasteryLoader({ s, playAudio, playingItem, playErrorBeep }: any) {
+function SuffixMiniMasteryLoader({ s, playAudio, stopAudio, playingItem, playErrorBeep }: any) {
   const [seed] = useState(0);
 
   const questions = useMemo(() => {
@@ -733,6 +734,7 @@ function SuffixMiniMasteryLoader({ s, playAudio, playingItem, playErrorBeep }: a
       accentColor={s.accent}
       questions={questions}
       playAudio={playAudio}
+      stopAudio={stopAudio}
       playingItem={playingItem}
       playErrorBeep={playErrorBeep}
     />

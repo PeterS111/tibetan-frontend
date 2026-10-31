@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react"; // <-- Added this
+import { useAuth } from "@clerk/clerk-react";
 import { 
   Layers, Shuffle, BookOpen, CheckCircle2, ArrowRight, ArrowLeft, 
   Play, Loader2, Volume2 
@@ -45,7 +45,7 @@ const getReading = (item: PracticeItem, isLesson1: boolean) => {
 export default function PracticeSuite({ groups, playAudio, playingItem, playErrorBeep, isLesson1 = false }: PracticeSuiteProps) {
   const [tab, setTab] = useState<"flash" | "match" | "listen" | "srs">("flash");
   const { isNative } = usePlatform();
-  const { getToken } = useAuth(); // <-- Added this
+  const { getToken } = useAuth();
 
   const allItems = useMemo(() => {
     const flat = groups.flatMap(g => g.items);
@@ -160,7 +160,7 @@ function Flashcards({ groups, speak, playingItem, isLesson1, isNative }: Flashca
 
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
         <button onClick={prev} className={`flex items-center gap-2 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink transition-colors ${isNative ? 'rounded-full' : ''}`}><ArrowLeft size={16} /> Prev</button>
-        <Button variant="outline" onClick={() => speak(card.audioTarget)} disabled={playingItem !== null}>
+        <Button variant="outline" onClick={() => speak(card.audioTarget)}>
           {playingItem === card.audioTarget ? <Loader2 size={18} className="animate-spin text-brand" /> : <Play size={18} className="fill-current text-brand" />} Play Audio
         </Button>
         <button onClick={next} className={`flex items-center gap-2 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink transition-colors ${isNative ? 'rounded-full' : ''}`}>Next <ArrowRight size={16} /></button>
@@ -346,7 +346,6 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep, isNative }: Li
         <Button 
           variant="outline" 
           onClick={() => speak(target.audioTarget)}
-          disabled={playingItem !== null}
           className={`w-full max-w-[220px] shadow-sm border-2 ${isNative ? 'rounded-full' : ''}`}
         >
           {playingItem === target.audioTarget ? (
@@ -540,7 +539,7 @@ function MemoryReview({ items, speak, playingItem, isLesson1, isNative, getToken
         
         <div className={`bg-white border border-border-strong p-8 sm:p-16 flex flex-col items-center justify-center mb-6 min-h-[300px] shadow-sm relative overflow-hidden ${isNative ? 'rounded-2xl' : ''}`}>
           <div className="text-tibetan-display mb-8 text-center">{deck[0].tibetan}</div>
-          <Button variant="outline" onClick={() => speak(deck[0].audioTarget)} disabled={playingItem !== null}>
+          <Button variant="outline" onClick={() => speak(deck[0].audioTarget)}>
             {playingItem === deck[0].audioTarget ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-brand" />} Check Sound
           </Button>
         </div>

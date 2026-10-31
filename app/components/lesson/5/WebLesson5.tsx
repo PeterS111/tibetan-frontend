@@ -89,7 +89,7 @@ const WEB_STEPS = [
 ];
 
 export default function WebLesson5() {
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<PrefixKey>("ga");
@@ -173,7 +173,6 @@ export default function WebLesson5() {
                     key={s.key} 
                     type="button" 
                     onClick={() => playAudio(s.nameTib)} 
-                    disabled={playingItem !== null} 
                     className="group flex flex-col items-center gap-1 border border-border-strong p-2 bg-surface rounded-xl text-center transition hover:bg-surface-muted hover:border-brand"
                   >
                     <div className="flex items-center gap-1">
@@ -267,7 +266,6 @@ export default function WebLesson5() {
                 
                 <button 
                   onClick={() => playAudio("བསྒྲིམས་")} 
-                  disabled={playingItem !== null} 
                   className="relative w-full max-w-[320px] mx-auto h-[160px] my-6 flex items-center justify-center active:scale-95 transition-transform"
                 >
                   <img 
@@ -343,7 +341,7 @@ export default function WebLesson5() {
             <div className="mt-6 border border-border-strong bg-surface overflow-hidden rounded-[1.5rem]">
               <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
                 {PREFIXES.map((s) => (
-                  <button key={s.key} onClick={() => playAudio(s.nameTib)} disabled={playingItem !== null} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
+                  <button key={s.key} onClick={() => playAudio(s.nameTib)} className="group flex flex-col items-center gap-2 p-6 transition hover:bg-surface-muted">
                     <span className="h-1 w-10 rounded-full" style={{ backgroundColor: s.accent.hex }} />
                     <span className="mt-2 font-tibetan font-normal leading-none pt-1" style={{ fontSize: "3rem", color: s.accent.hex }}>{s.head}</span>
                     <div className="flex items-center gap-1.5 text-sm font-bold text-ink">
@@ -396,7 +394,7 @@ export default function WebLesson5() {
               })}
             </div>
 
-            <PrefixPanel p={PREFIXES.find(p => p.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <PrefixPanel p={PREFIXES.find(p => p.key === activeTab)!} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           {/* Step 4: Exceptions worth memorising + Embedded Mastery Check */}
@@ -407,9 +405,9 @@ export default function WebLesson5() {
                   <AlertTriangle size={18} /> <span className="font-tibetan font-normal text-2xl normal-case leading-none pt-1">ད + བ</span> <ArrowRight size={16} /> [WA]
                 </div>
                 <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
-                  <button onClick={() => playAudio('དབུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབུ་</button>
-                  <button onClick={() => playAudio('དབྱེ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྱེ་</button>
-                  <button onClick={() => playAudio('དབྲ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྲ་</button>
+                  <button onClick={() => playAudio('དབུ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབུ་</button>
+                  <button onClick={() => playAudio('དབྱེ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྱེ་</button>
+                  <button onClick={() => playAudio('དབྲ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">དབྲ་</button>
                 </div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">When <span className="font-tibetan font-normal text-lg text-ink">ད</span> precedes root <span className="font-tibetan font-normal text-lg text-ink">བ</span>, the stack reads as the <span className="font-bold text-ink">wa</span> family in a high tone: [wu], [ye], [dra].</p>
               </Card>
@@ -419,9 +417,9 @@ export default function WebLesson5() {
                   <AlertTriangle size={18} /> <span className="font-tibetan font-normal text-2xl normal-case leading-none pt-1">འ + བ</span> <ArrowRight size={16} /> [BA]
                 </div>
                 <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
-                  <button onClick={() => playAudio('འབུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབུ་</button>
-                  <button onClick={() => playAudio('འབྲི་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབྲི་</button>
-                  <button onClick={() => playAudio('འབྲུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབྲུ་</button>
+                  <button onClick={() => playAudio('འབུ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབུ་</button>
+                  <button onClick={() => playAudio('འབྲི་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབྲི་</button>
+                  <button onClick={() => playAudio('འབྲུ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">འབྲུ་</button>
                 </div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">With prefix <span className="font-tibetan font-normal text-lg text-ink">འ</span> the root <span className="font-tibetan font-normal text-lg text-ink">བ</span> retains its [b-] onset in a low nasal tone: [ng’bu], [ng’dri].</p>
               </Card>
@@ -431,9 +429,9 @@ export default function WebLesson5() {
                   <AlertTriangle size={18} /> <span className="font-tibetan font-normal text-2xl normal-case leading-none pt-1">ག + ཡ</span> <ArrowRight size={16} /> [YO]
                 </div>
                 <div className="flex flex-wrap items-center gap-2 font-tibetan font-normal text-3xl lg:text-[2rem] leading-normal text-ink mb-6">
-                  <button onClick={() => playAudio('གཡོ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡོ་</button>
-                  <button onClick={() => playAudio('གཡུ་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡུ་</button>
-                  <button onClick={() => playAudio('གཡི་')} disabled={playingItem !== null} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡི་</button>
+                  <button onClick={() => playAudio('གཡོ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡོ་</button>
+                  <button onClick={() => playAudio('གཡུ་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡུ་</button>
+                  <button onClick={() => playAudio('གཡི་')} className="border border-border-strong px-3 pt-4 pb-5 hover:border-brand hover:text-brand hover:bg-brand-light/50 transition-all flex items-center justify-center min-w-[3.5rem] rounded-2xl">གཡི་</button>
                 </div>
                 <p className="mt-auto text-sm text-ink-light leading-relaxed">Prefix <span className="font-tibetan font-normal text-lg text-ink">ག</span> lifts the feminine <span className="font-tibetan font-normal text-lg text-ink">ཡ</span> to a <span className="font-bold text-ink">high</span> tone.</p>
               </Card>
@@ -451,6 +449,7 @@ export default function WebLesson5() {
                 accentColor="#b91c1c"
                 questions={exceptionsQuestions}
                 playAudio={playAudio}
+                stopAudio={stopAudio}
                 playingItem={playingItem}
                 playErrorBeep={playErrorBeep}
               />
@@ -484,6 +483,7 @@ export default function WebLesson5() {
               intro="Check your memory of the new prefix words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
             />
@@ -505,6 +505,7 @@ export default function WebLesson5() {
               intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the next unit: Suffixes & Post-suffixes." 
               questions={quizQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -551,7 +552,7 @@ function renderTibetanText(text: string) {
   );
 }
 
-function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
+function PrefixPanel({ p, playAudio, stopAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1.5 w-full" style={{ backgroundColor: p.accent.hex }} />
@@ -585,7 +586,7 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
         {p.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
           return (
-            <button key={c.word + c.read} onClick={() => playAudio(c.word)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
+            <button key={c.word + c.read} onClick={() => playAudio(c.word)} className="group relative flex flex-col items-center justify-center gap-1.5 p-6 transition-colors bg-surface hover:bg-surface-muted">
               <span className="absolute left-0 top-0 h-1 w-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: p.accent.hex }} />
               <span className="font-tibetan font-normal text-[2.5rem] leading-normal pb-2 mb-1 text-[#1c1917]">{c.word}</span>
               <span className="font-mono text-xs font-bold text-ink-light">[{c.read}]</span>
@@ -618,7 +619,7 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
                 
                 <div className="ml-auto flex items-center gap-3">
                   <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} className="px-4 py-2 rounded-full">
                     {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                   </Button>
                 </div>
@@ -633,13 +634,13 @@ function PrefixPanel({ p, playAudio, playingItem, playErrorBeep }: any) {
           <CheckCircle2 size={18} style={{ color: p.accent.hex }} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Prefix {p.latin}</span>
         </div>
-        <PrefixMiniMasteryLoader p={p} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <PrefixMiniMasteryLoader p={p} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function PrefixMiniMasteryLoader({ p, playAudio, playingItem, playErrorBeep }: any) {
+function PrefixMiniMasteryLoader({ p, playAudio, stopAudio, playingItem, playErrorBeep }: any) {
   const [seed] = useState(0);
 
   const questions = useMemo(() => {
@@ -674,6 +675,7 @@ function PrefixMiniMasteryLoader({ p, playAudio, playingItem, playErrorBeep }: a
       accentColor={p.accent.hex}
       questions={questions}
       playAudio={playAudio}
+      stopAudio={stopAudio}
       playingItem={playingItem}
       playErrorBeep={playErrorBeep}
     />

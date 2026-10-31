@@ -34,7 +34,7 @@ import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { VocabGrid } from "@/app/components/lesson/VocabGrid";
 
 export function WebLesson1() {
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(STEPS.length);
   const { isNative } = usePlatform();
 
@@ -267,6 +267,7 @@ export function WebLesson1() {
                  intro="Test your listening before you move on." 
                  data={CONSONANTS} 
                  playAudio={playAudio} 
+                 stopAudio={stopAudio}
                  playingItem={playingItem} 
                  playErrorBeep={playErrorBeep} 
                  questionCount={30} 
@@ -325,7 +326,6 @@ export function WebLesson1() {
                     </div>
                     <button
                       onClick={() => playAudio(r.tib)}
-                      disabled={playingItem !== null}
                       className="flex items-center gap-4 group transition-all text-left mb-6"
                     >
                       <span className="font-tibetan text-[4rem] leading-none text-ink group-hover:opacity-80 transition-opacity" style={{ color: r.hex }}>{r.tib}</span>
@@ -422,6 +422,7 @@ export function WebLesson1() {
                 intro="Check your memory of the new words before moving on." 
                 data={VOCAB} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
                 questionCount={18} 
@@ -443,6 +444,7 @@ export function WebLesson1() {
               intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the next lesson: The Four Vowels." 
               questions={quizQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -454,7 +456,7 @@ export function WebLesson1() {
         </div>
       </div>
 
-      {selected && <DetailPanel data={selected} onClose={() => setSelected(null)} onSpeak={playAudio} playingItem={playingItem} />}
+      {selected && <DetailPanel data={selected} onClose={() => { stopAudio(); setSelected(null); }} onSpeak={playAudio} playingItem={playingItem} />}
 
       <div className="fixed bottom-0 right-0 w-full md:w-[calc(100%-16rem)] bg-paper border-t border-border-subtle p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
@@ -496,7 +498,7 @@ function DetailPanel({ data, onClose, onSpeak, playingItem }: DetailPanelProps) 
             <div className="text-xl font-serif italic text-ink">{c.translit}</div>
             <div className="text-base font-mono font-bold text-ink-light">{c.pron}</div>
           </div>
-          <Button variant="primary" onClick={() => onSpeak(c.tib)} disabled={playingItem !== null} className="w-fit px-4 py-1.5 text-xs">
+          <Button variant="primary" onClick={() => onSpeak(c.tib)} className="w-fit px-4 py-1.5 text-xs">
             {playingItem === c.tib ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} />} Play
           </Button>
         </div>

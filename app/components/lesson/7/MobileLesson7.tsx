@@ -11,7 +11,7 @@ import { generateCapstoneQuiz, SKILLS } from "@/app/data/lesson7";
 
 export function MobileLesson7() {
   const router = useRouter();
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete } = useLessonProgress(3);
 
   const totalSteps = 3; 
@@ -33,6 +33,7 @@ export function MobileLesson7() {
   const quizQuestions = useMemo(() => generateCapstoneQuiz(), []);
 
   const handleNext = () => {
+    stopAudio();
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
@@ -52,6 +53,7 @@ export function MobileLesson7() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -63,6 +65,7 @@ export function MobileLesson7() {
   };
 
   const handleClose = () => {
+    stopAudio();
     router.push("/dashboard/lessons");
   };
 
@@ -182,6 +185,7 @@ export function MobileLesson7() {
                intro="Fresh questions are drawn each attempt. Take your time — accuracy matters more than speed." 
                questions={quizQuestions} 
                playAudio={playAudio} 
+               stopAudio={stopAudio}
                playingItem={playingItem} 
                playErrorBeep={playErrorBeep} 
                isUnlockTest={true} 

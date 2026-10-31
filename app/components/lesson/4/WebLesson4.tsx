@@ -79,7 +79,7 @@ const WEB_STEPS = [
 ];
 
 export function WebLesson4() {
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SubKey>("ya");
@@ -167,7 +167,6 @@ export function WebLesson4() {
                     key={s.key}
                     type="button"
                     onClick={() => playAudio(s.headLabel)}
-                    disabled={playingItem !== null}
                     className="group flex flex-col items-center justify-center gap-1 border border-border-strong px-3 py-2.5 bg-surface text-center transition hover:bg-surface-muted hover:border-brand rounded-xl"
                   >
                     <div className="flex items-center justify-center gap-1.5 whitespace-nowrap">
@@ -283,7 +282,7 @@ export function WebLesson4() {
             <div className="mt-6 border border-border-strong bg-surface overflow-hidden rounded-[1.5rem]">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-px bg-border-strong text-center">
                 {SUBS.map((s) => (
-                  <button key={s.key} onClick={() => playAudio(s.headLabel)} disabled={playingItem !== null} className="group relative flex flex-col items-center p-6 transition bg-surface hover:bg-surface-muted">
+                  <button key={s.key} onClick={() => playAudio(s.headLabel)} className="group relative flex flex-col items-center p-6 transition bg-surface hover:bg-surface-muted">
                     <span className="absolute inset-x-6 top-0 h-1" style={{ backgroundColor: s.accent.hex }} />
                     <div className="my-4 h-24 w-full flex items-center justify-center">
                       <img 
@@ -347,7 +346,7 @@ export function WebLesson4() {
               })}
             </div>
 
-            <SubPanel sub={SUBS.find(s => s.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <SubPanel sub={SUBS.find(s => s.key === activeTab)!} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           {/* Step 3: Roots with a superscript and subscript */}
@@ -365,7 +364,7 @@ export function WebLesson4() {
              {TRIPLE_STACKS.map((t) => {
                 const M = TONE_META[t.tone];
                 return (
-                  <button key={t.stack + t.parts} onClick={() => playAudio(t.stack)} disabled={playingItem !== null} className="group flex flex-col items-center gap-3 border border-border-strong bg-surface p-5 transition hover:-translate-y-1 hover:shadow-md relative rounded-2xl overflow-hidden">
+                  <button key={t.stack + t.parts} onClick={() => playAudio(t.stack)} className="group flex flex-col items-center gap-3 border border-border-strong bg-surface p-5 transition hover:-translate-y-1 hover:shadow-md relative rounded-2xl overflow-hidden">
                     <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: TRIPLE_ACCENT }} />
                     <span className="font-tibetan text-[3rem] leading-normal pb-2 mt-2 text-ink">{t.stack}</span>
                     <span className="text-xl font-tibetan tracking-widest text-ink-light">{t.parts}</span>
@@ -415,7 +414,7 @@ export function WebLesson4() {
                       </div>
                       <div className="ml-auto flex items-center gap-3">
                         <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                        <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                        <Button variant="outline" onClick={() => playAudio(t.stack + " spelling")} className="px-4 py-2 rounded-full">
                           {playingItem === (t.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />} Spelling Audio
                         </Button>
                       </div>
@@ -430,7 +429,7 @@ export function WebLesson4() {
                 <CheckCircle2 size={18} style={{ color: TRIPLE_ACCENT }} />
                 <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · Triple Stacks</span>
               </div>
-              <TripleMiniMasteryLoader playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+              <TripleMiniMasteryLoader playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
             </div>
           </StepContainer>
           
@@ -462,6 +461,7 @@ export function WebLesson4() {
               intro="Check your memory of the new subscript words before moving on. This check tests all vocabulary words." 
               questions={vocabQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
             />
@@ -486,6 +486,7 @@ export function WebLesson4() {
               intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to unlock the next unit: The Five Prefixes." 
               questions={quizQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -518,7 +519,7 @@ export function WebLesson4() {
   );
 }
 
-function SubPanel({ sub, playAudio, playingItem, playErrorBeep }: any) {
+function SubPanel({ sub, playAudio, stopAudio, playingItem, playErrorBeep }: any) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1.5 w-full" style={{ backgroundColor: sub.accent.hex }} />
@@ -550,7 +551,7 @@ function SubPanel({ sub, playAudio, playingItem, playErrorBeep }: any) {
         {sub.combos.map((c: any) => {
           const M = TONE_META[c.tone as Tone];
           return (
-            <button key={c.stack} onClick={() => playAudio(c.stack)} disabled={playingItem !== null} className="group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors bg-surface hover:bg-surface-muted">
+            <button key={c.stack} onClick={() => playAudio(c.stack)} className="group relative flex flex-col items-center justify-center gap-3 p-6 transition-colors bg-surface hover:bg-surface-muted">
               <span className="absolute left-0 top-0 h-1 w-full opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: sub.accent.hex }} />
               <span className="font-tibetan text-[3rem] leading-none text-[#1c1917]">{c.stack}</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{c.read}</span>
@@ -578,7 +579,7 @@ function SubPanel({ sub, playAudio, playingItem, playErrorBeep }: any) {
                   <span className="font-mono text-lg font-bold text-ink">[{c.read}]</span>
                 </div>
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} className="px-4 py-2 rounded-full">
                   {playingItem === (c.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                 </Button>
               </div>
@@ -591,13 +592,13 @@ function SubPanel({ sub, playAudio, playingItem, playErrorBeep }: any) {
           <CheckCircle2 size={18} style={{ color: sub.accent.hex }} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · {sub.name}</span>
         </div>
-        <SubMiniMasteryLoader sub={sub} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SubMiniMasteryLoader sub={sub} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function SubMiniMasteryLoader({ sub, playAudio, playingItem, playErrorBeep }: any) {
+function SubMiniMasteryLoader({ sub, playAudio, stopAudio, playingItem, playErrorBeep }: any) {
   const [seed] = useState(0);
   const questions = useMemo(() => generateSubscriptQuiz(sub.key), [sub.key, seed]);
   return (
@@ -609,6 +610,7 @@ function SubMiniMasteryLoader({ sub, playAudio, playingItem, playErrorBeep }: an
       accentColor={sub.accent.hex} 
       questions={questions} 
       playAudio={playAudio} 
+      stopAudio={stopAudio}
       playingItem={playingItem} 
       playErrorBeep={playErrorBeep} 
     />
@@ -617,11 +619,12 @@ function SubMiniMasteryLoader({ sub, playAudio, playingItem, playErrorBeep }: an
 
 interface TripleMiniMasteryProps {
   playAudio: (text: string) => void;
+  stopAudio: () => void;
   playingItem: string | null;
   playErrorBeep: () => void;
 }
 
-function TripleMiniMasteryLoader({ playAudio, playingItem, playErrorBeep }: TripleMiniMasteryProps) {
+function TripleMiniMasteryLoader({ playAudio, stopAudio, playingItem, playErrorBeep }: TripleMiniMasteryProps) {
   const [seed] = useState(0);
   const questions = useMemo(() => generateTripleQuiz(), [seed]);
   return (
@@ -633,6 +636,7 @@ function TripleMiniMasteryLoader({ playAudio, playingItem, playErrorBeep }: Trip
       accentColor={TRIPLE_ACCENT} 
       questions={questions} 
       playAudio={playAudio} 
+      stopAudio={stopAudio}
       playingItem={playingItem} 
       playErrorBeep={playErrorBeep} 
     />

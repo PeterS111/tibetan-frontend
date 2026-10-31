@@ -64,7 +64,6 @@ export function VocabGrid({ items, groups, playAudio, playingItem }: VocabGridPr
           <button 
             key={v.tib + v.pron} 
             onClick={() => playAudio(v.tib)} 
-            disabled={playingItem !== null} 
             className="group relative flex flex-col items-start gap-4 border border-border-strong bg-surface p-5 text-left transition-all hover:-translate-y-1 hover:shadow-md"
           >
             {v.accentHex && <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: v.accentHex }} />}

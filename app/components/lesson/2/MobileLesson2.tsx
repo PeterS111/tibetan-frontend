@@ -39,7 +39,7 @@ export function MobileLesson2() {
   const { user } = useUser();
   const { getToken } = useAuth();
   
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   
   const totalSteps = 10; 
   const { markComplete, completed } = useLessonProgress(8);
@@ -95,6 +95,7 @@ export function MobileLesson2() {
   };
 
   const handleNext = () => {
+    stopAudio();
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
@@ -120,6 +121,7 @@ export function MobileLesson2() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -131,6 +133,7 @@ export function MobileLesson2() {
   };
 
   const handleClose = () => {
+    stopAudio();
     router.push("/dashboard/lessons");
   };
 
@@ -164,6 +167,11 @@ export function MobileLesson2() {
   const openInspector = (v: Vowel, mode: "mark" | "sound" = "mark") => {
     setSelectedVowel(v);
     playAudio(mode === "mark" ? v.markTranslit : v.translit);
+  };
+
+  const closeInspector = () => {
+    stopAudio();
+    setSelectedVowel(null);
   };
 
   const renderStepContent = () => {
@@ -421,6 +429,7 @@ export function MobileLesson2() {
               intro="Check your recognition of the four diacritic marks, vowel sounds, and syllable spelling." 
               questions={combinedMasteryQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               hideHeader={true}
@@ -495,6 +504,7 @@ export function MobileLesson2() {
               intro="Score 80% or higher to prove you know these words and add them to your profile." 
               data={VOCAB} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               questionCount={16} 
@@ -527,6 +537,7 @@ export function MobileLesson2() {
               intro="Score 80% or higher to unlock the next step: The Three Superscripts." 
               questions={finalQuizQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -587,7 +598,7 @@ export function MobileLesson2() {
       {/* INSPECTOR WITH DUAL AUDIO BUTTONS (Mark Name + Vowel Sound) */}
       {selectedVowel && (
         <>
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedVowel(null)}></div>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={closeInspector}></div>
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom-full duration-300">
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             <div className="flex justify-between items-start mb-6">
@@ -645,7 +656,7 @@ export function MobileLesson2() {
               </button>
             </div>
 
-            <button onClick={() => setSelectedVowel(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
+            <button onClick={closeInspector} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
         </>
       )}

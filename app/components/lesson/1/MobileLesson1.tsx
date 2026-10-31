@@ -27,7 +27,7 @@ import { InstructionModal } from "@/app/components/ui/InstructionModal";
 
 export function MobileLesson1() {
   const router = useRouter();
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete } = useLessonProgress(STEPS.length);
 
   const totalSteps = 11; 
@@ -67,6 +67,7 @@ export function MobileLesson1() {
   const webStepMap = [0, 0, 1, 1, 2, 3, 4, 5, 5, 6, 7]; 
 
   const handleNext = () => {
+    stopAudio();
     markComplete(webStepMap[currentStep]); 
     if (currentStep < totalSteps - 1) {
       const next = currentStep + 1;
@@ -85,6 +86,7 @@ export function MobileLesson1() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -96,6 +98,7 @@ export function MobileLesson1() {
   };
 
   const handleClose = () => {
+    stopAudio();
     router.push("/dashboard/lessons");
   };
 
@@ -115,6 +118,11 @@ export function MobileLesson1() {
   const openInspector = (c: Consonant) => {
     setSelectedConsonant(c);
     playAudio(c.tib); 
+  };
+
+  const closeInspector = () => {
+    stopAudio();
+    setSelectedConsonant(null);
   };
 
   const renderStepContent = () => {
@@ -250,6 +258,7 @@ export function MobileLesson1() {
               intro="Test your listening before you move on." 
               data={CONSONANTS} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               questionCount={30} 
@@ -430,6 +439,7 @@ export function MobileLesson1() {
               intro="Check your memory of the new words before moving on." 
               data={VOCAB} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               questionCount={18} 
@@ -461,6 +471,7 @@ export function MobileLesson1() {
               intro="Score 80% or higher to unlock the next step: The Four Vowels." 
               questions={generateFinalQuiz()} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -527,7 +538,7 @@ export function MobileLesson1() {
         <>
           <div 
             className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity"
-            onClick={() => setSelectedConsonant(null)}
+            onClick={closeInspector}
           ></div>
           
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom-full duration-300">
@@ -568,7 +579,7 @@ export function MobileLesson1() {
             </div>
             
             <button 
-              onClick={() => setSelectedConsonant(null)}
+              onClick={closeInspector}
               className="w-full mt-6 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors"
             >
               Close

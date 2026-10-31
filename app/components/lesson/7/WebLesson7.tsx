@@ -37,7 +37,7 @@ const WEB_STEPS = [
 ];
 
 export function WebLesson7() {
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
   const [isBypassing, setIsBypassing] = useState(false);
 
@@ -157,6 +157,7 @@ export function WebLesson7() {
                  intro="60 questions drawn across all six units. Take your time — accuracy matters more than speed." 
                  questions={quizQuestions} 
                  playAudio={playAudio} 
+                 stopAudio={stopAudio}
                  playingItem={playingItem} 
                  playErrorBeep={playErrorBeep} 
                  isUnlockTest={true} 

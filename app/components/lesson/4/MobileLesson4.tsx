@@ -20,7 +20,7 @@ export function MobileLesson4() {
   const { user } = useUser();
   const { getToken } = useAuth();
   
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(6);
 
   const totalSteps = 17; 
@@ -45,6 +45,7 @@ export function MobileLesson4() {
   const webStepMap = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 5]; 
 
   const handleNext = () => {
+    stopAudio();
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
@@ -70,6 +71,7 @@ export function MobileLesson4() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -81,6 +83,7 @@ export function MobileLesson4() {
   };
 
   const handleClose = () => {
+    stopAudio();
     router.push("/dashboard/lessons");
   };
 
@@ -120,9 +123,19 @@ export function MobileLesson4() {
     playAudio(c.stack);
   };
 
+  const closeComboInspector = () => {
+    stopAudio();
+    setSelectedCombo(null);
+  };
+
   const openTripleInspector = (t: Stack3) => {
     setSelectedTriple(t);
     playAudio(t.stack);
+  };
+
+  const closeTripleInspector = () => {
+    stopAudio();
+    setSelectedTriple(null);
   };
 
   // Consume the clean generators from our data file
@@ -318,16 +331,16 @@ export function MobileLesson4() {
         );
 
       case 3: return renderSubscriptGrid(0); // Ya-tak
-      case 4: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ya-tak" questions={yaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 4: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ya-tak" questions={yaQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 5: return renderSubscriptGrid(1); // Ra-tak
-      case 6: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ra-tak" questions={raQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 6: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ra-tak" questions={raQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 7: return renderSubscriptGrid(2); // La-tak
-      case 8: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · La-tak" questions={laQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 8: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · La-tak" questions={laQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 9: return renderSubscriptGrid(3); // Wa-zur
-      case 10: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Wa-zur" questions={waQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 10: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Wa-zur" questions={waQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 11: // Triple Stacks
         return (
@@ -360,7 +373,7 @@ export function MobileLesson4() {
           </div>
         );
 
-      case 12: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Triple Stacks" questions={tripleQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 12: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Triple Stacks" questions={tripleQuizQuestions} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 13: { // Vocab (With Subscript & Triple Stack Filter Pills)
         const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.sub === vocabFilter);
@@ -416,11 +429,11 @@ export function MobileLesson4() {
         );
       }
 
-      case 14: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
+      case 14: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
 
       case 15: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
 
-      case 16: return <div className="pb-6"><QuizModule moduleId={4} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Prefixes." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/5" onPass={() => markComplete(5)} /></div>;
+      case 16: return <div className="pb-6"><QuizModule moduleId={4} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Prefixes." questions={generateFinalQuiz()} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/5" onPass={() => markComplete(5)} /></div>;
     }
   };
 
@@ -484,7 +497,7 @@ export function MobileLesson4() {
       {/* BOTTOM SHEET INSPECTOR FOR SUBSCRIPTS */}
       {selectedCombo && (
         <>
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedCombo(null)}></div>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={closeComboInspector}></div>
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom-full duration-300">
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
@@ -528,7 +541,7 @@ export function MobileLesson4() {
               </button>
             </div>
 
-            <button onClick={() => setSelectedCombo(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
+            <button onClick={closeComboInspector} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
         </>
       )}
@@ -536,7 +549,7 @@ export function MobileLesson4() {
       {/* BOTTOM SHEET INSPECTOR FOR TRIPLE STACKS */}
       {selectedTriple && (
         <>
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedTriple(null)}></div>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={closeTripleInspector}></div>
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom-full duration-300">
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
@@ -606,7 +619,7 @@ export function MobileLesson4() {
               </button>
             </div>
 
-            <button onClick={() => setSelectedTriple(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
+            <button onClick={closeTripleInspector} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
         </>
       )}

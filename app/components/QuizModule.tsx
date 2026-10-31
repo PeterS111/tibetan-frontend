@@ -386,7 +386,7 @@ export default function QuizModule({
             <span className="text-lg md:text-xl font-medium">{currentQ.promptText}</span>
             {currentQ.promptHighlight && (
               currentQ.promptAudio ? (
-                <button onClick={() => playAudio(currentQ.promptAudio!)} disabled={playingItem !== null} className="group relative font-tibetan text-3xl font-bold border px-5 py-2.5 flex items-center justify-center gap-3 shadow-sm transition-colors rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 mt-2">
+                <button onClick={() => playAudio(currentQ.promptAudio!)} className="group relative font-tibetan text-3xl font-bold border px-5 py-2.5 flex items-center justify-center gap-3 shadow-sm transition-colors rounded-xl bg-white/10 border-white/20 text-white hover:bg-white/20 mt-2">
                   <span className="pt-1">{currentQ.promptHighlight}</span>
                   {playingItem === currentQ.promptAudio ? <Loader2 size={16} className="animate-spin text-brand" /> : <Volume2 size={16} className="text-white/60 group-hover:text-white transition-colors" />}
                 </button>
@@ -420,7 +420,7 @@ export default function QuizModule({
         {currentQ.prominentTibetan && (
           <button 
             onClick={() => canPlayProminentAudio && playAudio(currentQ.audioString || currentQ.answer)}
-            disabled={playingItem !== null || !canPlayProminentAudio}
+            disabled={!canPlayProminentAudio}
             className={`w-full max-w-sm flex flex-col items-center justify-center py-6 border shadow-sm transition-all ${canPlayProminentAudio ? 'active:scale-95 group hover:border-brand bg-white cursor-pointer' : 'bg-surface-muted cursor-default'} ${isNative ? 'rounded-[1.25rem]' : 'rounded-2xl'} border-border-subtle`}
           >
             <span className={`font-tibetan text-6xl md:text-7xl leading-none pt-2 text-ink ${canPlayProminentAudio ? 'mb-4 group-hover:text-brand transition-colors' : 'mb-0 opacity-90'}`}>
@@ -439,7 +439,6 @@ export default function QuizModule({
           <Button 
             variant="outline"
             onClick={() => playAudio(currentQ.audioString!)} 
-            disabled={playingItem !== null} 
             className="w-full max-w-[240px] border-2 shadow-sm rounded-full py-3.5"
           >
             {playingItem === currentQ.audioString ? <Loader2 size={18} className="animate-spin text-brand" /> : <Volume2 size={18} className="text-brand-dark" />} 

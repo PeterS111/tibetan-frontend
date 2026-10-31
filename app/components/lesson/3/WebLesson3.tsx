@@ -91,7 +91,7 @@ function renderTibetanText(text: string) {
 export function WebLesson3() {
   const { user } = useUser();
   const { getToken } = useAuth();
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
@@ -179,7 +179,6 @@ export function WebLesson3() {
                      key={s.key}
                      type="button"
                      onClick={() => playAudio(s.headLabel)}
-                     disabled={playingItem !== null}
                      className="group flex flex-col items-center gap-1 border border-border-strong p-2.5 bg-surface hover:bg-surface-muted hover:border-brand transition rounded-xl"
                    >
                      <div className="flex items-center gap-1.5">
@@ -354,7 +353,7 @@ export function WebLesson3() {
               })}
             </div>
 
-            <SuperPanel sup={SUPERS.find(s => s.key === activeTab)!} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+            <SuperPanel sup={SUPERS.find(s => s.key === activeTab)!} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
           </StepContainer>
 
           {/* Step 3: Vocabulary built from superscripts */}
@@ -380,6 +379,7 @@ export function WebLesson3() {
                 intro="Check your memory of the new superscript words before moving on." 
                 data={VOCAB} 
                 playAudio={playAudio} 
+                stopAudio={stopAudio}
                 playingItem={playingItem} 
                 playErrorBeep={playErrorBeep} 
                 questionCount={16} 
@@ -405,6 +405,7 @@ export function WebLesson3() {
               intro="40 questions drawn from everything you covered in this lesson. Score 80% or higher to pass. You can retake the test as many times as you like — your best score is saved." 
               questions={finalQuizQuestions} 
               playAudio={playAudio} 
+              stopAudio={stopAudio}
               playingItem={playingItem} 
               playErrorBeep={playErrorBeep} 
               isUnlockTest={true} 
@@ -427,7 +428,7 @@ export function WebLesson3() {
   );
 }
 
-function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super; playAudio: (t: string) => void; playingItem: string | null; playErrorBeep: () => void }) {
+function SuperPanel({ sup, playAudio, stopAudio, playingItem, playErrorBeep }: { sup: Super; playAudio: (t: string) => void; stopAudio: () => void; playingItem: string | null; playErrorBeep: () => void }) {
   return (
     <div className="relative overflow-hidden border transition-colors duration-500 rounded-[1.5rem] border-border-strong bg-surface">
       <div className="h-1.5 w-full" style={{ backgroundColor: sup.accent.hex }} />
@@ -464,7 +465,6 @@ function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super
             <button 
               key={c.stack} 
               onClick={() => playAudio(c.stack)} 
-              disabled={playingItem !== null} 
               className="group relative flex flex-col items-center justify-center gap-2.5 p-6 transition-colors bg-surface hover:bg-surface-muted"
             >
               <span className="absolute left-0 top-0 h-1 w-full opacity-0 transition-opacity group-hover:opacity-100" style={{ backgroundColor: sup.accent.hex }} />
@@ -497,7 +497,7 @@ function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super
                 <span className={`ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}>
                   <M.Icon size={14} strokeWidth={2.5} /> {M.label}
                 </span>
-                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} disabled={playingItem !== null} className="px-4 py-2 rounded-full">
+                <Button variant="outline" onClick={() => playAudio(c.stack + " spelling")} className="px-4 py-2 rounded-full">
                   {playingItem === (c.stack + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
                 </Button>
               </div>
@@ -512,13 +512,13 @@ function SuperPanel({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super
           <CheckCircle2 size={18} style={{ color: sup.accent.hex }} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-ink">Mastery check · {sup.name}</span>
         </div>
-        <SuperMiniMasteryLoader sup={sup} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
+        <SuperMiniMasteryLoader sup={sup} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} />
       </div>
     </div>
   );
 }
 
-function SuperMiniMasteryLoader({ sup, playAudio, playingItem, playErrorBeep }: { sup: Super; playAudio: (t: string) => void; playingItem: string | null; playErrorBeep: () => void }) {
+function SuperMiniMasteryLoader({ sup, playAudio, stopAudio, playingItem, playErrorBeep }: { sup: Super; playAudio: (t: string) => void; stopAudio: () => void; playingItem: string | null; playErrorBeep: () => void }) {
   const [seed] = useState(0);
   const questions = useMemo(() => generateSuperscriptQuiz(sup.key), [sup.key, seed]);
   return (
@@ -530,6 +530,7 @@ function SuperMiniMasteryLoader({ sup, playAudio, playingItem, playErrorBeep }: 
       accentColor={sup.accent.hex} 
       questions={questions} 
       playAudio={playAudio} 
+      stopAudio={stopAudio}
       playingItem={playingItem} 
       playErrorBeep={playErrorBeep} 
     />

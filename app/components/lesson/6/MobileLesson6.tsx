@@ -25,7 +25,7 @@ export function MobileLesson6() {
   const { user } = useUser();
   const { getToken } = useAuth();
   
-  const { playAudio, playErrorBeep, playingItem } = useAudio();
+  const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(8);
 
   const totalSteps = 14; 
@@ -49,6 +49,7 @@ export function MobileLesson6() {
   const webStepMap = [0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7]; 
 
   const handleNext = () => {
+    stopAudio();
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     if (currentStep === 11 && !completed.has(currentWebStep)) saveWords(VOCAB.length);
@@ -69,6 +70,7 @@ export function MobileLesson6() {
   };
 
   const handlePrevious = () => {
+    stopAudio();
     if (currentStep > 0) {
       const prev = currentStep - 1;
       setCurrentStep(prev);
@@ -79,7 +81,15 @@ export function MobileLesson6() {
     }
   };
 
-  const handleClose = () => router.push("/dashboard/lessons");
+  const handleClose = () => {
+    stopAudio();
+    router.push("/dashboard/lessons");
+  };
+
+  const closeSuffixInspector = () => {
+    stopAudio();
+    setSelectedSuffix(null);
+  };
 
   const saveWords = async (wordCount: number) => {
     if (user) {
@@ -269,7 +279,7 @@ export function MobileLesson6() {
       // ---------------------------------------------------------
       // STEP 4: MASTERY CHECK · SUFFIXES
       // ---------------------------------------------------------
-      case 4: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Suffixes" questions={combinedSuffixQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 4: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Suffixes" questions={combinedSuffixQuiz} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       // ---------------------------------------------------------
       // STEP 5: WHEN THE VOWEL MEETS THE SUFFIX
@@ -281,7 +291,7 @@ export function MobileLesson6() {
             {VOWEL_SHIFTS.map((vs) => (
                <div key={vs.label} className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-border-subtle mb-4">
                   <div className="flex items-center gap-3 mb-4 border-b border-border-subtle pb-3">
-                     <button onClick={() => playAudio(vs.audioTarget)} disabled={playingItem !== null} className="w-12 h-12 rounded-full bg-brand text-ink flex items-center justify-center relative active:scale-95 transition-transform">
+                     <button onClick={() => playAudio(vs.audioTarget)} className="w-12 h-12 rounded-full bg-brand text-ink flex items-center justify-center relative active:scale-95 transition-transform">
                         <span className="font-tibetan text-3xl pt-1.5">{vs.vowel}</span>
                         {playingItem === vs.audioTarget && <Loader2 size={16} className="absolute -top-1 -right-1 animate-spin text-brand-dark" />}
                      </button>
@@ -340,13 +350,13 @@ export function MobileLesson6() {
                       <div className="flex divide-x divide-border-subtle border-b border-border-subtle">
                         <div className="flex-1 p-4 flex flex-col items-center justify-center bg-surface-muted">
                           <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-2">Former</span>
-                          <button onClick={() => playAudio(r[0])} disabled={playingItem !== null} className="flex items-center gap-2 text-ink-muted active:text-fuchsia-600 transition-colors">
+                          <button onClick={() => playAudio(r[0])} className="flex items-center gap-2 text-ink-muted active:text-fuchsia-600 transition-colors">
                             <span className="font-tibetan text-2xl pt-1 leading-none">{r[0]}</span>
                           </button>
                         </div>
                         <div className="flex-1 p-4 flex flex-col items-center justify-center bg-white">
                           <span className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-2">Current</span>
-                          <button onClick={() => playAudio(r[1])} disabled={playingItem !== null} className="flex items-center gap-2 text-ink active:text-fuchsia-600 transition-colors">
+                          <button onClick={() => playAudio(r[1])} className="flex items-center gap-2 text-ink active:text-fuchsia-600 transition-colors">
                             <span className="font-tibetan text-2xl pt-1 leading-none">{r[1]}</span>
                           </button>
                         </div>
@@ -373,7 +383,7 @@ export function MobileLesson6() {
                           <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-3 flex items-center justify-center gap-1.5">
                             <span>WITHOUT</span><span className="font-tibetan text-xl normal-case pt-1 leading-none">ས</span>
                           </div>
-                          <button onClick={() => playAudio(r[0])} disabled={playingItem !== null} className="flex items-center gap-2 text-ink-muted active:text-sky-600 transition-colors">
+                          <button onClick={() => playAudio(r[0])} className="flex items-center gap-2 text-ink-muted active:text-sky-600 transition-colors">
                             <span className="font-tibetan text-2xl pt-1 leading-none">{r[0]}</span>
                           </button>
                         </div>
@@ -381,7 +391,7 @@ export function MobileLesson6() {
                           <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-3 flex items-center justify-center gap-1.5">
                             <span>WITH</span><span className="font-tibetan text-xl normal-case pt-1 leading-none">ས</span>
                           </div>
-                          <button onClick={() => playAudio(r[1])} disabled={playingItem !== null} className="flex items-center gap-2 text-ink active:text-sky-600 transition-colors">
+                          <button onClick={() => playAudio(r[1])} className="flex items-center gap-2 text-ink active:text-sky-600 transition-colors">
                             <span className="font-tibetan text-2xl pt-1 leading-none">{r[1]}</span>
                           </button>
                         </div>
@@ -395,7 +405,7 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 7: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Post-Suffixes" questions={POST_SUFFIX_QUESTIONS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 7: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Post-Suffixes" questions={POST_SUFFIX_QUESTIONS} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 8:
         return (
@@ -423,7 +433,7 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 9: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Root Letters" questions={ROOT_LETTER_QUESTIONS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 9: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Root Letters" questions={ROOT_LETTER_QUESTIONS} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
       case 10: { // Vocab (With Suffix Filter Pills matching WebLesson6)
         const vocabSuffixes = SUFFIXES.filter(s => VOCAB.some(v => v.suffix === s.key));
@@ -472,9 +482,9 @@ export function MobileLesson6() {
         );
       }
 
-      case 11: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 11: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
       case 12: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
-      case 13: return <div className="pb-6"><QuizModule moduleId={6} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(7)} /></div>;
+      case 13: return <div className="pb-6"><QuizModule moduleId={6} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} stopAudio={stopAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(7)} /></div>;
     }
   };
 
@@ -526,7 +536,7 @@ export function MobileLesson6() {
       {/* BOTTOM SHEET INSPECTOR */}
       {selectedSuffix && (
         <>
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedSuffix(null)}></div>
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={closeSuffixInspector}></div>
           <div className="fixed bottom-0 inset-x-0 bg-paper rounded-t-[2rem] z-[120] shadow-2xl pb-safe animate-in slide-in-from-bottom-full duration-300 max-h-[85vh] flex flex-col">
             
             <div className="shrink-0 p-6 pb-2 border-b border-border-subtle bg-white rounded-t-[2rem]">
@@ -594,7 +604,7 @@ export function MobileLesson6() {
             </div>
             
             <div className="shrink-0 pt-4 bg-paper">
-              <button onClick={() => setSelectedSuffix(null)} className="w-full py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors border border-border-strong">Close</button>
+              <button onClick={closeSuffixInspector} className="w-full py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors border border-border-strong">Close</button>
             </div>
           </div>
         </>
