@@ -1,16 +1,15 @@
 // app/components/lesson/5/MobileLesson5.tsx
 "use client";
 
-
-import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
+import { SpellingFormula, TibetanPart } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { Loader2, Volume2, ArrowRight, ArrowUp, ArrowDown, ChevronLeft, Info, CheckCircle2, AlertTriangle, BookOpen } from "lucide-react";
+import { Loader2, Volume2, ArrowRight, ChevronLeft, Info, AlertTriangle, BookOpen } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
-import { PREFIXES, VOCAB, STEPS, TONE_META, generateVocabQuiz, generateFinalQuiz, generatePrefixQuiz, generateExceptionsQuiz, Combo, Prefix, Tone } from "@/app/data/lesson5";
+import { PREFIXES, VOCAB, TONE_META, generateFinalQuiz, generatePrefixQuiz, generateExceptionsQuiz, Combo, Prefix, PrefixKey, Tone } from "@/app/data/lesson5";
 
 import { MobileStepPlayer } from "../MobileStepPlayer";
 import QuizModule from "@/app/components/QuizModule";
@@ -24,32 +23,60 @@ export function MobileLesson5() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(7);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const totalSteps = 19; 
+  const totalSteps = 20; 
+  const MODULE_ID = 5;
+
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`tibetan_mobile_lesson_${MODULE_ID}_step`);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < totalSteps) return parsed;
+      }
+    }
+    return 0;
+  });
   
   const [selectedCombo, setSelectedCombo] = useState<(Combo & { pref: Prefix }) | null>(null);
+  const [vocabFilter, setVocabFilter] = useState<"all" | PrefixKey>("all");
 
-  // Map 19 mobile steps to the 7 web steps so global progress unlocks correctly
-  const webStepMap = [0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 5, 6]; 
+  // Map 20 mobile steps to the 7 web steps so global progress unlocks correctly
+  const webStepMap = [0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 5, 6]; 
 
   const handleNext = () => {
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
-    // Save new vocabulary words to the user's global progress ONLY on Step 16
-    if (currentStep === 16 && !completed.has(currentWebStep)) {
+    // Save new vocabulary words to the user's global progress ONLY on Step 17
+    if (currentStep === 17 && !completed.has(currentWebStep)) {
       saveWords(VOCAB.length);
     }
 
     if (currentStep < totalSteps - 1) {
-      setCurrentStep(prev => prev + 1);
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, next.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
     } else {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, "0");
+        localStorage.setItem("tibetan_last_active_lesson", "6");
+      }
       router.push("/dashboard/lessons/6");
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+      const prev = currentStep - 1;
+      setCurrentStep(prev);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, prev.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
+    }
   };
 
   const handleClose = () => {
@@ -89,7 +116,7 @@ export function MobileLesson5() {
 
   const openComboInspector = (c: Combo, pref: Prefix) => {
     setSelectedCombo({ ...c, pref });
-    playAudio(c.word + " spelling");
+    playAudio(c.word);
   };
 
   const gaQuiz = useMemo(() => generatePrefixQuiz("ga"), []);
@@ -98,7 +125,6 @@ export function MobileLesson5() {
   const maQuiz = useMemo(() => generatePrefixQuiz("ma"), []);
   const aQuiz = useMemo(() => generatePrefixQuiz("a"), []);
   const exceptionsQuiz = useMemo(() => generateExceptionsQuiz(), []);
-  const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
   const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
 
   const renderPrefixGrid = (prefIndex: number) => {
@@ -150,49 +176,98 @@ export function MobileLesson5() {
 
   const renderStepContent = () => {
     switch (currentStep) {
+      // ---------------------------------------------------------
+      // STEP 0: WELCOME HERO CARD
+      // ---------------------------------------------------------
       case 0:
         return (
-          <div className="pb-6">
-            <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm mb-6 bg-surface relative">
-              <div className="h-40 w-full relative">
-                <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
-                <div className="absolute bottom-4 left-5 right-5">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand mb-1">Unit 05</div>
-                  <h1 className="font-serif text-3xl text-white leading-tight">The Five Prefixes</h1>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 divide-x divide-border-subtle bg-white">
-                <div className="p-3 text-center">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
-                  <div className="font-serif text-lg text-ink">45m</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Prefixes</div>
-                  <div className="font-serif text-lg text-ink">5</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
-                  <div className="font-serif text-lg text-ink">20</div>
-                </div>
-              </div>
-            </div>
+          <div className="pb-4">
+            <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
+              
+			  
+			<div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
+                <img 
+                  src="/05_five_prefixes.jpg" 
+                  alt="The Five Prefixes Hero Scene" 
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>  
 
-            <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen size={18} className="text-brand-dark" />
-                <h2 className="font-bold text-ink">What you'll learn</h2>
+              <div className="p-5 pt-5">
+                <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
+                  The Five Prefixes
+                </h2>
+                <div className="font-tibetan text-xl text-ink-light mb-4">
+                  སྔོན་འཇུག་ལྔ།
+                </div>
+                <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
+                  Five letters — ག, ད, བ, མ, འ — may sit directly before the root letter. Though silent in speech, they anchor historical spelling and shape the tone of the syllable.
+                </p>
+
+                <hr className="border-border-subtle mb-3.5" />
+
+                <div className="grid grid-cols-3 divide-x divide-border-subtle text-center py-0.5">
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">5</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Prefixes</div>
+                  </div>
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">3</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Silent</div>
+                  </div>
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">2</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Nasal</div>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-3 text-[14px] text-ink-light font-medium">
-                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 mt-1.5"></div><p>The 5 letters that can act as prefixes</p></li>
-                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 mt-1.5"></div><p>How prefixes affect the root letter's tone</p></li>
-                <li className="flex items-start gap-2"><div className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 mt-1.5"></div><p>Which letters <strong>never</strong> take a prefix</p></li>
-              </ul>
             </div>
           </div>
         );
 
+      // ---------------------------------------------------------
+      // STEP 1: WHAT YOU'LL LEARN
+      // ---------------------------------------------------------
       case 1:
+        return (
+          <div className="pb-6">
+            <div className="bg-surface rounded-[1.5rem] p-6 sm:p-7 shadow-sm border border-border-subtle">
+              <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-brand-dark mb-6">
+                Syllabus Overview
+              </div>
+
+              <div className="space-y-5">
+                {[
+                  { mod: "MODULE 01", title: "Word formation & the 7 syllable slots" },
+                  { mod: "MODULE 02", title: "What is a prefix?" },
+                  { mod: "MODULE 03", title: "The five prefixes (Ga, Da, Ba, Ma, 'A)" },
+                  { mod: "MODULE 04", title: "Exceptions worth memorising" },
+                  { mod: "MODULE 05", title: "Vocabulary & Practice" },
+                ].map((item, idx) => (
+                  <div 
+                    key={item.mod} 
+                    className={`flex flex-col gap-1 ${idx !== 0 ? "pt-4 border-t border-border-subtle/70" : ""}`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted">
+                      {item.mod}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand shrink-0"></span>
+                      <span className="font-serif text-[17px] font-bold text-ink leading-snug">
+                        {item.title}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      // ---------------------------------------------------------
+      // STEP 2: ANATOMY OF A SYLLABLE
+      // ---------------------------------------------------------
+      case 2:
         return (
           <div className="space-y-5 pb-6">
             <div className="bg-surface-muted border border-border-subtle rounded-[1.5rem] p-5 text-center shadow-sm relative mb-4">
@@ -225,21 +300,17 @@ export function MobileLesson5() {
                     { letter: "བ", role: "Prefix", pos: "Before root", accent: "#c2410c", highlight: true },
                     { letter: "ས", role: "Superscript", pos: "Above root", accent: "#7c3aed" },
                     { letter: "ག", role: "Root letter", pos: "The heart", accent: "#111827" },
-                    // 🚀 FIXED: Using PNG images directly for combining marks
                     { imgSrc: "/slot-subscript.png", role: "Subscript", pos: "Below root", accent: "#0284c7" },
                     { imgSrc: "/slot-vowel.png", role: "Vowel", pos: "Above / below", accent: "#059669" },
                     { letter: "མ", role: "Suffix", pos: "After root", accent: "#b45309" },
                   ].map((s) => (
                     <div key={s.role} className={`flex items-center gap-3 p-3 rounded-[1.25rem] border ${s.highlight ? "bg-brand-light border-brand/40 shadow-sm" : "bg-white border-border-subtle shadow-sm"}`}>
                        <div className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center font-tibetan border border-border-strong bg-surface-muted overflow-hidden" style={{ color: s.accent }}>
-                         
-                         {/* 🚀 Render the PNG if provided, otherwise render the standard text letter */}
                          {s.imgSrc ? (
-  <img src={s.imgSrc} alt={s.role} className="w-9 h-9 object-contain" />
-) : (
-  <span className="block text-2xl pt-1.5">{s.letter}</span>
-)}
-
+                           <img src={s.imgSrc} alt={s.role} className="w-9 h-9 object-contain" />
+                         ) : (
+                           <span className="block text-2xl pt-1.5">{s.letter}</span>
+                         )}
                        </div>
                        <div className="flex-1 min-w-0">
                          <div className="text-[9px] font-bold uppercase tracking-widest mb-0.5 truncate" style={{ color: s.accent }}>{s.role}</div>
@@ -263,7 +334,10 @@ export function MobileLesson5() {
           </div>
         );
 
-      case 2:
+      // ---------------------------------------------------------
+      // STEP 3: WHAT IS A PREFIX?
+      // ---------------------------------------------------------
+      case 3:
         return (
           <div className="space-y-4 pb-6">
             <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-border-subtle">
@@ -315,22 +389,22 @@ export function MobileLesson5() {
           </div>
         );
 
-      case 3: return renderPrefixGrid(0); // Ga
-      case 4: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ga" questions={gaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 4: return renderPrefixGrid(0); // Ga
+      case 5: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ga" questions={gaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 5: return renderPrefixGrid(1); // Da
-      case 6: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Da" questions={daQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 6: return renderPrefixGrid(1); // Da
+      case 7: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Da" questions={daQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 7: return renderPrefixGrid(2); // Ba
-      case 8: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ba" questions={baQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 8: return renderPrefixGrid(2); // Ba
+      case 9: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ba" questions={baQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 9: return renderPrefixGrid(3); // Ma
-      case 10: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ma" questions={maQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 10: return renderPrefixGrid(3); // Ma
+      case 11: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix Ma" questions={maQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
       
-      case 11: return renderPrefixGrid(4); // 'A
-      case 12: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix 'A" questions={aQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 12: return renderPrefixGrid(4); // 'A
+      case 13: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Prefix 'A" questions={aQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 13: // Exceptions
+      case 14: // Exceptions
         return (
           <div className="space-y-4 pb-6">
             <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-border-subtle flex flex-col gap-4">
@@ -371,14 +445,37 @@ export function MobileLesson5() {
           </div>
         );
 
-case 14: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Exceptions" questions={exceptionsQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
-      
+      case 15: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Exceptions" questions={exceptionsQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 15: // Vocab
+      case 16: { // Vocab (With Prefix Filter Pills)
+        const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.prefix === vocabFilter);
         return (
-          <div className="pb-6">
+          <div className="space-y-5 pb-6 flex flex-col">
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => setVocabFilter("all")}
+                className={`inline-flex items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${
+                  vocabFilter === "all" ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                }`}
+              >
+                All {VOCAB.length}
+              </button>
+              {PREFIXES.map((p) => (
+                <button 
+                  key={p.key}
+                  onClick={() => setVocabFilter(p.key)}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                    vocabFilter === p.key ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.accent.hex }} />
+                  <span>Prefix <span className="font-tibetan text-sm normal-case">{p.head}</span></span>
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              {VOCAB.map((v) => {
+              {filteredVocab.map((v) => {
                 const pref = PREFIXES.find(s => s.key === v.prefix)!;
                 return (
                   <button key={v.tib} onClick={() => playAudio(v.tib)} className="bg-white border border-border-subtle rounded-[1.5rem] p-5 flex flex-col items-center text-center shadow-sm active:scale-95 transition-transform relative overflow-hidden">
@@ -393,21 +490,37 @@ case 14: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Ch
             </div>
           </div>
         );
+      }
 
-      case 16: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
+      case 17: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 17: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
+      case 18: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
 
-      case 18: return <div className="pb-6"><QuizModule moduleId={5} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/6" onPass={() => markComplete(6)} /></div>;
+      case 19: return <div className="pb-6"><QuizModule moduleId={5} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/6" onPass={() => markComplete(6)} /></div>;
     }
   };
 
   const stepTitles = [
-    "The Five Prefixes", "Anatomy of a syllable", "What is a prefix?", "The Prefix Ga", "Mastery Check · Ga",
-    "The Prefix Da", "Mastery Check · Da", "The Prefix Ba", "Mastery Check · Ba",
-    "The Prefix Ma", "Mastery Check · Ma", "The Prefix 'a", "Mastery Check · 'A",
-    "Exceptions to memorise", "Mastery Check · Exceptions", "Vocabulary", "Vocabulary Mastery", 
-    "Practice & exercises", "Lesson complete" 
+    "Welcome to the Five Prefixes",
+    "What you'll learn",
+    "Anatomy of a syllable", 
+    "What is a prefix?", 
+    "The Prefix Ga", 
+    "Mastery Check · Ga",
+    "The Prefix Da", 
+    "Mastery Check · Da", 
+    "The Prefix Ba", 
+    "Mastery Check · Ba",
+    "The Prefix Ma", 
+    "Mastery Check · Ma", 
+    "The Prefix 'a", 
+    "Mastery Check · 'A",
+    "Exceptions to memorise", 
+    "Mastery Check · Exceptions", 
+    "Vocabulary", 
+    "Vocabulary Mastery", 
+    "Practice & exercises", 
+    "Final Mastery Check" 
   ];
 
   return (
@@ -434,18 +547,22 @@ case 14: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Ch
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
             <div className="flex flex-col mb-6 bg-white p-6 rounded-[1.5rem] border border-border-subtle shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-6 text-center">Spelling Walkthrough</div>
-              
-              <div className="flex justify-center mb-6">
-  <SpellingFormula parts={selectedCombo.parts} />
-</div>
-
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <ArrowRight className="text-border-strong opacity-50" size={20} />
+              {/* 1. Top: Large Final Syllable + Phonetics */}
+              <div className="flex items-center justify-center gap-4 mb-6">
                 <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink" style={{ color: selectedCombo.pref.accent.hex }}>{selectedCombo.word}</span>
                 <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
               </div>
 
+              {/* 2. Middle: Spelling Equation including = Final Syllable in matching font */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                <SpellingFormula parts={selectedCombo.parts} />
+                <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
+                <span className="flex items-center justify-center min-w-[28px] px-1">
+                  <TibetanPart part={selectedCombo.word} />
+                </span>
+              </div>
+
+              {/* 3. Bottom: Tone Badge */}
               {(() => {
                 const TM = TONE_META[selectedCombo.tone];
                 const Icon = TM.Icon;
@@ -457,14 +574,15 @@ case 14: return <div className="pb-6"><QuizModule moduleId={5} title="Mastery Ch
               })()}
             </div>
 
+            {/* Inverted Buttons: 1st Pronunciation, 2nd Spelling */}
             <div className="flex gap-3">
+              <button onClick={() => playAudio(selectedCombo.word)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
+                {playingItem === selectedCombo.word ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
+                <span className="text-sm">Pronunciation</span>
+              </button>
               <button onClick={() => playAudio(selectedCombo.word + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === (selectedCombo.word + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
                 <span className="text-sm">Spelling</span>
-              </button>
-              <button onClick={() => playAudio(selectedCombo.word)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
-                {playingItem === selectedCombo.word ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
-                <span className="text-sm">Word</span>
               </button>
             </div>
 

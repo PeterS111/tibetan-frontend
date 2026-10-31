@@ -1,20 +1,19 @@
 // app/components/lesson/6/MobileLesson6.tsx
 "use client";
 
-
-import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
+import { SpellingFormula, TibetanPart } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { Loader2, Volume2, ArrowRight, BookOpen, Info, Sparkles, CheckCircle2, History } from "lucide-react";
+import { Loader2, Volume2, ArrowRight, BookOpen, Info, Sparkles } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
 import { 
   SUFFIXES, VOCAB, VOWEL_SHIFTS, 
-  generateVocabQuiz, generateFinalQuiz, 
+  generateFinalQuiz, 
   POST_SUFFIX_QUESTIONS, ROOT_LETTER_QUESTIONS, 
-  type Suffix, type SuffixExample, type Family, FAMILY_META
+  type Suffix, type SuffixKey, type SuffixExample, type Family, FAMILY_META
 } from "@/app/data/lesson6";
 
 import { MobileStepPlayer } from "../MobileStepPlayer";
@@ -29,25 +28,55 @@ export function MobileLesson6() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(8);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const totalSteps = 13; 
+  const totalSteps = 14; 
+  const MODULE_ID = 6;
+
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`tibetan_mobile_lesson_${MODULE_ID}_step`);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < totalSteps) return parsed;
+      }
+    }
+    return 0;
+  });
   
   const [selectedSuffix, setSelectedSuffix] = useState<Suffix | null>(null);
-  const [revealIntro, setRevealIntro] = useState<"ten" | "two">("ten");
   const [activePost, setActivePost] = useState<"da" | "sa">("da");
+  const [vocabFilter, setVocabFilter] = useState<"all" | SuffixKey>("all");
 
-  const webStepMap = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7]; 
+  const webStepMap = [0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7]; 
 
   const handleNext = () => {
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
-    if (currentStep === 10 && !completed.has(currentWebStep)) saveWords(VOCAB.length);
-    if (currentStep < totalSteps - 1) setCurrentStep(prev => prev + 1);
-    else router.push("/dashboard/lessons/7");
+    if (currentStep === 11 && !completed.has(currentWebStep)) saveWords(VOCAB.length);
+    if (currentStep < totalSteps - 1) {
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, next.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
+    } else {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, "0");
+        localStorage.setItem("tibetan_last_active_lesson", "7");
+      }
+      router.push("/dashboard/lessons/7");
+    }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+      const prev = currentStep - 1;
+      setCurrentStep(prev);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, prev.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
+    }
   };
 
   const handleClose = () => router.push("/dashboard/lessons");
@@ -97,52 +126,103 @@ export function MobileLesson6() {
     return shuffle(qs);
   }, []);
 
-  const vocabQuestions = useMemo(() => generateVocabQuiz(), []);
   const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
 
   const renderStepContent = () => {
     switch (currentStep) {
+      // ---------------------------------------------------------
+      // STEP 0: WELCOME HERO CARD
+      // ---------------------------------------------------------
       case 0: 
         return (
-          <div className="pb-6">
-            <div className="rounded-[1.5rem] overflow-hidden border border-border-subtle shadow-sm mb-6 bg-surface relative">
-              <div className="h-40 w-full relative">
-                <img src="/loplao-hero-scene.jpg" alt="Tibetan landscape" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
-                <div className="absolute bottom-4 left-5 right-5">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-brand mb-1">Unit 06</div>
-                  <h1 className="font-serif text-3xl text-white leading-tight">Suffixes & Post-suffixes</h1>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 divide-x divide-border-subtle bg-white">
-                <div className="p-3 text-center">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Time</div>
-                  <div className="font-serif text-lg text-ink">45m</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Suffixes</div>
-                  <div className="font-serif text-lg text-ink">10 + 2</div>
-                </div>
-                <div className="p-3 text-center">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Words</div>
-                  <div className="font-serif text-lg text-ink">12</div>
-                </div>
-              </div>
-            </div>
+          <div className="pb-4">
+            <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
+              
+			  
+			<div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
+                <img 
+                  src="/06_suffixes_post_suffixes.jpg" 
+                  alt="Suffixes and Post-suffixes Hero Scene" 
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>  
 
-            <div className="bg-surface-muted p-4 rounded-[1.5rem] border border-border-subtle flex flex-col gap-3 animate-in fade-in">
-              <div className="flex items-center gap-2 mb-2">
-                <BookOpen size={18} className="text-brand-dark" />
-                <h2 className="font-bold text-ink">The Suffixes</h2>
+              <div className="p-5 pt-5">
+                <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
+                  Suffixes & Post-suffixes
+                </h2>
+                <div className="font-tibetan text-xl text-ink-light mb-4">
+                  རྗེས་འཇུག་བཅུ་དང་ཡང་འཇུག་གཉིས།
+                </div>
+                <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
+                  Ten letters may follow the root letter to close a syllable and colour its vowel. A further two letters — ད and ས — may sit beyond the suffix as a silent post-suffix.
+                </p>
+
+                <hr className="border-border-subtle mb-3.5" />
+
+                <div className="grid grid-cols-3 divide-x divide-border-subtle text-center py-0.5">
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">10</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Suffixes</div>
+                  </div>
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">4</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Vowel Shifts</div>
+                  </div>
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">2</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Post-suffixes</div>
+                  </div>
+                </div>
               </div>
-              <p className="text-[14px] leading-relaxed text-ink/90 mb-2">
-                Ten letters may follow the root — the <strong>suffix</strong> closes the syllable. A further <strong>two</strong> may sit beyond that suffix as a <strong>post-suffix</strong>.
-              </p>
             </div>
           </div>
         );
 
+      // ---------------------------------------------------------
+      // STEP 1: WHAT YOU'LL LEARN
+      // ---------------------------------------------------------
       case 1:
+        return (
+          <div className="pb-6">
+            <div className="bg-surface rounded-[1.5rem] p-6 sm:p-7 shadow-sm border border-border-subtle">
+              <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-brand-dark mb-6">
+                Syllabus Overview
+              </div>
+
+              <div className="space-y-5">
+                {[
+                  { mod: "MODULE 01", title: "What is a suffix?" },
+                  { mod: "MODULE 02", title: "Meet the ten suffixes" },
+                  { mod: "MODULE 03", title: "When the vowel meets the suffix" },
+                  { mod: "MODULE 04", title: "The two post-suffixes (Da & Sa)" },
+                  { mod: "MODULE 05", title: "How to recognise the root letter" },
+                  { mod: "MODULE 06", title: "Vocabulary & Practice" },
+                ].map((item, idx) => (
+                  <div 
+                    key={item.mod} 
+                    className={`flex flex-col gap-1 ${idx !== 0 ? "pt-4 border-t border-border-subtle/70" : ""}`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted">
+                      {item.mod}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand shrink-0"></span>
+                      <span className="font-serif text-[17px] font-bold text-ink leading-snug">
+                        {item.title}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      // ---------------------------------------------------------
+      // STEP 2: WHAT IS A SUFFIX?
+      // ---------------------------------------------------------
+      case 2:
         return (
           <div className="space-y-4 pb-6">
             <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-border-subtle">
@@ -160,7 +240,10 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 2:
+      // ---------------------------------------------------------
+      // STEP 3: MEET THE TEN SUFFIXES
+      // ---------------------------------------------------------
+      case 3:
         return (
           <div className="pb-6">
             <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle mb-6 shadow-sm text-center">
@@ -180,9 +263,15 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 3: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Suffixes" questions={combinedSuffixQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      // ---------------------------------------------------------
+      // STEP 4: MASTERY CHECK · SUFFIXES
+      // ---------------------------------------------------------
+      case 4: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Suffixes" questions={combinedSuffixQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 4:
+      // ---------------------------------------------------------
+      // STEP 5: WHEN THE VOWEL MEETS THE SUFFIX
+      // ---------------------------------------------------------
+      case 5:
         return (
           <div className="pb-6">
             <p className="text-[15px] leading-relaxed text-ink/90 mb-6">Four suffixes — <span className="font-serif font-bold text-ink text-lg">ད ན ལ ས</span> — recolour the vowel that precedes them. Listen to how each suffix reshapes the base vowel.</p>
@@ -216,7 +305,10 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 5:
+      // ---------------------------------------------------------
+      // STEP 6: THE POST-SUFFIXES
+      // ---------------------------------------------------------
+      case 6:
         return (
           <div className="space-y-4 pb-6">
             <p className="text-[15px] leading-relaxed text-ink/90 mb-4">Only two letters — <span className="font-serif font-bold text-ink text-lg">ད</span> and <span className="font-serif font-bold text-ink text-lg">ས</span> — may sit <em>after</em> a suffix. They are <strong>silent</strong>.</p>
@@ -275,7 +367,6 @@ export function MobileLesson6() {
                     <div key={r[0]} className="bg-surface rounded-[1.25rem] border border-border-subtle overflow-hidden">
                       <div className="flex divide-x divide-border-subtle border-b border-border-subtle">
                         <div className="flex-1 p-4 flex flex-col items-center justify-center bg-surface-muted">
-                          {/* PERFECTLY SIZED HEADERS */}
                           <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-3 flex items-center justify-center gap-1.5">
                             <span>WITHOUT</span><span className="font-tibetan text-xl normal-case pt-1 leading-none">ས</span>
                           </div>
@@ -301,9 +392,9 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 6: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Post-Suffixes" questions={POST_SUFFIX_QUESTIONS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 7: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Post-Suffixes" questions={POST_SUFFIX_QUESTIONS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 7:
+      case 8:
         return (
           <div className="space-y-4 pb-6">
             <p className="text-[15px] leading-relaxed text-ink/90 mb-4">Now that words can stretch to four horizontal letters, the eye needs a strategy to find the root.</p>
@@ -329,13 +420,39 @@ export function MobileLesson6() {
           </div>
         );
 
-      case 8: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Root Letters" questions={ROOT_LETTER_QUESTIONS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 9: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Root Letters" questions={ROOT_LETTER_QUESTIONS} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 9:
+      case 10: { // Vocab (With Suffix Filter Pills matching WebLesson6)
+        const vocabSuffixes = SUFFIXES.filter(s => VOCAB.some(v => v.suffix === s.key));
+        const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.suffix === vocabFilter);
+
         return (
-          <div className="pb-6">
+          <div className="space-y-5 pb-6 flex flex-col">
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => setVocabFilter("all")}
+                className={`inline-flex items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${
+                  vocabFilter === "all" ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                }`}
+              >
+                All {VOCAB.length}
+              </button>
+              {vocabSuffixes.map((s) => (
+                <button 
+                  key={s.key}
+                  onClick={() => setVocabFilter(s.key)}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                    vocabFilter === s.key ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.accent }} />
+                  <span>Suffix <span className="font-tibetan text-sm normal-case">{s.head}</span></span>
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              {VOCAB.map((v) => {
+              {filteredVocab.map((v) => {
                 const s = SUFFIXES.find(x => x.key === v.suffix)!;
                 return (
                   <button key={v.tib} onClick={() => playAudio(v.tib)} className="bg-white border border-border-subtle rounded-[1.5rem] p-5 flex flex-col items-center text-center shadow-sm active:scale-95 transition-transform relative overflow-hidden">
@@ -350,18 +467,29 @@ export function MobileLesson6() {
             </div>
           </div>
         );
+      }
 
-      case 10: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
-      case 11: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
-      case 12: return <div className="pb-6"><QuizModule moduleId={6} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(7)} /></div>;
+      case 11: return <div className="pb-6"><QuizModule moduleId={6} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 12: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
+      case 13: return <div className="pb-6"><QuizModule moduleId={6} title="Final Assessment" intro="Score 80% or higher to unlock the next step." questions={finalQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/7" onPass={() => markComplete(7)} /></div>;
     }
   };
 
   const stepTitles = [
-    "Suffixes & Post-suffixes", "What is a suffix?", "Meet the ten suffixes", "Mastery Check · Suffixes", 
-    "When the vowel meets the suffix", "The Post-suffixes", "Mastery Check · Post-suffixes", 
-    "How to recognize the root letter", "Mastery Check · Root Letters", "Vocabulary", 
-    "Vocabulary Mastery", "Practice & exercises", "Lesson complete" 
+    "Welcome to the Ten Suffixes",
+    "What you'll learn",
+    "What is a suffix?", 
+    "Meet the ten suffixes", 
+    "Mastery Check · Suffixes", 
+    "When the vowel meets the suffix", 
+    "The Post-suffixes", 
+    "Mastery Check · Post-suffixes", 
+    "How to recognize the root letter", 
+    "Mastery Check · Root Letters", 
+    "Vocabulary", 
+    "Vocabulary Mastery", 
+    "Practice & exercises", 
+    "Final Mastery Check" 
   ];
 
   return (
@@ -374,7 +502,7 @@ export function MobileLesson6() {
         {renderStepContent()}
       </MobileStepPlayer>
 
-      {/* BOTTOM SHEET INSPECTOR - THE PERFECT SPELLING WALKTHROUGH FIX */}
+      {/* BOTTOM SHEET INSPECTOR */}
       {selectedSuffix && (
         <>
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[110] transition-opacity" onClick={() => setSelectedSuffix(null)}></div>
@@ -412,29 +540,30 @@ export function MobileLesson6() {
               <div className="space-y-3 pb-6">
                 {selectedSuffix.examples.map((ex: SuffixExample) => (
                   <div key={ex.word} className="bg-white p-5 rounded-[1.5rem] border border-border-subtle shadow-sm">
-                    
-                    {/* PERFECT HORIZONTAL ALIGNMENT LOGIC */}
-                    
-					
-					<div className="flex justify-center mb-5">
-<SpellingFormula parts={ex.parts} />
-</div>
-					
-
-                    <div className="flex items-center justify-center gap-4 mb-6">
-                      <ArrowRight className="text-border-strong opacity-50" size={20} />
+                    {/* 1. Top: Large Final Syllable + Phonetics */}
+                    <div className="flex items-center justify-center gap-4 mb-5">
                       <span className="font-tibetan text-[4rem] leading-none pt-2 text-ink" style={{ color: selectedSuffix.accent }}>{ex.word}</span>
                       <span className="font-mono text-2xl font-bold text-ink">[{ex.read}]</span>
                     </div>
 
+                    {/* 2. Middle: Spelling Equation including = Final Syllable in matching font */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                      <SpellingFormula parts={ex.parts} />
+                      <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
+                      <span className="flex items-center justify-center min-w-[28px] px-1">
+                        <TibetanPart part={ex.word} />
+                      </span>
+                    </div>
+
+                    {/* 3. Inverted Buttons: 1st Pronunciation, 2nd Spelling */}
                     <div className="flex gap-2">
-                      <button onClick={() => playAudio(ex.word + " spelling")} className="flex-1 py-3 bg-surface-muted text-ink font-bold rounded-xl active:bg-border-subtle transition-colors flex items-center justify-center gap-2 border border-border-subtle">
-                        {playingItem === (ex.word + " spelling") ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} className="text-ink-muted" />} 
-                        <span className="text-xs">Spelling</span>
-                      </button>
-                      <button onClick={() => playAudio(ex.word)} className="flex-1 py-3 bg-ink text-white font-bold rounded-xl active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
+                      <button onClick={() => playAudio(ex.word)} className="flex-1 py-3.5 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
                         {playingItem === ex.word ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />}
-                        <span className="text-xs">Word</span>
+                        <span className="text-xs">Pronunciation</span>
+                      </button>
+                      <button onClick={() => playAudio(ex.word + " spelling")} className="flex-1 py-3.5 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        {playingItem === (ex.word + " spelling") ? <Loader2 size={18} className="animate-spin" /> : <Volume2 size={18} />} 
+                        <span className="text-xs">Spelling</span>
                       </button>
                     </div>
                   </div>

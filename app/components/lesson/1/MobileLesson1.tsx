@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Volume2, Sparkles, Layers, CheckCircle2 } from "lucide-react";
+import { Loader2, Volume2 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
@@ -138,11 +138,11 @@ export function MobileLesson1() {
                 <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
                   The 30 Consonants
                 </h2>
-                <div className="font-serif text-xl text-ink-light italic tibetan mb-4">
+                <div className="font-tibetan text-xl text-ink-light mb-4">
                   གསལ་བྱེད་སུམ་ཅུ།
                 </div>
-                <p className="text-[14px] leading-relaxed text-ink/80 mb-4">
-                  The Tibetan alphabet is built on thirty root letters — the foundation of every word you will read, write, and speak. Move through the lesson one step at a time; every section stays available for review whenever you want to jump ahead.
+                <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
+                  The Tibetan alphabet is built on thirty root letters — the foundation of every word you will read, write, and speak.
                 </p>
 
                 <hr className="border-border-subtle mb-3.5" />
@@ -178,7 +178,7 @@ export function MobileLesson1() {
               </div>
               <div className="space-y-5">
                 {[
-                  { mod: "MODULE 01", title: "The alphabet, as a type specimen" },
+                  { mod: "MODULE 01", title: "The 30 root consonants" },
                   { mod: "MODULE 02", title: "Understanding tone" },
                   { mod: "MODULE 03", title: "The three root sounds" },
                   { mod: "MODULE 04", title: "Traditional gender classification" },
@@ -475,7 +475,7 @@ export function MobileLesson1() {
   };
 
   const stepTitles = [
-    "Welcome to the 30 consonants", 
+    "Welcome to the 30 Consonants", 
     "What you'll learn", 
     "The alphabet", 
     "Mastery check", 

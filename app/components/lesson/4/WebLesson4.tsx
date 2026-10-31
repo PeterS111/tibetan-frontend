@@ -128,10 +128,12 @@ export function WebLesson4() {
         </div>
 
         <Card className="mb-8 p-0 overflow-hidden shadow-sm border border-border-subtle">
-          <div className="w-full h-72 sm:h-96 md:h-[400px] bg-surface-muted overflow-hidden relative">
+          
+		  
+		  <div className="w-full h-72 sm:h-96 md:h-[400px] bg-surface-muted overflow-hidden relative">
             <img 
-              src="/loplao-hero-scene.jpg" 
-              alt="Himalayan Monastery Scene" 
+              src="/04_subscripts.jpg" 
+              alt="The Four Subscripts Hero Scene" 
               className="w-full h-full object-cover object-center"
             />
           </div>

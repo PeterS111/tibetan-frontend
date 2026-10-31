@@ -1,16 +1,15 @@
 // app/components/lesson/4/MobileLesson4.tsx
 "use client";
 
-
 import { SpellingFormula, TibetanPart } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { Loader2, Volume2, ArrowRight, ArrowUp, ArrowDown, Layers, VolumeX, Info, CheckCircle2, Anchor } from "lucide-react";
+import { Loader2, Volume2, ArrowUp, Info, Anchor } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
-import { SUBS, TRIPLE_STACKS, VOCAB, STEPS, TONE_META, generateVocabQuiz, generateFinalQuiz, generateSubscriptQuiz, generateTripleQuiz, Combo, Sub, Stack3, Tone } from "@/app/data/lesson4";
+import { SUBS, TRIPLE_STACKS, TRIPLE_ACCENT, VOCAB, TONE_META, generateFinalQuiz, generateSubscriptQuiz, generateTripleQuiz, Combo, Sub, Stack3, Tone, VocabGroup } from "@/app/data/lesson4";
 
 import { MobileStepPlayer } from "../MobileStepPlayer";
 import QuizModule from "@/app/components/QuizModule";
@@ -24,33 +23,61 @@ export function MobileLesson4() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(6);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const totalSteps = 15; 
+  const totalSteps = 17; 
+  const MODULE_ID = 4;
+
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`tibetan_mobile_lesson_${MODULE_ID}_step`);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < totalSteps) return parsed;
+      }
+    }
+    return 0;
+  });
   
   const [selectedCombo, setSelectedCombo] = useState<(Combo & { sub: Sub }) | null>(null);
   const [selectedTriple, setSelectedTriple] = useState<Stack3 | null>(null);
+  const [vocabFilter, setVocabFilter] = useState<"all" | VocabGroup>("all");
 
   // Sync mobile isolated steps back to the 6 broader Web Steps
-  const webStepMap = [0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 5]; 
+  const webStepMap = [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 5]; 
 
   const handleNext = () => {
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
-    // Save new vocabulary words to the user's global progress ONLY on Step 12
-    if (currentStep === 12 && !completed.has(currentWebStep)) {
+    // Save new vocabulary words to the user's global progress ONLY on Step 14 (Vocab Mastery)
+    if (currentStep === 14 && !completed.has(currentWebStep)) {
       saveWords(VOCAB.length);
     }
 
     if (currentStep < totalSteps - 1) {
-      setCurrentStep(prev => prev + 1);
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, next.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
     } else {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, "0");
+        localStorage.setItem("tibetan_last_active_lesson", "5");
+      }
       router.push("/dashboard/lessons/5");
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+      const prev = currentStep - 1;
+      setCurrentStep(prev);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, prev.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
+    }
   };
 
   const handleClose = () => {
@@ -90,12 +117,12 @@ export function MobileLesson4() {
 
   const openComboInspector = (c: Combo, sub: Sub) => {
     setSelectedCombo({ ...c, sub });
-    playAudio(c.stack + " spelling");
+    playAudio(c.stack);
   };
 
   const openTripleInspector = (t: Stack3) => {
     setSelectedTriple(t);
-    playAudio(t.stack + " spelling");
+    playAudio(t.stack);
   };
 
   // Consume the clean generators from our data file
@@ -147,7 +174,97 @@ export function MobileLesson4() {
 
   const renderStepContent = () => {
     switch (currentStep) {
+      // ---------------------------------------------------------
+      // STEP 0: WELCOME HERO CARD
+      // ---------------------------------------------------------
       case 0:
+        return (
+          <div className="pb-4">
+            <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
+              
+			  
+			  <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
+                <img 
+                  src="/04_subscripts.jpg" 
+                  alt="The Four Subscripts Hero Scene" 
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+
+              <div className="p-5 pt-5">
+                <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
+                  The Four Subscripts
+                </h2>
+                <div className="font-tibetan text-xl text-ink-light mb-4">
+                  འདོགས་ཅན་བཞི།
+                </div>
+                <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
+                  Four consonants — ཡ, ར, ལ, ཝ — can be written beneath a root letter in reduced form. Together with superscripts, they complete the vertical stacking system of Tibetan script.
+                </p>
+
+                <hr className="border-border-subtle mb-3.5" />
+
+                <div className="grid grid-cols-3 divide-x divide-border-subtle text-center py-0.5">
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">4</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Subscripts</div>
+                  </div>
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">39</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Stacks</div>
+                  </div>
+                  <div className="px-2">
+                    <div className="font-serif text-2xl text-ink">14</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">Triple Stacks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      // ---------------------------------------------------------
+      // STEP 1: WHAT YOU'LL LEARN
+      // ---------------------------------------------------------
+      case 1:
+        return (
+          <div className="pb-6">
+            <div className="bg-surface rounded-[1.5rem] p-6 sm:p-7 shadow-sm border border-border-subtle">
+              <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-brand-dark mb-6">
+                Syllabus Overview
+              </div>
+
+              <div className="space-y-5">
+                {[
+                  { mod: "MODULE 01", title: "What is a subscript?" },
+                  { mod: "MODULE 02", title: "The four subscripts (Ya, Ra, La, Wa)" },
+                  { mod: "MODULE 03", title: "Three-letter triple stacks" },
+                  { mod: "MODULE 04", title: "Vocabulary & Practice" },
+                ].map((item, idx) => (
+                  <div 
+                    key={item.mod} 
+                    className={`flex flex-col gap-1 ${idx !== 0 ? "pt-4 border-t border-border-subtle/70" : ""}`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted">
+                      {item.mod}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand shrink-0"></span>
+                      <span className="font-serif text-[17px] font-bold text-ink leading-snug">
+                        {item.title}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      // ---------------------------------------------------------
+      // STEP 2: WHAT IS A SUBSCRIPT?
+      // ---------------------------------------------------------
+      case 2:
         return (
           <div className="space-y-4 pb-6">
             <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-border-subtle">
@@ -199,19 +316,19 @@ export function MobileLesson4() {
           </div>
         );
 
-      case 1: return renderSubscriptGrid(0); // Ya-tak
-      case 2: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ya-tak" questions={yaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 3: return renderSubscriptGrid(0); // Ya-tak
+      case 4: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ya-tak" questions={yaQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 3: return renderSubscriptGrid(1); // Ra-tak
-      case 4: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ra-tak" questions={raQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 5: return renderSubscriptGrid(1); // Ra-tak
+      case 6: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Ra-tak" questions={raQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 5: return renderSubscriptGrid(2); // La-tak
-      case 6: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · La-tak" questions={laQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 7: return renderSubscriptGrid(2); // La-tak
+      case 8: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · La-tak" questions={laQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 7: return renderSubscriptGrid(3); // Wa-zur
-      case 8: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Wa-zur" questions={waQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 9: return renderSubscriptGrid(3); // Wa-zur
+      case 10: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Wa-zur" questions={waQuiz} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 9: // Triple Stacks
+      case 11: // Triple Stacks
         return (
           <div className="pb-6">
             <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle mb-6">
@@ -242,14 +359,47 @@ export function MobileLesson4() {
           </div>
         );
 
-      case 10: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Triple Stacks" questions={tripleQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
+      case 12: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Triple Stacks" questions={tripleQuizQuestions} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 11: // Vocab
+      case 13: { // Vocab (With Subscript & Triple Stack Filter Pills)
+        const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.sub === vocabFilter);
         return (
-          <div className="pb-6">
+          <div className="space-y-5 pb-6 flex flex-col">
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => setVocabFilter("all")}
+                className={`inline-flex items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${
+                  vocabFilter === "all" ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                }`}
+              >
+                All {VOCAB.length}
+              </button>
+              {SUBS.map((s) => (
+                <button 
+                  key={s.key}
+                  onClick={() => setVocabFilter(s.key)}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                    vocabFilter === s.key ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.accent.hex }} />
+                  <span>{s.name}</span>
+                </button>
+              ))}
+              <button 
+                onClick={() => setVocabFilter("triple")}
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                  vocabFilter === "triple" ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TRIPLE_ACCENT }} />
+                <span>Triple Stacks</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              {VOCAB.map((v) => {
-                const accentHex = v.sub === "triple" ? "#0f766e" : SUBS.find(s => s.key === v.sub)?.accent.hex;
+              {filteredVocab.map((v) => {
+                const accentHex = v.sub === "triple" ? TRIPLE_ACCENT : SUBS.find(s => s.key === v.sub)?.accent.hex;
                 return (
                   <button key={v.tib} onClick={() => playAudio(v.tib)} className="bg-white border border-border-subtle rounded-[1.5rem] p-5 flex flex-col items-center text-center shadow-sm active:scale-95 transition-transform relative overflow-hidden">
                     <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: accentHex }} />
@@ -263,21 +413,34 @@ export function MobileLesson4() {
             </div>
           </div>
         );
+      }
 
-      case 12: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
+      case 14: return <div className="pb-6"><QuizModule moduleId={4} title="Mastery Check · Vocabulary" intro="Score 80% or higher to prove you know these words." data={VOCAB} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} questionCount={16} isVocabMatch hideHeader={true} isUnlockTest={false} /></div>;
 
-      case 13: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
+      case 15: return <div className="pb-6"><PracticeSuite groups={practiceGroups} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} /></div>;
 
-      case 14: return <div className="pb-6"><QuizModule moduleId={4} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Prefixes." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/5" onPass={() => markComplete(5)} /></div>;
+      case 16: return <div className="pb-6"><QuizModule moduleId={4} title="Final Assessment" intro="Score 80% or higher to unlock the next step: Prefixes." questions={generateFinalQuiz()} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} isUnlockTest={true} hideHeader={true} nextLessonPath="/dashboard/lessons/5" onPass={() => markComplete(5)} /></div>;
     }
   };
 
   const stepTitles = [
-    "What is a subscript?", "The Seven Subscripts 'Ya'", "Mastery Check · Ya-tak", 
-    "The Thirteen Subscripts 'Ra'", "Mastery Check · Ra-tak", "The Six Subscripts 'La'", 
-    "Mastery Check · La-tak", "The Thirteen 'Wa-zur'", "Mastery Check · Wa-zur", 
-    "Triple Stacks", "Mastery Check · Triple Stacks", "Vocabulary", "Vocabulary Mastery", 
-    "Practice & exercises", "Lesson complete" 
+    "Welcome to the Four Subscripts",
+    "What you'll learn",
+    "What is a subscript?", 
+    "The Seven Subscripts 'Ya'", 
+    "Mastery Check · Ya-tak", 
+    "The Thirteen Subscripts 'Ra'", 
+    "Mastery Check · Ra-tak", 
+    "The Six Subscripts 'La'", 
+    "Mastery Check · La-tak", 
+    "The Thirteen 'Wa-zur'", 
+    "Mastery Check · Wa-zur", 
+    "Triple Stacks", 
+    "Mastery Check · Triple Stacks", 
+    "Vocabulary", 
+    "Vocabulary Mastery", 
+    "Practice & exercises", 
+    "Final Mastery Check" 
   ];
 
   return (
@@ -304,17 +467,22 @@ export function MobileLesson4() {
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
             <div className="flex flex-col mb-6 bg-white p-6 rounded-[1.5rem] border border-border-subtle shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-6 text-center">Spelling Walkthrough</div>
-              
-              <div className="flex flex-col items-center justify-center mb-8">
-                <SpellingFormula parts={`${selectedCombo.root} + ${selectedCombo.sub.headLarge} + བཏགས་`} />
-                <div className="flex items-center justify-center gap-4 mt-5">
-                  <span className="text-2xl font-bold text-border-strong opacity-70">=</span>
-                  <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink" style={{ color: selectedCombo.sub.accent.hex }}>{selectedCombo.stack}</span>
-                  <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
-                </div>
+              {/* 1. Top: Large Final Syllable + Phonetics */}
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink" style={{ color: selectedCombo.sub.accent.hex }}>{selectedCombo.stack}</span>
+                <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
               </div>
 
+              {/* 2. Middle: Spelling Equation including = Final Syllable in matching font */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                <SpellingFormula parts={`${selectedCombo.root} + ${selectedCombo.sub.headLarge} + བཏགས་`} />
+                <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
+                <span className="flex items-center justify-center min-w-[28px] px-1">
+                  <TibetanPart part={selectedCombo.stack} />
+                </span>
+              </div>
+
+              {/* 3. Bottom: Tone Badge */}
               {(() => {
                 const TM = TONE_META[selectedCombo.tone];
                 const Icon = TM.Icon;
@@ -326,14 +494,15 @@ export function MobileLesson4() {
               })()}
             </div>
 
+            {/* Inverted Buttons: 1st Pronunciation, 2nd Spelling */}
             <div className="flex gap-3">
-              <button onClick={() => playAudio(selectedCombo.stack + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                {playingItem === (selectedCombo.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
-                <span className="text-sm">Spelling Audio</span>
-              </button>
               <button onClick={() => playAudio(selectedCombo.stack)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === selectedCombo.stack ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
                 <span className="text-sm">Pronunciation</span>
+              </button>
+              <button onClick={() => playAudio(selectedCombo.stack + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                {playingItem === (selectedCombo.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
+                <span className="text-sm">Spelling</span>
               </button>
             </div>
 
@@ -350,8 +519,6 @@ export function MobileLesson4() {
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
             <div className="flex flex-col mb-6 bg-white p-6 rounded-[1.5rem] border border-border-subtle shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-4 text-center">Spelling Walkthrough</div>
-              
               {(() => {
                   const [superL, rootL, subL] = selectedTriple.parts.split(' + ');
                   const intMap: Record<string, { tib: string, read: string }> = {
@@ -367,27 +534,37 @@ export function MobileLesson4() {
 
                   return (
                     <>
-                      <div className="flex flex-col items-center justify-center mb-8">
-                        <div className="flex items-center justify-center gap-2 mb-3">
+                      {/* 1. Top: Large Final Syllable + Phonetics */}
+                      <div className="flex items-center justify-center gap-4 mb-6">
+                        <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-teal-700">{selectedTriple.stack}</span>
+                        <span className="font-mono text-2xl font-bold text-ink">[{selectedTriple.read}]</span>
+                      </div>
+
+                      {/* 2. Middle: Two-step Spelling Equation including = Final Syllable in matching font */}
+                      <div className="flex flex-col items-center justify-center mb-6 space-y-3">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <SpellingFormula parts={`${superL} + ${rootL} + བཏགས་`} />
-                          <span className="text-xl font-bold text-border-strong opacity-70 mx-1">=</span>
-                          <TibetanPart part={intermediate.tib} />
+                          <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
+                          <span className="flex items-center justify-center min-w-[28px] px-1">
+                            <TibetanPart part={intermediate.tib} />
+                          </span>
                         </div>
 
-                        <div className="flex items-center justify-center gap-2 mb-5">
-                          <div className="opacity-60"><TibetanPart part={intermediate.tib} /></div>
-                          <span className="text-lg font-sans opacity-40 text-ink-light mx-1">+</span>
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                          <span className="flex items-center justify-center min-w-[28px] px-1 opacity-75">
+                            <TibetanPart part={intermediate.tib} />
+                          </span>
+                          <span className="text-lg font-sans opacity-40 text-ink-light mt-1">+</span>
                           <SpellingFormula parts={`${subL} + བཏགས་`} />
+                          <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
+                          <span className="flex items-center justify-center min-w-[28px] px-1">
+                            <TibetanPart part={selectedTriple.stack} />
+                          </span>
                         </div> 
-
-                        <div className="flex items-center justify-center gap-4 mt-2 pt-5 border-t border-border-subtle w-full">
-                          <span className="text-2xl font-bold text-border-strong opacity-70">=</span>
-                          <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-teal-700">{selectedTriple.stack}</span>
-                          <span className="font-mono text-2xl font-bold text-ink">[{selectedTriple.read}]</span>
-                        </div>
                       </div>
                       
-                      <div className={`mx-auto w-fit px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 mb-2 ${TM.bg} ${TM.text} border ${TM.border}`}>
+                      {/* 3. Bottom: Tone Badge */}
+                      <div className={`mx-auto w-fit px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-2 ${TM.bg} ${TM.text} border ${TM.border}`}>
                         <Icon size={14} strokeWidth={3} /> {TM.label}
                       </div>
                     </>
@@ -395,14 +572,15 @@ export function MobileLesson4() {
               })()}
             </div>
 
+            {/* Inverted Buttons: 1st Pronunciation, 2nd Spelling */}
             <div className="flex gap-3">
-              <button onClick={() => playAudio(selectedTriple.stack + " spelling")} className="flex-1 py-4 bg-teal-50 text-teal-700 font-bold rounded-full border border-teal-200 active:bg-teal-100 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                {playingItem === (selectedTriple.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
-                <span className="text-sm">Spelling Audio</span>
-              </button>
               <button onClick={() => playAudio(selectedTriple.stack)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === selectedTriple.stack ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
                 <span className="text-sm">Pronunciation</span>
+              </button>
+              <button onClick={() => playAudio(selectedTriple.stack + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                {playingItem === (selectedTriple.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
+                <span className="text-sm">Spelling</span>
               </button>
             </div>
 

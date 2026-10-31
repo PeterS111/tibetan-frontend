@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
-  Loader2, Volume2, ArrowRight, Info 
+  Loader2, Volume2, ArrowRight 
 } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -17,7 +17,8 @@ import {
   generateSpellingQuiz, 
   generateFinalQuiz, 
   Vowel, 
-  VowelKey 
+  VowelKey,
+  Position
 } from "@/app/data/lesson2";
 
 import { MobileStepPlayer } from "../MobileStepPlayer";
@@ -40,7 +41,6 @@ export function MobileLesson2() {
   
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   
-  // Total steps is now 10 (Marks & Sounds Mastery + Spelling Mastery combined into 1 step!)
   const totalSteps = 10; 
   const { markComplete, completed } = useLessonProgress(8);
   const MODULE_ID = 2;
@@ -58,6 +58,7 @@ export function MobileLesson2() {
   });
   
   const [selectedVowel, setSelectedVowel] = useState<Vowel | null>(null);
+  const [vocabFilter, setVocabFilter] = useState<"all" | Position>("all");
   const [showInstructions, setShowInstructions] = useState(false);
   const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
 
@@ -160,8 +161,6 @@ export function MobileLesson2() {
   const combinedMasteryQuestions = useMemo(() => generateSpellingQuiz(), []);
   const finalQuizQuestions = useMemo(() => generateFinalQuiz(), []);
 
-  // Plays the individual mark name ("gi-gu", "shab-kyu", etc.) when tapped on Step 2,
-  // or the vowel sound ("I", "U", etc.) when tapped on Step 3!
   const openInspector = (v: Vowel, mode: "mark" | "sound" = "mark") => {
     setSelectedVowel(v);
     playAudio(mode === "mark" ? v.markTranslit : v.translit);
@@ -176,10 +175,12 @@ export function MobileLesson2() {
         return (
           <div className="pb-4">
             <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
-              <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
+              
+			  
+			  <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
                 <img 
-                  src="/loplao-hero-scene.jpg" 
-                  alt="Himalayan Monastery and Mountains" 
+                  src="/02_four_vowels.jpg" 
+                  alt="The Four Vowels Hero Scene" 
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -188,7 +189,7 @@ export function MobileLesson2() {
                 <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
                   The Four Vowels
                 </h2>
-                <div className="font-serif text-xl text-ink-light italic tibetan mb-4">
+                <div className="font-tibetan text-xl text-ink-light mb-4">
                   དབྱངས་བཞི།
                 </div>
                 <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
@@ -256,7 +257,7 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 2: THE DIACRITIC MARKS (Plays Individual Mark Name Audio: Gigu, Zhabkyu, etc.)
+      // STEP 2: THE DIACRITIC MARKS
       // ---------------------------------------------------------
       case 2:
         return (
@@ -295,7 +296,7 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 3: PRONOUNCING THE VOWELS (Redesigned to Match Lesson 1 Root Cards!)
+      // STEP 3: PRONOUNCING THE VOWELS
       // ---------------------------------------------------------
       case 3:
         return (
@@ -429,13 +430,43 @@ export function MobileLesson2() {
         );
 
       // ---------------------------------------------------------
-      // STEP 6: VOCABULARY
+      // STEP 6: VOCABULARY (With Position Color-Coding Filter Pills)
       // ---------------------------------------------------------
-      case 6:
+      case 6: {
+        const filteredVocab = vocabFilter === "all" 
+          ? VOCAB 
+          : VOCAB.filter((v) => VOWELS.find((x) => x.key === v.vowel)?.position === vocabFilter);
+
         return (
-          <div className="pb-6">
+          <div className="space-y-5 pb-6 flex flex-col">
+            <div className="flex flex-wrap gap-2">
+              <button 
+                onClick={() => setVocabFilter("all")}
+                className={`inline-flex items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${
+                  vocabFilter === "all" ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                }`}
+              >
+                All {VOCAB.length}
+              </button>
+              {(["above", "below"] as const).map((pos) => {
+                const pm = POSITION_META[pos];
+                return (
+                  <button 
+                    key={pos}
+                    onClick={() => setVocabFilter(pos)}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${
+                      vocabFilter === pos ? "bg-ink text-white border-ink shadow-sm" : "bg-white text-ink-muted border-border-subtle hover:text-ink hover:bg-surface-muted active:scale-95"
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: pm.hex }} />
+                    <span>{pos === "above" ? "Written above" : "Written below"}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              {VOCAB.map((v) => {
+              {filteredVocab.map((v) => {
                 const pm = POSITION_META[VOWELS.find((x) => x.key === v.vowel)!.position];
                 return (
                   <button key={v.tib} onClick={() => playAudio(v.tib)} className="bg-white border border-border-subtle rounded-[1.5rem] p-5 flex flex-col items-center text-center shadow-sm active:scale-95 transition-transform relative overflow-hidden">
@@ -450,6 +481,7 @@ export function MobileLesson2() {
             </div>
           </div>
         );
+      }
 
       // ---------------------------------------------------------
       // STEP 7: VOCABULARY MASTERY CHECK
@@ -558,7 +590,7 @@ export function MobileLesson2() {
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className={`p-4 rounded-2xl ${POSITION_META[selectedVowel.position].swatch} bg-opacity-50 border`} style={{ borderColor: POSITION_META[selectedVowel.position].hex + "40" }}>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">Position</div>
-                <div className={`font-bold text-sm ${POSITION_META[selectedVowel.position].text}`}>{POSITION_META[selectedVowel.position].label}</div>
+                <div className={`font-bold text-sm ${POSITION_META[selectedVowel.position].label}`}>{POSITION_META[selectedVowel.position].label}</div>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-border-subtle relative overflow-hidden flex flex-col justify-center items-center h-20">
                 <div className="absolute top-2 left-3 text-[10px] font-bold uppercase tracking-widest text-ink-muted">Mark Shape</div>

@@ -1,15 +1,15 @@
 // app/components/lesson/3/MobileLesson3.tsx
 "use client";
 
-import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
+import { SpellingFormula, TibetanPart } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { Loader2, Volume2, ArrowRight, ArrowUp, ArrowDown, Layers, VolumeX, Info, CheckCircle2 } from "lucide-react";
+import { Loader2, Volume2, ArrowUp, Layers, VolumeX, Info } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
 import { useLessonProgress } from "@/hooks/useLessonProgress";
-import { SUPERS, VOCAB, STEPS, TONE_META, generateVocabQuiz, generateFinalQuiz, generateSuperscriptQuiz, Super, Combo, Tone } from "@/app/data/lesson3";
+import { SUPERS, VOCAB, STEPS, TONE_META, generateFinalQuiz, generateSuperscriptQuiz, Super, Combo, Tone } from "@/app/data/lesson3";
 
 import { MobileStepPlayer } from "../MobileStepPlayer";
 import QuizModule from "@/app/components/QuizModule";
@@ -23,8 +23,19 @@ export function MobileLesson3() {
   const { playAudio, playErrorBeep, playingItem } = useAudio();
   const { markComplete, completed } = useLessonProgress(STEPS.length);
 
-   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = 13; 
+  const MODULE_ID = 3;
+
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`tibetan_mobile_lesson_${MODULE_ID}_step`);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < totalSteps) return parsed;
+      }
+    }
+    return 0;
+  });
   
   const [selectedCombo, setSelectedCombo] = useState<(Combo & { sup: Super }) | null>(null);
   const [vocabFilter, setVocabFilter] = useState<"all" | "ra" | "la" | "sa">("all");
@@ -36,19 +47,35 @@ export function MobileLesson3() {
     const currentWebStep = webStepMap[currentStep];
     markComplete(currentWebStep); 
     
-    if (currentStep === 8 && !completed.has(currentWebStep)) {
+    if (currentStep === 10 && !completed.has(currentWebStep)) {
       saveWords(VOCAB.length);
     }
 
     if (currentStep < totalSteps - 1) {
-      setCurrentStep(prev => prev + 1);
+      const next = currentStep + 1;
+      setCurrentStep(next);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, next.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
     } else {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, "0");
+        localStorage.setItem("tibetan_last_active_lesson", "4");
+      }
       router.push("/dashboard/lessons/4");
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+      const prev = currentStep - 1;
+      setCurrentStep(prev);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`tibetan_mobile_lesson_${MODULE_ID}_step`, prev.toString());
+        localStorage.setItem("tibetan_last_active_lesson", MODULE_ID.toString());
+      }
+    }
   };
 
   const handleClose = () => {
@@ -88,7 +115,7 @@ export function MobileLesson3() {
 
   const openInspector = (c: Combo, sup: Super) => {
     setSelectedCombo({ ...c, sup });
-    playAudio(c.stack + " spelling");
+    playAudio(c.stack);
   };
 
   const renderSuperscriptGrid = (supIndex: number) => {
@@ -130,10 +157,12 @@ export function MobileLesson3() {
         return (
           <div className="pb-4">
             <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
-              <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
+              
+			  
+			  <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
                 <img 
-                  src="/loplao-hero-scene.jpg" 
-                  alt="Himalayan Monastery and Mountains" 
+                  src="/03_superscripts.jpg" 
+                  alt="The Three Superscripts Hero Scene" 
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -142,7 +171,7 @@ export function MobileLesson3() {
                 <h2 className="font-serif text-[26px] leading-tight font-bold text-ink mb-1">
                   The Three Superscripts
                 </h2>
-                <div className="font-serif text-xl text-ink-light italic tibetan mb-4">
+                <div className="font-tibetan text-xl text-ink-light mb-4">
                   མགོ་ཅན་གསུམ།
                 </div>
                 <p className="text-[13.5px] leading-relaxed text-ink/80 mb-3.5">
@@ -153,16 +182,16 @@ export function MobileLesson3() {
 
                 <div className="grid grid-cols-3 divide-x divide-border-subtle text-center py-0.5">
                   <div className="px-2">
-                    <div className="font-serif text-2xl text-ink">ར</div>
-                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">12 Stacks</div>
+                    <div className="font-tibetan text-2xl text-ink leading-none pt-1">ར</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-1">12 Stacks</div>
                   </div>
                   <div className="px-2">
-                    <div className="font-serif text-2xl text-ink">ལ</div>
-                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">10 Stacks</div>
+                    <div className="font-tibetan text-2xl text-ink leading-none pt-1">ལ</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-1">10 Stacks</div>
                   </div>
                   <div className="px-2">
-                    <div className="font-serif text-2xl text-ink">ས</div>
-                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-0.5">11 Stacks</div>
+                    <div className="font-tibetan text-2xl text-ink leading-none pt-1">ས</div>
+                    <div className="text-[9px] uppercase tracking-widest text-ink-muted font-bold mt-1">11 Stacks</div>
                   </div>
                 </div>
               </div>
@@ -208,7 +237,6 @@ export function MobileLesson3() {
       case 2:
         return (
           <div className="space-y-4 pb-6">
-  
             <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-border-subtle">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 bg-brand-light text-brand-dark">
                 <Layers size={14} /> Stacking
@@ -258,8 +286,7 @@ export function MobileLesson3() {
           </div>
         );
 
-      
-	  case 3: return renderSuperscriptGrid(0); // Ra-go
+      case 3: return renderSuperscriptGrid(0); // Ra-go
       case 4: return (
         <div className="pb-6">
           <QuizModule moduleId={3} title="Mastery Check · Ra-go" intro="Test your spelling and recognition." questions={generateSuperscriptQuiz("ra")} playAudio={playAudio} playingItem={playingItem} playErrorBeep={playErrorBeep} hideHeader={true} isUnlockTest={false} />
@@ -280,13 +307,11 @@ export function MobileLesson3() {
         </div>
       );
 
-      case 9:
+      case 9: {
         const filteredVocab = vocabFilter === "all" ? VOCAB : VOCAB.filter(v => v.sup === vocabFilter);
         return (
           <div className="space-y-5 pb-6 flex flex-col">
-            
-			
-			<div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => setVocabFilter("all")}
                 className={`inline-flex items-center px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors border rounded-full ${
@@ -325,6 +350,7 @@ export function MobileLesson3() {
             </div>
           </div>
         );
+      }
 
       case 10:
         return (
@@ -350,7 +376,7 @@ export function MobileLesson3() {
   };
 
   const stepTitles = [
-    "The Three Superscripts",
+    "Welcome to the Three Superscripts",
     "What you'll learn",
     "What is a superscript?", 
     "The 12 Stacks of 'Ra'", 
@@ -362,9 +388,8 @@ export function MobileLesson3() {
     "Vocabulary", 
     "Vocabulary Mastery", 
     "Practice & exercises", 
-    "Lesson complete" 
+    "Final Mastery Check" 
   ];
-	  
 
   return (
     <>
@@ -390,18 +415,22 @@ export function MobileLesson3() {
             <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
             
             <div className="flex flex-col mb-6 bg-white p-6 rounded-[1.5rem] border border-border-subtle shadow-sm">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-6 text-center">Spelling Walkthrough</div>
-              
-              
-			  <div className="flex flex-col items-center justify-center mb-8">
-                <SpellingFormula parts={`${selectedCombo.sup.head} + ${selectedCombo.root} + བཏགས་`} />
-                <div className="flex items-center justify-center gap-4 mt-5">
-                  <span className="text-2xl font-bold text-border-strong opacity-70">=</span>
-                  <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink">{selectedCombo.stack}</span>
-                  <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
-                </div>
+              {/* 1. Top: Large Final Syllable + Phonetics */}
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <span className="font-tibetan text-[4.5rem] leading-none pt-2 text-ink">{selectedCombo.stack}</span>
+                <span className="font-mono text-2xl font-bold text-ink">[{selectedCombo.read}]</span>
               </div>
 
+              {/* 2. Middle: Spelling Equation including = Final Syllable in matching font */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+                <SpellingFormula parts={`${selectedCombo.sup.head} + ${selectedCombo.root} + བཏགས་`} />
+                <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
+                <span className="flex items-center justify-center min-w-[28px] px-1">
+                  <TibetanPart part={selectedCombo.stack} />
+                </span>
+              </div>
+
+              {/* 3. Bottom: Tone Badge */}
               {(() => {
                 const TM = TONE_META[selectedCombo.tone];
                 const Icon = TM.Icon;
@@ -413,18 +442,17 @@ export function MobileLesson3() {
               })()}
             </div>
 
-            
-			<div className="flex gap-3">
-              <button onClick={() => playAudio(selectedCombo.stack + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                {playingItem === (selectedCombo.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
-                <span className="text-sm">Spelling Audio</span>
-              </button>
+            {/* Inverted Buttons: 1st Pronunciation, 2nd Spelling */}
+            <div className="flex gap-3">
               <button onClick={() => playAudio(selectedCombo.stack)} className="flex-1 py-4 bg-ink text-white font-bold rounded-full active:bg-ink-light transition-colors flex items-center justify-center gap-2 shadow-sm">
                 {playingItem === selectedCombo.stack ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
                 <span className="text-sm">Pronunciation</span>
               </button>
+              <button onClick={() => playAudio(selectedCombo.stack + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                {playingItem === (selectedCombo.stack + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
+                <span className="text-sm">Spelling</span>
+              </button>
             </div>
-			
 
             <button onClick={() => setSelectedCombo(null)} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>
           </div>
