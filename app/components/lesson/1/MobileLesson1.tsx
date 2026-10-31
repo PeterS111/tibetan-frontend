@@ -474,6 +474,8 @@ export function MobileLesson1() {
     }
   };
 
+  
+  
   const stepTitles = [
     "Welcome to the 30 Consonants", 
     "What you'll learn", 
@@ -488,6 +490,20 @@ export function MobileLesson1() {
     "Final Mastery Check" 
   ];
 
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    undefined,
+    "གསལ་བྱེད་སུམ་ཅུ།",
+    "སྦྱོང་ཚན།",
+    "གདངས་ཀྱི་རྣམ་བཞག",
+    "ང་རོའི་རྩ་བ་གསུམ།",
+    "རྟགས་ཀྱི་དབྱེ་བ།",
+    "ཚིག་གསར།",
+    "ཚིག་གསར་སྦྱོང་ཚན།",
+    "སྦྱོང་ཚན།",
+    "རྒྱུགས་སྤྲོད།"
+  ];
+
   return (
     <>
       <MobileStepPlayer
@@ -498,9 +514,11 @@ export function MobileLesson1() {
         onPrevious={currentStep > 0 ? handlePrevious : undefined}
         unitContext={`Unit 1 · Step ${currentStep + 1} of ${totalSteps}`} 
         title={stepTitles[currentStep]}
+        tibetanTitle={stepTibetanTitles[currentStep]}
         continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"}
         hideContinue={currentStep === totalSteps - 1} 
       >
+  
         {renderStepContent()}
       </MobileStepPlayer>
 

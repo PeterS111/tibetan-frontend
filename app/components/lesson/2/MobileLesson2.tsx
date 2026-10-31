@@ -539,6 +539,7 @@ export function MobileLesson2() {
     }
   };
 
+  
   const stepTitles = [
     "Welcome to the Four Vowels", 
     "What you'll learn", 
@@ -552,6 +553,19 @@ export function MobileLesson2() {
     "Final Mastery Check" 
   ];
 
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    undefined,
+    "དབྱངས་བཞི།",
+    "བསྡུས་ཀློག",
+    "སྦྱོར་ཀློག",
+    "སྦྱོང་ཚན།",
+    "ཚིག་གསར།",
+    "ཚིག་གསར་སྦྱོང་ཚན།",
+    "སྦྱོང་བརྡར།",
+    "རྒྱུགས་སྤྲོད།"
+  ];
+
   return (
     <>
       <MobileStepPlayer
@@ -562,9 +576,11 @@ export function MobileLesson2() {
         onPrevious={currentStep > 0 ? handlePrevious : undefined}
         unitContext={`Unit 2 · Step ${currentStep + 1} of ${totalSteps}`} 
         title={stepTitles[currentStep]}
+        tibetanTitle={stepTibetanTitles[currentStep]}
         continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"}
         hideContinue={currentStep === totalSteps - 1} 
       >
+  
         {renderStepContent()}
       </MobileStepPlayer>
 

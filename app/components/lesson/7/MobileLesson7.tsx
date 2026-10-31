@@ -66,10 +66,17 @@ export function MobileLesson7() {
     router.push("/dashboard/lessons");
   };
 
+  
   const stepTitles = [
     "Welcome to the Capstone",
     "What you'll be tested on",
     "The assessment"
+  ];
+
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    "སྤྱི་བཤད།",
+    "རྒྱུགས་སྤྲོད།"
   ];
 
   const renderStepContent = () => {
@@ -188,6 +195,7 @@ export function MobileLesson7() {
     }
   };
 
+  
   return (
     <MobileStepPlayer
       currentStep={currentStep} 
@@ -197,9 +205,11 @@ export function MobileLesson7() {
       onPrevious={currentStep > 0 ? handlePrevious : undefined}
       unitContext={`Unit 7 · Step ${currentStep + 1} of ${totalSteps}`} 
       title={stepTitles[currentStep]}
+      tibetanTitle={stepTibetanTitles[currentStep]}
       continueText={currentStep === totalSteps - 1 ? "Finish Assessment" : "Continue"}
       hideContinue={currentStep === totalSteps - 1} 
     >
+  
       {renderStepContent()}
     </MobileStepPlayer>
   );

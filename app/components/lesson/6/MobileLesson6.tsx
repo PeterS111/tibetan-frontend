@@ -252,10 +252,13 @@ export function MobileLesson6() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               {SUFFIXES.map((s) => (
-                <button key={s.key} onClick={() => setSelectedSuffix(s)} className="bg-white rounded-[1.25rem] p-5 flex flex-col items-center justify-center text-center active:scale-95 transition-transform shadow-sm border border-border-subtle relative overflow-hidden">
+                
+				
+				<button key={s.key} onClick={() => setSelectedSuffix(s)} className="bg-white rounded-[1.25rem] p-5 flex flex-col items-center justify-center text-center active:scale-95 transition-transform shadow-sm border border-border-subtle relative overflow-hidden">
                   <span className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: s.accent }} />
-                  <span className="font-serif text-[40px] text-ink leading-none mb-3 pt-2" style={{ color: s.accent }}>{s.head}</span>
+                  <span className="font-tibetan text-[40px] text-ink leading-none mb-3 pt-2" style={{ color: s.accent }}>{s.head}</span>
                   <span className="text-[13px] font-bold text-ink mb-1">Suffix {s.latin}</span>
+				
                   <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{s.reads}</span>
                 </button>
               ))}
@@ -475,6 +478,7 @@ export function MobileLesson6() {
     }
   };
 
+  
   const stepTitles = [
     "Welcome to the Ten Suffixes",
     "What you'll learn",
@@ -492,12 +496,29 @@ export function MobileLesson6() {
     "Final Mastery Check" 
   ];
 
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    undefined,
+    "རྗེས་འཇུག",
+    "རྗེས་འཇུག་བཅུ།",
+    "སྦྱོང་ཚན།",
+    "དབྱངས་དང་རྗེས་འཇུག",
+    "ཡང་འཇུག་གཉིས།",
+    "སྦྱོང་ཚན།",
+    "མིང་གཞི་ངོས་འཛིན།",
+    "སྦྱོང་ཚན།",
+    "ཚིག་གསར།",
+    "ཚིག་གསར་སྦྱོང་ཚན།",
+    "སྦྱོང་ཚན།",
+    "རྒྱུགས་སྤྲོད།"
+  ];
+
   return (
     <>
       <MobileStepPlayer
         currentStep={currentStep} totalSteps={totalSteps} onClose={handleClose} onContinue={handleNext}
         onPrevious={currentStep > 0 ? handlePrevious : undefined} unitContext={`Unit 6 · Step ${currentStep + 1} of ${totalSteps}`} 
-        title={stepTitles[currentStep]} continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"} hideContinue={currentStep === totalSteps - 1} 
+        title={stepTitles[currentStep]} tibetanTitle={stepTibetanTitles[currentStep]} continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"} hideContinue={currentStep === totalSteps - 1} 
       >
         {renderStepContent()}
       </MobileStepPlayer>
@@ -511,7 +532,8 @@ export function MobileLesson6() {
             <div className="shrink-0 p-6 pb-2 border-b border-border-subtle bg-white rounded-t-[2rem]">
               <div className="w-12 h-1.5 bg-ink/10 rounded-full mx-auto mb-6"></div>
               <div className="flex items-center gap-4 mb-4">
-                 <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center font-serif text-[3rem] leading-none pt-2 shadow-sm" style={{ backgroundColor: `${selectedSuffix.accent}15`, color: selectedSuffix.accent }}>{selectedSuffix.head}</div>
+                 <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center font-tibetan text-[3rem] leading-none pt-2 shadow-sm" style={{ backgroundColor: `${selectedSuffix.accent}15`, color: selectedSuffix.accent }}>{selectedSuffix.head}</div>
+  
                  <div>
                     <div className="font-serif text-2xl font-bold text-ink">Suffix {selectedSuffix.latin}</div>
                     <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{FAMILY_META[selectedSuffix.family as Family].label} · {selectedSuffix.reads}</div>

@@ -131,15 +131,18 @@ export function MobileLesson5() {
     const pref = PREFIXES[prefIndex];
     return (
       <div className="pb-6">
-        <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle mb-6 shadow-sm">
+        
+		
+		<div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle mb-6 shadow-sm">
           <div className="flex items-center gap-4 mb-3">
-             <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center font-serif text-[3rem] leading-none pt-2 shadow-sm" style={{ backgroundColor: `${pref.accent.hex}15`, color: pref.accent.hex }}>{pref.head}</div>
+             <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center font-tibetan text-[3rem] leading-none pt-2 shadow-sm" style={{ backgroundColor: `${pref.accent.hex}15`, color: pref.accent.hex }}>{pref.head}</div>
              <div>
-                <div className="font-serif text-2xl font-bold text-ink">{pref.title}</div>
+                <div className="font-tibetan text-3xl text-ink leading-none mb-1" style={{ color: pref.accent.hex }}>{pref.nameTib}།</div>
                 <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{pref.count} · {pref.family === 'nasal' ? 'Nasalising' : 'Silent'}</div>
              </div>
           </div>
           <p className="text-[15px] leading-relaxed text-ink/90">
+		
             {pref.intro}
           </p>
         </div>
@@ -500,6 +503,8 @@ export function MobileLesson5() {
     }
   };
 
+  
+  
   const stepTitles = [
     "Welcome to the Five Prefixes",
     "What you'll learn",
@@ -523,6 +528,29 @@ export function MobileLesson5() {
     "Final Mastery Check" 
   ];
 
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    undefined,
+    "ཚིག་གི་གྲུབ་སྟངས།",
+    "སྔོན་འཇུག",
+    "སྔོན་འཇུག་ག",
+    "སྦྱོང་ཚན།",
+    "སྔོན་འཇུག་ད",
+    "སྦྱོང་ཚན།",
+    "སྔོན་འཇུག་བ",
+    "སྦྱོང་ཚན།",
+    "སྔོན་འཇུག་མ",
+    "སྦྱོང་ཚན།",
+    "སྔོན་འཇུག་འ",
+    "སྦྱོང་ཚན།",
+    "དམིགས་བསལ།",
+    "སྦྱོང་ཚན།",
+    "ཚིག་གསར།",
+    "ཚིག་གསར་སྦྱོང་ཚན།",
+    "སྦྱོང་ཚན།",
+    "རྒྱུགས་སྤྲོད།"
+  ];
+
   return (
     <>
       <MobileStepPlayer
@@ -533,9 +561,11 @@ export function MobileLesson5() {
         onPrevious={currentStep > 0 ? handlePrevious : undefined}
         unitContext={`Unit 5 · Step ${currentStep + 1} of ${totalSteps}`} 
         title={stepTitles[currentStep]}
+        tibetanTitle={stepTibetanTitles[currentStep]}
         continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"}
         hideContinue={currentStep === totalSteps - 1} 
       >
+  
         {renderStepContent()}
       </MobileStepPlayer>
 

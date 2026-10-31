@@ -567,9 +567,12 @@ function SubPanel({ sub, playAudio, playingItem, playErrorBeep }: any) {
             const M = TONE_META[c.tone as Tone];
             return (
               <div key={c.stack} className="flex flex-wrap items-center gap-x-6 gap-y-3 border px-5 py-4 rounded-2xl border-border-strong bg-surface shadow-sm">
-                <span className="font-tibetan text-[2.5rem] leading-none w-12 text-center">{c.stack}</span>
-                <SpellingFormula parts={`${c.root} + ${sub.headLarge} + བཏགས་`} />
-                <span className="text-xl font-bold opacity-70 text-border-strong">=</span>
+                
+				
+			<span className="font-tibetan text-[2.5rem] leading-none w-12 text-center">{c.stack}</span>
+                <SpellingFormula parts={`${c.root} + ${sub.headLarge} + ${sub.key === "wa" ? "ཟུར་" : "བཏགས་"}`} />
+                <span className="text-xl font-bold opacity-70 text-border-strong">=</span>	
+				
                 <div className="flex items-center gap-2">
                   <span className="font-tibetan text-3xl leading-none pt-1" style={{ color: sub.accent.hex }}>{c.stack}</span>
                   <span className="font-mono text-lg font-bold text-ink">[{c.read}]</span>

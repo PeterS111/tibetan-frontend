@@ -12,6 +12,7 @@ interface MobileStepPlayerProps {
   canContinue?: boolean;
   unitContext: string; 
   title: string;       
+  tibetanTitle?: string;
   children: React.ReactNode;
   continueText?: string;
   hideContinue?: boolean; 
@@ -26,6 +27,7 @@ export function MobileStepPlayer({
   canContinue = true,
   unitContext,
   title,
+  tibetanTitle,
   children,
   continueText = "Continue",
   hideContinue = false,
@@ -90,9 +92,14 @@ export function MobileStepPlayer({
           {unitContext}
         </div>
         
-        <h1 className="font-serif text-[28px] text-ink mb-8 leading-tight">
+        <h1 className={`font-serif text-[28px] text-ink leading-tight ${tibetanTitle ? "mb-2" : "mb-8"}`}>
           {title}
         </h1>
+        {tibetanTitle && (
+          <div className="font-tibetan text-2xl text-ink-light mb-7 leading-none">
+            {tibetanTitle}
+          </div>
+        )}
         
         {/* Content injects here */}
         <div 

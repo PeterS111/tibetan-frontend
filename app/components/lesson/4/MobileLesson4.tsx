@@ -134,10 +134,13 @@ export function MobileLesson4() {
 
   const renderSubscriptGrid = (subIndex: number) => {
     const sub = SUBS[subIndex];
+    const displayHeaderTib = sub.key === "wa" ? "ཝ་ཟུར" : `${sub.headLabel}།`;
     return (
       <div className="pb-6">
         <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle mb-6 shadow-sm">
-          <div className="font-tibetan text-6xl text-ink mb-3 leading-none pt-2" style={{ color: sub.accent.hex }}>{sub.headLarge}</div>
+          <div className="font-tibetan text-5xl text-ink mb-3 leading-none pt-2" style={{ color: sub.accent.hex }}>
+            {displayHeaderTib}
+          </div>
           <p className="text-[15px] leading-relaxed text-ink/90">
             {sub.intro}
           </p>
@@ -181,9 +184,7 @@ export function MobileLesson4() {
         return (
           <div className="pb-4">
             <div className="bg-surface rounded-[1.5rem] border border-border-subtle shadow-sm overflow-hidden">
-              
-			  
-			  <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
+              <div className="w-full h-40 sm:h-48 bg-surface-muted overflow-hidden relative">
                 <img 
                   src="/04_subscripts.jpg" 
                   alt="The Four Subscripts Hero Scene" 
@@ -332,7 +333,7 @@ export function MobileLesson4() {
         return (
           <div className="pb-6">
             <div className="bg-surface-muted rounded-[1.5rem] p-5 border border-border-subtle mb-6">
-              <div className="font-tibetan text-5xl text-brand-dark mb-3 leading-none pt-2">སྒྱ</div>
+              <div className="font-tibetan text-4xl sm:text-5xl text-brand-dark mb-3 leading-none pt-2">བརྩེགས་མའི་ཡི་གེ།</div>
               <p className="text-[15px] leading-relaxed text-ink/90">
                 Once superscripts and subscripts are both familiar, they combine on a single root letter. The pronunciation follows the same tone rules — the superscript re-tunes, the subscript re-shapes.
               </p>
@@ -443,6 +444,26 @@ export function MobileLesson4() {
     "Final Mastery Check" 
   ];
 
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    undefined,
+    "འདོགས་ཅན།",
+    "ཡ་བཏགས་བདུན།",
+    "ཡ་བཏགས་སྦྱོང་ཚན།",
+    "ར་བཏགས་བཅུ་གསུམ།",
+    "ར་བཏགས་སྦྱོང་ཚན།",
+    "ལ་བཏགས་དྲུག།",
+    "ལ་བཏགས་སྦྱོང་ཚན།",
+    "ཝ་ཟུར་བཅུ་གསུམ།",
+    "ཝ་ཟུར་སྦྱོང་ཚན།",
+    "བརྩེགས་མའི་ཡི་གེ།",
+    "བརྩེགས་མའི་སྦྱོང་ཚན།",
+    "ཚིག་གསར།",
+    "ཚིག་གསར་སྦྱོང་ཚན།",
+    "སྦྱོང་ཚན།",
+    "རྒྱུགས་སྤྲོད།"
+  ];
+
   return (
     <>
       <MobileStepPlayer
@@ -453,6 +474,7 @@ export function MobileLesson4() {
         onPrevious={currentStep > 0 ? handlePrevious : undefined}
         unitContext={`Unit 4 · Step ${currentStep + 1} of ${totalSteps}`} 
         title={stepTitles[currentStep]}
+        tibetanTitle={stepTibetanTitles[currentStep]}
         continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"}
         hideContinue={currentStep === totalSteps - 1} 
       >
@@ -475,7 +497,7 @@ export function MobileLesson4() {
 
               {/* 2. Middle: Spelling Equation including = Final Syllable in matching font */}
               <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-                <SpellingFormula parts={`${selectedCombo.root} + ${selectedCombo.sub.headLarge} + བཏགས་`} />
+                <SpellingFormula parts={`${selectedCombo.root} + ${selectedCombo.sub.headLarge} + ${selectedCombo.sub.key === "wa" ? "ཟུར་" : "བཏགས་"}`} />
                 <span className="text-lg font-sans font-bold text-border-strong opacity-70 mt-1 mx-1">=</span>
                 <span className="flex items-center justify-center min-w-[28px] px-1">
                   <TibetanPart part={selectedCombo.stack} />

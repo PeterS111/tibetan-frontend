@@ -375,6 +375,7 @@ export function MobileLesson3() {
     }
   };
 
+  
   const stepTitles = [
     "Welcome to the Three Superscripts",
     "What you'll learn",
@@ -391,6 +392,22 @@ export function MobileLesson3() {
     "Final Mastery Check" 
   ];
 
+  const stepTibetanTitles: (string | undefined)[] = [
+    undefined,
+    undefined,
+    "མགོ་ཅན།",
+    "ར་མགོ་བཅུ་གཉིས།",
+    "ར་མགོའི་སྦྱོང་ཚན།",
+    "ལ་མགོ་བཅུ།",
+    "ལ་མགོའི་སྦྱོང་ཚན།",
+    "ས་མགོ་བཅུ་གཅིག།",
+    "ས་མགོའི་སྦྱོང་ཚན།",
+    "ཚིག་གསར།",
+    "ཚིག་གསར་སྦྱོང་ཚན།",
+    "སྦྱོང་ཚན།",
+    "རྒྱུགས་སྤྲོད།"
+  ];
+
   return (
     <>
       <MobileStepPlayer
@@ -401,9 +418,11 @@ export function MobileLesson3() {
         onPrevious={currentStep > 0 ? handlePrevious : undefined}
         unitContext={`Unit 3 · Step ${currentStep + 1} of ${totalSteps}`} 
         title={stepTitles[currentStep]}
+        tibetanTitle={stepTibetanTitles[currentStep]}
         continueText={currentStep === totalSteps - 1 ? "Finish Unit" : "Continue"}
         hideContinue={currentStep === totalSteps - 1} 
       >
+  
         {renderStepContent()}
       </MobileStepPlayer>
 
