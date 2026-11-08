@@ -469,33 +469,26 @@ export function WebLanding() {
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark overflow-x-hidden">
-      {/* Organic Floating Keyframes for the 10-Phrase Constellation */}
+      {/* Clockwise Orbit + Counter-Rotation Keyframes so cards stay horizontal */}
       <style>{`
-        @keyframes landingFloat1 {
-          0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(4px, -8px, 0); }
+        @keyframes orbitClockwise {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-        @keyframes landingFloat2 {
-          0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(-5px, -9px, 0); }
+        @keyframes counterOrbit {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(-360deg); }
         }
-        @keyframes landingFloat3 {
-          0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(5px, -6px, 0); }
+        .orbit-wheel {
+          animation: orbitClockwise 75s linear infinite;
         }
-        @keyframes landingFloat4 {
-          0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(-4px, -7px, 0); }
+        .orbit-item-upright {
+          animation: counterOrbit 75s linear infinite;
         }
-        @keyframes landingFloat5 {
-          0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(4px, -9px, 0); }
+        .orbit-paused .orbit-wheel,
+        .orbit-paused .orbit-item-upright {
+          animation-play-state: paused;
         }
-        .landing-float-1 { animation: landingFloat1 5.6s ease-in-out infinite; }
-        .landing-float-2 { animation: landingFloat2 6.5s ease-in-out infinite 0.5s; }
-        .landing-float-3 { animation: landingFloat3 6.0s ease-in-out infinite 1.1s; }
-        .landing-float-4 { animation: landingFloat4 6.9s ease-in-out infinite 0.3s; }
-        .landing-float-5 { animation: landingFloat5 6.2s ease-in-out infinite 0.8s; }
       `}</style>
 
       {/* ====================================================================
@@ -613,6 +606,9 @@ export function WebLanding() {
               <p className="font-tibetan text-2xl sm:text-[26px] text-white/95 leading-normal">
                 བོད་སྐད་སྦྱོང་དུ་ཕེབས་པར་དགའ་བསུ་ཞུ།
               </p>
+              <p className="font-serif italic text-sm text-white/65 mt-1">
+                Welcome to learning Tibetan.
+              </p>
             </div>
 
             {/* Primary CTA + Loved by our students */}
@@ -669,61 +665,78 @@ export function WebLanding() {
                 />
               </div>
 
-              {/* All 10 Floating Tibetan Phrase Bubbles */}
-              {HERO_PHRASES.map((phrase, idx) => {
-                const isFaded =
-                  fadedIndices.includes(idx) &&
-                  hoveredIdx !== idx &&
-                  activePhraseId !== phrase.id;
-                const isPlaying = activePhraseId === phrase.id;
+              {/* All 10 Floating Tibetan Phrase Bubbles Revolving Clockwise */}
+              <div
+                className={`absolute inset-0 z-20 pointer-events-none ${
+                  hoveredIdx !== null || activePhraseId !== null ? "orbit-paused" : ""
+                }`}
+              >
+                <div className="orbit-wheel w-full h-full relative">
+                  {HERO_PHRASES.map((phrase, idx) => {
+                    // Place all 10 phrases evenly around a circle (every 36 degrees)
+                    const angleDeg = idx * (360 / HERO_PHRASES.length) - 90;
+                    const angleRad = (angleDeg * Math.PI) / 180;
+                    // Radius = 54% from center so they sit right around the circular border
+                    const leftPct = 50 + 54 * Math.cos(angleRad);
+                    const topPct = 50 + 54 * Math.sin(angleRad);
 
-                return (
-                  <div
-                    key={phrase.id}
-                    className={`absolute z-20 ${phrase.posClass} max-w-[215px] sm:max-w-[245px]`}
-                    onMouseEnter={() => setHoveredIdx(idx)}
-                    onMouseLeave={() => setHoveredIdx(null)}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleHeroPhraseClick(phrase)}
-                      title="Click to hear phrase"
-                      className={`group text-left bg-surface/95 hover:bg-surface text-ink px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-xl border transition-all duration-1000 cursor-pointer flex items-center gap-2.5 ${
-                        phrase.floatClass
-                      } ${
-                        isFaded
-                          ? "opacity-20 scale-95 blur-[0.5px]"
-                          : "opacity-100 scale-100 blur-0"
-                      } ${
-                        isPlaying
-                          ? "border-brand ring-4 ring-brand/30 -translate-y-1 z-30"
-                          : "border-border-subtle hover:border-brand hover:z-30"
-                      }`}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="font-tibetan text-base sm:text-lg text-ink leading-snug">
-                          {phrase.tib}
-                        </div>
-                        <div className="text-[10px] sm:text-[11px] font-medium text-ink-muted leading-tight">
-                          {phrase.en}
+                    const isFaded =
+                      fadedIndices.includes(idx) &&
+                      hoveredIdx !== idx &&
+                      activePhraseId !== phrase.id;
+                    const isPlaying = activePhraseId === phrase.id;
+
+                    return (
+                      <div
+                        key={phrase.id}
+                        style={{ left: `${leftPct}%`, top: `${topPct}%` }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+                        onMouseEnter={() => setHoveredIdx(idx)}
+                        onMouseLeave={() => setHoveredIdx(null)}
+                      >
+                        {/* Counter-rotating wrapper keeps the card 100% horizontal while orbiting */}
+                        <div className="orbit-item-upright">
+                          <button
+                            type="button"
+                            onClick={() => handleHeroPhraseClick(phrase)}
+                            title="Click to hear phrase"
+                            className={`group text-left bg-surface/95 hover:bg-surface text-ink px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-xl border transition-all duration-1000 cursor-pointer flex items-center gap-2.5 w-max max-w-[210px] sm:max-w-[240px] ${
+                              isFaded
+                                ? "opacity-20 scale-95 blur-[0.5px]"
+                                : "opacity-100 scale-100 blur-0"
+                            } ${
+                              isPlaying
+                                ? "border-brand ring-4 ring-brand/30 scale-105 z-30"
+                                : "border-border-subtle hover:border-brand hover:scale-105 hover:z-30"
+                            }`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="font-tibetan text-base sm:text-lg text-ink leading-snug">
+                                {phrase.tib}
+                              </div>
+                              <div className="text-[10px] sm:text-[11px] font-medium text-ink-muted leading-tight">
+                                {phrase.en}
+                              </div>
+                            </div>
+                            <span
+                              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                                isPlaying
+                                  ? "bg-brand text-ink"
+                                  : "bg-brand-light text-brand-dark group-hover:bg-brand group-hover:text-ink"
+                              }`}
+                            >
+                              <Volume2
+                                size={12}
+                                className={isPlaying ? "animate-pulse" : ""}
+                              />
+                            </span>
+                          </button>
                         </div>
                       </div>
-                      <span
-                        className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                          isPlaying
-                            ? "bg-brand text-ink"
-                            : "bg-brand-light text-brand-dark group-hover:bg-brand group-hover:text-ink"
-                        }`}
-                      >
-                        <Volume2
-                          size={12}
-                          className={isPlaying ? "animate-pulse" : ""}
-                        />
-                      </span>
-                    </button>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Subtle Interactive Hint Underneath the Orbit */}
