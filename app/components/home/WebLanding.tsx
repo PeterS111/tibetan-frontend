@@ -54,7 +54,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Tashi delek",
     posClass: "top-[2%] left-[2%] sm:left-[0%]",
     floatClass: "landing-float-1",
-    audioUrl: null,
+    audioUrl: "/sounds/Tashi Delek.wav",
   },
   {
     id: "p2",
@@ -62,7 +62,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "How are you?",
     posClass: "-top-[6%] right-[0%] sm:-right-[4%]",
     floatClass: "landing-float-2",
-    audioUrl: null,
+    audioUrl: "/sounds/How are you.wav",
   },
   {
     id: "p3",
@@ -70,7 +70,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Good morning",
     posClass: "top-[19%] -left-[4%] sm:-left-[10%]",
     floatClass: "landing-float-3",
-    audioUrl: null,
+    audioUrl: "/sounds/Good morning.wav",
   },
   {
     id: "p4",
@@ -78,7 +78,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "What is your name?",
     posClass: "top-[16%] -right-[4%] sm:-right-[10%]",
     floatClass: "landing-float-4",
-    audioUrl: null,
+    audioUrl: "/sounds/What is your name.wav",
   },
   {
     id: "p5",
@@ -86,7 +86,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Hello · Good day",
     posClass: "top-[39%] -left-[6%] sm:-left-[13%]",
     floatClass: "landing-float-5",
-    audioUrl: null,
+    audioUrl: "/sounds/Hello.wav",
   },
   {
     id: "p6",
@@ -94,7 +94,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Where are you from?",
     posClass: "top-[37%] -right-[5%] sm:-right-[12%]",
     floatClass: "landing-float-1",
-    audioUrl: null,
+    audioUrl: "/sounds/Where you from.wav",
   },
   {
     id: "p7",
@@ -102,7 +102,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Goodbye",
     posClass: "bottom-[28%] -left-[4%] sm:-left-[10%]",
     floatClass: "landing-float-2",
-    audioUrl: null,
+    audioUrl: "/sounds/Goodbye.wav",
   },
   {
     id: "p8",
@@ -110,7 +110,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Thank you",
     posClass: "bottom-[26%] -right-[4%] sm:-right-[9%]",
     floatClass: "landing-float-3",
-    audioUrl: null,
+    audioUrl: "/sounds/Thank you.wav",
   },
   {
     id: "p9",
@@ -118,7 +118,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "Good night",
     posClass: "bottom-[7%] left-[0%] sm:-left-[4%]",
     floatClass: "landing-float-4",
-    audioUrl: null,
+    audioUrl: "/sounds/Good night.wav",
   },
   {
     id: "p10",
@@ -126,7 +126,7 @@ const HERO_PHRASES: HeroPhrase[] = [
     en: "See you later",
     posClass: "-bottom-[5%] left-[26%] sm:left-[28%]",
     floatClass: "landing-float-5",
-    audioUrl: null,
+    audioUrl: "/sounds/See you later.wav",
   },
 ];
 
