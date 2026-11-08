@@ -346,27 +346,27 @@ const CULTURE_CARDS = [
 const FAQ_ITEMS = [
   {
     q: "Do I need an account to start?",
-    a: "Yes. You create a free account with an email address, and the entire Beginner 1 course opens in full straight after — no card and no fee.",
+    a: "Yes. You create a free account with an email address, and both published levels open in full straight after — no card and no fee.",
   },
   {
     q: "Do I need to read Tibetan already?",
-    a: "Not at all. Beginner 1 starts with the thirty root consonants from scratch, teaching you every letter, vowel mark, tone register, and traditional spelling rule step by step.",
+    a: "No. Level 1 begins with the script itself — the 30 consonants and four vowels — and each step ends with a mastery check before you move on.",
   },
   {
     q: "Which levels are open?",
-    a: "Level I (Beginner 1) is completely open and free right now. Level II (Beginner 2 — Everyday Conversation) is in final preparation and will be published soon, with higher levels following in sequence.",
+    a: "Two of six. Beginner 1 covers the script and its sounds; Beginner 2 covers greetings, numbers and days, introductions and daily routine. Pre-Intermediate to Advanced are still being written.",
   },
   {
     q: "Is there audio?",
-    a: "Yes — every single letter, syllable combination, and vocabulary word in Beginner 1 is accompanied by clear audio so you can hear authentic pronunciation at every step.",
+    a: "Yes. Every word, dialogue and drill in the published lessons can be played aloud, and any consonant can be heard by tapping it.",
   },
   {
     q: "What do I need to learn on?",
-    a: "You can learn right here in any modern web browser on your computer, tablet, or phone. Your progress is saved automatically to your account.",
+    a: "A phone, tablet or laptop with a browser — the lessons reflow to fit the screen. The App Store and Google Play listings are still to come.",
   },
   {
     q: "How do I get in touch?",
-    a: "You can reach our team anytime via our Support page or by emailing us directly through the contact form. We love hearing from students and fellow Tibetan language enthusiasts.",
+    a: "Email us at: loplaoacademy@gmail.com",
   },
 ];
 
@@ -1102,12 +1102,12 @@ export function WebLanding() {
       </section>
 
       {/* ====================================================================
-          8. "QUESTIONS, ANSWERED" FAQ ACCORDION (bg-surface)
+          8. "QUESTIONS AND ANSWERS" FAQ ACCORDION (bg-surface)
       ==================================================================== */}
       <section id="faq" className="py-24 bg-surface">
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink text-center mb-12">
-            Questions, answered
+            Questions and answers
           </h2>
 
           <div className="divide-y divide-border-subtle border-y border-border-subtle">
