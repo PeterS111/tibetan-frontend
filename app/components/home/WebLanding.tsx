@@ -32,13 +32,14 @@ import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { Button } from "@/app/components/ui/Button";
 
 // ============================================================================
-// 1. HERO FLOATING PHRASES (10 PHRASES WITH PLACEHOLDER AUDIO SUPPORT)
+// 1. HERO FLOATING PHRASES (ALL 10 PHRASES IN CONSTELLATION)
 // ============================================================================
 interface HeroPhrase {
   id: string;
   tib: string;
   en: string;
-  translit: string;
+  posClass: string;
+  floatClass: string;
   /**
    * When Loplao's recordings are ready, drop the .wav file path here
    * (e.g. "/sounds/phrases/zhog_pa_de_lek.wav") and it will play automatically!
@@ -50,106 +51,82 @@ const HERO_PHRASES: HeroPhrase[] = [
   {
     id: "p1",
     tib: "བཀྲ་ཤིས་བདེ་ལེགས།",
-    en: "Tashi delek · Hello",
-    translit: "tashi delek",
+    en: "Tashi delek",
+    posClass: "top-[2%] left-[2%] sm:left-[0%]",
+    floatClass: "landing-float-1",
     audioUrl: null,
   },
   {
     id: "p2",
     tib: "ཁྱེད་རང་སྐུ་གཟུགས་བདེ་པོ་ཡིན་པས།",
     en: "How are you?",
-    translit: "khyerang kuzuk depo yinpe?",
+    posClass: "-top-[6%] right-[0%] sm:-right-[4%]",
+    floatClass: "landing-float-2",
     audioUrl: null,
   },
   {
     id: "p3",
-    tib: "ག་ལེར་ཕེབས།",
-    en: "Goodbye",
-    translit: "galer phep",
+    tib: "ཞོགས་པ་བདེ་ལེགས།",
+    en: "Good morning",
+    posClass: "top-[19%] -left-[4%] sm:-left-[10%]",
+    floatClass: "landing-float-3",
     audioUrl: null,
   },
   {
     id: "p4",
-    tib: "ཐུགས་རྗེ་ཆེ།",
-    en: "Thank you",
-    translit: "thukje che",
+    tib: "ཁྱེད་རང་གི་མིང་ག་རེ་རེད།",
+    en: "What is your name?",
+    posClass: "top-[16%] -right-[4%] sm:-right-[10%]",
+    floatClass: "landing-float-4",
     audioUrl: null,
   },
   {
     id: "p5",
-    tib: "ཞོགས་པ་བདེ་ལེགས།",
-    en: "Good morning",
-    translit: "zhokpa delek",
+    tib: "ཁམས་བཟང་།",
+    en: "Hello · Good day",
+    posClass: "top-[39%] -left-[6%] sm:-left-[13%]",
+    floatClass: "landing-float-5",
     audioUrl: null,
   },
   {
     id: "p6",
-    tib: "ཁྱེད་རང་གི་མིང་ག་རེ་རེད།",
-    en: "What is your name?",
-    translit: "khyerang gi ming gare re?",
+    tib: "ཁྱེད་རང་ག་ནས་ཡིན།",
+    en: "Where are you from?",
+    posClass: "top-[37%] -right-[5%] sm:-right-[12%]",
+    floatClass: "landing-float-1",
     audioUrl: null,
   },
   {
     id: "p7",
-    tib: "ཁམས་བཟང་།",
-    en: "Good day · Hello",
-    translit: "kham sang",
+    tib: "ག་ལེར་ཕེབས།",
+    en: "Goodbye",
+    posClass: "bottom-[28%] -left-[4%] sm:-left-[10%]",
+    floatClass: "landing-float-2",
     audioUrl: null,
   },
   {
     id: "p8",
-    tib: "གཟིམ་འཇགས་གནང་གོ།",
-    en: "Good night",
-    translit: "zimjak nang go",
+    tib: "ཐུགས་རྗེ་ཆེ།",
+    en: "Thank you",
+    posClass: "bottom-[26%] -right-[4%] sm:-right-[9%]",
+    floatClass: "landing-float-3",
     audioUrl: null,
   },
   {
     id: "p9",
-    tib: "རྗེས་མ་མཇལ་ཡོང་།",
-    en: "See you later",
-    translit: "jema jal yong",
+    tib: "གཟིམ་འཇགས་གནང་གོ།",
+    en: "Good night",
+    posClass: "bottom-[7%] left-[0%] sm:-left-[4%]",
+    floatClass: "landing-float-4",
     audioUrl: null,
   },
   {
     id: "p10",
-    tib: "ཁྱེད་རང་ག་ནས་ཡིན།",
-    en: "Where are you from?",
-    translit: "khyerang gane yin?",
+    tib: "རྗེས་མ་མཇལ་ཡོང་།",
+    en: "See you later",
+    posClass: "-bottom-[5%] left-[26%] sm:left-[28%]",
+    floatClass: "landing-float-5",
     audioUrl: null,
-  },
-];
-
-// Spatial orbital slots around the circular mountain illustration
-const ORBIT_SLOTS = [
-  {
-    // Top-left
-    posClass: "top-[4%] -left-[4%] sm:-left-[8%] md:-left-[10%]",
-    floatClass: " landing-float-1",
-    maxWidth: "max-w-[230px]",
-  },
-  {
-    // Top-right (wider for longer conversational questions)
-    posClass: "-top-[4%] -right-[2%] sm:-right-[6%] md:-right-[10%]",
-    floatClass: " landing-float-2",
-    maxWidth: "max-w-[275px]",
-  },
-  {
-    // Middle-left
-    posClass: "top-[44%] -left-[6%] sm:-left-[12%] md:-left-[15%]",
-    floatClass: " landing-float-3",
-    maxWidth: "max-w-[240px]",
-  },
-  {
-    // Bottom-left
-    posClass: "bottom-[8%] -left-[2%] sm:-left-[6%] md:-left-[8%]",
-    floatClass: " landing-float-4",
-    maxWidth: "max-w-[235px]",
-  },
-  {
-    // Bottom-right
-    posClass: "bottom-[14%] -right-[2%] sm:right-[2%] md:-right-[4%]",
-    floatClass: " landing-float-5",
-    maxWidth: "max-w-[240px]",
   },
 ];
 
@@ -161,13 +138,15 @@ interface LevelDetail {
   roman: string;
   levelLabel: string;
   title: string;
+  subtitle: string;
+  oneLine: string;
   shortDesc: string;
+  fullBoxDesc: string;
   symbol: string;
   status: "open" | "soon";
   statusBadge: string;
-  modalOverview: string;
-  syllabusHighlights: string[];
-  sampleItems: { tib: string; translit: string; en: string; canPlayRealAudio?: boolean }[];
+  hasAudio: boolean;
+  sampleItems: { tib: string; translit: string; en: string }[];
 }
 
 const PROFICIENCY_LEVELS: LevelDetail[] = [
@@ -176,27 +155,23 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     roman: "I",
     levelLabel: "LEVEL I",
     title: "Beginner 1",
-    shortDesc: "Script, phonology, and foundations.",
+    subtitle: "Foundations of the script",
+    oneLine: "Learn to read Tibetan, one step at a time.",
+    shortDesc:
+      "Learn Tibetan script from the beginning — all 30 consonants, four vowels, and the rules for combining letters, prefixes and suffixes. Audio and a mastery check at every step.",
+    fullBoxDesc:
+      "Seven steps, from your first letter to reading whole words. Learn the 30 consonants and four vowels, followed by superscripts, subscripts, prefixes and suffixes, and how they affect spelling, pronunciation and meaning. Each step includes audio and a mastery check. The course ends with a final assessment.",
     symbol: "/symbol_lotus.png",
     status: "open",
     statusBadge: "Free & Open Now",
-    modalOverview:
-      "Master the complete architecture of the Tibetan writing system and its Lhasa phonology. In seven structured units, you will learn to read, spell aloud (jor-klog), and pronounce any Tibetan syllable from first principles while building your core root vocabulary.",
-    syllabusHighlights: [
-      "Unit 1: The 30 Consonants (གསལ་བྱེད་སུམ་ཅུ།), tone registers & traditional gender",
-      "Unit 2: The Four Vowel Marks (དབྱངས་བཞི།) & traditional spelling math",
-      "Unit 3: The Three Superscripts (ར་མགོ ལ་མགོ ས་མགོ) & tone shifts",
-      "Unit 4: The Four Subscripts (ཡ་བཏགས། ར་བཏགས། ལ་བཏགས། ཝ་ཟུར།)",
-      "Unit 5 & 6: The Five Prefixes (སྔོན་འཇུག་ལྔ།) & Ten Suffixes (རྗེས་འཇུག་བཅུ།)",
-      "Unit 7: Final Capstone Assessment & Official Certificate",
-    ],
+    hasAudio: true, // ONLY Beginner 1 has audio enabled
     sampleItems: [
-      { tib: "ཀ", translit: "ka", en: "High unaspirated", canPlayRealAudio: true },
-      { tib: "ཁ", translit: "kha", en: "High aspirated", canPlayRealAudio: true },
-      { tib: "ག", translit: "ga", en: "Low aspirated", canPlayRealAudio: true },
-      { tib: "ང", translit: "nga", en: "Low nasal", canPlayRealAudio: true },
-      { tib: "བོད་", translit: "bö", en: "Tibet", canPlayRealAudio: true },
-      { tib: "མི་", translit: "mi", en: "Person", canPlayRealAudio: true },
+      { tib: "ཀ", translit: "ka", en: "High unaspirated" },
+      { tib: "ཁ", translit: "kha", en: "High aspirated" },
+      { tib: "ག", translit: "ga", en: "Low aspirated" },
+      { tib: "ང", translit: "nga", en: "Low nasal" },
+      { tib: "བོད་", translit: "bö", en: "Tibet" },
+      { tib: "མི་", translit: "mi", en: "Person" },
     ],
   },
   {
@@ -204,23 +179,20 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     roman: "II",
     levelLabel: "LEVEL II",
     title: "Beginner 2",
-    shortDesc: "Essential daily greetings and conversation.",
+    subtitle: "Everyday conversation",
+    oneLine: "Learn Tibetan for everyday situations.",
+    shortDesc:
+      "Learn everyday Tibetan through greetings, introductions, numbers and time, family, shopping, weekends, home and the seasons. Eleven units, each based on everyday situations.",
+    fullBoxDesc:
+      "Eleven units covering the basics of everyday conversation. Start in the classroom, then learn to greet people, introduce yourself, say where you're from, tell the time and count, talk about family, bargain for tsampa, and describe your weekend, home and the four seasons. Each unit ends with a 40-question test.",
     symbol: "/symbol_conch.png",
     status: "soon",
-    statusBadge: "Launching Soon",
-    modalOverview:
-      "Transition from script mastery straight into living, everyday Tibetan conversation. Beginner 2 introduces essential polite greetings, self-introductions, family and kinship terms, numbers, telling the time, and core linking verbs (ཡིན། / རེད།) with embedded cultural notes.",
-    syllabusHighlights: [
-      "Everyday Greetings, Farewells & Polite Register (ཞེ་ས།)",
-      "Introducing Yourself, Nationality & Family Kinship",
-      "Numbers, Days of the Week & Telling the Time",
-      "Essential Copulas & Question Particles (ཡིན་པས། / རེད་པས།)",
-      "Cultural Notes: Offering a Khata, Gestures & Etiquette",
-    ],
+    statusBadge: "Coming Soon",
+    hasAudio: false,
     sampleItems: [
-      { tib: "བཀྲ་ཤིས་བདེ་ལེགས།", translit: "tashi delek", en: "Auspicious greetings" },
+      { tib: "བཀྲ་ཤིས་བདེ་ལེགས།", translit: "tashi delek", en: "Hello / Greetings" },
       { tib: "ཐུགས་རྗེ་ཆེ།", translit: "thukje che", en: "Thank you" },
-      { tib: "ག་ལེར་ཕེབས།", translit: "galer phep", en: "Goodbye (going)" },
+      { tib: "ག་ལེར་ཕེབས།", translit: "galer phep", en: "Goodbye" },
     ],
   },
   {
@@ -228,21 +200,20 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     roman: "III",
     levelLabel: "LEVEL III",
     title: "Pre-Intermediate",
-    shortDesc: "Build conversational fluency and tense structures.",
+    subtitle: "Conversational fluency & tenses",
+    oneLine: "Express past, present and future with confidence.",
+    shortDesc:
+      "Build conversational fluency and master Tibetan tense structures, evidential verbs, and practical dialogues for travel, dining and daily life.",
+    fullBoxDesc:
+      "Move beyond simple phrases into natural, connected conversation. Learn how Tibetan expresses past, present and future actions, how speakers distinguish between personal experience and general knowledge, and how to navigate travel, markets, and social life across twelve structured units.",
     symbol: "/symbol_treasure_vase.png",
     status: "soon",
     statusBadge: "Coming Soon",
-    modalOverview:
-      "Expand your ability to express past, present, and future actions naturally. Pre-Intermediate focuses on Tibetan's unique evidential verb system—distinguishing between personal intention, direct perception, and general fact—alongside practical travel and daily life dialogues.",
-    syllabusHighlights: [
-      "Past, Present & Future Tense Constructions",
-      "Evidentiality & Egophoric Verbs (ཡོད། / འདུག / བྱུང་།)",
-      "Case Particles in Action: Ergative, Genitive & Locative",
-      "Navigating Markets, Travel, Dining & Directions",
-    ],
+    hasAudio: false,
     sampleItems: [
-      { tib: "ང་བོད་སྐད་སྦྱོང་གི་ཡོད།", translit: "nga böke jong gi yö", en: "I am studying Tibetan" },
-      { tib: "ཇ་བསྲུབས་མ་", translit: "ja supma", en: "Butter tea" },
+      { tib: "ང་བོད་སྐད་སྦྱོང་གི་ཡོད།", translit: "nga böke jong gi yö", en: "I study Tibetan" },
+      { tib: "ཇ་བསྲུབས་མ།", translit: "ja supma", en: "Butter tea" },
+      { tib: "རྗེས་མ་མཇལ་ཡོང་།", translit: "jema jal yong", en: "See you later" },
     ],
   },
   {
@@ -250,21 +221,20 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     roman: "IV",
     levelLabel: "LEVEL IV",
     title: "Intermediate",
-    shortDesc: "Honorifics, register, and reading short prose.",
+    subtitle: "Honorifics, register & short prose",
+    oneLine: "Speak politely and read authentic short texts.",
+    shortDesc:
+      "Master polite honorific speech (Zhe-sa) for speaking with elders and teachers, and begin reading folk stories, proverbs and short modern prose.",
+    fullBoxDesc:
+      "Deepen your command of polite and honorific Tibetan (Zhe-sa) used when speaking with elders, teachers, and monastics, while bridging the gap between spoken colloquial Tibetan and written prose through traditional folk tales, proverbs, and guided reading passages.",
     symbol: "/symbol_dharma_wheel.png",
     status: "soon",
     statusBadge: "Coming Soon",
-    modalOverview:
-      "Deepen your command of polite and honorific Tibetan (Zhe-sa) used when speaking with elders, teachers, and monastics, while bridging the gap between spoken colloquial Tibetan and written modern prose.",
-    syllabusHighlights: [
-      "Systematic Mastery of Honorific Nouns & Verbs (ཞེ་ས།)",
-      "Complex Clause Linking & Relative Clauses",
-      "Reading Folk Tales, Proverbs (གཏམ་དཔེ།) & Short Essays",
-      "Listening Comprehension with Native Storytellers",
-    ],
+    hasAudio: false,
     sampleItems: [
       { tib: "བཞུགས་གདན་འཇགས།", translit: "zhukden jak", en: "Please be seated (Hon.)" },
       { tib: "གསོལ་ཇ་མཆོད།", translit: "sölja chö", en: "Please drink tea (Hon.)" },
+      { tib: "གཏམ་དཔེ།", translit: "tampe", en: "Proverb / Saying" },
     ],
   },
   {
@@ -272,21 +242,20 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     roman: "V",
     levelLabel: "LEVEL V",
     title: "Upper-Intermediate",
-    shortDesc: "Navigating philosophical and journalistic texts.",
+    subtitle: "Philosophical & journalistic texts",
+    oneLine: "Engage with Tibetan media, essays and philosophy.",
+    shortDesc:
+      "Navigate authentic Tibetan journalism, biographical writing, and foundational Buddhist philosophical terminology with clear grammatical guidance.",
+    fullBoxDesc:
+      "Step into authentic Tibetan intellectual and cultural discourse. Learn how literary particles and classical expressions appear in modern journalism, histories, biographies (Namthar), and philosophical discussions, building the vocabulary needed for deeper study.",
     symbol: "/symbol_endless_knot.png",
     status: "soon",
     statusBadge: "Coming Soon",
-    modalOverview:
-      "Move confidently through authentic Tibetan media, literary essays, and foundational Buddhist philosophical vocabulary. Learn how classical grammatical particles operate in modern intellectual discourse.",
-    syllabusHighlights: [
-      "Literary Particles & Classical-to-Modern Bridges",
-      "Reading Tibetan Journalism, Histories & Biographies (རྣམ་ཐར།)",
-      "Key Philosophical & Cultural Terminology",
-      "Structured Debate & Nuanced Opinion Expression",
-    ],
+    hasAudio: false,
     sampleItems: [
-      { tib: "རྟེན་འབྲེལ་", translit: "tendrel", en: "Dependent origination / auspiciousness" },
-      { tib: "སྙིང་རྗེ་", translit: "nyingje", en: "Compassion" },
+      { tib: "རྟེན་འབྲེལ།", translit: "tendrel", en: "Interdependence" },
+      { tib: "སྙིང་རྗེ།", translit: "nyingje", en: "Compassion" },
+      { tib: "རྣམ་ཐར།", translit: "namthar", en: "Spiritual biography" },
     ],
   },
   {
@@ -294,21 +263,20 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     roman: "VI",
     levelLabel: "LEVEL VI",
     title: "Advanced",
-    shortDesc: "Independent reading of canonical texts and poetry.",
+    subtitle: "Canonical texts, literature & poetry",
+    oneLine: "Read classical and modern Tibetan independently.",
+    shortDesc:
+      "Achieve independent reading fluency across classical canonical texts, traditional poetry, historical chronicles and formal discourse.",
+    fullBoxDesc:
+      "The culmination of the six-level path. Develop independent scholarly literacy across both classical and modern registers, reading canonical pecha texts, poetic compositions (Nyen-ngak), and historical chronicles with full grammatical and cultural command.",
     symbol: "/symbol_victory_banner.png",
     status: "soon",
     statusBadge: "Coming Soon",
-    modalOverview:
-      "Achieve independent scholarly literacy across classical and modern registers. Read canonical literature, poetic compositions (སྙན་ངག), and historical chronicles with full grammatical precision.",
-    syllabusHighlights: [
-      "Unassisted Reading of Classical & Canonical Pecha Texts",
-      "Traditional Tibetan Poetics, Idioms & Epistolary Style",
-      "Advanced Honorific Discourse & Formal Oratory",
-      "Comprehensive Mastery of Literary Tibetan Syntax",
-    ],
+    hasAudio: false,
     sampleItems: [
-      { tib: "ཤེས་རབ་", translit: "sherab", en: "Transcendent wisdom" },
-      { tib: "ཐབས་ཤེས་ཟུང་འབྲེལ།", translit: "thabshe zungdrel", en: "Union of method and wisdom" },
+      { tib: "ཤེས་རབ།", translit: "sherab", en: "Wisdom" },
+      { tib: "ཐབས་ཤེས་ཟུང་འབྲེལ།", translit: "thabshe zungdrel", en: "Method & wisdom" },
+      { tib: "སྙན་ངག", translit: "nyen-ngak", en: "Traditional poetry" },
     ],
   },
 ];
@@ -375,7 +343,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is there audio?",
-    a: "Yes — every single letter, syllable combination, vocabulary word, and conversational phrase is accompanied by clear audio so you can hear authentic pronunciation at every step.",
+    a: "Yes — every single letter, syllable combination, and vocabulary word in Beginner 1 is accompanied by clear audio so you can hear authentic pronunciation at every step.",
   },
   {
     q: "What do I need to learn on?",
@@ -404,49 +372,28 @@ const EIGHT_AUSPICIOUS_SYMBOLS = [
 export function WebLanding() {
   const { playAudio, stopAudio, playingItem } = useAudio();
 
-  // --- Hero Orbiting Phrases State ---
-  // 5 visible orbital slots initially holding phrases 0..4
-  const [slotPhraseIndices, setSlotPhraseIndices] = useState<number[]>([0, 1, 2, 3, 4]);
-  const [fadingSlot, setFadingSlot] = useState<number | null>(null);
-  const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
+  // --- All 10 Hero Phrases Animated Constellation State ---
+  // Most of the 10 phrases are visible at once; 2 softly fade out and back in
+  // on a staggered breathing cycle so the whole constellation feels alive.
+  const [fadedIndices, setFadedIndices] = useState<number[]>([3, 8]);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [activePhraseId, setActivePhraseId] = useState<string | null>(null);
-  const nextPhrasePointerRef = useRef<number>(5);
-  const nextSlotToCycleRef = useRef<number>(0);
   const phraseAudioRef = useRef<HTMLAudioElement | null>(null);
   const phraseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Cycle one slot every 3.8 seconds (unless hovered or playing audio)
   useEffect(() => {
     const interval = setInterval(() => {
-      if (hoveredSlot !== null || activePhraseId !== null) return;
+      if (hoveredIdx !== null || activePhraseId !== null) return;
 
-      const slotIdx = nextSlotToCycleRef.current;
-      nextSlotToCycleRef.current = (slotIdx + 1) % ORBIT_SLOTS.length;
-
-      // Trigger smooth fade-out on that slot
-      setFadingSlot(slotIdx);
-
-      // Swap phrase when faded out, then fade back in
-      setTimeout(() => {
-        setSlotPhraseIndices((prev) => {
-          const updated = [...prev];
-          // Find next phrase not currently visible in any slot
-          let candidate = nextPhrasePointerRef.current % HERO_PHRASES.length;
-          let safety = 0;
-          while (updated.includes(candidate) && safety < HERO_PHRASES.length) {
-            candidate = (candidate + 1) % HERO_PHRASES.length;
-            safety++;
-          }
-          nextPhrasePointerRef.current = (candidate + 1) % HERO_PHRASES.length;
-          updated[slotIdx] = candidate;
-          return updated;
-        });
-        setFadingSlot(null);
-      }, 650);
-    }, 3800);
+      setFadedIndices((prev) => {
+        const nextFirst = (prev[0] + 3) % HERO_PHRASES.length;
+        const nextSecond = (prev[1] + 3) % HERO_PHRASES.length;
+        return [nextFirst, nextSecond === nextFirst ? (nextSecond + 1) % HERO_PHRASES.length : nextSecond];
+      });
+    }, 3200);
 
     return () => clearInterval(interval);
-  }, [hoveredSlot, activePhraseId]);
+  }, [hoveredIdx, activePhraseId]);
 
   // Placeholder / Real Audio Handler for Hero Phrases
   const handleHeroPhraseClick = useCallback((phrase: HeroPhrase) => {
@@ -458,7 +405,7 @@ export function WebLanding() {
 
     setActivePhraseId(phrase.id);
 
-    // 1. If a real .wav URL is configured on the phrase, play it!
+    // 1. If a real .wav URL is configured on the phrase, play it
     if (phrase.audioUrl) {
       const audio = new Audio(phrase.audioUrl);
       phraseAudioRef.current = audio;
@@ -468,9 +415,11 @@ export function WebLanding() {
       return;
     }
 
-    // 2. Otherwise play a warm, gentle two-note singing-bowl chime placeholder
+    // 2. Placeholder gentle singing-bowl chime until recordings are added
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new AudioCtx();
       const now = ctx.currentTime;
 
@@ -488,7 +437,6 @@ export function WebLanding() {
         osc.stop(now + startOffset + duration);
       };
 
-      // Gentle pentatonic fifth chime (F4 -> C5)
       playNote(349.23, 0, 0.9, 0.12);
       playNote(523.25, 0.14, 1.1, 0.1);
     } catch {
@@ -501,11 +449,11 @@ export function WebLanding() {
   }, []);
 
   // --- Proficiency Level Carousel & Detail Modal State ---
-  const [levelPage, setLevelPage] = useState<number>(0); // 0 shows levels 1-3, 1 shows levels 4-6
+  const [levelPage, setLevelPage] = useState<number>(0);
   const [selectedLevel, setSelectedLevel] = useState<LevelDetail | null>(null);
 
   // --- How It Works (4 Systems) Carousel State ---
-  const [systemPage, setSystemPage] = useState<number>(0); // 0 shows items 0-1, 1 shows items 2-3
+  const [systemPage, setSystemPage] = useState<number>(0);
 
   // --- FAQ Accordion State ---
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -517,38 +465,37 @@ export function WebLanding() {
     rect: DOMRect;
   } | null>(null);
 
-  // Slice of 12 consonants for the interactive phone preview
   const phoneConsonants = CONSONANTS.slice(0, 12);
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark overflow-x-hidden">
-      {/* Custom Keyframes for Organic Hero Phrase Floating */}
+      {/* Organic Floating Keyframes for the 10-Phrase Constellation */}
       <style>{`
         @keyframes landingFloat1 {
           0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(4px, -9px, 0); }
+          50% { transform: translate3d(4px, -8px, 0); }
         }
         @keyframes landingFloat2 {
           0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(-5px, -11px, 0); }
+          50% { transform: translate3d(-5px, -9px, 0); }
         }
         @keyframes landingFloat3 {
           0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(6px, -7px, 0); }
+          50% { transform: translate3d(5px, -6px, 0); }
         }
         @keyframes landingFloat4 {
           0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(-4px, -8px, 0); }
+          50% { transform: translate3d(-4px, -7px, 0); }
         }
         @keyframes landingFloat5 {
           0%, 100% { transform: translate3d(0px, 0px, 0); }
-          50% { transform: translate3d(5px, -10px, 0); }
+          50% { transform: translate3d(4px, -9px, 0); }
         }
-        .landing-float-1 { animation: landingFloat1 5.5s ease-in-out infinite; }
-        .landing-float-2 { animation: landingFloat2 6.4s ease-in-out infinite 0.6s; }
-        .landing-float-3 { animation: landingFloat3 5.9s ease-in-out infinite 1.2s; }
-        .landing-float-4 { animation: landingFloat4 6.8s ease-in-out infinite 0.3s; }
-        .landing-float-5 { animation: landingFloat5 6.1s ease-in-out infinite 0.9s; }
+        .landing-float-1 { animation: landingFloat1 5.6s ease-in-out infinite; }
+        .landing-float-2 { animation: landingFloat2 6.5s ease-in-out infinite 0.5s; }
+        .landing-float-3 { animation: landingFloat3 6.0s ease-in-out infinite 1.1s; }
+        .landing-float-4 { animation: landingFloat4 6.9s ease-in-out infinite 0.3s; }
+        .landing-float-5 { animation: landingFloat5 6.2s ease-in-out infinite 0.8s; }
       `}</style>
 
       {/* ====================================================================
@@ -570,7 +517,7 @@ export function WebLanding() {
               <span className="font-tibetan text-base leading-tight text-brand tracking-wide">
                 བོད་སྐད།
               </span>
-              <span className="font-serif font-bold text-lg leading-none text-white tracking-tight">
+              <span className="font-serif font-medium text-lg leading-none text-white">
                 Loplao
               </span>
             </div>
@@ -599,7 +546,7 @@ export function WebLanding() {
           <div className="flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="px-4 py-2 text-xs sm:text-sm font-bold text-white border border-white/30 hover:border-white hover:bg-white/10 rounded-lg transition-all cursor-pointer">
+                <button className="px-4 py-2 text-xs sm:text-sm font-medium text-white border border-white/30 hover:border-white hover:bg-white/10 rounded-lg transition-all cursor-pointer">
                   Log in
                 </button>
               </SignInButton>
@@ -622,10 +569,10 @@ export function WebLanding() {
       </nav>
 
       {/* ====================================================================
-          2. HERO SECTION (DARK NAVY bg-ink + ORBITING CLICKABLE PHRASES)
+          2. HERO SECTION (ORIGINAL EDITORIAL SERIF + ALL 10 FLOATING PHRASES)
       ==================================================================== */}
-      <header className="relative bg-ink text-white pt-12 pb-24 md:py-24 overflow-hidden">
-        {/* Subtle Dharma Wheel Watermark in Top-Right Background */}
+      <header className="relative bg-ink text-white pt-14 pb-28 md:py-24 overflow-hidden">
+        {/* Subtle Dharma Wheel Watermark */}
         <img
           src="/symbol_dharma_wheel.png"
           alt=""
@@ -633,34 +580,36 @@ export function WebLanding() {
           className="pointer-events-none select-none absolute -top-16 -right-24 w-[420px] h-[420px] object-contain opacity-[0.04] brightness-0 invert"
         />
 
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-8 items-center relative z-10">
-          {/* Left Column: Editorial Headline & CTA */}
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center relative z-10">
+          {/* Left Column: Editorial Headline (Matching Original Website Font) & CTA */}
           <div className="lg:col-span-6 flex flex-col items-start text-left">
-            <div className="inline-flex items-center gap-2.5 mb-5">
+            <div className="inline-flex items-center gap-2.5 mb-6">
               <img
                 src="/symbol_victory_banner.png"
                 alt=""
                 className="w-5 h-5 object-contain"
               />
-              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand">
                 Promoting Tibetan Language &amp; Culture Worldwide
               </span>
             </div>
 
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
-              <span className="text-white block">Learn Tibetan.</span>
-              <span className="text-brand block mt-1">Feel closer to its culture.</span>
+            {/* Exact font-serif weight and style from original WebLanding.tsx */}
+            <h1 className="font-serif font-normal text-5xl sm:text-6xl md:text-[64px] leading-[1.1] text-white mb-6">
+              Learn Tibetan.
+              <br />
+              <span className="text-brand italic">Feel closer to its culture.</span>
             </h1>
 
-            <p className="text-base sm:text-[17px] text-white/80 max-w-xl leading-relaxed mb-7">
+            <p className="text-base sm:text-lg text-white/80 max-w-xl leading-relaxed mb-8">
               Discover the beauty of the Tibetan language through engaging lessons and
               thoughtfully crafted learning resources. Whether you&apos;re reconnecting with
               your roots or discovering Tibetan for the first time, there&apos;s a place for
               you at Loplao.
             </p>
 
-            {/* Tibetan Welcome Motto with Gold Left Accent */}
-            <div className="border-l-2 border-brand/70 pl-4 py-1 mb-9">
+            {/* Tibetan Welcome Motto */}
+            <div className="border-l-2 border-brand/70 pl-4 py-1 mb-10">
               <p className="font-tibetan text-2xl sm:text-[26px] text-white/95 leading-normal">
                 བོད་སྐད་སྦྱོང་དུ་ཕེབས་པར་དགའ་བསུ་ཞུ།
               </p>
@@ -670,20 +619,20 @@ export function WebLanding() {
             <div className="flex flex-wrap items-center gap-5">
               <SignedOut>
                 <SignUpButton mode="modal">
-                  <button className="bg-brand hover:bg-brand-dark text-ink font-bold px-8 py-4 text-[15px] rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.99] cursor-pointer">
-                    Learn for free
+                  <button className="bg-brand hover:bg-brand-dark text-ink font-bold px-8 py-4 text-sm rounded-full transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+                    Learn for free <ArrowRight size={16} />
                   </button>
                 </SignUpButton>
               </SignedOut>
               <SignedIn>
                 <Link href="/dashboard">
-                  <button className="bg-brand hover:bg-brand-dark text-ink font-bold px-8 py-4 text-[15px] rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center gap-2 cursor-pointer">
-                    Continue to Dashboard <ArrowRight size={17} />
+                  <button className="bg-brand hover:bg-brand-dark text-ink font-bold px-8 py-4 text-sm rounded-full transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+                    Continue to Dashboard <ArrowRight size={16} />
                   </button>
                 </Link>
               </SignedIn>
 
-              <div className="flex items-center gap-2 text-xs font-bold text-white/90">
+              <div className="flex items-center gap-2 text-xs font-medium text-white/90">
                 <span>Loved by our students</span>
                 <span className="text-brand tracking-widest text-sm" aria-label="5 stars">
                   ★★★★★
@@ -692,11 +641,11 @@ export function WebLanding() {
             </div>
           </div>
 
-          {/* Right Column: Circular Himalayan Vignette + Animated Clickable Phrase Bubbles */}
-          <div className="lg:col-span-6 flex flex-col items-center justify-center relative py-6 sm:py-10">
-            <div className="relative w-[290px] h-[290px] sm:w-[370px] sm:h-[370px] md:w-[410px] md:h-[410px]">
-              {/* Soft outer glow ring */}
-              <div className="absolute -inset-3 rounded-full border border-white/10 pointer-events-none" />
+          {/* Right Column: Circular Mountain Vignette + ALL 10 Animated & Clickable Phrases */}
+          <div className="lg:col-span-6 flex flex-col items-center justify-center relative py-10">
+            <div className="relative w-[300px] h-[300px] sm:w-[390px] sm:h-[390px] md:w-[430px] md:h-[430px]">
+              {/* Soft outer orbit ring */}
+              <div className="absolute -inset-6 rounded-full border border-white/10 pointer-events-none" />
 
               {/* Circular Mountain Image */}
               <div className="w-full h-full rounded-full overflow-hidden border-4 border-white/15 shadow-2xl relative bg-ink-light">
@@ -712,7 +661,7 @@ export function WebLanding() {
               </div>
 
               {/* Gold Lotus Emblem Badge (Bottom-Right of Circle) */}
-              <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand shadow-xl border-2 border-white flex items-center justify-center z-20 pointer-events-none">
+              <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand shadow-xl border-2 border-white flex items-center justify-center z-30 pointer-events-none">
                 <img
                   src="/symbol_lotus.png"
                   alt="Lotus Symbol"
@@ -720,53 +669,54 @@ export function WebLanding() {
                 />
               </div>
 
-              {/* 5 Orbiting, Fading & Clickable Tibetan Phrase Bubbles */}
-              {ORBIT_SLOTS.map((slot, slotIdx) => {
-                const phraseIdx = slotPhraseIndices[slotIdx] ?? slotIdx;
-                const phrase = HERO_PHRASES[phraseIdx];
-                const isFading = fadingSlot === slotIdx && hoveredSlot !== slotIdx;
+              {/* All 10 Floating Tibetan Phrase Bubbles */}
+              {HERO_PHRASES.map((phrase, idx) => {
+                const isFaded =
+                  fadedIndices.includes(idx) &&
+                  hoveredIdx !== idx &&
+                  activePhraseId !== phrase.id;
                 const isPlaying = activePhraseId === phrase.id;
 
                 return (
                   <div
-                    key={slotIdx}
-                    className={`absolute z-20 ${slot.posClass} ${slot.maxWidth}`}
-                    onMouseEnter={() => setHoveredSlot(slotIdx)}
-                    onMouseLeave={() => setHoveredSlot(null)}
+                    key={phrase.id}
+                    className={`absolute z-20 ${phrase.posClass} max-w-[215px] sm:max-w-[245px]`}
+                    onMouseEnter={() => setHoveredIdx(idx)}
+                    onMouseLeave={() => setHoveredIdx(null)}
                   >
                     <button
                       type="button"
                       onClick={() => handleHeroPhraseClick(phrase)}
                       title="Click to hear phrase"
-                      className={`group text-left bg-surface/95 hover:bg-surface text-ink px-4 py-2.5 sm:px-4 sm:py-3 rounded-2xl shadow-xl border transition-all duration-700 cursor-pointer flex items-start gap-2.5 ${
-                        slot.floatClass
+                      className={`group text-left bg-surface/95 hover:bg-surface text-ink px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl shadow-xl border transition-all duration-1000 cursor-pointer flex items-center gap-2.5 ${
+                        phrase.floatClass
                       } ${
-                        isFading
-                          ? "opacity-0 scale-95 blur-[1px]"
+                        isFaded
+                          ? "opacity-20 scale-95 blur-[0.5px]"
                           : "opacity-100 scale-100 blur-0"
                       } ${
                         isPlaying
-                          ? "border-brand ring-4 ring-brand/30 -translate-y-1"
-                          : "border-border-subtle hover:border-brand"
+                          ? "border-brand ring-4 ring-brand/30 -translate-y-1 z-30"
+                          : "border-border-subtle hover:border-brand hover:z-30"
                       }`}
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="font-tibetan text-lg sm:text-xl text-ink leading-snug">
+                        <div className="font-tibetan text-base sm:text-lg text-ink leading-snug">
                           {phrase.tib}
                         </div>
-                        <div className="text-[11px] sm:text-xs font-medium text-ink-muted mt-0.5 leading-tight">
+                        <div className="text-[10px] sm:text-[11px] font-medium text-ink-muted leading-tight">
                           {phrase.en}
                         </div>
                       </div>
                       <span
-                        className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                        className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                           isPlaying
                             ? "bg-brand text-ink"
                             : "bg-brand-light text-brand-dark group-hover:bg-brand group-hover:text-ink"
                         }`}
                       >
                         <Volume2
-                          size={13}
+                          size={12}
                           className={isPlaying ? "animate-pulse" : ""}
                         />
                       </span>
@@ -777,7 +727,7 @@ export function WebLanding() {
             </div>
 
             {/* Subtle Interactive Hint Underneath the Orbit */}
-            <div className="mt-8 inline-flex items-center gap-2 text-xs text-white/60">
+            <div className="mt-12 inline-flex items-center gap-2 text-xs text-white/60">
               <Volume2 size={14} className="text-brand" />
               <span>Click any floating Tibetan phrase to preview</span>
             </div>
@@ -788,9 +738,9 @@ export function WebLanding() {
       {/* ====================================================================
           3. "MY PROFICIENCY LEVEL" CAROUSEL + DETAIL MODAL (bg-surface)
       ==================================================================== */}
-      <section id="levels" className="py-20 md:py-24 bg-surface border-b border-border-subtle">
+      <section id="levels" className="py-24 bg-surface border-b border-border-subtle">
         <div className="max-w-5xl mx-auto px-6 text-center">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink mb-3">
+          <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-3">
             My Proficiency Level
           </h2>
           <p className="text-sm sm:text-base text-ink-muted max-w-xl mx-auto mb-14">
@@ -816,7 +766,7 @@ export function WebLanding() {
                   key={lvl.id}
                   type="button"
                   onClick={() => setSelectedLevel(lvl)}
-                  className="group bg-surface hover:bg-paper/60 border border-transparent hover:border-border-subtle rounded-3xl p-6 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"
+                  className="group bg-surface hover:bg-paper/60 border border-border-subtle/70 hover:border-brand rounded-3xl p-7 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"
                 >
                   {/* Circular Medallion with Auspicious Symbol */}
                   <div className="w-28 h-28 rounded-full bg-paper border border-border-subtle group-hover:border-brand flex items-center justify-center mb-5 shadow-sm transition-colors">
@@ -830,20 +780,23 @@ export function WebLanding() {
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-1">
                     {lvl.levelLabel}
                   </div>
-                  <h3 className="font-serif text-xl font-bold text-ink mb-2 group-hover:text-brand-dark transition-colors">
+                  <h3 className="font-serif font-normal text-2xl text-ink mb-1 group-hover:text-brand-dark transition-colors">
                     {lvl.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-ink-light leading-relaxed max-w-[240px] mb-3">
-                    {lvl.shortDesc}
+                  <div className="text-xs font-serif italic text-brand-dark mb-3">
+                    {lvl.subtitle}
+                  </div>
+                  <p className="text-xs sm:text-sm text-ink-light leading-relaxed max-w-[260px] mb-5">
+                    {lvl.oneLine}
                   </p>
 
                   {lvl.status === "open" ? (
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-dark bg-brand-light px-3 py-1 rounded-full border border-brand/30">
-                      <Sparkles size={12} /> Free · Click for syllabus
+                    <span className="mt-auto inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-dark bg-brand-light px-3.5 py-1 rounded-full border border-brand/30">
+                      <Sparkles size={12} /> Free · Click for details
                     </span>
                   ) : (
-                    <span className="text-[11px] font-medium text-ink-muted">
-                      Coming soon · Click to preview
+                    <span className="mt-auto text-[11px] font-medium text-ink-muted">
+                      Coming soon · Click for details
                     </span>
                   )}
                 </button>
@@ -861,7 +814,7 @@ export function WebLanding() {
             </button>
           </div>
 
-          {/* Mobile Arrows + Pagination Dots */}
+          {/* Pagination Dots */}
           <div className="mt-8 flex items-center justify-center gap-3">
             <button
               type="button"
@@ -882,15 +835,7 @@ export function WebLanding() {
           </div>
 
           <p className="mt-6 text-xs text-ink-muted">
-            Beginner 1 is open and free today. Higher levels are being released in stages —{" "}
-            <button
-              type="button"
-              onClick={() => setSelectedLevel(PROFICIENCY_LEVELS[0])}
-              className="underline font-bold text-ink hover:text-brand-dark cursor-pointer"
-            >
-              explore what you&apos;ll learn in each level
-            </button>
-            .
+            Click any level above to read its full course overview.
           </p>
         </div>
       </section>
@@ -934,10 +879,10 @@ export function WebLanding() {
 
           {/* Right: Editorial Copy */}
           <div className="lg:col-span-6 text-left max-w-xl">
-            <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
               Script Made Simple
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-5">
+            <h2 className="font-serif font-normal text-4xl sm:text-5xl text-white leading-tight mb-5">
               Read Tibetan <br className="hidden sm:inline" />
               with confidence
             </h2>
@@ -956,10 +901,10 @@ export function WebLanding() {
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left: Editorial Copy */}
           <div className="lg:col-span-6 text-left max-w-xl order-2 lg:order-1">
-            <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-3">
               Speak From Day One
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-ink leading-tight mb-5">
+            <h2 className="font-serif font-normal text-4xl sm:text-5xl text-ink leading-tight mb-5">
               Learn for real life
             </h2>
             <p className="text-base sm:text-[17px] text-ink-light leading-relaxed">
@@ -1011,7 +956,7 @@ export function WebLanding() {
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             How The App Works
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-3">
+          <h2 className="font-serif font-normal text-3xl sm:text-4xl text-white mb-3">
             How your learning is structured
           </h2>
           <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto mb-14">
@@ -1044,7 +989,7 @@ export function WebLanding() {
                       className="w-12 h-12 object-contain"
                     />
                   </div>
-                  <h3 className="font-serif text-xl font-bold text-white mb-3">
+                  <h3 className="font-serif font-normal text-2xl text-white mb-3">
                     {sys.title}
                   </h3>
                   <p className="text-sm text-white/75 leading-relaxed max-w-sm">
@@ -1096,7 +1041,7 @@ export function WebLanding() {
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-2">
               Culture In Every Lesson
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink mb-3">
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-3">
               Language carries a culture
             </h2>
             <p className="text-sm sm:text-base text-ink-light leading-relaxed">
@@ -1118,7 +1063,7 @@ export function WebLanding() {
                     className="w-6 h-6 object-contain"
                   />
                 </div>
-                <h3 className="font-serif text-lg font-bold text-ink mb-2.5">
+                <h3 className="font-serif font-normal text-xl text-ink mb-2.5">
                   {card.title}
                 </h3>
                 <p className="text-sm text-ink-light leading-relaxed">{card.desc}</p>
@@ -1133,7 +1078,7 @@ export function WebLanding() {
       ==================================================================== */}
       <section id="faq" className="py-24 bg-surface">
         <div className="max-w-2xl mx-auto px-6">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink text-center mb-12">
+          <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink text-center mb-12">
             Questions, answered
           </h2>
 
@@ -1147,7 +1092,7 @@ export function WebLanding() {
                     onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                     className="w-full flex items-center justify-between gap-4 text-left cursor-pointer group"
                   >
-                    <span className="font-serif font-bold text-base sm:text-lg text-ink group-hover:text-brand-dark transition-colors">
+                    <span className="font-serif font-normal text-lg sm:text-xl text-ink group-hover:text-brand-dark transition-colors">
                       {item.q}
                     </span>
                     <span className="text-brand-dark shrink-0">
@@ -1173,7 +1118,7 @@ export function WebLanding() {
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
           {/* Left Column: Copy + App Store / Google Play (Coming Soon) */}
           <div className="md:col-span-7 text-left">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white mb-3">
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-white mb-3">
               Take Tibetan with you
             </h2>
             <p className="text-sm sm:text-base text-white/75 max-w-md leading-relaxed mb-8">
@@ -1358,7 +1303,7 @@ export function WebLanding() {
       </footer>
 
       {/* ====================================================================
-          MODAL 1: PROFICIENCY LEVEL SYLLABUS & AUDIO PREVIEW POP-UP
+          MODAL 1: PROFICIENCY LEVEL POP-UP WINDOW (EXACT COPY + AUDIO ONLY ON LEVEL 1)
       ==================================================================== */}
       {selectedLevel && (
         <div
@@ -1384,6 +1329,7 @@ export function WebLanding() {
               <X size={18} />
             </button>
 
+            {/* Header: Medallion + Title + Subtitle */}
             <div className="flex items-center gap-4 mb-5">
               <div className="w-16 h-16 rounded-full bg-surface border border-border-subtle flex items-center justify-center shrink-0 shadow-xs">
                 <img
@@ -1407,80 +1353,86 @@ export function WebLanding() {
                     {selectedLevel.statusBadge}
                   </span>
                 </div>
-                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-ink">
-                  {selectedLevel.title}
+                <h3 className="font-serif font-normal text-2xl sm:text-3xl text-ink">
+                  {selectedLevel.title} ·{" "}
+                  <span className="italic text-brand-dark">{selectedLevel.subtitle}</span>
                 </h3>
               </div>
             </div>
 
-            <p className="text-sm sm:text-[15px] text-ink-light leading-relaxed mb-6">
-              {selectedLevel.modalOverview}
+            {/* One-line summary */}
+            <p className="font-serif italic text-base text-ink mb-4">
+              {selectedLevel.oneLine}
             </p>
 
-            {/* What You'll Learn List */}
+            {/* Short summary */}
+            <p className="text-sm text-ink-light leading-relaxed mb-5">
+              {selectedLevel.shortDesc}
+            </p>
+
+            {/* Full (for the box) */}
             <div className="bg-surface border border-border-subtle rounded-2xl p-5 mb-6">
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-3 flex items-center gap-2">
-                <BookOpen size={14} /> What you will learn
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-2 flex items-center gap-2">
+                <BookOpen size={14} /> Course Overview
               </div>
-              <ul className="space-y-2.5">
-                {selectedLevel.syllabusHighlights.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-2.5 text-xs sm:text-sm text-ink"
-                  >
-                    <CheckCircle2
-                      size={16}
-                      className="text-brand-dark shrink-0 mt-0.5"
-                    />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-sm text-ink leading-relaxed">
+                {selectedLevel.fullBoxDesc}
+              </p>
             </div>
 
-            {/* Sample Tibetan Examples */}
+            {/* Sample Tibetan Examples: Clickable Audio ONLY for Beginner 1 */}
             <div className="mb-7">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-3">
-                Examples from this level
+                {selectedLevel.hasAudio
+                  ? "Tap any example to hear its sound"
+                  : "Examples from this level"}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {selectedLevel.sampleItems.map((sample) => (
-                  <button
-                    key={sample.tib}
-                    type="button"
-                    onClick={() => {
-                      if (sample.canPlayRealAudio) {
-                        playAudio(sample.tib);
-                      } else {
-                        handleHeroPhraseClick({
-                          id: sample.tib,
-                          tib: sample.tib,
-                          en: sample.en,
-                          translit: sample.translit,
-                        });
-                      }
-                    }}
-                    className="bg-surface hover:bg-brand-light/40 border border-border-subtle hover:border-brand rounded-xl p-3 text-left transition-all flex flex-col justify-between cursor-pointer group"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-tibetan text-2xl text-ink leading-normal">
+                {selectedLevel.sampleItems.map((sample) =>
+                  selectedLevel.hasAudio ? (
+                    <button
+                      key={sample.tib}
+                      type="button"
+                      onClick={() => playAudio(sample.tib)}
+                      className="bg-surface hover:bg-brand-light/40 border border-border-subtle hover:border-brand rounded-xl p-3 text-left transition-all flex flex-col justify-between cursor-pointer group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-tibetan text-2xl text-ink leading-normal">
+                          {sample.tib}
+                        </span>
+                        <Volume2
+                          size={14}
+                          className="text-ink-muted group-hover:text-brand-dark shrink-0 mt-1"
+                        />
+                      </div>
+                      <div className="mt-1">
+                        <div className="text-xs font-bold text-ink">
+                          {sample.translit}
+                        </div>
+                        <div className="text-[11px] text-ink-muted truncate">
+                          {sample.en}
+                        </div>
+                      </div>
+                    </button>
+                  ) : (
+                    <div
+                      key={sample.tib}
+                      className="bg-surface border border-border-subtle rounded-xl p-3 text-left flex flex-col justify-between"
+                    >
+                      <span className="font-tibetan text-xl text-ink leading-normal">
                         {sample.tib}
                       </span>
-                      <Volume2
-                        size={14}
-                        className="text-ink-muted group-hover:text-brand-dark shrink-0 mt-1"
-                      />
-                    </div>
-                    <div className="mt-1">
-                      <div className="text-xs font-bold text-ink">
-                        {sample.translit}
-                      </div>
-                      <div className="text-[11px] text-ink-muted truncate">
-                        {sample.en}
+                      <div className="mt-1.5">
+                        <div className="text-xs font-bold text-ink">
+                          {sample.translit}
+                        </div>
+                        <div className="text-[11px] text-ink-muted truncate">
+                          {sample.en}
+                        </div>
                       </div>
                     </div>
-                  </button>
-                ))}
+                  )
+                )}
               </div>
             </div>
 
