@@ -146,7 +146,7 @@ interface LevelDetail {
   status: "open" | "soon";
   statusBadge: string;
   hasAudio: boolean;
-  sampleItems: { tib: string; translit: string; en: string }[];
+  sampleItems: { tib: string; translit: string; en: string; audioUrl?: string }[];
 }
 
 const PROFICIENCY_LEVELS: LevelDetail[] = [
@@ -164,7 +164,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     symbol: "/symbol_lotus.png",
     status: "open",
     statusBadge: "Free & Open Now",
-    hasAudio: true, // ONLY Beginner 1 has audio enabled
+    hasAudio: true,
     sampleItems: [
       { tib: "ཀ", translit: "ka", en: "High unaspirated" },
       { tib: "ཁ", translit: "kha", en: "High aspirated" },
@@ -188,11 +188,26 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
     symbol: "/symbol_conch.png",
     status: "soon",
     statusBadge: "Coming Soon",
-    hasAudio: false,
+    hasAudio: true,
     sampleItems: [
-      { tib: "བཀྲ་ཤིས་བདེ་ལེགས།", translit: "tashi delek", en: "Hello / Greetings" },
-      { tib: "ཐུགས་རྗེ་ཆེ།", translit: "thukje che", en: "Thank you" },
-      { tib: "ག་ལེར་ཕེབས།", translit: "galer phep", en: "Goodbye" },
+      {
+        tib: "བཀྲ་ཤིས་བདེ་ལེགས།",
+        translit: "tashi delek",
+        en: "Hello / Greetings",
+        audioUrl: "/sounds/Tashi Delek.wav",
+      },
+      {
+        tib: "ཐུགས་རྗེ་ཆེ།",
+        translit: "thukje che",
+        en: "Thank you",
+        audioUrl: "/sounds/Thank you.wav",
+      },
+      {
+        tib: "ག་ལེར་ཕེབས།",
+        translit: "galer phep",
+        en: "Goodbye",
+        audioUrl: "/sounds/Goodbye.wav",
+      },
     ],
   },
   {
@@ -1406,7 +1421,20 @@ export function WebLanding() {
                     <button
                       key={sample.tib}
                       type="button"
-                      onClick={() => playAudio(sample.tib)}
+                      onClick={() => {
+                        if (sample.audioUrl) {
+                          handleHeroPhraseClick({
+                            id: sample.tib,
+                            tib: sample.tib,
+                            en: sample.en,
+                            posClass: "",
+                            floatClass: "",
+                            audioUrl: sample.audioUrl,
+                          });
+                        } else {
+                          playAudio(sample.tib);
+                        }
+                      }}
                       className="bg-surface hover:bg-brand-light/40 border border-border-subtle hover:border-brand rounded-xl p-3 text-left transition-all flex flex-col justify-between cursor-pointer group"
                     >
                       <div className="flex items-start justify-between gap-2">
