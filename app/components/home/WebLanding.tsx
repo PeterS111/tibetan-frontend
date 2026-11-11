@@ -19,6 +19,7 @@ import {
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/clerk-react";
 
 import { useAudio } from "@/hooks/useAudio";
+import { AUDIO_MAP } from "@/app/data/audioMap";
 import {
   CONSONANTS,
   TONE_META,
@@ -462,6 +463,48 @@ export function WebLanding() {
       setActivePhraseId(null);
     }, 1300);
   }, []);
+
+  // Web-Only Consonant & Word Audio Player (Works on PC & Mobile Phone Web Browsers without touching useAudio.ts)
+  const [playingConsonant, setPlayingConsonant] = useState<string | null>(null);
+  const consonantAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playLandingSound = useCallback(
+    (tibText: string) => {
+      // Stop any playing phrase audio first
+      if (phraseAudioRef.current) {
+        phraseAudioRef.current.pause();
+        phraseAudioRef.current = null;
+      }
+      if (consonantAudioRef.current) {
+        consonantAudioRef.current.pause();
+        consonantAudioRef.current = null;
+      }
+
+      const cleanText = tibText.replace(/[’'`]/g, "").trim();
+      let fileName = AUDIO_MAP[cleanText];
+      if (!fileName && AUDIO_MAP[cleanText + "་"]) {
+        fileName = AUDIO_MAP[cleanText + "་"];
+      }
+      if (!fileName && cleanText.endsWith("་")) {
+        fileName = AUDIO_MAP[cleanText.slice(0, -1)];
+      }
+
+      if (fileName) {
+        setPlayingConsonant(tibText);
+        const audio = new Audio(encodeURI(`/sounds/${fileName}`));
+        consonantAudioRef.current = audio;
+        audio.onended = () => setPlayingConsonant(null);
+        audio.onerror = () => setPlayingConsonant(null);
+        audio.play().catch(() => {
+          setPlayingConsonant(null);
+          playAudio(tibText);
+        });
+      } else {
+        playAudio(tibText);
+      }
+    },
+    [playAudio]
+  );
 
   // --- Proficiency Level Carousel & Detail Modal State ---
   const [levelPage, setLevelPage] = useState<number>(0);
@@ -1224,7 +1267,7 @@ export function WebLanding() {
                 <button
                   type="button"
                   onClick={(e) => {
-                    playAudio(activePhoneConsonant.tib);
+                    playLandingSound(activePhoneConsonant.tib);
                     setSelectedConsonantPopup({
                       c: activePhoneConsonant,
                       rect: e.currentTarget.getBoundingClientRect(),
@@ -1232,7 +1275,8 @@ export function WebLanding() {
                   }}
                   className="w-full bg-brand hover:bg-brand-dark text-ink font-bold text-xs py-2.5 rounded-full transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                 >
-                  {playingItem === activePhoneConsonant.tib ? (
+                  {playingConsonant === activePhoneConsonant.tib ||
+                  playingItem === activePhoneConsonant.tib ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
                     <Volume2 size={14} />
@@ -1251,7 +1295,7 @@ export function WebLanding() {
                       type="button"
                       onClick={(e) => {
                         setActivePhoneConsonant(c);
-                        playAudio(c.tib);
+                        playLandingSound(c.tib);
                         setSelectedConsonantPopup({
                           c,
                           rect: e.currentTarget.getBoundingClientRect(),
@@ -1438,7 +1482,7 @@ export function WebLanding() {
                             audioUrl: sample.audioUrl,
                           });
                         } else {
-                          playAudio(sample.tib);
+                          playLandingSound(sample.tib);
                         }
                       }}
                       className="bg-surface hover:bg-brand-light/40 border border-border-subtle hover:border-brand rounded-xl p-3 text-left transition-all flex flex-col justify-between cursor-pointer group"
@@ -1522,11 +1566,16 @@ export function WebLanding() {
         <LandingConsonantDetailPanel
           data={selectedConsonantPopup}
           onClose={() => {
+            if (consonantAudioRef.current) {
+              consonantAudioRef.current.pause();
+              consonantAudioRef.current = null;
+            }
+            setPlayingConsonant(null);
             stopAudio();
             setSelectedConsonantPopup(null);
           }}
-          onSpeak={playAudio}
-          playingItem={playingItem}
+          onSpeak={playLandingSound}
+          playingItem={playingConsonant || playingItem}
         />
       )}
     </div>
