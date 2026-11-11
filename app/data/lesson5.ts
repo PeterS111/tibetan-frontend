@@ -192,7 +192,10 @@ export function generateExceptionsQuiz(): QuizQuestion[] {
     { word: "དབྲ་", read: "dra", note: "ད + བ + ར reads as [dra]" },
     { word: "འབུ་", read: "ng'bu", note: "འ + བ reads as low nasal [ba]" },
     { word: "འབྲི་", read: "ng'dri", note: "འ + བ + ར reads as [dra]" },
-    { word: "གཡོ་", read: "yo", note: "ག + ཡ reads as high [ya]" }
+    { word: "འབྲུ་", read: "ng'dru", note: "འ + བ + ར + ུ reads as [ng'dru]" },
+    { word: "གཡོ་", read: "yo", note: "ག + ཡ reads as high [ya]" },
+    { word: "གཡུ་", read: "yu", note: "ག + ཡ + ུ reads as high [yu]" },
+    { word: "གཡི་", read: "yi", note: "ག + ཡ + ི reads as high [yi]" }
   ];
   
   const qs: QuizQuestion[] = [];

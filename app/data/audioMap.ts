@@ -170,8 +170,10 @@ export const AUDIO_MAP: Record<string, string> = {
   "འཇུ་": "Section 02_Prefix ‘a_’ju_individual.wav", "འཇུ་ spelling": "Section 02_Prefix ‘a_’ju_spelling.wav",
   "འདི་": "Section 02_Prefix ‘a_’di_individual.wav", "འདི་ spelling": "Section 02_Prefix ‘a_’di_spelling.wav",
   "འདྲི་": "Section 02_Prefix ‘a_’’dri_individual.wav", "འདྲི་ spelling": "Section 02_Prefix ‘a_’dri_spelling.wav",
-  "འབུ་": "Section 02_Prefix ‘a_’bu_individual.wav", "འབུ་ spelling": "Section 02_Prefix ‘a_’bu_individual.wav", 
-  "འབྲི་": "Section 02_Prefix ‘a_’bri_individual.wav", "འབྲི་ spelling": "Section 02_Prefix ‘a_’bri_individual.wav", 
+  "འབུ་": "Section 02_Prefix ‘a_’bu_individual.wav", "འབུ་ spelling": "‘bu Spelling pre-fix འ.wav", 
+  "འབྲི་": "Section 02_Prefix ‘a_’bri_individual.wav", "འབྲི་ spelling": "‘Bri Spelling pre-fix འ.wav", 
+  "འབྲུ་": "‘Bru individual Eception Pre-fix.wav",
+  "གཡི་": "gYi individual Eception Pre-fix.wav", 
   "དགེ་བ་": "Virtue.wav", "གཙོ་བོ་": "Chief.wav", "དཔེ་ཆ་": "Book.wav", "བདེ་བ་": "Happiness.wav",
   "བཟོ་བ་": "To make.wav", "མཐོ་པོ་": "High.wav", "འགྲོ་བ་": "To go.wav", "འབྲི་བ་": "To write.wav",
   "འཆི་བ་": "To die.wav",
@@ -211,7 +213,7 @@ export const AUDIO_MAP: Record<string, string> = {
   "སོས་": "Section 02_suffix_sa_soe_individual.wav", "སོས་ spelling": "Section 02_suffix_sa_soe_spelling.wav",
   
   // Vocabulary & Shift Rules
-  "བོད་": "Tibet.wav", "ཁང་པ་": "House.wav", "ཁང་": "House.wav", "མེ་མདའ་": "Gun.wav",
+  "བོད་": "Tibet.wav", "ཁང་པ་": "House.wav", "ཁང་": "Khang individual How to Recognise roots.wav", "མེ་མདའ་": "Gun.wav",
   "རྒྱལ་ཁབ་": "Country.wav", "དཀར་པོ་": "White.wav", "ལག་པ་": "Hand.wav",
   "ནག་པོ་": "Black.wav", "གངས་རི་": "Snow mountain.wav", "ནགས་ཚལ་": "Forest.wav",
   "རྣམས་": "Plural marker.wav", "ཁམས་": "Region of kham.wav", "ནགས་": "Spelling_post suffix Sa_nags.wav",
@@ -222,9 +224,9 @@ export const AUDIO_MAP: Record<string, string> = {
   "ཕྱིནད་": "Spelling_post suffix Da_phyind.wav", "ཕྱིན་": "Post-suffix da phyin.wav",
   "སྐྱོནད་": "Spelling_post suffix Da_skyond.wav", "སྐྱོན་": "Post-suffix da skyon.wav",
   "སྒྱུརད་": "Post-suffix da sgyurd.wav", "སྒྱུར་": "Post-suffix da sgyur.wav",  
-  "གངས་": "Spelling_post suffix Sa_gangs.wav", "གང་": "Post-suffix Sa gang.wav",
+  "གངས་": "Gangs individual How to Recognise roots.wav", "གངས་ spelling": "Spelling_post suffix Sa_gangs.wav", "གང་": "Post-suffix Sa gang.wav",
   "ཐབས་": "Spelling_post suffix Sa_thabs.wav", "ཐབ་": "Post-suffix Sa thab.wav",
-  "མངགས་": "Post-suffix Sa mngags.wav", "མངག་": "Post-suffix Sa mngag.wav",
+  "མངགས་": "Mngags individual How to Recognise roots.wav", "མངག་": "Post-suffix Sa mngag.wav",
   "བདགས་": "Bdags_ Rule 4 How to recognise the roots.wav",
   "དམངས་": "Dmangs_ Rule 4 How to recognise the roots.wav"
 };
