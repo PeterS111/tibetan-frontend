@@ -1014,85 +1014,43 @@ export function WebLanding() {
       </section>
 
       {/* ====================================================================
-          6. "HOW YOUR LEARNING IS STRUCTURED" CAROUSEL (bg-ink)
+          6. "HOW YOUR LEARNING IS STRUCTURED" (ALL 4 ITEMS SIDE-BY-SIDE)
       ==================================================================== */}
       <section id="methodology" className="py-24 bg-ink text-white">
-        <div className="max-w-5xl mx-auto px-6 text-center">
+        <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             How The App Works
           </div>
           <h2 className="font-serif font-normal text-3xl sm:text-4xl text-white mb-3">
             How your learning is structured
           </h2>
-          <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto mb-14">
+          <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto mb-16">
             Four quiet systems run behind every lesson — so you always know what to open
             next.
           </p>
 
-          <div className="relative flex items-center justify-center">
-            {/* Left Arrow */}
-            <button
-              type="button"
-              onClick={() => setSystemPage((p) => (p === 0 ? 1 : 0))}
-              aria-label="Previous system features"
-              className="hidden sm:flex w-10 h-10 rounded-full border border-white/20 hover:border-white/60 text-white/70 hover:text-white items-center justify-center transition-all shrink-0 mr-6 cursor-pointer"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            {/* 2 Visible System Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-3xl">
-              {LEARNING_SYSTEMS.slice(systemPage * 2, systemPage * 2 + 2).map((sys) => (
-                <div
-                  key={sys.title}
-                  className="flex flex-col items-center text-center px-4"
-                >
-                  <div className="w-20 h-20 rounded-full bg-paper flex items-center justify-center mb-6 shadow-lg">
-                    <img
-                      src={sys.symbol}
-                      alt={sys.title}
-                      className="w-12 h-12 object-contain"
-                    />
-                  </div>
-                  <h3 className="font-serif font-normal text-2xl text-white mb-3">
-                    {sys.title}
-                  </h3>
-                  <p className="text-sm text-white/75 leading-relaxed max-w-sm">
-                    {sys.desc}
-                  </p>
+          {/* All 4 System Cards Fitting Without Scrolling */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            {LEARNING_SYSTEMS.map((sys) => (
+              <div
+                key={sys.title}
+                className="flex flex-col items-center text-center px-2"
+              >
+                <div className="w-24 h-24 rounded-full bg-paper flex items-center justify-center mb-6 shadow-lg">
+                  <img
+                    src={sys.symbol}
+                    alt={sys.title}
+                    className="w-16 h-16 object-contain"
+                  />
                 </div>
-              ))}
-            </div>
-
-            {/* Right Arrow */}
-            <button
-              type="button"
-              onClick={() => setSystemPage((p) => (p === 0 ? 1 : 0))}
-              aria-label="Next system features"
-              className="hidden sm:flex w-10 h-10 rounded-full border border-white/20 hover:border-white/60 text-white/70 hover:text-white items-center justify-center transition-all shrink-0 ml-6 cursor-pointer"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-
-          {/* Pagination Dots */}
-          <div className="mt-12 flex items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => setSystemPage(0)}
-              aria-label="System page 1"
-              className={`h-2 rounded-full transition-all cursor-pointer ${
-                systemPage === 0 ? "w-6 bg-brand" : "w-2 bg-white/30"
-              }`}
-            />
-            <button
-              type="button"
-              onClick={() => setSystemPage(1)}
-              aria-label="System page 2"
-              className={`h-2 rounded-full transition-all cursor-pointer ${
-                systemPage === 1 ? "w-6 bg-brand" : "w-2 bg-white/30"
-              }`}
-            />
+                <h3 className="font-serif font-normal text-xl sm:text-2xl text-white mb-3 max-w-[200px] leading-snug">
+                  {sys.title}
+                </h3>
+                <p className="text-sm text-white/75 leading-relaxed max-w-[215px]">
+                  {sys.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -1121,11 +1079,11 @@ export function WebLanding() {
                 key={card.title}
                 className="bg-paper border border-border-subtle rounded-2xl p-7 flex flex-col items-start text-left shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="w-11 h-11 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-5 shadow-xs">
+                <div className="w-20 h-20 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
                   <img
                     src={card.symbol}
                     alt={card.title}
-                    className="w-6 h-6 object-contain"
+                    className="w-14 h-14 object-contain"
                   />
                 </div>
                 <h3 className="font-serif font-normal text-xl text-ink mb-2.5">
@@ -1326,17 +1284,13 @@ export function WebLanding() {
       ==================================================================== */}
       <footer className="bg-[#091e36] text-white/70 py-14 border-t border-white/10 text-center">
         <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
-          {/* Row of 8 Auspicious Symbols */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 mb-6">
-            {EIGHT_AUSPICIOUS_SYMBOLS.map((sym) => (
-              <img
-                key={sym.alt}
-                src={sym.src}
-                alt={sym.alt}
-                title={sym.alt}
-                className="w-7 h-7 sm:w-8 sm:h-8 object-contain opacity-90 hover:opacity-100 hover:scale-110 transition-all"
-              />
-            ))}
+          {/* Single Pecha Scripture Emblem Above the Wisdom Blessing */}
+          <div className="mb-5">
+            <img
+              src="/symbol_pecha_gold.png"
+              alt="Tibetan Pecha Scripture"
+              className="w-20 h-20 object-contain mx-auto opacity-95 hover:scale-105 transition-transform"
+            />
           </div>
 
           {/* Tibetan Wisdom Blessing */}
