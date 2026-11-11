@@ -162,7 +162,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
       "Learn Tibetan script from the beginning — all 30 consonants, four vowels, and the rules for combining letters, prefixes and suffixes. Audio and a mastery check at every step.",
     fullBoxDesc:
       "Seven steps, from your first letter to reading whole words. Learn the 30 consonants and four vowels, followed by superscripts, subscripts, prefixes and suffixes, and how they affect spelling, pronunciation and meaning. Each step includes audio and a mastery check. The course ends with a final assessment.",
-    symbol: "/symbol_lotus.png",
+    symbol: "/motif_butter_lamp.png",
     status: "open",
     statusBadge: "Free & Open Now",
     hasAudio: true,
@@ -186,7 +186,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
       "Learn everyday Tibetan through greetings, introductions, numbers and time, family, shopping, weekends, home and the seasons. Eleven units, each based on everyday situations.",
     fullBoxDesc:
       "Eleven units covering the basics of everyday conversation. Start in the classroom, then learn to greet people, introduce yourself, say where you're from, tell the time and count, talk about family, bargain for tsampa, and describe your weekend, home and the four seasons. Each unit ends with a 40-question test.",
-    symbol: "/symbol_conch.png",
+    symbol: "/motif_prayer_wheel.png",
     status: "soon",
     statusBadge: "Coming Soon",
     hasAudio: true,
@@ -222,7 +222,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
       "Build conversational fluency and master Tibetan tense structures, evidential verbs, and practical dialogues for travel, dining and daily life.",
     fullBoxDesc:
       "Move beyond simple phrases into natural, connected conversation. Learn how Tibetan expresses past, present and future actions, how speakers distinguish between personal experience and general knowledge, and how to navigate travel, markets, and social life across twelve structured units.",
-    symbol: "/symbol_treasure_vase.png",
+    symbol: "/motif_wind_horse.png",
     status: "soon",
     statusBadge: "Coming Soon",
     hasAudio: false,
@@ -243,7 +243,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
       "Master polite honorific speech (Zhe-sa) for speaking with elders and teachers, and begin reading folk stories, proverbs and short modern prose.",
     fullBoxDesc:
       "Deepen your command of polite and honorific Tibetan (Zhe-sa) used when speaking with elders, teachers, and monastics, while bridging the gap between spoken colloquial Tibetan and written prose through traditional folk tales, proverbs, and guided reading passages.",
-    symbol: "/symbol_dharma_wheel.png",
+    symbol: "/motif_stupa.png",
     status: "soon",
     statusBadge: "Coming Soon",
     hasAudio: false,
@@ -264,7 +264,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
       "Navigate authentic Tibetan journalism, biographical writing, and foundational Buddhist philosophical terminology with clear grammatical guidance.",
     fullBoxDesc:
       "Step into authentic Tibetan intellectual and cultural discourse. Learn how literary particles and classical expressions appear in modern journalism, histories, biographies (Namthar), and philosophical discussions, building the vocabulary needed for deeper study.",
-    symbol: "/symbol_endless_knot.png",
+    symbol: "/motif_snow_lion.png",
     status: "soon",
     statusBadge: "Coming Soon",
     hasAudio: false,
@@ -285,7 +285,7 @@ const PROFICIENCY_LEVELS: LevelDetail[] = [
       "Achieve independent reading fluency across classical canonical texts, traditional poetry, historical chronicles and formal discourse.",
     fullBoxDesc:
       "The culmination of the six-level path. Develop independent scholarly literacy across both classical and modern registers, reading canonical pecha texts, poetic compositions (Nyen-ngak), and historical chronicles with full grammatical and cultural command.",
-    symbol: "/symbol_victory_banner.png",
+    symbol: "/symbol_pecha_gold.png",
     status: "soon",
     statusBadge: "Coming Soon",
     hasAudio: false,
@@ -304,22 +304,22 @@ const LEARNING_SYSTEMS = [
   {
     title: "Guided Syllabus",
     desc: "Access structured lessons, grammar notes, and interactive exercises directly in your dashboard. Zero guesswork required.",
-    symbol: "/symbol_dharma_wheel.png",
+    symbol: "/motif_mandala.png",
   },
   {
     title: "Spaced Repetition",
     desc: "Lock vocabulary into your long-term memory. Our built-in review system brings words back right before you forget them.",
-    symbol: "/symbol_endless_knot.png",
+    symbol: "/motif_prayer_wheel.png",
   },
   {
     title: "Track Progress",
     desc: "Watch your vocabulary grow. Maintain your learning streak and master Tibetan grammar step-by-step.",
-    symbol: "/symbol_victory_banner.png",
+    symbol: "/motif_stupa.png",
   },
   {
     title: "Rooted in Authentic Scholarship",
     desc: "Our curriculum and grammar progression draw on respected Tibetan language textbooks, integrating diverse teaching traditions into one clear path.",
-    symbol: "/symbol_pecha.png",
+    symbol: "/motif_pecha.png",
   },
 ];
 
@@ -328,17 +328,17 @@ const LEARNING_SYSTEMS = [
 // ============================================================================
 const CULTURE_CARDS = [
   {
-    symbol: "/symbol_parasol.png",
+    symbol: "/motif_khata.png",
     title: "The scarf and the greeting",
     desc: "When real respect is owed, Tibetans offer a khata — a long white or pale blue silk scarf — with both hands, palms up. It welcomes a guest and honours someone important.",
   },
   {
-    symbol: "/symbol_conch.png",
+    symbol: "/motif_yak.png",
     title: "The tongue-out greeting",
     desc: "In some parts of Tibet, especially among older generations, people greet you by briefly sticking out the tongue. It is friendly, not rude — a centuries-old way of showing you mean no harm.",
   },
   {
-    symbol: "/symbol_lotus.png",
+    symbol: "/motif_singing_bowl.png",
     title: 'Why “cousin” has no Tibetan word',
     desc: "Tibetan has no single everyday word for cousin. Cousins are usually called brothers and sisters, the term chosen by age and gender.",
   },
@@ -367,19 +367,19 @@ const FAQ_ITEMS = [
   },
   {
     q: "How do I get in touch?",
-    a: "Email us at: loplaoacademy@gmail.com",
+    a: "Email us at: loplao.academy@gmail.com",
   },
 ];
 
 const EIGHT_AUSPICIOUS_SYMBOLS = [
-  { src: "/symbol_parasol.png", alt: "Precious Parasol" },
-  { src: "/symbol_golden_fish.png", alt: "Golden Fishes" },
-  { src: "/symbol_treasure_vase.png", alt: "Treasure Vase" },
-  { src: "/symbol_lotus.png", alt: "Lotus Flower" },
-  { src: "/symbol_conch.png", alt: "White Conch" },
-  { src: "/symbol_endless_knot.png", alt: "Endless Knot" },
-  { src: "/symbol_victory_banner.png", alt: "Victory Banner" },
-  { src: "/symbol_dharma_wheel.png", alt: "Dharma Wheel" },
+  { src: "/motif_prayer_flags_gold.png", alt: "Tibetan Prayer Flags" },
+  { src: "/motif_butter_lamp_gold.png", alt: "Butter Lamp" },
+  { src: "/motif_prayer_wheel_gold.png", alt: "Prayer Wheel" },
+  { src: "/motif_singing_bowl_gold.png", alt: "Singing Bowl" },
+  { src: "/motif_stupa_gold.png", alt: "Stupa" },
+  { src: "/motif_wind_horse_gold.png", alt: "Windhorse" },
+  { src: "/motif_snow_lion_gold.png", alt: "Snow Lion" },
+  { src: "/motif_pecha_gold.png", alt: "Tibetan Pecha Scripture" },
 ];
 
 // ============================================================================
@@ -550,11 +550,11 @@ export function WebLanding() {
       `}</style>
 
       {/* ====================================================================
-          1. TOP NAVIGATION BAR (DARK NAVY bg-ink)
+          1. TOP NAVIGATION BAR (FIXED AT TOP WHEN SCROLLING)
       ==================================================================== */}
-      <nav className="sticky top-0 w-full z-40 bg-ink/95 backdrop-blur-md border-b border-white/10 text-white">
+      <nav className="fixed top-0 left-0 right-0 w-full z-50 bg-ink/95 backdrop-blur-md border-b border-white/10 text-white">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Brand Logo (White) + Tibetan on Top, Loplao Underneath */}
+          {/* Brand Logo (White) + སློབ་སློའོ། on Top + Divider Line + Loplao Underneath */}
           <Link href="/" className="flex items-center gap-3.5 group">
             <img
               src="/icon_t.png"
@@ -565,10 +565,11 @@ export function WebLanding() {
               className="w-10 h-10 object-contain brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
             />
             <div className="flex flex-col justify-center">
-              <span className="font-tibetan text-base leading-tight text-brand tracking-wide">
-                བོད་སྐད།
+              <span className="font-tibetan text-base leading-none text-brand tracking-wide pb-1">
+                སློབ་སློའོ།
               </span>
-              <span className="font-serif font-medium text-lg leading-none text-white">
+              <span className="w-full h-[1px] bg-white/30 my-0.5" />
+              <span className="font-serif font-medium text-lg leading-none text-white pt-0.5">
                 Loplao
               </span>
             </div>
@@ -622,13 +623,13 @@ export function WebLanding() {
       {/* ====================================================================
           2. HERO SECTION (ORIGINAL EDITORIAL SERIF + ALL 10 FLOATING PHRASES)
       ==================================================================== */}
-      <header className="relative bg-ink text-white pt-14 pb-28 md:py-24 overflow-hidden">
-        {/* Subtle Dharma Wheel Watermark */}
+      <header className="relative bg-ink text-white pt-32 pb-28 md:pt-40 md:pb-24 overflow-hidden">
+        {/* Subtle Mandala Watermark */}
         <img
-          src="/symbol_dharma_wheel.png"
+          src="/motif_mandala_gold.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none select-none absolute -top-16 -right-24 w-[420px] h-[420px] object-contain opacity-[0.04] brightness-0 invert"
+          className="pointer-events-none select-none absolute top-4 -right-24 w-[420px] h-[420px] object-contain opacity-[0.06]"
         />
 
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center relative z-10">
@@ -636,7 +637,7 @@ export function WebLanding() {
           <div className="lg:col-span-6 flex flex-col items-start text-left">
             <div className="inline-flex items-center gap-2.5 mb-6">
               <img
-                src="/symbol_victory_banner.png"
+                src="/motif_wind_horse_gold.png"
                 alt=""
                 className="w-5 h-5 object-contain"
               />
@@ -714,14 +715,7 @@ export function WebLanding() {
                 <div className="absolute inset-0 bg-gradient-to-t from-ink/35 via-transparent to-transparent" />
               </div>
 
-              {/* Gold Lotus Emblem Badge (Bottom-Right of Circle) */}
-              <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand shadow-xl border-2 border-white flex items-center justify-center z-30 pointer-events-none">
-                <img
-                  src="/symbol_lotus.png"
-                  alt="Lotus Symbol"
-                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
-                />
-              </div>
+              
 
               {/* All 10 Floating Tibetan Phrase Bubbles Revolving Clockwise */}
               <div
@@ -1353,8 +1347,34 @@ export function WebLanding() {
             &ldquo;May the goddess of wisdom bestow accomplishment.&rdquo;
           </p>
 
+          {/* Social Media Icons (Facebook & Instagram) */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <a
+              href="https://www.facebook.com/TibEasy"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Loplao on Facebook"
+              className="w-10 h-10 rounded-full bg-white/5 hover:bg-brand hover:text-ink border border-white/15 hover:border-brand flex items-center justify-center text-white/80 transition-all"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+              </svg>
+            </a>
+            <a
+              href="https://www.instagram.com/easytibetan/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Loplao on Instagram"
+              className="w-10 h-10 rounded-full bg-white/5 hover:bg-brand hover:text-ink border border-white/15 hover:border-brand flex items-center justify-center text-white/80 transition-all"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+            </a>
+          </div>
+
           {/* Navigation & Legal Links */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-white/70 mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-white/70 mb-4">
             <Link href="/about" className="hover:text-white transition-colors">
               About
             </Link>
@@ -1373,6 +1393,12 @@ export function WebLanding() {
             <Link href="/terms" className="hover:text-white transition-colors">
               Terms
             </Link>
+            <a
+              href="mailto:loplao.academy@gmail.com"
+              className="hover:text-white transition-colors"
+            >
+              loplao.academy@gmail.com
+            </a>
           </div>
 
           <div className="text-[11px] text-white/45">
