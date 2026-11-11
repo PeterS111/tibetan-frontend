@@ -144,12 +144,12 @@ export default function AboutPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40" />
         </div>
 
-        {/* Subtle Gold Mandala Watermark */}
+        {/* Subtle Gold Mandala Watermark (Centered Upper-Middle Between Text & Monastery) */}
         <img
           src="/motif_mandala_gold.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none select-none absolute -right-24 -bottom-24 w-96 h-96 object-contain opacity-[0.07]"
+          className="pointer-events-none select-none absolute top-14 left-[56%] -translate-x-1/2 w-72 h-72 md:w-80 md:h-80 object-contain opacity-[0.04]"
         />
 
         <div className="max-w-5xl mx-auto px-6 relative z-10">
