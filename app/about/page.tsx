@@ -54,7 +54,7 @@ export default function AboutPage() {
       ==================================================================== */}
       <nav className="fixed top-0 left-0 right-0 w-full z-50 bg-ink/95 backdrop-blur-md border-b border-white/10 text-white">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Brand Logo (White) + སློབ་སློའོ། on Top + Divider Line + Loplao Underneath */}
+          {/* Brand Logo (White) + སློབ་སླའོ། on Top + Divider Line + Loplao Underneath */}
           <Link href="/" className="flex items-center gap-3.5 group">
             <img
               src="/icon_t.png"

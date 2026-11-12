@@ -566,7 +566,7 @@ export function WebLanding() {
             />
             <div className="flex flex-col justify-center">
               <span className="font-tibetan text-base leading-none text-brand tracking-wide pb-1">
-                སློབ་སློའོ།
+                སློབ་སླའོ།
               </span>
               <span className="w-full h-[1px] bg-white/30 my-0.5" />
               <span className="font-serif font-medium text-lg leading-none text-white pt-0.5">
