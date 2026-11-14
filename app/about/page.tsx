@@ -76,18 +76,15 @@ export default function AboutPage() {
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/75">
+          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/75">
             <Link href="/#levels" className="hover:text-white transition-colors">
               Curriculum
             </Link>
-            <Link
-              href="/#methodology"
-              className="hover:text-white transition-colors"
-            >
-              Methodology
+            <Link href="/courses" className="hover:text-white transition-colors">
+              Live Courses
             </Link>
-            <Link href="/#culture" className="hover:text-white transition-colors">
-              Culture
+            <Link href="/shop" className="hover:text-white transition-colors">
+              Shop
             </Link>
             <Link href="/#faq" className="hover:text-white transition-colors">
               FAQ
