@@ -877,13 +877,7 @@ export default function ShopPage() {
       ==================================================================== */}
       <footer className="bg-[#091e36] text-white/70 py-14 border-t border-white/10 text-center">
         <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
-          // <div className="mb-5">
-            // <img
-              // src="/symbol_pecha_gold.png"
-              // alt="Tibetan Pecha Scripture"
-              // className="w-20 h-20 object-contain mx-auto opacity-95"
-            // />
-          // </div>
+
 		  
 		  <div className="mb-5">
             <img
