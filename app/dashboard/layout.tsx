@@ -24,8 +24,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profile, setProfile] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Detect Native Platform
-  const { isNative } = usePlatform();
+  // Detect Native or Mobile Web Platform
+  const { isNative, isReady } = usePlatform();
   
   // Track time silently in the background
   useTimeTracker();
@@ -87,8 +87,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const streak = profile?.streak || 0;
   const currentPageName = [...libraryItems, ...moreItems].find(i => i.href === pathname)?.name || "Dashboard";
 
+  if (!isReady) {
+    return <div className="min-h-[100dvh] bg-paper" />;
+  }
+
   // ==========================================
-  // NATIVE MOBILE LAYOUT
+  // NATIVE & MOBILE BROWSER LAYOUT
   // ==========================================
   if (isNative) {
     const mobileTabs = [
