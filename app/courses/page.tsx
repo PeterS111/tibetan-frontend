@@ -1013,13 +1013,22 @@ export default function CoursesPage() {
       ==================================================================== */}
       <footer className="bg-[#091e36] text-white/70 py-14 border-t border-white/10 text-center">
         <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
-          <div className="mb-5">
+          // <div className="mb-5">
+            // <img
+              // src="/symbol_pecha_gold.png"
+              // alt="Tibetan Pecha Scripture"
+              // className="w-20 h-20 object-contain mx-auto opacity-95"
+            // />
+          // </div>
+		  
+		  <div className="mb-5">
             <img
-              src="/symbol_pecha_gold.png"
-              alt="Tibetan Pecha Scripture"
-              className="w-20 h-20 object-contain mx-auto opacity-95"
+              src="/motif_Prajnaparamita.png"
+              alt="Goddess Prajnaparamita"
+              className="w-24 h-24 sm:w-28 sm:h-28 object-contain mx-auto opacity-95 hover:scale-105 transition-transform"
             />
           </div>
+		  
           <div className="font-tibetan text-2xl sm:text-3xl text-white mb-1.5">
             ཤེས་རབ་ལྷ་མོས་དངོས་གྲུབ་སྩོལ།
           </div>
