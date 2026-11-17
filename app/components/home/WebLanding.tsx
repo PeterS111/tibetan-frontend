@@ -32,7 +32,6 @@ import {
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { Button } from "@/app/components/ui/Button";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
-import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
 // ============================================================================
 // 1. HERO FLOATING PHRASES (ALL 10 PHRASES IN CONSTELLATION)
