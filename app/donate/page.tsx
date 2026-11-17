@@ -243,11 +243,11 @@ export default function DonatePage() {
             )}
 
             {/* Custom Loplao Butter Lamp Medallion */}
-            <div className="w-16 h-16 rounded-full bg-surface border border-border-subtle flex items-center justify-center shadow-xs mb-5">
+            <div className="w-20 h-20 rounded-full bg-surface border border-border-subtle flex items-center justify-center shadow-xs mb-5">
               <img
                 src="/motif_butter_lamp.png"
                 alt="Tibetan Butter Lamp"
-                className="w-10 h-10 object-contain"
+                className="w-14 h-14 object-contain"
               />
             </div>
 
@@ -407,17 +407,19 @@ export default function DonatePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+			
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {IMPACT_PILLARS.map((pillar) => (
                 <div
                   key={pillar.title}
-                  className="bg-paper border border-border-subtle rounded-2xl p-6 flex flex-col items-start text-left shadow-2xs hover:shadow-md transition-shadow"
+                  className="bg-paper border border-border-subtle rounded-2xl p-6 sm:p-7 flex flex-col items-start text-left shadow-2xs hover:shadow-md transition-shadow"
                 >
-                  <div className="w-16 h-16 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-5 shadow-2xs">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
                     <img
                       src={pillar.motif}
                       alt={pillar.title}
-                      className="w-11 h-11 object-contain"
+                      className="w-14 h-14 sm:w-[68px] sm:h-[68px] object-contain"
                     />
                   </div>
                   <h3 className="font-serif font-normal text-xl text-ink mb-2">
@@ -433,28 +435,19 @@ export default function DonatePage() {
         </section>
 
         {/* ====================================================================
-            5. DARK NAVY SHARED JOURNEY & CIC BANNER ABOVE FOOTER
+            5. DARK NAVY "BE PART OF OUR JOURNEY" & CIC BANNER ABOVE FOOTER
         ==================================================================== */}
-        <section className="relative bg-ink text-white py-20 border-t border-white/10 overflow-hidden">
-          <img
-            src="/motif_mandala_gold.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none select-none absolute -top-20 -right-20 w-72 h-72 object-contain opacity-[0.05]"
-          />
-          <img
-            src="/motif_mandala_gold.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none select-none absolute -bottom-20 -left-20 w-72 h-72 object-contain opacity-[0.05]"
-          />
-
-          <div className="max-w-2xl mx-auto px-6 text-center relative z-10">
-            <div className="font-tibetan text-2xl sm:text-3xl text-brand mb-6">
+        <section className="relative bg-ink text-white py-20 md:py-24 border-t border-white/10 overflow-hidden">
+          <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
+            <div className="font-tibetan text-2xl sm:text-3xl text-brand mb-3">
               ཞལ་འདེབས།
             </div>
 
-            <p className="text-sm sm:text-[15px] text-white/80 leading-relaxed mb-4">
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl md:text-[42px] text-white leading-tight mb-6">
+              Be Part of Our Journey
+            </h2>
+
+            <p className="text-sm sm:text-base text-white/80 leading-relaxed mb-5">
               Preserving a language and its cultural heritage is a shared
               responsibility. By helping Loplao grow, you are contributing to a
               future in which more people can learn Tibetan, engage with its
@@ -462,22 +455,23 @@ export default function DonatePage() {
               significance.
             </p>
 
-            <p className="text-sm sm:text-[15px] text-white/80 leading-relaxed mb-4">
+            <p className="text-sm sm:text-base text-white/80 leading-relaxed mb-5">
               Every contribution brings us closer to making that vision a
               reality.
             </p>
 
-            <p className="text-sm sm:text-[15px] font-bold text-white leading-relaxed mb-8">
+            <p className="text-sm sm:text-base font-bold text-white leading-relaxed mb-10">
               Thank you for being part of our journey and helping Tibetan
               language and culture flourish.
             </p>
 
-            <div className="text-[11px] text-white/45 leading-relaxed">
+            <div className="text-xs text-white/45 leading-relaxed">
               Loplao is a Community Interest Company (CIC), registered in
               England and Wales. Company Registration Number: 14581119.
             </div>
           </div>
         </section>
+			
 
         {/* Subtle 5-Element Tibetan Divider Above Footer */}
         <div className="h-[3px] w-full grid grid-cols-5">
