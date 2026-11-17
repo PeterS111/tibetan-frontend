@@ -771,6 +771,7 @@ export default function ShopPage() {
                     </button>
                   </div>
                 </div>
+                </div>
               </Reveal>
             );
           })}
