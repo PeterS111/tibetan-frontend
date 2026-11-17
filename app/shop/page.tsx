@@ -30,6 +30,7 @@ import {
   SignUpButton,
 } from "@clerk/clerk-react";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 type FilterCategory = "all" | "books" | "ebooks" | "cards" | "mugs";
 
@@ -518,7 +519,7 @@ export default function ShopPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40" />
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <Reveal className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             Tibetan Language Materials
           </div>
@@ -534,7 +535,7 @@ export default function ShopPage() {
             Beautifully crafted books, vocabulary cards, and mugs to enrich your
             Tibetan language journey.
           </p>
-        </div>
+        </Reveal>
 
         {/* Subtle 5-Element Tibetan Accent Strip */}
         <div className="absolute bottom-0 left-0 right-0 h-[3px] grid grid-cols-5 z-10">
@@ -626,17 +627,19 @@ export default function ShopPage() {
 
         {/* 3-Column Product Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {filteredProducts.map((product) => {
+          {filteredProducts.map((product, idx) => {
             const varIdx = selectedVariantByCard[product.cardId] ?? 0;
             const currentVariant =
               product.variants[varIdx] || product.variants[0];
             const hasSizes = product.variants.length > 1;
 
             return (
-              <div
-                key={product.cardId}
-                className="group bg-surface border border-border-subtle hover:border-brand rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col"
+              <Reveal
+                key={`${activeCategory}-${product.cardId}`}
+                delay={(idx % 3) * 90}
+                className="h-full flex"
               >
+                <div className="w-full group bg-surface border border-border-subtle hover:border-brand rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col">
                 {/* Product Image + Badges */}
                 <button
                   type="button"
@@ -768,7 +771,7 @@ export default function ShopPage() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
         </div>
@@ -779,7 +782,7 @@ export default function ShopPage() {
       ==================================================================== */}
       <section className="bg-ink text-white py-14 border-t border-white/10">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center">
+          <Reveal delay={0} className="flex flex-col items-center">
             <BookOpen size={24} className="text-brand mb-3" strokeWidth={1.75} />
             <h3 className="font-serif font-normal text-lg text-white mb-1">
               Authentic Materials
@@ -787,9 +790,9 @@ export default function ShopPage() {
             <p className="text-xs text-white/65 leading-relaxed max-w-[230px]">
               Created by Tibetan language experts and artists.
             </p>
-          </div>
+          </Reveal>
 
-          <div className="flex flex-col items-center">
+          <Reveal delay={100} className="flex flex-col items-center">
             <Tag size={24} className="text-brand mb-3" strokeWidth={1.75} />
             <h3 className="font-serif font-normal text-lg text-white mb-1">
               Fair Pricing
@@ -797,9 +800,9 @@ export default function ShopPage() {
             <p className="text-xs text-white/65 leading-relaxed max-w-[230px]">
               Quality materials at accessible prices
             </p>
-          </div>
+          </Reveal>
 
-          <div className="flex flex-col items-center">
+          <Reveal delay={200} className="flex flex-col items-center">
             <ShoppingCart
               size={24}
               className="text-brand mb-3"
@@ -811,7 +814,7 @@ export default function ShopPage() {
             <p className="text-xs text-white/65 leading-relaxed max-w-[230px]">
               Secure payment and fast delivery
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 

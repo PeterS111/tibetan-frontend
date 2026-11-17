@@ -22,6 +22,7 @@ import {
   SignUpButton,
 } from "@clerk/clerk-react";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 
 type CourseTabId = "winter" | "summer" | "flexible" | "private";
@@ -331,7 +332,7 @@ export default function CoursesPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/85 to-ink/60" />
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
+        <Reveal className="max-w-5xl mx-auto px-6 text-center relative z-10">
           {/* Course Switcher Pills */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/10 p-1.5 rounded-full border border-white/15 mb-10">
             {[
@@ -364,10 +365,10 @@ export default function CoursesPage() {
           <h1 className="font-serif font-normal text-4xl sm:text-5xl md:text-6xl text-white mb-4">
             {currentHero.title}
           </h1>
-          <p className="text-sm sm:text-base text-white/80 max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed">
             {currentHero.sub}
           </p>
-        </div>
+        </Reveal>
       </header>
 
       {/* ====================================================================
@@ -807,11 +808,13 @@ export default function CoursesPage() {
             4. UNIFIED REGISTRATION & LIVE CHECKOUT FORM
         ==================================================================== */}
         <section ref={formRef} className="mt-16 pt-12 border-t border-border-subtle">
-          <div className="bg-brand text-ink rounded-2xl py-3 px-6 text-center font-serif text-lg sm:text-xl mb-8 shadow-2xs flex items-center justify-center gap-2">
-            <Sparkles size={18} /> Limited Spots Available — Reserve Your Place
-          </div>
+          <Reveal>
+            <div className="bg-brand text-ink rounded-2xl py-3 px-6 text-center font-serif text-lg sm:text-xl mb-8 shadow-2xs flex items-center justify-center gap-2">
+              <Sparkles size={18} /> Limited Spots Available — Reserve Your Place
+            </div>
+          </Reveal>
 
-          <div className="max-w-2xl mx-auto bg-surface border border-border-strong rounded-3xl p-6 sm:p-10 shadow-sm">
+          <Reveal delay={100} className="max-w-2xl mx-auto bg-surface border border-border-strong rounded-3xl p-6 sm:p-10 shadow-sm">
             {freeConfirmed ? (
               <div className="py-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4">
@@ -1007,7 +1010,7 @@ export default function CoursesPage() {
                 </form>
               </>
             )}
-          </div>
+          </Reveal>
         </section>
       </main>
 

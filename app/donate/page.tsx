@@ -17,6 +17,7 @@ import {
   SignUpButton,
 } from "@clerk/clerk-react";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 const PRESET_AMOUNTS = [5, 10, 25, 50];
 
@@ -188,7 +189,7 @@ export default function DonatePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40" />
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
+        <Reveal className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             Support the Project
           </div>
@@ -204,7 +205,7 @@ export default function DonatePage() {
             Support Tibetan learning. Preserve a living heritage. Inspire future
             generations.
           </p>
-        </div>
+        </Reveal>
 
         {/* Subtle 5-Element Tibetan Accent Strip */}
         <div className="absolute bottom-0 left-0 right-0 h-[3px] grid grid-cols-5 z-10">
@@ -222,7 +223,7 @@ export default function DonatePage() {
       <main className="flex-1 w-full">
         <section className="max-w-5xl mx-auto px-6 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Left Column: Mission Copy */}
-          <div className="lg:col-span-6">
+          <Reveal className="lg:col-span-6">
             {isSuccess && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-start gap-3 text-emerald-800 mb-6">
                 <CheckCircle2
@@ -280,10 +281,13 @@ export default function DonatePage() {
                 new initiatives and reach more learners and communities.
               </p>
             </div>
-          </div>
+          </Reveal>
 
           {/* Right Column: Stripe Donation Box */}
-          <div className="lg:col-span-6 bg-surface border border-border-subtle rounded-3xl p-6 sm:p-8 shadow-sm">
+          <Reveal
+            delay={120}
+            className="lg:col-span-6 bg-surface border border-border-subtle rounded-3xl p-6 sm:p-8 shadow-sm"
+          >
             {/* One-Time vs Monthly Toggle */}
             <div className="grid grid-cols-2 bg-[#EEF4FA] p-1 rounded-full border border-border-subtle mb-6">
               <button
@@ -386,7 +390,7 @@ export default function DonatePage() {
                 Card
               </span>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* ====================================================================
@@ -394,7 +398,7 @@ export default function DonatePage() {
         ==================================================================== */}
         <section className="bg-surface border-t border-border-subtle py-20">
           <div className="max-w-5xl mx-auto px-6">
-            <div className="max-w-xl mb-12">
+            <Reveal className="max-w-xl mb-12">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-2">
                 Your Impact
               </div>
@@ -405,30 +409,27 @@ export default function DonatePage() {
                 Every contribution directly sustains our educational work as an
                 independent Community Interest Company.
               </p>
-            </div>
+            </Reveal>
 
-            
-			
-			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {IMPACT_PILLARS.map((pillar) => (
-                <div
-                  key={pillar.title}
-                  className="bg-paper border border-border-subtle rounded-2xl p-6 sm:p-7 flex flex-col items-start text-left shadow-2xs hover:shadow-md transition-shadow"
-                >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
-                    <img
-                      src={pillar.motif}
-                      alt={pillar.title}
-                      className="w-14 h-14 sm:w-[68px] sm:h-[68px] object-contain"
-                    />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {IMPACT_PILLARS.map((pillar, idx) => (
+                <Reveal key={pillar.title} delay={idx * 90} className="h-full">
+                  <div className="h-full bg-paper border border-border-subtle rounded-2xl p-6 sm:p-7 flex flex-col items-start text-left shadow-2xs hover:shadow-md transition-shadow">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
+                      <img
+                        src={pillar.motif}
+                        alt={pillar.title}
+                        className="w-14 h-14 sm:w-[68px] sm:h-[68px] object-contain"
+                      />
+                    </div>
+                    <h3 className="font-serif font-normal text-xl text-ink mb-2">
+                      {pillar.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-ink-light leading-relaxed">
+                      {pillar.desc}
+                    </p>
                   </div>
-                  <h3 className="font-serif font-normal text-xl text-ink mb-2">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-ink-light leading-relaxed">
-                    {pillar.desc}
-                  </p>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -438,7 +439,7 @@ export default function DonatePage() {
             5. DARK NAVY "BE PART OF OUR JOURNEY" & CIC BANNER ABOVE FOOTER
         ==================================================================== */}
         <section className="relative bg-ink text-white py-20 md:py-24 border-t border-white/10 overflow-hidden">
-          <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
+          <Reveal className="max-w-3xl mx-auto px-6 text-center relative z-10">
             <div className="font-tibetan text-2xl sm:text-3xl text-brand mb-3">
               ཞལ་འདེབས།
             </div>
@@ -469,9 +470,8 @@ export default function DonatePage() {
               Loplao is a Community Interest Company (CIC), registered in
               England and Wales. Company Registration Number: 14581119.
             </div>
-          </div>
+          </Reveal>
         </section>
-			
 
         {/* Subtle 5-Element Tibetan Divider Above Footer */}
         <div className="h-[3px] w-full grid grid-cols-5">

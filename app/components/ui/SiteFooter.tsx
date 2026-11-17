@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Home" },
@@ -20,7 +21,7 @@ export function SiteFooter() {
 
   return (
     <footer className="bg-[#091e36] text-white/70 py-14 border-t border-white/10 text-center">
-      <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
+      <Reveal className="max-w-4xl mx-auto px-6 flex flex-col items-center">
         {/* Tibetan Pecha Emblem */}
         <div className="mb-5">
           <img
@@ -107,7 +108,7 @@ export function SiteFooter() {
         <div className="text-[11px] text-white/45">
           © {new Date().getFullYear()} Loplao · Learn Tibetan UK
         </div>
-      </div>
+      </Reveal>
     </footer>
   );
 }

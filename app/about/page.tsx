@@ -19,6 +19,7 @@ import {
   SignUpButton,
 } from "@clerk/clerk-react";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 const STATS = [
   {
@@ -267,7 +268,7 @@ export default function AboutPage() {
           className="pointer-events-none select-none absolute top-14 left-[56%] -translate-x-1/2 w-72 h-72 md:w-80 md:h-80 object-contain opacity-[0.04]"
         />
 
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
+        <Reveal className="max-w-5xl mx-auto px-6 relative z-10">
           <button
             type="button"
             onClick={() => router.back()}
@@ -298,7 +299,7 @@ export default function AboutPage() {
             />
             <span className="w-12 h-[1px] bg-brand/60" />
           </div>
-        </div>
+        </Reveal>
       </header>
 
       {/* ====================================================================
@@ -306,7 +307,7 @@ export default function AboutPage() {
       ==================================================================== */}
       <section className="py-20 md:py-24 bg-paper">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6">
+          <Reveal className="lg:col-span-6">
             <span className="inline-block bg-brand text-ink text-[10px] font-bold uppercase tracking-[0.2em] px-3.5 py-1 rounded-full mb-4">
               Our Mission
             </span>
@@ -366,9 +367,9 @@ export default function AboutPage() {
                 Explore Our Courses <ArrowRight size={15} />
               </button>
             </Link>
-          </div>
+          </Reveal>
 
-          <div className="lg:col-span-6">
+          <Reveal delay={120} className="lg:col-span-6">
             <div className="rounded-3xl overflow-hidden border border-border-subtle shadow-lg bg-surface">
               <img
                 src="/about_prayer_flags.jpg"
@@ -379,7 +380,7 @@ export default function AboutPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -389,9 +390,10 @@ export default function AboutPage() {
       <section className="py-14 bg-surface border-y border-border-subtle">
         <div className="max-w-4xl mx-auto px-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
-            {STATS.map((stat) => (
-              <div
+            {STATS.map((stat, idx) => (
+              <Reveal
                 key={stat.label}
+                delay={idx * 100}
                 className="flex flex-col items-center text-center px-4 py-6 sm:py-2"
               >
                 
@@ -410,7 +412,7 @@ export default function AboutPage() {
                 <div className="text-[11px] text-ink-muted mt-0.5">
                   {stat.sub}
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -421,7 +423,7 @@ export default function AboutPage() {
       ==================================================================== */}
       <section className="py-20 md:py-24 bg-paper">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 order-2 lg:order-1">
+          <Reveal className="lg:col-span-6 order-2 lg:order-1">
             <div className="rounded-3xl overflow-hidden border border-border-subtle shadow-lg bg-surface">
               <img
                 src="/about_oxford_christ_church.jpg"
@@ -432,9 +434,9 @@ export default function AboutPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-          </div>
+          </Reveal>
 
-          <div className="lg:col-span-6 order-1 lg:order-2">
+          <Reveal delay={120} className="lg:col-span-6 order-1 lg:order-2">
             <span className="inline-block bg-brand text-ink text-[10px] font-bold uppercase tracking-[0.2em] px-3.5 py-1 rounded-full mb-4">
               Our Teaching Heritage
             </span>
@@ -476,7 +478,7 @@ export default function AboutPage() {
                 backgrounds.
               </p>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -485,7 +487,7 @@ export default function AboutPage() {
       ==================================================================== */}
       <section className="py-20 md:py-24 bg-surface border-y border-border-subtle">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7">
+          <Reveal className="lg:col-span-7">
             <span className="inline-block bg-brand text-ink text-[10px] font-bold uppercase tracking-[0.2em] px-3.5 py-1 rounded-full mb-4">
               Our Global Community
             </span>
@@ -585,9 +587,9 @@ export default function AboutPage() {
                 </p>
               </a>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="lg:col-span-5 flex justify-center">
+          <Reveal delay={140} className="lg:col-span-5 flex justify-center">
             <div className="w-[260px] sm:w-[285px] rounded-[36px] border-[6px] border-ink bg-white shadow-2xl overflow-hidden">
               <img
                 src="/about_community_instagram.webp"
@@ -595,7 +597,7 @@ export default function AboutPage() {
                 className="w-full h-auto object-cover"
               />
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -604,7 +606,7 @@ export default function AboutPage() {
       ==================================================================== */}
       <section className="py-20 md:py-24 bg-paper">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center max-w-xl mx-auto mb-14">
+          <Reveal className="text-center max-w-xl mx-auto mb-14">
             <span className="inline-block bg-brand text-ink text-[10px] font-bold uppercase tracking-[0.2em] px-3.5 py-1 rounded-full mb-3">
               The People Behind Loplao
             </span>
@@ -615,16 +617,16 @@ export default function AboutPage() {
               A small team with one shared belief: that Tibetan deserves to be
               taught properly and kept alive online.
             </p>
-          </div>
+          </Reveal>
 
           {/* 4-Column Grid in the Exact Screenshot Style (Compact Enough to Fit All 4) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {TEAM_MEMBERS.map((member) => (
-              <div
-                key={member.id}
-                onClick={() => setSelectedMember(member)}
-                className="group bg-surface border border-border-subtle hover:border-brand rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer"
-              >
+            {TEAM_MEMBERS.map((member, idx) => (
+              <Reveal key={member.id} delay={idx * 90} className="h-full flex">
+                <div
+                  onClick={() => setSelectedMember(member)}
+                  className="w-full group bg-surface border border-border-subtle hover:border-brand rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer"
+                >
                 {/* Top Dark Navy Banner with Corner Gold Mandala + Circular Gold-Bordered Avatar */}
                 <div className="relative bg-ink h-36 flex items-center justify-center overflow-hidden shrink-0">
                   <img
@@ -716,7 +718,7 @@ export default function AboutPage() {
                     )}
                   </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -830,7 +832,7 @@ export default function AboutPage() {
           8. GET INVOLVED SECTION
       ==================================================================== */}
       <section className="py-20 bg-surface border-t border-border-subtle">
-        <div className="max-w-3xl mx-auto px-6 text-center">
+        <Reveal className="max-w-3xl mx-auto px-6 text-center">
           <div className="border-y border-border-subtle py-14 px-4">
             <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark mb-4">
               Get Involved
@@ -856,7 +858,7 @@ export default function AboutPage() {
               </a>
             </p>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ====================================================================
@@ -876,7 +878,7 @@ export default function AboutPage() {
           className="pointer-events-none select-none absolute -bottom-24 -left-24 w-80 h-80 object-contain opacity-[0.06]"
         />
 
-        <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
+        <Reveal className="max-w-3xl mx-auto px-6 text-center relative z-10">
           <p className="font-serif italic text-2xl sm:text-3xl text-white/95 max-w-2xl mx-auto leading-relaxed mb-8">
             Join us at Loplao and be part of a vibrant community celebrating
             Tibetan wisdom.
@@ -922,7 +924,7 @@ export default function AboutPage() {
               </button>
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       

@@ -32,6 +32,7 @@ import {
 import { DraggablePanel } from "@/app/components/ui/DraggablePanel";
 import { Button } from "@/app/components/ui/Button";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 // ============================================================================
 // 1. HERO FLOATING PHRASES (ALL 10 PHRASES IN CONSTELLATION)
@@ -635,7 +636,7 @@ export function WebLanding() {
 
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center relative z-10">
           {/* Left Column: Editorial Headline (Matching Original Website Font) & CTA */}
-          <div className="lg:col-span-6 flex flex-col items-start text-left">
+          <Reveal className="lg:col-span-6 flex flex-col items-start text-left">
             <div className="inline-flex items-center gap-2.5 mb-6">
               <img
                 src="/motif_wind_horse_gold.png"
@@ -695,10 +696,10 @@ export function WebLanding() {
                 </span>
               </div>
             </div>
-          </div>
+          </Reveal>
 
           {/* Right Column: Circular Mountain Vignette + ALL 10 Animated & Clickable Phrases */}
-          <div className="lg:col-span-6 flex flex-col items-center justify-center relative py-10">
+          <Reveal delay={140} className="lg:col-span-6 flex flex-col items-center justify-center relative py-10">
             <div className="relative w-[300px] h-[300px] sm:w-[390px] sm:h-[390px] md:w-[430px] md:h-[430px]">
               {/* Soft outer orbit ring */}
               <div className="absolute -inset-6 rounded-full border border-white/10 pointer-events-none" />
@@ -797,7 +798,7 @@ export function WebLanding() {
               <Volume2 size={14} className="text-brand" />
               <span>Click any floating Tibetan phrase to preview</span>
             </div>
-          </div>
+          </Reveal>
         </div>
       </header>
 
@@ -806,12 +807,14 @@ export function WebLanding() {
       ==================================================================== */}
       <section id="levels" className="py-24 bg-surface border-b border-border-subtle">
         <div className="max-w-5xl mx-auto px-6 text-center">
-          <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-3">
-            My Proficiency Level
-          </h2>
-          <p className="text-sm sm:text-base text-ink-muted max-w-xl mx-auto mb-14">
-            A clear, step-by-step journey from your first letter to fluent discourse.
-          </p>
+          <Reveal>
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-3">
+              My Proficiency Level
+            </h2>
+            <p className="text-sm sm:text-base text-ink-muted max-w-xl mx-auto mb-14">
+              A clear, step-by-step journey from your first letter to fluent discourse.
+            </p>
+          </Reveal>
 
           {/* Carousel Container */}
           <div className="relative flex items-center justify-center">
@@ -827,13 +830,13 @@ export function WebLanding() {
 
             {/* 3 Visible Level Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-              {PROFICIENCY_LEVELS.slice(levelPage * 3, levelPage * 3 + 3).map((lvl) => (
-                <button
-                  key={lvl.id}
-                  type="button"
-                  onClick={() => setSelectedLevel(lvl)}
-                  className="group bg-surface hover:bg-paper/60 border border-border-subtle/70 hover:border-brand rounded-3xl p-7 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"
-                >
+              {PROFICIENCY_LEVELS.slice(levelPage * 3, levelPage * 3 + 3).map((lvl, idx) => (
+                <Reveal key={lvl.id} delay={idx * 100} className="h-full flex">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLevel(lvl)}
+                    className="w-full group bg-surface hover:bg-paper/60 border border-border-subtle/70 hover:border-brand rounded-3xl p-7 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"
+                  >
                   {/* Circular Medallion with Auspicious Symbol */}
                   <div className="w-28 h-28 rounded-full bg-paper border border-border-subtle group-hover:border-brand flex items-center justify-center mb-5 shadow-sm transition-colors">
                     <img
@@ -865,7 +868,8 @@ export function WebLanding() {
                       Coming soon · Click for details
                     </span>
                   )}
-                </button>
+                  </button>
+                </Reveal>
               ))}
             </div>
 
@@ -912,7 +916,7 @@ export function WebLanding() {
       <section className="py-24 bg-ink text-white overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left: 3 Fanned App Screen Mockups */}
-          <div className="lg:col-span-6 flex items-center justify-center relative py-6">
+          <Reveal className="lg:col-span-6 flex items-center justify-center relative py-6">
             <div className="relative flex items-center justify-center w-full max-w-[460px] h-[340px] sm:h-[400px]">
               {/* Left Tilted Phone */}
               <div className="w-[155px] sm:w-[185px] rounded-[24px] border-4 border-ink bg-white shadow-2xl overflow-hidden -rotate-12 -translate-x-16 sm:-translate-x-24 translate-y-4 transition-transform duration-500 hover:-translate-y-1">
@@ -941,10 +945,10 @@ export function WebLanding() {
                 />
               </div>
             </div>
-          </div>
+          </Reveal>
 
           {/* Right: Editorial Copy */}
-          <div className="lg:col-span-6 text-left max-w-xl">
+          <Reveal delay={120} className="lg:col-span-6 text-left max-w-xl">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
               Script Made Simple
             </div>
@@ -956,7 +960,7 @@ export function WebLanding() {
               Tap any letter to hear it, learn the tone groups, and lock in each step
               with a mastery check before moving on to vowels, prefixes and suffixes.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -966,7 +970,7 @@ export function WebLanding() {
       <section className="py-24 bg-surface text-ink overflow-hidden border-b border-border-subtle">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left: Editorial Copy */}
-          <div className="lg:col-span-6 text-left max-w-xl order-2 lg:order-1">
+          <Reveal className="lg:col-span-6 text-left max-w-xl order-2 lg:order-1">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted mb-3">
               Speak From Day One
             </div>
@@ -978,10 +982,10 @@ export function WebLanding() {
               telling the time — voiced by native speakers so you hear Tibetan as it is
               spoken.
             </p>
-          </div>
+          </Reveal>
 
           {/* Right: 3 Fanned App Screen Mockups */}
-          <div className="lg:col-span-6 flex items-center justify-center relative py-6 order-1 lg:order-2">
+          <Reveal delay={120} className="lg:col-span-6 flex items-center justify-center relative py-6 order-1 lg:order-2">
             <div className="relative flex items-center justify-center w-full max-w-[460px] h-[340px] sm:h-[400px]">
               {/* Left Tilted Phone */}
               <div className="w-[155px] sm:w-[185px] rounded-[24px] border-4 border-ink bg-white shadow-xl overflow-hidden -rotate-12 -translate-x-16 sm:-translate-x-24 translate-y-4 transition-transform duration-500 hover:-translate-y-1">
@@ -1010,7 +1014,7 @@ export function WebLanding() {
                 />
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -1019,22 +1023,25 @@ export function WebLanding() {
       ==================================================================== */}
       <section id="methodology" className="py-24 bg-ink text-white">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
-            How The App Works
-          </div>
-          <h2 className="font-serif font-normal text-3xl sm:text-4xl text-white mb-3">
-            How your learning is structured
-          </h2>
-          <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto mb-16">
-            Four quiet systems run behind every lesson — so you always know what to open
-            next.
-          </p>
+          <Reveal>
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
+              How The App Works
+            </div>
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-white mb-3">
+              How your learning is structured
+            </h2>
+            <p className="text-sm sm:text-base text-white/70 max-w-xl mx-auto mb-16">
+              Four quiet systems run behind every lesson — so you always know what to open
+              next.
+            </p>
+          </Reveal>
 
           {/* All 4 System Cards Fitting Without Scrolling */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            {LEARNING_SYSTEMS.map((sys) => (
-              <div
+            {LEARNING_SYSTEMS.map((sys, idx) => (
+              <Reveal
                 key={sys.title}
+                delay={idx * 90}
                 className="flex flex-col items-center text-center px-2"
               >
                 <div className="w-24 h-24 rounded-full bg-paper flex items-center justify-center mb-6 shadow-lg">
@@ -1050,7 +1057,7 @@ export function WebLanding() {
                 <p className="text-sm text-white/75 leading-relaxed max-w-[215px]">
                   {sys.desc}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -1061,7 +1068,7 @@ export function WebLanding() {
       ==================================================================== */}
       <section id="culture" className="py-24 bg-surface border-b border-border-subtle">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="max-w-xl mb-12">
+          <Reveal className="max-w-xl mb-12">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark mb-2">
               Culture In Every Lesson
             </div>
@@ -1072,26 +1079,25 @@ export function WebLanding() {
               Culture notes sit inside the lessons themselves, not beside them — so a
               greeting arrives with the scarf that goes with it.
             </p>
-          </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {CULTURE_CARDS.map((card) => (
-              <div
-                key={card.title}
-                className="bg-paper border border-border-subtle rounded-2xl p-7 flex flex-col items-start text-left shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="w-20 h-20 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
-                  <img
-                    src={card.symbol}
-                    alt={card.title}
-                    className="w-14 h-14 object-contain"
-                  />
+            {CULTURE_CARDS.map((card, idx) => (
+              <Reveal key={card.title} delay={idx * 100} className="h-full">
+                <div className="h-full bg-paper border border-border-subtle rounded-2xl p-7 flex flex-col items-start text-left shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-20 h-20 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
+                    <img
+                      src={card.symbol}
+                      alt={card.title}
+                      className="w-14 h-14 object-contain"
+                    />
+                  </div>
+                  <h3 className="font-serif font-normal text-xl text-ink mb-2.5">
+                    {card.title}
+                  </h3>
+                  <p className="text-sm text-ink-light leading-relaxed">{card.desc}</p>
                 </div>
-                <h3 className="font-serif font-normal text-xl text-ink mb-2.5">
-                  {card.title}
-                </h3>
-                <p className="text-sm text-ink-light leading-relaxed">{card.desc}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -1102,11 +1108,13 @@ export function WebLanding() {
       ==================================================================== */}
       <section id="faq" className="py-24 bg-surface">
         <div className="max-w-2xl mx-auto px-6">
-          <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink text-center mb-12">
-            Questions and answers
-          </h2>
+          <Reveal>
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-ink text-center mb-12">
+              Questions and answers
+            </h2>
+          </Reveal>
 
-          <div className="divide-y divide-border-subtle border-y border-border-subtle">
+          <Reveal delay={100} className="divide-y divide-border-subtle border-y border-border-subtle">
             {FAQ_ITEMS.map((item, idx) => {
               const isOpen = openFaqIndex === idx;
               return (
@@ -1131,7 +1139,7 @@ export function WebLanding() {
                 </div>
               );
             })}
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -1141,7 +1149,7 @@ export function WebLanding() {
       <section className="py-20 bg-ink text-white border-t border-white/10">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
           {/* Left Column: Copy + App Store / Google Play with Diagonal "COMING SOON!" Stamp */}
-          <div className="md:col-span-7 text-left">
+          <Reveal className="md:col-span-7 text-left">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
               Learn Anywhere
             </div>
@@ -1192,10 +1200,10 @@ export function WebLanding() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
 
           {/* Right Column: Interactive Phone Frame with Live Consonants & Pop-up */}
-          <div className="md:col-span-5 flex flex-col items-center justify-center">
+          <Reveal delay={140} className="md:col-span-5 flex flex-col items-center justify-center">
             <div className="relative w-[270px] sm:w-[290px] rounded-[34px] border-[6px] border-[#081b31] bg-paper text-ink p-4 shadow-2xl">
               {/* Top Phone Header */}
               <div className="flex items-center justify-between mb-3 px-1">
@@ -1276,7 +1284,7 @@ export function WebLanding() {
                 })}
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 

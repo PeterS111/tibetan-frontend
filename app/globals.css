@@ -94,6 +94,30 @@
   }
 }
 
+/* Subtle Editorial Scroll Reveal */
+.loplao-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition-property: opacity, transform;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.loplao-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce), print {
+  .loplao-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 @media print {
   @page { margin: 0; size: landscape; }
   body * { visibility: hidden; }

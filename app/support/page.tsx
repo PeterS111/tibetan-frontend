@@ -20,6 +20,7 @@ import {
   SignUpButton,
 } from "@clerk/clerk-react";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
+import { Reveal } from "@/app/components/ui/Reveal";
 
 const INTEREST_OPTIONS = [
   { value: "", label: "Select an option..." },
@@ -172,7 +173,7 @@ export default function SupportPage() {
           འབྲེལ
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
+        <Reveal className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             Get in Touch
           </div>
@@ -184,7 +185,7 @@ export default function SupportPage() {
             We&apos;d love to hear from you. Our team typically responds within
             24 hours.
           </p>
-        </div>
+        </Reveal>
 
         {/* Subtle 5-Element Tibetan Accent Strip */}
         <div className="absolute bottom-0 left-0 right-0 h-[3px] grid grid-cols-5">
@@ -202,7 +203,7 @@ export default function SupportPage() {
       <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-16 md:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* LEFT COLUMN: Let's Talk + Contact Channels + Expanded Quick Links */}
-          <div className="lg:col-span-5 space-y-8">
+          <Reveal className="lg:col-span-5 space-y-8">
             <div>
               <h2 className="font-serif font-normal text-2xl sm:text-3xl text-ink mb-3.5">
                 Let&apos;s Talk
@@ -308,10 +309,10 @@ export default function SupportPage() {
                 ))}
               </ul>
             </div>
-          </div>
+          </Reveal>
 
           {/* RIGHT COLUMN: Send a Message Form Card */}
-          <div className="lg:col-span-7 bg-surface border border-border-subtle rounded-3xl p-6 sm:p-9 shadow-sm">
+          <Reveal delay={120} className="lg:col-span-7 bg-surface border border-border-subtle rounded-3xl p-6 sm:p-9 shadow-sm">
             {sent ? (
               <div className="py-12 text-center flex flex-col items-center">
                 <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5">
@@ -438,7 +439,7 @@ export default function SupportPage() {
                 </form>
               </>
             )}
-          </div>
+          </Reveal>
         </div>
       </main>
 
