@@ -12,6 +12,7 @@ import {
   Loader2,
   MapPin,
 } from "lucide-react";
+import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
 const TOPICS = [
   { value: "general", label: "General Inquiry" },
@@ -53,7 +54,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark">
+    <div className="min-h-screen flex flex-col bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark">
       {/* Dark Navy Hero Header */}
       <header className="relative bg-ink text-white pt-12 pb-16 overflow-hidden">
         <img
@@ -100,7 +101,7 @@ export default function SupportPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-14 pb-24 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-14 pb-24 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Left Form Column */}
         <div className="md:col-span-8 bg-surface border border-border-subtle rounded-3xl p-6 sm:p-8 shadow-sm">
           {sent ? (
@@ -258,6 +259,8 @@ export default function SupportPage() {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

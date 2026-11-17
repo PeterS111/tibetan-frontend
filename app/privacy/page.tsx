@@ -1,16 +1,19 @@
 // app/privacy/page.tsx
 "use client";
 
+
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform";
+import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
 export default function PrivacyPolicy() {
-  const { isNative } = usePlatform();
+  const { isNative, isCapacitor } = usePlatform();
 
   return (
-    <div className={`min-h-[100dvh] bg-paper text-ink pb-24 ${isNative ? 'pt-12' : 'pt-24'} animate-in fade-in`}>
-      <div className="max-w-3xl mx-auto px-6">
+    <div className={`min-h-[100dvh] flex flex-col bg-paper text-ink ${isNative ? "pt-12" : "pt-24"} animate-in fade-in`}>
+      <div className="flex-1 w-full max-w-3xl mx-auto px-6 pb-24">
+
         
         <Link 
           href={isNative ? "/dashboard/profile" : "/"} 
@@ -53,6 +56,8 @@ export default function PrivacyPolicy() {
         </div>
 
       </div>
+
+      {!isCapacitor && <SiteFooter />}
     </div>
   );
 }

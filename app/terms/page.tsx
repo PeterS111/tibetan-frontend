@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { usePlatform } from "@/hooks/usePlatform";
+import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
 export default function TermsPage() {
   const router = useRouter();
+  const { isCapacitor } = usePlatform();
 
   return (
-    <div className="min-h-screen bg-paper text-ink p-6 md:p-12 pb-24 font-sans selection:bg-brand-light selection:text-brand-dark">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen flex flex-col bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark">
+      <div className="flex-1 w-full max-w-3xl mx-auto p-6 md:p-12 pb-24">
         
         <button 
           onClick={() => router.back()} 
@@ -40,6 +43,8 @@ export default function TermsPage() {
         </div>
 
       </div>
+
+      {!isCapacitor && <SiteFooter />}
     </div>
   );
 }

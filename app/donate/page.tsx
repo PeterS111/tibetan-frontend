@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Heart, Loader2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
 const PRESET_AMOUNTS = [5, 10, 25, 50];
 
@@ -59,8 +60,10 @@ export default function DonatePage() {
     }
   };
 
+  
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark">
+    <div className="min-h-screen flex flex-col bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark">
+  
       {/* Dark Navy Hero */}
       <header className="relative bg-ink text-white pt-12 pb-16 overflow-hidden">
         <img
@@ -106,7 +109,9 @@ export default function DonatePage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-14 pb-24 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      
+	  <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-14 pb-24 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+	  
         {/* Left Editorial Narrative */}
         <div className="md:col-span-6 space-y-5 text-sm sm:text-base text-ink-light leading-relaxed">
           {isSuccess && (
@@ -247,6 +252,8 @@ export default function DonatePage() {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

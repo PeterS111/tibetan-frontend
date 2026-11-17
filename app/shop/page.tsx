@@ -23,6 +23,7 @@ import {
   SignInButton,
   SignUpButton,
 } from "@clerk/clerk-react";
+import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
 interface ShopProduct {
   id: string;
@@ -873,55 +874,10 @@ export default function ShopPage() {
       )}
 
       {/* ====================================================================
-          6. FOOTER (CONSISTENT WITH LOPLAO WEBSITE)
+          6. SHARED SITE FOOTER
       ==================================================================== */}
-      <footer className="bg-[#091e36] text-white/70 py-14 border-t border-white/10 text-center">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
-
-		  
-		  <div className="mb-5">
-            <img
-              src="/motif_Prajnaparamita.png"
-              alt="Goddess Prajnaparamita"
-              className="w-24 h-24 sm:w-28 sm:h-28 object-contain mx-auto opacity-95 hover:scale-105 transition-transform"
-            />
-          </div>
-		  
-          <div className="font-tibetan text-2xl sm:text-3xl text-white mb-1.5">
-            ཤེས་རབ་ལྷ་མོས་དངོས་གྲུབ་སྩོལ།
-          </div>
-          <p className="font-serif italic text-xs sm:text-sm text-white/60 mb-8">
-            &ldquo;May the goddess of wisdom bestow accomplishment.&rdquo;
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-white/70 mb-4">
-            <Link href="/" className="hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/courses" className="hover:text-white transition-colors">
-              Live Courses
-            </Link>
-            <Link href="/shop" className="text-white font-bold">
-              Shop
-            </Link>
-            <Link href="/about" className="hover:text-white transition-colors">
-              About
-            </Link>
-            <Link href="/support" className="hover:text-white transition-colors">
-              Contact
-            </Link>
-            <Link
-              href="/donate"
-              className="text-brand hover:text-brand-light font-bold transition-colors"
-            >
-              Donate
-            </Link>
-          </div>
-          <div className="text-[11px] text-white/45">
-            © {new Date().getFullYear()} Loplao · Learn Tibetan UK
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
+	  
     </div>
   );
 }
