@@ -394,13 +394,15 @@ export default function AboutPage() {
                 key={stat.label}
                 className="flex flex-col items-center text-center px-4 py-6 sm:py-2"
               >
-                <div className="w-12 h-12 rounded-full bg-paper border border-border-subtle flex items-center justify-center mb-3 shadow-2xs">
+                
+				<div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-paper border border-border-subtle flex items-center justify-center mb-4 shadow-xs">
                   <img
                     src={stat.motif}
                     alt={stat.label}
-                    className="w-7 h-7 object-contain"
+                    className="w-11 h-11 sm:w-14 sm:h-14 object-contain"
                   />
                 </div>
+				
                 <div className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-1">
                   {stat.value}
                 </div>
