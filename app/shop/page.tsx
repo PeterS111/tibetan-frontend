@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   ShoppingBag,
+  ShoppingCart,
   Plus,
   Minus,
   Trash2,
@@ -16,6 +17,11 @@ import {
   Lock,
   Truck,
   Tag,
+  BookOpen,
+  FileText,
+  Layers,
+  Coffee,
+  Star,
 } from "lucide-react";
 import {
   SignedIn,
@@ -25,139 +31,233 @@ import {
 } from "@clerk/clerk-react";
 import { SiteFooter } from "@/app/components/ui/SiteFooter";
 
-interface ShopProduct {
-  id: string;
-  name: string;
-  tibetan?: string;
+type FilterCategory = "all" | "books" | "ebooks" | "cards" | "mugs";
+
+interface ProductVariant {
+  sku: string;
+  sizeLabel: string;
   price: number;
-  category: "mugs" | "books" | "cards";
-  badge?: string;
-  ukOnly?: boolean;
-  isDigital?: boolean;
   images: string[];
-  shortDesc: string;
-  fullDesc: string;
 }
 
-const PRODUCTS: ShopProduct[] = [
+interface ShopDisplayProduct {
+  cardId: string;
+  name: string;
+  tibetan: string;
+  category: Exclude<FilterCategory, "all">;
+  categoryLabel: string;
+  badge: string;
+  rating: string;
+  shortDesc: string;
+  fullDesc: string;
+  features: string[];
+  ukOnly?: boolean;
+  isDigital?: boolean;
+  variants: ProductVariant[];
+}
+
+const DISPLAY_PRODUCTS: ShopDisplayProduct[] = [
   {
-    id: "proverbs-mug-11oz",
-    name: "Proverbs Mug (11oz)",
-    tibetan: "གཏམ་དཔེ་ཇ་ཕོར།",
-    price: 8.0,
-    category: "mugs",
-    ukOnly: true,
-    images: [
-      "/shop/proverbs_mug2.png",
-      "/shop/proverbs_mug1.png",
-      "/shop/proverbs_mug3.png",
-      "/shop/proverbs_mug4.png",
-    ],
-    shortDesc:
-      "Classic 11oz ceramic mug printed with traditional Tibetan proverbs, phonetics, and English translations.",
-    fullDesc:
-      "Our Tibetan Proverbs Mug is more than just something to drink from — it is a daily way to keep the Tibetan language alive at your desk. Features classic Tibetan sayings (gtam dpe) in crisp Uchen script alongside phonetic pronunciation and English meaning. Delivered exclusively within the UK.",
-  },
-  {
-    id: "proverbs-mug-15oz",
-    name: "Proverbs Mug (15oz)",
-    tibetan: "གཏམ་དཔེ་ཇ་ཕོར།",
-    price: 10.0,
-    category: "mugs",
-    ukOnly: true,
-    images: [
-      "/shop/proverbs_mug1.png",
-      "/shop/proverbs_mug2.png",
-      "/shop/proverbs_mug4.png",
-      "/shop/proverbs_mug3.png",
-    ],
-    shortDesc:
-      "Large 15oz ceramic mug featuring traditional Tibetan proverbs in Tibetan script, phonetics, and English.",
-    fullDesc:
-      "A generous 15oz edition of our Tibetan Proverbs Mug — ideal for long study sessions with butter tea or coffee. Printed all around with authentic Tibetan proverbs, clear phonetic guides, and English translations. Delivered exclusively within the UK.",
-  },
-  {
-    id: "grammar-mug-11oz",
-    name: "Grammar Mug (11oz)",
-    tibetan: "བརྡ་སྤྲོད་ཇ་ཕོར།",
-    price: 8.0,
-    category: "mugs",
-    ukOnly: true,
-    images: [
-      "/shop/grammar_mug2.png",
-      "/shop/grammar_mug1.png",
-      "/shop/grammar_mug3.png",
-      "/shop/grammar_mug4.png",
-    ],
-    shortDesc:
-      "11oz study mug featuring Tibetan noun cases, ordinary vs. honorific verbs, and verb conjugations.",
-    fullDesc:
-      "Keep essential Tibetan grammar right at your fingertips! Features Noun Cases / Declensions, an Ordinary vs. Honorific verb reference table, and full Past/Present/Future/Imperative verb conjugation examples with phonetics. Delivered exclusively within the UK.",
-  },
-  {
-    id: "grammar-mug-15oz",
-    name: "Grammar Mug (15oz)",
-    tibetan: "བརྡ་སྤྲོད་ཇ་ཕོར།",
-    price: 10.0,
-    category: "mugs",
-    ukOnly: true,
-    images: [
-      "/shop/grammar_mug1.png",
-      "/shop/grammar_mug2.png",
-      "/shop/grammar_mug4.png",
-      "/shop/grammar_mug3.png",
-    ],
-    shortDesc:
-      "Large 15oz reference mug with Tibetan declensions, honorific verbs, and tense conjugation tables.",
-    fullDesc:
-      "The larger 15oz scholar's edition of our Tibetan Grammar Mug. Includes comprehensive tables for Tibetan noun cases, everyday ordinary & honorific verbs, and complete verb tense conjugations. Delivered exclusively within the UK.",
-  },
-  {
-    id: "first-650-ebook",
-    name: "My First 650 Tibetan Words (E-book)",
-    tibetan: "ངའི་ཆེས་ཐོག་མའི་ཚིག་གསར།",
-    price: 10.0,
+    cardId: "first-650-print-card",
+    name: "My First 650 Tibetan words",
+    tibetan: "ངའི་ཆེས་ཐོག་མའི་བོད་ཀྱི་ཚིག་གསར་༦༥༠།",
     category: "books",
-    badge: "Best Seller",
-    isDigital: true,
-    images: ["/shop/book_pdf.png", "/shop/book_print.png"],
+    categoryLabel: "Books",
+    badge: "BESTSELLER",
+    rating: "5.0",
     shortDesc:
-      "Illustrated digital vocabulary guide designed by Loplao to help learners acquire 650 foundational Tibetan words.",
+      "Designed vocabulary guide by Loplao to help learners acquire foundational Tibetan terms.",
     fullDesc:
-      "A thoughtfully illustrated digital vocabulary book created by Tenzin Choephel & Kunga Jampa at Loplao. Organises 650 essential Tibetan words into visual word-webs with Tibetan script, clear phonetic pronunciation, English meanings, and example sentences. Digital edition — zero shipping fees anywhere in the world.",
+      "The full-colour printed paperback edition of 'My First 650 Tibetan Words' by Loplao. Organises 650 essential Tibetan words into visual word families with crisp Tibetan script, phonetic pronunciation, English meanings, and practical example sentences. Ships across the UK and internationally.",
+    features: [
+      "137 pages",
+      "Audio companion",
+      "Example sentences",
+      "Vocabulary glossary",
+    ],
+    variants: [
+      {
+        sku: "first-650-print",
+        sizeLabel: "Print Paperback",
+        price: 15.0,
+        images: ["/shop/book_print.png", "/shop/book_pdf.png"],
+      },
+    ],
   },
   {
-    id: "playing-cards",
+    cardId: "playing-cards-card",
     name: "Tibetan Language Playing Cards",
     tibetan: "བོད་ཀྱི་ཏག་སེ།",
-    price: 10.0,
     category: "cards",
-    badge: "Most Popular",
-    images: [
-      "/shop/cards1.png",
-      "/shop/cards2.png",
-      "/shop/cards4.png",
-      "/shop/cards3.png",
-    ],
+    categoryLabel: "Playing Cards",
+    badge: "NEW",
+    rating: "5.0",
     shortDesc:
-      "Custom-illustrated deck of 54 playing cards featuring traditional Tibetan artwork and script.",
+      "A beautifully designed deck of 54 playing cards featuring Tibetan script characters, vocabulary and cultural motifs.",
     fullDesc:
-      "Learn Tibetan numbers, court figures, and cultural motifs while playing your favourite card games. Presented in a collector's black-and-gold embossed box with bespoke Tibetan court card and Joker illustrations. Available for UK and international shipping.",
+      "Learn Tibetan numbers, court figures, vocabulary, and cultural motifs while playing your favourite card games. Presented in a collector's black-and-gold embossed box with bespoke Tibetan court card and Joker illustrations. Available for UK and international shipping.",
+    features: [
+      "54 cards",
+      "Tibetan words on every card",
+      "Cultural illustrations",
+      "Vocabulary words",
+    ],
+    variants: [
+      {
+        sku: "playing-cards",
+        sizeLabel: "Standard Deck",
+        price: 10.0,
+        images: [
+          "/shop/cards1.png",
+          "/shop/cards2.png",
+          "/shop/cards4.png",
+          "/shop/cards3.png",
+        ],
+      },
+    ],
   },
   {
-    id: "first-650-print",
-    name: "My First 650 Tibetan Words (Print Book)",
-    tibetan: "ངའི་ཆེས་ཐོག་མའི་ཚིག་གསར།",
-    price: 15.0,
-    category: "books",
-    badge: "New",
-    images: ["/shop/book_print.png", "/shop/book_pdf.png"],
+    cardId: "first-650-ebook-card",
+    name: "My First 650 Tibetan Words — E-book",
+    tibetan: "ངའི་ཆེས་ཐོག་མའི་བོད་ཀྱི་ཚིག་གསར་༦༥༠། (འཕྲུལ་དེབ།)",
+    category: "ebooks",
+    categoryLabel: "E-books",
+    badge: "DIGITAL",
+    rating: "5.0",
+    isDigital: true,
     shortDesc:
-      "Full-colour printed paperback edition of Loplao's visual guide to 650 foundational Tibetan words.",
+      "Designed vocabulary guide by Loplao to help learners acquire foundational Tibetan terms. Digital edition.",
     fullDesc:
-      "The physical full-colour print edition of 'My First 650 Tibetan Words' by Loplao. Features visual word families, Tibetan script, phonetic transcriptions, and practical example sentences to build a strong vocabulary foundation. Ships across the UK and internationally.",
+      "A thoughtfully illustrated digital vocabulary guide created by Tenzin Choephel & Kunga Jampa at Loplao. Organises 650 foundational Tibetan words into visual word-webs with Tibetan script, clear phonetic pronunciation, English meanings, and example sentences. Digital edition — zero shipping fees anywhere in the world.",
+    features: [
+      "137 pages",
+      "PDF format",
+      "Instant download",
+      "Example sentences",
+      "Vocabulary glossary",
+    ],
+    variants: [
+      {
+        sku: "first-650-ebook",
+        sizeLabel: "Digital PDF",
+        price: 10.0,
+        images: ["/shop/book_pdf.png", "/shop/book_print.png"],
+      },
+    ],
+  },
+  {
+    cardId: "proverbs-mug-card",
+    name: "Tibetan Proverbs Mug",
+    tibetan: "གཏམ་དཔེ་ཇ་ཕོར།",
+    category: "mugs",
+    categoryLabel: "Mugs",
+    badge: "NEW",
+    rating: "5.0",
+    ukOnly: true,
+    shortDesc:
+      "Timeless Tibetan sayings with English translations and phonetics — a small way to keep the language alive over a cup of tea.",
+    fullDesc:
+      "Our Tibetan Proverbs Mug is more than just something to drink from — it is a daily way to keep the Tibetan language alive at your desk. Features classic Tibetan sayings (gtam dpe) in crisp Uchen script alongside phonetic pronunciation and English meaning, finished with a traditional red base trim. Delivered exclusively within the UK.",
+    features: [
+      "Tibetan proverbs",
+      "English translations",
+      "Phonetics guide",
+      "Red base trim",
+    ],
+    variants: [
+      {
+        sku: "proverbs-mug-11oz",
+        sizeLabel: "11oz",
+        price: 8.0,
+        images: [
+          "/shop/proverbs_mug2.png",
+          "/shop/proverbs_mug1.png",
+          "/shop/proverbs_mug3.png",
+          "/shop/proverbs_mug4.png",
+        ],
+      },
+      {
+        sku: "proverbs-mug-15oz",
+        sizeLabel: "15oz",
+        price: 10.0,
+        images: [
+          "/shop/proverbs_mug1.png",
+          "/shop/proverbs_mug2.png",
+          "/shop/proverbs_mug4.png",
+          "/shop/proverbs_mug3.png",
+        ],
+      },
+    ],
+  },
+  {
+    cardId: "grammar-mug-card",
+    name: "Tibetan Grammar Mug",
+    tibetan: "བརྡ་སྤྲོད་ཇ་ཕོར།",
+    category: "mugs",
+    categoryLabel: "Mugs",
+    badge: "NEW",
+    rating: "5.0",
+    ukOnly: true,
+    shortDesc:
+      "A noun-case declension cheat sheet in Tibetan script and transliteration, framed by a traditional key-pattern border.",
+    fullDesc:
+      "Keep essential Tibetan grammar right at your fingertips! Features Noun Cases / Declensions, an Ordinary vs. Honorific verb reference table, and full Past/Present/Future/Imperative verb conjugation examples with phonetics, framed by a traditional Tibetan key-pattern border. Delivered exclusively within the UK.",
+    features: [
+      "Noun cases table",
+      "Tibetan + transliteration",
+      "Traditional border",
+      "Reference as you sip",
+    ],
+    variants: [
+      {
+        sku: "grammar-mug-11oz",
+        sizeLabel: "11oz",
+        price: 8.0,
+        images: [
+          "/shop/grammar_mug2.png",
+          "/shop/grammar_mug1.png",
+          "/shop/grammar_mug3.png",
+          "/shop/grammar_mug4.png",
+        ],
+      },
+      {
+        sku: "grammar-mug-15oz",
+        sizeLabel: "15oz",
+        price: 10.0,
+        images: [
+          "/shop/grammar_mug1.png",
+          "/shop/grammar_mug2.png",
+          "/shop/grammar_mug4.png",
+          "/shop/grammar_mug3.png",
+        ],
+      },
+    ],
   },
 ];
+
+interface FlatSkuMeta {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  ukOnly?: boolean;
+}
+
+const SKU_LOOKUP: Record<string, FlatSkuMeta> = {};
+for (const prod of DISPLAY_PRODUCTS) {
+  for (const v of prod.variants) {
+    SKU_LOOKUP[v.sku] = {
+      id: v.sku,
+      name:
+        prod.variants.length > 1
+          ? `${prod.name} (${v.sizeLabel})`
+          : prod.name,
+      price: v.price,
+      image: v.images[0],
+      ukOnly: prod.ukOnly,
+    };
+  }
+}
 
 interface CartItem {
   id: string;
@@ -169,15 +269,18 @@ const CART_STORAGE_KEY = "loplao_shop_cart_v1";
 export default function ShopPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<
-    "all" | "mugs" | "books" | "cards"
-  >("all");
-  const [sortBy, setSortBy] = useState<"recommended" | "price-asc" | "price-desc">(
-    "recommended"
-  );
+  const [activeCategory, setActiveCategory] = useState<FilterCategory>("all");
+
+  // Per-card variant selection index (e.g. 0 = 11oz, 1 = 15oz)
+  const [selectedVariantByCard, setSelectedVariantByCard] = useState<
+    Record<string, number>
+  >({});
 
   // Product Quick-View / Gallery Modal
-  const [selectedProduct, setSelectedProduct] = useState<ShopProduct | null>(null);
+  const [modalProduct, setModalProduct] = useState<ShopDisplayProduct | null>(
+    null
+  );
+  const [modalVariantIdx, setModalVariantIdx] = useState(0);
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [modalQty, setModalQty] = useState(1);
 
@@ -186,7 +289,6 @@ export default function ShopPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
-  // Load Cart & Check URL Return Params
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -211,31 +313,31 @@ export default function ShopPage() {
     }
   };
 
-  const addToCart = (productId: string, qty = 1) => {
+  const addToCart = (skuId: string, qty = 1) => {
     setCheckoutError(null);
-    const existing = cart.find((c) => c.id === productId);
+    const existing = cart.find((c) => c.id === skuId);
     const next = existing
       ? cart.map((c) =>
-          c.id === productId
+          c.id === skuId
             ? { ...c, quantity: Math.min(c.quantity + qty, 50) }
             : c
         )
-      : [...cart, { id: productId, quantity: qty }];
+      : [...cart, { id: skuId, quantity: qty }];
     saveCart(next);
     setIsCartOpen(true);
   };
 
-  const updateQty = (productId: string, delta: number) => {
+  const updateQty = (skuId: string, delta: number) => {
     const next = cart
       .map((c) =>
-        c.id === productId ? { ...c, quantity: c.quantity + delta } : c
+        c.id === skuId ? { ...c, quantity: c.quantity + delta } : c
       )
       .filter((c) => c.quantity > 0);
     saveCart(next);
   };
 
-  const removeItem = (productId: string) => {
-    saveCart(cart.filter((c) => c.id !== productId));
+  const removeItem = (skuId: string) => {
+    saveCart(cart.filter((c) => c.id !== skuId));
   };
 
   const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -243,10 +345,10 @@ export default function ShopPage() {
   const detailedCart = useMemo(() => {
     return cart
       .map((c) => {
-        const product = PRODUCTS.find((p) => p.id === c.id);
-        return product ? { ...product, quantity: c.quantity } : null;
+        const meta = SKU_LOOKUP[c.id];
+        return meta ? { ...meta, quantity: c.quantity } : null;
       })
-      .filter(Boolean) as (ShopProduct & { quantity: number })[];
+      .filter(Boolean) as (FlatSkuMeta & { quantity: number })[];
   }, [cart]);
 
   const subtotal = detailedCart.reduce(
@@ -256,15 +358,17 @@ export default function ShopPage() {
   const cartHasMug = detailedCart.some((item) => item.ukOnly);
 
   const filteredProducts = useMemo(() => {
-    const list =
-      activeCategory === "all"
-        ? [...PRODUCTS]
-        : PRODUCTS.filter((p) => p.category === activeCategory);
+    if (activeCategory === "all") return DISPLAY_PRODUCTS;
+    return DISPLAY_PRODUCTS.filter((p) => p.category === activeCategory);
+  }, [activeCategory]);
 
-    if (sortBy === "price-asc") list.sort((a, b) => a.price - b.price);
-    if (sortBy === "price-desc") list.sort((a, b) => b.price - a.price);
-    return list;
-  }, [activeCategory, sortBy]);
+  const openQuickView = (product: ShopDisplayProduct) => {
+    const currentVarIdx = selectedVariantByCard[product.cardId] ?? 0;
+    setModalProduct(product);
+    setModalVariantIdx(currentVarIdx);
+    setActiveImageIdx(0);
+    setModalQty(1);
+  };
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
@@ -295,8 +399,24 @@ export default function ShopPage() {
     }
   };
 
+  const filterTabs: {
+    id: FilterCategory;
+    label: string;
+    icon?: React.ReactNode;
+  }[] = [
+    { id: "all", label: "All" },
+    { id: "books", label: "Books", icon: <BookOpen size={13} /> },
+    { id: "ebooks", label: "E-books", icon: <FileText size={13} /> },
+    { id: "cards", label: "Playing Cards", icon: <Layers size={13} /> },
+    { id: "mugs", label: "Mugs", icon: <Coffee size={13} /> },
+  ];
+
+  const activeModalVariant = modalProduct
+    ? modalProduct.variants[modalVariantIdx] || modalProduct.variants[0]
+    : null;
+
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark overflow-x-hidden">
       {/* ====================================================================
           1. FIXED TOP NAVIGATION BAR (WITH LIVE CART DRAWER BUTTON)
       ==================================================================== */}
@@ -323,8 +443,8 @@ export default function ShopPage() {
           </Link>
 
           <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/75">
-            <Link href="/" className="hover:text-white transition-colors">
-              Home
+            <Link href="/#levels" className="hover:text-white transition-colors">
+              Curriculum
             </Link>
             <Link href="/courses" className="hover:text-white transition-colors">
               Live Courses
@@ -335,6 +455,9 @@ export default function ShopPage() {
             >
               Shop
             </Link>
+            <Link href="/#faq" className="hover:text-white transition-colors">
+              FAQ
+            </Link>
             <Link href="/about" className="hover:text-white transition-colors">
               About
             </Link>
@@ -344,7 +467,6 @@ export default function ShopPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Cart Trigger Button */}
             <button
               type="button"
               onClick={() => setIsCartOpen(true)}
@@ -380,62 +502,83 @@ export default function ShopPage() {
       </nav>
 
       {/* ====================================================================
-          2. SHOP HERO BANNER + UK MUG DELIVERY NOTICE
+          2. SHOP HERO BANNER
       ==================================================================== */}
       <header className="relative bg-ink text-white pt-32 pb-16 md:pt-36 md:pb-20 overflow-hidden">
-        <img
-          src="/motif_mandala_gold.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none select-none absolute -right-20 -top-16 w-80 h-80 object-contain opacity-[0.06]"
-        />
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/about_classroom-JsxUlfTo.jpg"
+            onError={(e) => {
+              e.currentTarget.src = "/05_five_prefixes.jpg";
+            }}
+            alt="Loplao Learning Materials"
+            className="w-full h-full object-cover object-center opacity-20 scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/90 to-ink/65" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40" />
+        </div>
 
-        <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <img
-              src="/motif_pecha_gold.png"
-              alt=""
-              className="w-5 h-5 object-contain"
-            />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand">
-              Loplao Learning Store
-            </span>
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
+            Tibetan Language Materials
           </div>
 
-          <h1 className="font-serif font-normal text-4xl sm:text-5xl md:text-6xl text-white mb-5">
-            Tibetan Books &amp; Learning Materials
+          <h1 className="font-serif font-normal text-4xl sm:text-5xl md:text-[56px] leading-[1.1] text-white mb-4 flex flex-wrap items-baseline gap-x-3.5 gap-y-1">
+            <span>The Shop</span>
+            <span className="font-tibetan text-3xl sm:text-4xl md:text-[44px] text-brand leading-normal">
+              ཚོང་ཁང་།
+            </span>
           </h1>
 
-          <p className="text-sm sm:text-base text-white/80 max-w-2xl mx-auto leading-relaxed mb-8">
-            Thoughtfully crafted vocabulary books, traditional playing cards, and
-            study mugs designed by Loplao to bring Tibetan into everyday life.
+          <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed">
+            Beautifully crafted books, vocabulary cards, and mugs to enrich your
+            Tibetan language journey.
           </p>
+        </div>
 
-          {/* Shipping Notice Pill Box */}
-          <div className="max-w-2xl mx-auto bg-white/10 border border-brand/40 rounded-2xl px-5 py-3.5 text-xs sm:text-sm text-brand-light leading-relaxed flex items-start sm:items-center justify-center gap-3 text-left sm:text-center">
-            <Truck size={18} className="text-brand shrink-0 mt-0.5 sm:mt-0" />
-            <span>
-              Our individual mugs are currently available for delivery{" "}
-              <strong className="text-white">exclusively within the UK</strong>.
-              For international retail partners, bespoke bulk orders of 50 mugs
-              or more can be arranged worldwide via{" "}
-              <Link
-                href="/support"
-                className="underline text-brand hover:text-white"
-              >
-                our contact page
-              </Link>
-              .
-            </span>
-          </div>
+        {/* Subtle 5-Element Tibetan Accent Strip */}
+        <div className="absolute bottom-0 left-0 right-0 h-[3px] grid grid-cols-5 z-10">
+          <div className="bg-[#1E4E8C]" />
+          <div className="bg-[#FAF6EC]" />
+          <div className="bg-brand" />
+          <div className="bg-[#1E7A46]" />
+          <div className="bg-[#9E2A2B]" />
         </div>
       </header>
 
       {/* ====================================================================
-          3. FILTER BAR & PRODUCT GRID
+          3. WHITE CATEGORY FILTER BAR
       ==================================================================== */}
-      <main className="max-w-6xl mx-auto px-6 py-14 pb-24">
-        {/* Order Success Confirmation Banner */}
+      <div className="bg-surface border-b border-border-subtle">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center gap-2.5">
+          <span className="text-xs font-medium text-ink-muted mr-1">
+            Filter by:
+          </span>
+          {filterTabs.map((tab) => {
+            const active = activeCategory === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveCategory(tab.id)}
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                  active
+                    ? "bg-ink text-white font-semibold shadow-2xs"
+                    : "bg-surface border border-border-subtle text-ink-light hover:border-ink hover:text-ink"
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ====================================================================
+          4. PRODUCT GRID
+      ==================================================================== */}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-12 pb-20">
         {orderSuccess && (
           <div className="mb-10 bg-emerald-50 border border-emerald-200 rounded-3xl p-6 flex items-start gap-4 text-emerald-900 shadow-xs">
             <CheckCircle2
@@ -456,138 +599,238 @@ export default function ShopPage() {
           </div>
         )}
 
-        {/* Category Pills + Sort Dropdown */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-8 mb-8 border-b border-border-subtle">
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { id: "all", label: `All Products (${PRODUCTS.length})` },
-              { id: "books", label: "Language Books" },
-              { id: "mugs", label: "Study Mugs (UK)" },
-              { id: "cards", label: "Playing Cards" },
-            ].map((tab) => {
-              const active = activeCategory === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveCategory(tab.id as any)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                    active
-                      ? "bg-ink text-white shadow-xs"
-                      : "bg-surface border border-border-subtle text-ink-light hover:border-brand"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
+        {/* Product Count + Subtle Shipping Note */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+          <div className="text-xs text-ink-muted">
+            Showing {filteredProducts.length}{" "}
+            {filteredProducts.length === 1 ? "product" : "products"}
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            <span className="text-xs text-ink-muted font-medium">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-surface border border-border-subtle rounded-xl px-3.5 py-2 text-xs font-bold text-ink outline-none focus:border-brand cursor-pointer"
-            >
-              <option value="recommended">Recommended</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-            </select>
-          </div>
+          {(activeCategory === "all" || activeCategory === "mugs") && (
+            <div className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
+              <Truck size={13} className="text-brand-dark shrink-0" />
+              <span>
+                Individual mugs ship within the UK · Books &amp; playing cards
+                ship worldwide (
+                <Link
+                  href="/support"
+                  className="underline decoration-brand underline-offset-2 hover:text-ink"
+                >
+                  50+ bulk mugs worldwide
+                </Link>
+                )
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* 7-Item Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="group bg-surface border border-border-subtle hover:border-brand rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
-            >
-              {/* Clickable Image Container */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedProduct(product);
-                  setActiveImageIdx(0);
-                  setModalQty(1);
-                }}
-                className="relative aspect-square w-full bg-white overflow-hidden cursor-pointer"
+        {/* 3-Column Product Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+          {filteredProducts.map((product) => {
+            const varIdx = selectedVariantByCard[product.cardId] ?? 0;
+            const currentVariant =
+              product.variants[varIdx] || product.variants[0];
+            const hasSizes = product.variants.length > 1;
+
+            return (
+              <div
+                key={product.cardId}
+                className="group bg-surface border border-border-subtle hover:border-brand rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col"
               >
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                {product.badge && (
-                  <span className="absolute top-3.5 left-3.5 bg-ink text-brand text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-                    {product.badge}
-                  </span>
-                )}
-                {product.ukOnly && (
-                  <span className="absolute bottom-3 right-3 bg-paper/95 text-ink text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-border-subtle">
-                    UK Delivery Only
-                  </span>
-                )}
-                {product.isDigital && (
-                  <span className="absolute bottom-3 right-3 bg-emerald-50 text-emerald-800 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-200">
-                    Instant Digital Edition
-                  </span>
-                )}
-              </button>
-
-              {/* Card Details */}
-              <div className="p-6 flex-1 flex flex-col">
-                {product.tibetan && (
-                  <div className="font-tibetan text-lg text-brand-dark leading-normal mb-0.5">
-                    {product.tibetan}
-                  </div>
-                )}
-
+                {/* Product Image + Badges */}
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    setActiveImageIdx(0);
-                    setModalQty(1);
-                  }}
-                  className="text-left cursor-pointer"
+                  onClick={() => openQuickView(product)}
+                  className="relative aspect-[4/3] w-full bg-white overflow-hidden cursor-pointer border-b border-border-subtle/60"
                 >
-                  <h3 className="font-serif font-normal text-xl text-ink group-hover:text-brand-dark transition-colors mb-1.5">
-                    {product.name}
-                  </h3>
-                </button>
+                  <img
+                    src={currentVariant.images[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
 
-                <p className="text-xs text-ink-light leading-relaxed mb-5 flex-1">
-                  {product.shortDesc}
-                </p>
-
-                <div className="pt-4 border-t border-border-subtle flex items-center justify-between gap-3">
-                  <span className="font-serif text-2xl text-ink">
-                    £{product.price.toFixed(2)}
+                  {/* Top-Left Gold Badge */}
+                  <span className="absolute top-3 left-3 bg-brand text-ink text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-2xs">
+                    {product.badge}
                   </span>
 
+                  {/* Top-Right White Category Pill */}
+                  <span className="absolute top-3 right-3 bg-surface/95 text-ink-light text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-border-subtle shadow-2xs">
+                    {product.categoryLabel}
+                  </span>
+                </button>
+
+                {/* Card Body */}
+                <div className="p-5 sm:p-6 flex-1 flex flex-col">
+                  {/* Tibetan Script Subtitle */}
+                  <div className="font-tibetan text-[15px] text-brand-dark leading-relaxed mb-1">
+                    {product.tibetan}
+                  </div>
+
+                  {/* Product Title */}
                   <button
                     type="button"
-                    onClick={() => addToCart(product.id, 1)}
-                    className="bg-brand hover:bg-brand-dark text-ink font-bold text-xs px-5 py-2.5 rounded-full transition-all shadow-2xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    onClick={() => openQuickView(product)}
+                    className="text-left cursor-pointer"
                   >
-                    <Plus size={14} strokeWidth={2.5} /> Add to Cart
+                    <h2 className="font-serif font-normal text-xl text-ink group-hover:text-brand-dark transition-colors mb-2 leading-snug">
+                      {product.name}
+                    </h2>
                   </button>
+
+                  {/* Short Description */}
+                  <p className="text-xs text-ink-light leading-relaxed mb-4">
+                    {product.shortDesc}
+                  </p>
+
+                  {/* Feature Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {product.features.map((feat) => (
+                      <span
+                        key={feat}
+                        className="bg-[#EEF4FA] text-ink-light text-[10px] font-medium px-2.5 py-1 rounded-md"
+                      >
+                        {feat}
+                      </span>
+                    ))}
+                    {product.ukOnly && (
+                      <span className="bg-brand-light/70 text-brand-dark text-[10px] font-semibold px-2.5 py-1 rounded-md">
+                        UK delivery
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 5-Star Rating */}
+                  <div className="flex items-center gap-1.5 mb-4">
+                    <div
+                      className="flex items-center gap-0.5 text-brand"
+                      aria-label={`${product.rating} out of 5 stars`}
+                    >
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={12}
+                          className="fill-brand text-brand"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-ink-muted font-medium">
+                      ({product.rating})
+                    </span>
+                  </div>
+
+                  {/* Size Selector (for Mugs: 11oz / 15oz) */}
+                  {hasSizes && (
+                    <div className="mb-4">
+                      <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mb-1.5">
+                        Size
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {product.variants.map((v, idx) => {
+                          const isSelected = varIdx === idx;
+                          return (
+                            <button
+                              key={v.sku}
+                              type="button"
+                              onClick={() =>
+                                setSelectedVariantByCard((prev) => ({
+                                  ...prev,
+                                  [product.cardId]: idx,
+                                }))
+                              }
+                              className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-ink text-white shadow-2xs"
+                                  : "bg-surface border border-border-subtle text-ink-light hover:border-ink"
+                              }`}
+                            >
+                              {v.sizeLabel}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bottom Price + Add to Cart Row */}
+                  <div className="mt-auto pt-4 border-t border-border-subtle flex items-center justify-between gap-3">
+                    <span className="font-serif text-xl text-ink">
+                      £{currentVariant.price.toFixed(2)}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => addToCart(currentVariant.sku, 1)}
+                      className="bg-ink hover:bg-ink-light text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-all shadow-2xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    >
+                      <ShoppingCart size={13} />
+                      <span>Add to Cart</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
 
       {/* ====================================================================
-          4. PRODUCT QUICK-VIEW & MULTI-PHOTO GALLERY MODAL
+          5. DARK NAVY TRUST BAND ABOVE SHARED SITE FOOTER
       ==================================================================== */}
-      {selectedProduct && (
+      <section className="bg-ink text-white py-14 border-t border-white/10">
+        <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+          <div className="flex flex-col items-center">
+            <BookOpen size={24} className="text-brand mb-3" strokeWidth={1.75} />
+            <h3 className="font-serif font-normal text-lg text-white mb-1">
+              Authentic Materials
+            </h3>
+            <p className="text-xs text-white/65 leading-relaxed max-w-[230px]">
+              Created by Tibetan language experts and artists.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <Tag size={24} className="text-brand mb-3" strokeWidth={1.75} />
+            <h3 className="font-serif font-normal text-lg text-white mb-1">
+              Fair Pricing
+            </h3>
+            <p className="text-xs text-white/65 leading-relaxed max-w-[230px]">
+              Quality materials at accessible prices
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <ShoppingCart
+              size={24}
+              className="text-brand mb-3"
+              strokeWidth={1.75}
+            />
+            <h3 className="font-serif font-normal text-lg text-white mb-1">
+              Easy Checkout
+            </h3>
+            <p className="text-xs text-white/65 leading-relaxed max-w-[230px]">
+              Secure payment and fast delivery
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Subtle 5-Element Tibetan Divider Above Footer */}
+      <div className="h-[3px] w-full grid grid-cols-5">
+        <div className="bg-[#1E4E8C]" />
+        <div className="bg-[#FAF6EC]" />
+        <div className="bg-brand" />
+        <div className="bg-[#1E7A46]" />
+        <div className="bg-[#9E2A2B]" />
+      </div>
+
+      {/* ====================================================================
+          6. PRODUCT QUICK-VIEW & MULTI-PHOTO GALLERY MODAL
+      ==================================================================== */}
+      {modalProduct && activeModalVariant && (
         <div
           className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={() => setSelectedProduct(null)}
+          onClick={() => setModalProduct(null)}
         >
           <div
             className="bg-paper border border-border-strong rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto grid grid-cols-1 md:grid-cols-12 gap-8"
@@ -595,7 +838,7 @@ export default function ShopPage() {
           >
             <button
               type="button"
-              onClick={() => setSelectedProduct(null)}
+              onClick={() => setModalProduct(null)}
               aria-label="Close product details"
               className="absolute top-4 right-4 w-9 h-9 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer z-10"
             >
@@ -606,15 +849,18 @@ export default function ShopPage() {
             <div className="md:col-span-6">
               <div className="aspect-square rounded-2xl bg-white border border-border-subtle overflow-hidden mb-3">
                 <img
-                  src={selectedProduct.images[activeImageIdx]}
-                  alt={selectedProduct.name}
+                  src={
+                    activeModalVariant.images[activeImageIdx] ||
+                    activeModalVariant.images[0]
+                  }
+                  alt={modalProduct.name}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {selectedProduct.images.length > 1 && (
+              {activeModalVariant.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
-                  {selectedProduct.images.map((imgUrl, idx) => (
+                  {activeModalVariant.images.map((imgUrl, idx) => (
                     <button
                       key={imgUrl}
                       type="button"
@@ -636,28 +882,59 @@ export default function ShopPage() {
               )}
             </div>
 
-            {/* Right: Product Info + Quantity + Add to Cart */}
+            {/* Right: Product Info + Size + Quantity + Add to Cart */}
             <div className="md:col-span-6 flex flex-col justify-center">
-              {selectedProduct.badge && (
-                <span className="inline-block w-fit bg-brand-light text-brand-dark border border-brand/30 text-[10px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full mb-2">
-                  {selectedProduct.badge}
-                </span>
-              )}
-              {selectedProduct.tibetan && (
-                <div className="font-tibetan text-xl text-brand-dark mb-1">
-                  {selectedProduct.tibetan}
-                </div>
-              )}
-              <h2 className="font-serif font-normal text-2xl sm:text-3xl text-ink mb-2">
-                {selectedProduct.name}
-              </h2>
-              <div className="font-serif text-2xl text-ink mb-4">
-                £{selectedProduct.price.toFixed(2)}
+              <span className="inline-block w-fit bg-brand-light text-brand-dark border border-brand/30 text-[10px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full mb-2">
+                {modalProduct.badge}
+              </span>
+
+              <div className="font-tibetan text-xl text-brand-dark mb-1">
+                {modalProduct.tibetan}
               </div>
 
-              <p className="text-sm text-ink-light leading-relaxed mb-6">
-                {selectedProduct.fullDesc}
+              <h2 className="font-serif font-normal text-2xl sm:text-3xl text-ink mb-2">
+                {modalProduct.name}
+              </h2>
+
+              <div className="font-serif text-2xl text-ink mb-4">
+                £{activeModalVariant.price.toFixed(2)}
+              </div>
+
+              <p className="text-sm text-ink-light leading-relaxed mb-5">
+                {modalProduct.fullDesc}
               </p>
+
+              {/* Modal Size Toggle for Mugs */}
+              {modalProduct.variants.length > 1 && (
+                <div className="mb-5">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-2">
+                    Size
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {modalProduct.variants.map((v, idx) => (
+                      <button
+                        key={v.sku}
+                        type="button"
+                        onClick={() => {
+                          setModalVariantIdx(idx);
+                          setActiveImageIdx(0);
+                          setSelectedVariantByCard((prev) => ({
+                            ...prev,
+                            [modalProduct.cardId]: idx,
+                          }));
+                        }}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          modalVariantIdx === idx
+                            ? "bg-ink text-white"
+                            : "bg-surface border border-border-strong text-ink-light hover:border-ink"
+                        }`}
+                      >
+                        {v.sizeLabel} — £{v.price.toFixed(2)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Quantity Selector */}
               <div className="mb-6">
@@ -688,12 +965,15 @@ export default function ShopPage() {
               <button
                 type="button"
                 onClick={() => {
-                  addToCart(selectedProduct.id, modalQty);
-                  setSelectedProduct(null);
+                  addToCart(activeModalVariant.sku, modalQty);
+                  setModalProduct(null);
                 }}
-                className="w-full bg-ink hover:bg-ink-light text-white font-bold py-3.5 rounded-full text-sm transition-all shadow-md cursor-pointer"
+                className="w-full bg-ink hover:bg-ink-light text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
               >
-                Add to Cart — £{(selectedProduct.price * modalQty).toFixed(2)}
+                <ShoppingCart size={15} />
+                <span>
+                  Add to Cart — £{(activeModalVariant.price * modalQty).toFixed(2)}
+                </span>
               </button>
             </div>
           </div>
@@ -701,7 +981,7 @@ export default function ShopPage() {
       )}
 
       {/* ====================================================================
-          5. SLIDE-OUT RIGHT SHOPPING CART DRAWER
+          7. SLIDE-OUT RIGHT SHOPPING CART DRAWER
       ==================================================================== */}
       {isCartOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
@@ -710,7 +990,6 @@ export default function ShopPage() {
             onClick={() => setIsCartOpen(false)}
           />
           <aside className="relative z-10 w-full max-w-md bg-surface h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
-            {/* Cart Header */}
             <div className="px-6 py-5 border-b border-border-subtle flex items-center justify-between">
               <div className="font-serif text-xl text-ink">
                 Cart{" "}
@@ -727,7 +1006,6 @@ export default function ShopPage() {
               </button>
             </div>
 
-            {/* Cart Items List */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
               {detailedCart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center py-12">
@@ -740,7 +1018,7 @@ export default function ShopPage() {
                     Your cart is empty
                   </p>
                   <p className="text-xs text-ink-muted mb-6">
-                    Explore our Tibetan mugs, books, and playing cards.
+                    Explore our Tibetan books, playing cards, and study mugs.
                   </p>
                   <button
                     type="button"
@@ -757,7 +1035,7 @@ export default function ShopPage() {
                     className="flex gap-4 pb-5 border-b border-border-subtle"
                   >
                     <img
-                      src={item.images[0]}
+                      src={item.image}
                       alt={item.name}
                       className="w-20 h-20 rounded-xl object-cover border border-border-subtle bg-white shrink-0"
                     />
@@ -810,15 +1088,18 @@ export default function ShopPage() {
               )}
             </div>
 
-            {/* Cart Footer */}
             {detailedCart.length > 0 && (
               <div className="p-6 border-t border-border-subtle bg-paper/70 space-y-4">
                 {cartHasMug && (
                   <div className="flex items-start gap-2 text-[11px] text-amber-900 bg-brand-light/70 border border-brand/30 rounded-xl px-3.5 py-2.5">
-                    <Truck size={14} className="shrink-0 mt-0.5 text-brand-dark" />
+                    <Truck
+                      size={14}
+                      className="shrink-0 mt-0.5 text-brand-dark"
+                    />
                     <span>
                       Cart includes a mug — shipping address at checkout will be
-                      restricted to the <strong>United Kingdom (£5.50)</strong>.
+                      restricted to the{" "}
+                      <strong>United Kingdom (£5.50)</strong>.
                     </span>
                   </div>
                 )}
@@ -851,7 +1132,7 @@ export default function ShopPage() {
                   type="button"
                   onClick={handleCheckout}
                   disabled={isCheckingOut}
-                  className="w-full bg-ink hover:bg-ink-light text-white font-bold py-4 rounded-full text-sm transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="w-full bg-ink hover:bg-ink-light text-white font-bold py-4 rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isCheckingOut ? (
                     <>
@@ -865,7 +1146,9 @@ export default function ShopPage() {
 
                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-ink-muted pt-1">
                   <Lock size={12} />
-                  <span>Secure Checkout · Apple Pay, PayPal, Google Pay &amp; Card</span>
+                  <span>
+                    Secure Checkout · Apple Pay, PayPal, Google Pay &amp; Card
+                  </span>
                 </div>
               </div>
             )}
@@ -874,10 +1157,9 @@ export default function ShopPage() {
       )}
 
       {/* ====================================================================
-          6. SHARED SITE FOOTER
+          8. SHARED SITE FOOTER (UNCHANGED)
       ==================================================================== */}
       <SiteFooter />
-	  
     </div>
   );
 }
