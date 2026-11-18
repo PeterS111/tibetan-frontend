@@ -24,23 +24,23 @@ const PRESET_AMOUNTS = [5, 10, 25, 50];
 const IMPACT_PILLARS = [
   {
     motif: "/motif_pecha.png",
-    title: "Free Learning Materials",
-    desc: "Developing open digital lessons, native audio recordings, and structured self-study resources for learners worldwide.",
+    title: "Empowering Our Team and Contributors",
+    desc: "Loplao's work depends on the knowledge, dedication and expertise of educators, translators, researchers and other contributors. Your support helps us develop our team, recognise their valuable contributions and create opportunities for skilled people to participate in meaningful projects.",
   },
   {
     motif: "/motif_butter_lamp.png",
-    title: "Scholarships & Access",
-    desc: "Supporting student bursaries and accessible courses so financial barriers never stand in the way of learning Tibetan.",
+    title: "Opening Doors to Tibetan Learning",
+    desc: "We want financial circumstances to be less of a barrier to discovering the Tibetan language. Your contribution helps us provide scholarships, maintain free study materials, offer accessible lessons and organise online workshops for learners around the world.",
   },
   {
     motif: "/motif_prayer_wheel.png",
-    title: "Workshops & Community",
-    desc: "Hosting live online workshops, cultural storytelling, and daily educational outreach across our global community.",
+    title: "Preserving Language, Literature and Heritage",
+    desc: "Language is more than a means of communication; it carries the knowledge, stories and traditions of generations. We are committed to developing resources that encourage deeper engagement with Tibetan language, literature and cultural heritage, ensuring that this knowledge continues to reach new audiences.",
   },
   {
     motif: "/motif_mandala.png",
-    title: "Academic Collaboration",
-    desc: "Collaborating with universities, libraries, and scholars to bring Tibetan knowledge and literature to a wider audience.",
+    title: "Building Academic and Cultural Bridges",
+    desc: "We believe Tibetan knowledge has an important place in international academic and cultural exchange. Loplao has collaborated with the University of Oxford, the Oxford Centre for Buddhist Studies and Sini to create opportunities for Tibetan monks to visit Oxford as visiting scholars. We hope to build on these connections and develop further opportunities for meaningful exchange between Tibetan and international communities.",
   },
 ];
 
