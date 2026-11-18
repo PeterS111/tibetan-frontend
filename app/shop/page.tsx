@@ -61,7 +61,7 @@ interface ShopDisplayProduct {
 const DISPLAY_PRODUCTS: ShopDisplayProduct[] = [
   {
     cardId: "first-650-print-card",
-    name: "My First 650 Tibetan words",
+    name: "My First 650 Tibetan Words",
     tibetan: "ངའི་ཆེས་ཐོག་མའི་བོད་ཀྱི་ཚིག་གསར་༦༥༠།",
     category: "books",
     categoryLabel: "Books",
@@ -243,6 +243,7 @@ interface FlatSkuMeta {
   price: number;
   image: string;
   ukOnly?: boolean;
+  isDigital?: boolean;
 }
 
 const SKU_LOOKUP: Record<string, FlatSkuMeta> = {};
@@ -257,6 +258,7 @@ for (const prod of DISPLAY_PRODUCTS) {
       price: v.price,
       image: v.images[0],
       ukOnly: prod.ukOnly,
+      isDigital: prod.isDigital,
     };
   }
 }
@@ -307,6 +309,14 @@ export default function ShopPage() {
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "1") {
+      const sessionId = params.get("session_id");
+      if (sessionId) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/verify-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        }).catch(() => {});
+      }
       const kindParam = params.get("kind");
       if (kindParam === "ebook" || kindParam === "mixed" || kindParam === "physical") {
         setOrderKind(kindParam);
@@ -383,6 +393,9 @@ export default function ShopPage() {
     0
   );
   const cartHasMug = detailedCart.some((item) => item.ukOnly);
+  const cartHasPhysical = detailedCart.some((item) => !item.isDigital);
+  const deliveryFee = cartHasPhysical ? 5.5 : 0;
+  const estimatedTotal = subtotal + deliveryFee;
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === "all") return DISPLAY_PRODUCTS;
@@ -1180,17 +1193,29 @@ export default function ShopPage() {
                   <span>Promo codes can be entered on the checkout screen.</span>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
-                  <span className="font-serif text-lg text-ink">
-                    Estimated subtotal
-                  </span>
-                  <span className="font-serif text-2xl text-ink">
-                    £{subtotal.toFixed(2)}
-                  </span>
+                <div className="space-y-1.5 pt-3 border-t border-border-subtle text-sm">
+                  <div className="flex items-center justify-between text-ink-light">
+                    <span>Subtotal</span>
+                    <span>£{subtotal.toFixed(2)}</span>
+                  </div>
+                  {cartHasPhysical && (
+                    <div className="flex items-center justify-between text-ink-light">
+                      <span>Delivery (UK)</span>
+                      <span>£{deliveryFee.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between pt-1.5 border-t border-border-subtle/70">
+                    <span className="font-serif text-lg text-ink">Total</span>
+                    <span className="font-serif text-2xl text-ink">
+                      £{estimatedTotal.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-[11px] text-ink-muted">
-                  Delivery is calculated at checkout (£0 for E-books).
-                </p>
+                {!cartHasMug && cartHasPhysical && (
+                  <p className="text-[11px] text-ink-muted">
+                    International shipping (£9.95) can also be selected at checkout.
+                  </p>
+                )}
 
                 {checkoutError && (
                   <div className="flex items-start gap-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3">

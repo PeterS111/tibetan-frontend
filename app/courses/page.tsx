@@ -135,9 +135,19 @@ export default function CoursesPage() {
       setActiveTab(tabParam);
       setSelectedPackages([COURSE_PACKAGES_BY_TAB[tabParam][0].id]);
     }
-    if (params.get("success") === "1") {
+    
+	if (params.get("success") === "1") {
+      const sessionId = params.get("session_id");
+      if (sessionId) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/verify-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        }).catch(() => {});
+      }
       setPaidSuccess(true);
       window.history.replaceState({}, "", "/courses");
+	
       setTimeout(() => {
         successBannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
