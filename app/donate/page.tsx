@@ -411,23 +411,25 @@ export default function DonatePage() {
               </p>
             </Reveal>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-5">
               {IMPACT_PILLARS.map((pillar, idx) => (
-                <Reveal key={pillar.title} delay={idx * 90} className="h-full">
-                  <div className="h-full bg-paper border border-border-subtle rounded-2xl p-6 sm:p-7 flex flex-col items-start text-left shadow-2xs hover:shadow-md transition-shadow">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-6 shadow-xs">
+                <Reveal key={pillar.title} delay={idx * 90}>
+                  <div className="bg-paper border border-border-subtle rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-start gap-6 text-left shadow-2xs hover:shadow-md transition-shadow">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-full bg-surface border border-border-subtle flex items-center justify-center shadow-xs">
                       <img
                         src={pillar.motif}
                         alt={pillar.title}
                         className="w-14 h-14 sm:w-[68px] sm:h-[68px] object-contain"
                       />
                     </div>
-                    <h3 className="font-serif font-normal text-xl text-ink mb-2">
-                      {pillar.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-ink-light leading-relaxed">
-                      {pillar.desc}
-                    </p>
+                    <div>
+                      <h3 className="font-serif font-normal text-xl text-ink mb-2">
+                        {pillar.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-ink-light leading-relaxed">
+                        {pillar.desc}
+                      </p>
+                    </div>
                   </div>
                 </Reveal>
               ))}
