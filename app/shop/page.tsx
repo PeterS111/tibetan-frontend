@@ -1,7 +1,8 @@
 // app/shop/page.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import {
   ShoppingBag,
@@ -289,9 +290,16 @@ export default function ShopPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [orderKind, setOrderKind] = useState<"physical" | "ebook" | "mixed">("physical");
+  const [orderedItemSummary, setOrderedItemSummary] = useState<string[]>([]);
+  const successBannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Pre-warm Render backend TLS connection so clicking Checkout responds faster
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wakeup`).catch(() => {});
+
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
       if (saved) setCart(JSON.parse(saved));
@@ -299,11 +307,29 @@ export default function ShopPage() {
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "1") {
+      const kindParam = params.get("kind");
+      if (kindParam === "ebook" || kindParam === "mixed" || kindParam === "physical") {
+        setOrderKind(kindParam);
+      }
+      try {
+        const savedSummary = sessionStorage.getItem("loplao_last_shop_order");
+        if (savedSummary) {
+          setOrderedItemSummary(JSON.parse(savedSummary));
+          sessionStorage.removeItem("loplao_last_shop_order");
+        }
+      } catch {}
+
       setOrderSuccess(true);
       setCart([]);
       localStorage.removeItem(CART_STORAGE_KEY);
+      window.history.replaceState({}, "", "/shop");
+
+      setTimeout(() => {
+        successBannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
     } else if (params.get("canceled") === "1") {
       setIsCartOpen(true);
+      window.history.replaceState({}, "", "/shop");
     }
   }, []);
 
@@ -392,6 +418,12 @@ export default function ShopPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unable to start checkout.");
       if (data.checkout_url) {
+        try {
+          sessionStorage.setItem(
+            "loplao_last_shop_order",
+            JSON.stringify(detailedCart.map((i) => `${i.quantity}× ${i.name}`))
+          );
+        } catch {}
         window.location.href = data.checkout_url;
       }
     } catch (err: any) {
@@ -580,8 +612,13 @@ export default function ShopPage() {
           4. PRODUCT GRID
       ==================================================================== */}
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-12 pb-20">
+        <link rel="preconnect" href="https://checkout.stripe.com" />
+
         {orderSuccess && (
-          <div className="mb-10 bg-emerald-50 border border-emerald-200 rounded-3xl p-6 flex items-start gap-4 text-emerald-900 shadow-xs">
+          <div
+            ref={successBannerRef}
+            className="mb-10 bg-emerald-50 border border-emerald-200 rounded-3xl p-6 flex items-start gap-4 text-emerald-900 shadow-xs animate-in fade-in duration-300"
+          >
             <CheckCircle2
               size={26}
               className="text-emerald-600 shrink-0 mt-0.5"
@@ -590,11 +627,41 @@ export default function ShopPage() {
               <h2 className="font-serif font-normal text-2xl text-emerald-950 mb-1">
                 ཐུགས་རྗེ་ཆེ། — Thank you for your order!
               </h2>
+              {orderedItemSummary.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 my-2">
+                  {orderedItemSummary.map((label) => (
+                    <span
+                      key={label}
+                      className="bg-white/80 border border-emerald-200 text-emerald-900 text-xs font-semibold px-3 py-1 rounded-full"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
               <p className="text-sm text-emerald-800 leading-relaxed">
-                Your payment has been confirmed and a receipt has been sent to
-                your email. If your order included the{" "}
-                <strong>650 Tibetan Words E-book</strong>, we will deliver your
-                digital copy straight to your inbox.
+                {orderKind === "ebook" ? (
+                  <>
+                    Your payment has been confirmed and a receipt has been sent
+                    to your email. We will deliver your digital copy of{" "}
+                    <strong>My First 650 Tibetan Words (PDF)</strong> straight
+                    to your inbox.
+                  </>
+                ) : orderKind === "mixed" ? (
+                  <>
+                    Your payment has been confirmed and a receipt has been sent
+                    to your email. Your physical items are now being prepared
+                    for dispatch, and your digital copy of{" "}
+                    <strong>My First 650 Tibetan Words (PDF)</strong> will be
+                    delivered straight to your inbox.
+                  </>
+                ) : (
+                  <>
+                    Your payment has been confirmed and a receipt has been sent
+                    to your email. Our team has received your delivery details
+                    and is preparing your order for dispatch.
+                  </>
+                )}
               </p>
             </div>
           </div>

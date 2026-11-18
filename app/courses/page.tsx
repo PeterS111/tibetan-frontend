@@ -119,11 +119,16 @@ export default function CoursesPage() {
   // Submission & Return Banners
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
   const [paidSuccess, setPaidSuccess] = useState(false);
   const [freeConfirmed, setFreeConfirmed] = useState(false);
+  const successBannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wakeup`).catch(() => {});
+
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab") as CourseTabId | null;
     if (tabParam && COURSE_PACKAGES_BY_TAB[tabParam]) {
@@ -132,6 +137,10 @@ export default function CoursesPage() {
     }
     if (params.get("success") === "1") {
       setPaidSuccess(true);
+      window.history.replaceState({}, "", "/courses");
+      setTimeout(() => {
+        successBannerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
     }
   }, []);
 
@@ -375,8 +384,13 @@ export default function CoursesPage() {
           3. COURSE CONTENT BY TAB
       ==================================================================== */}
       <main className="max-w-5xl mx-auto px-6 py-14">
+        <link rel="preconnect" href="https://checkout.stripe.com" />
+
         {paidSuccess && (
-          <div className="mb-12 bg-emerald-50 border border-emerald-200 rounded-3xl p-6 flex items-start gap-4 text-emerald-900 shadow-xs">
+          <div
+            ref={successBannerRef}
+            className="mb-12 bg-emerald-50 border border-emerald-200 rounded-3xl p-6 flex items-start gap-4 text-emerald-900 shadow-xs animate-in fade-in duration-300"
+          >
             <CheckCircle2
               size={26}
               className="text-emerald-600 shrink-0 mt-0.5"
