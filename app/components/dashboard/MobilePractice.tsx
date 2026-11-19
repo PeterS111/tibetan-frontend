@@ -4,12 +4,13 @@
 
 import { useState, useMemo } from "react";
 import { ChevronLeft, Lock, Play } from "lucide-react";
-import { DEV_BYPASS_LOCKS } from "@/app/config";
+import { useDevBypass } from "@/hooks/useDevBypass";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import { useAudio } from "@/hooks/useAudio";
 import { getPracticeData } from "@/app/data/practiceData";
 
 export function MobilePractice({ modules }: { modules: any[] }) {
+  const { isDevUnlocked } = useDevBypass();
   const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
   const { playAudio, playErrorBeep, playingItem } = useAudio();
 
@@ -72,7 +73,7 @@ export function MobilePractice({ modules }: { modules: any[] }) {
 
       <div className="space-y-4">
         {modules.map((module) => {
-          const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
+          const isLocked = module.status === "locked" && !isDevUnlocked;
 
           return (
             <button 

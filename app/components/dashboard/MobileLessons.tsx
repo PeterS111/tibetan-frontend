@@ -2,10 +2,12 @@
 "use client";
 
 import Link from "next/link";
+
 import { Check, Play, Lock, Star } from "lucide-react";
-import { DEV_BYPASS_LOCKS } from "@/app/config";
+import { useDevBypass } from "@/hooks/useDevBypass";
 
 export function MobileLessons({ modules }: any) {
+  const { isDevUnlocked } = useDevBypass();
   const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
   
   const completedCount = visibleModules.filter(m => m.status === "completed").length;
@@ -47,7 +49,7 @@ export function MobileLessons({ modules }: any) {
       <div className="space-y-4">
         {visibleModules.map((module) => {
           const lessonUrl = `/dashboard/lessons/${Number(module.module_id)}`;
-          const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
+          const isLocked = module.status === "locked" && !isDevUnlocked;
           const isCompleted = module.status === "completed";
           const isCurrent = module.status !== "completed" && !isLocked;
 

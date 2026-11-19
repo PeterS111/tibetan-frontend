@@ -104,7 +104,6 @@ export function WebLesson6() {
   const { completed, expandedStep, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuffixKey>("ga");
-  const [isBypassing, setIsBypassing] = useState(false);
 
   const practiceGroups = useMemo(() => [
     {
@@ -130,17 +129,6 @@ export function WebLesson6() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         
-        <button 
-          onClick={async () => {
-            setIsBypassing(true);
-            await markComplete(WEB_STEPS.length - 1);
-            setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
-          }} 
-          disabled={isBypassing}
-          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50 rounded-2xl"
-        >
-          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
-        </button>
 
         <div className="mb-6 flex items-center gap-2 text-eyebrow">
           <Link href="/dashboard/lessons" className="hover:text-ink transition-colors">My Steps</Link>

@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, Lock, CheckCircle2, Play, Check } from "lucide-react";
 import { Badge } from "@/app/components/ui/Badge";
-import { DEV_BYPASS_LOCKS } from "@/app/config";
+import { useDevBypass } from "@/hooks/useDevBypass";
 
 interface CourseLevelCard {
   id: number;
@@ -145,6 +145,7 @@ const COURSE_PROGRESSION: CourseGroup[] = [
 ];
 
 export function WebDashboard({ modules, nextModule, wordsKnown, isBrandNew }: any) {
+  const { isDevUnlocked } = useDevBypass();
   const [activeView, setActiveView] = useState<"progression" | "beginner1_hub">(
     "progression"
   );
@@ -440,7 +441,7 @@ export function WebDashboard({ modules, nextModule, wordsKnown, isBrandNew }: an
           <div className="space-y-4">
             {visibleModules.map((module) => {
               const lessonUrl = `/dashboard/lessons/${Number(module.module_id)}`;
-              const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
+              const isLocked = module.status === "locked" && !isDevUnlocked;
               const isCompleted = module.status === "completed";
 
               return (

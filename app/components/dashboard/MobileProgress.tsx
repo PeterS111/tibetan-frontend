@@ -5,9 +5,10 @@ import { useState } from "react";
 import { Flame, Clock, BookOpen, Trophy, CheckCircle2, Lock, ChevronDown } from "lucide-react";
 import { StatCard } from "@/app/components/ui/StatCard";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
-import { DEV_BYPASS_LOCKS } from "@/app/config";
+import { useDevBypass } from "@/hooks/useDevBypass";
 
 export function MobileProgress({ profile, modules }: { profile: any, modules: any[] }) {
+  const { isDevUnlocked } = useDevBypass();
   const [expandedModule, setExpandedModule] = useState<number | null>(null);
 
   const wordsKnown = profile?.words_known || 0;
@@ -44,7 +45,7 @@ export function MobileProgress({ profile, modules }: { profile: any, modules: an
       
 	  <div className="space-y-4">
         {modules.map((module) => {
-          const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
+          const isLocked = module.status === "locked" && !isDevUnlocked;
           const isCompleted = module.status === "completed";
           const percent = Math.round((module.progress / module.lesson_count) * 100);
           

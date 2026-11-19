@@ -102,7 +102,6 @@ export function WebLesson2() {
   const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
-  const [isBypassing, setIsBypassing] = useState(false);
 
   const saveWords = async (wordCount: number, stepIndex: number) => {
     if (!completed.has(stepIndex) && user) {
@@ -158,20 +157,6 @@ export function WebLesson2() {
     <div className="bg-paper min-h-screen text-ink pb-40 relative overflow-x-hidden">
       <div className="max-w-5xl mx-auto px-6 py-8">
         
-        {/* DEV BYPASS BUTTON */}
-        <button 
-          onClick={async () => {
-            setIsBypassing(true);
-            await markComplete(WEB_STEPS.length - 1);
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 1000);
-          }} 
-          disabled={isBypassing}
-          className="w-full mb-8 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 text-center tracking-widest shadow-lg disabled:opacity-50 rounded-2xl"
-        >
-          {isBypassing ? "⏳ SAVING TO DATABASE... PLEASE WAIT" : "🛠️ DEV BYPASS: INSTANTLY PASS LESSON & SAVE 🛠️"}
-        </button>
 
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-eyebrow">

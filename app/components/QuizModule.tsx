@@ -8,7 +8,7 @@ import {
   Loader2, Volume2, ChevronRight, Trophy, 
   Lock, CheckCircle2, XCircle, Check, X, Shuffle, ArrowRight 
 } from "lucide-react";
-import { DEV_BYPASS_LOCKS } from "@/app/config";
+import { useDevBypass } from "@/hooks/useDevBypass";
 import { usePlatform } from "@/hooks/usePlatform";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
 import { Button } from "@/app/components/ui/Button";
@@ -101,6 +101,7 @@ export default function QuizModule({
   const pathname = usePathname();
   const { getToken } = useAuth();
   const { isNative } = usePlatform();
+  const { isDevUnlocked } = useDevBypass();
   
   const [hasStarted, setHasStarted] = useState(!isUnlockTest);
   const [step, setStep] = useState(0);
@@ -251,10 +252,10 @@ export default function QuizModule({
 
   useEffect(() => {
     if (step > 0 && step >= total && !hasAutoSaved) {
-      const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
+      const passed = (score / total) >= 0.8 || isDevUnlocked;
       if (passed && onPass) { onPass(); setHasAutoSaved(true); }
     }
-  }, [step, total, score, onPass, hasAutoSaved]);
+  }, [step, total, score, onPass, hasAutoSaved, isDevUnlocked]);
 
   const resetQuiz = () => {
     if (stopAudio) stopAudio();
@@ -303,7 +304,7 @@ export default function QuizModule({
       );
     }
 
-    const passed = (score / total) >= 0.8 || DEV_BYPASS_LOCKS;
+    const passed = (score / total) >= 0.8 || isDevUnlocked;
     const handleUnlock = async () => {
       setIsSaving(true);
       if (nextLessonPath) router.push(nextLessonPath);
@@ -334,8 +335,8 @@ export default function QuizModule({
             </button>
           )}
         </div>
-        {DEV_BYPASS_LOCKS && !passed && isUnlockTest && (
-          <div className="mt-6 text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1.5 border border-rose-200 rounded-full">DEV_BYPASS_LOCKS is true — you may proceed manually.</div>
+        {isDevUnlocked && (score / total) < 0.8 && isUnlockTest && (
+          <div className="mt-6 text-[10px] font-bold text-emerald-700 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 border border-emerald-200 rounded-full">Developer Bypass active — unlocked</div>
         )}
       </div>
     );

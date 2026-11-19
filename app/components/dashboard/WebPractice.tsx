@@ -4,13 +4,14 @@
 
 import { useState, useMemo } from "react";
 import { ChevronLeft, Lock } from "lucide-react";
-import { DEV_BYPASS_LOCKS } from "@/app/config";
+import { useDevBypass } from "@/hooks/useDevBypass";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import { useAudio } from "@/hooks/useAudio";
 import { getPracticeData } from "@/app/data/practiceData";
 import { Badge } from "@/app/components/ui/Badge";
 
 export function WebPractice({ modules }: { modules: any[] }) {
+  const { isDevUnlocked } = useDevBypass();
   const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
   const { playAudio, playErrorBeep, playingItem } = useAudio();
 
@@ -65,7 +66,7 @@ export function WebPractice({ modules }: { modules: any[] }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         {modules.map((module) => {
-          const isLocked = module.status === "locked" && !DEV_BYPASS_LOCKS;
+          const isLocked = module.status === "locked" && !isDevUnlocked;
 
           return (
             <div 
