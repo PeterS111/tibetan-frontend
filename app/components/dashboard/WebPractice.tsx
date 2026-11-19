@@ -9,6 +9,7 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import { useAudio } from "@/hooks/useAudio";
 import { getPracticeData } from "@/app/data/practiceData";
 import { Badge } from "@/app/components/ui/Badge";
+import { getDisplayUnitNumber, isBeginner2Module } from "@/app/data/syllabus";
 
 export function WebPractice({ modules }: { modules: any[] }) {
   const { isDevUnlocked } = useDevBypass();
@@ -79,8 +80,11 @@ export function WebPractice({ modules }: { modules: any[] }) {
               }`}
             >
               <div className="flex items-start justify-between">
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-serif text-xl border border-border-strong rounded-full bg-white text-ink shadow-sm">
-                  {module.module_id}
+                <div className="flex items-center gap-2.5">
+                  <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-serif text-xl border border-border-strong rounded-full bg-white text-ink shadow-sm">
+                    {getDisplayUnitNumber(module.module_id)}
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{isBeginner2Module(module.module_id) ? "Beginner 2" : "Beginner 1"}</span>
                 </div>
                 {isLocked ? (
                   <Badge variant="locked" className="px-3 py-1.5"><Lock size={12} className="mr-1.5"/> Locked</Badge>

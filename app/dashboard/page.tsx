@@ -8,16 +8,8 @@ import { usePlatform } from "@/hooks/usePlatform";
 
 import { WebDashboard } from "../components/dashboard/WebDashboard";
 import { MobileHome } from "../components/dashboard/MobileHome";
+import { FALLBACK_MODULES } from "@/app/data/syllabus";
 
-const FALLBACK_MODULES = [
-  { id: 1, module_id: 1, title: "The 30 Consonants", description: "The foundation of the Tibetan alphabet, script, tones, and essential root vocabulary.", progress: 0, status: "active", lesson_count: 8, mastery_scores: {} },
-  { id: 2, module_id: 2, title: "The Four Vowels", description: "The four diacritic marks, their shapes, positions, pronunciation, and spelling math.", progress: 0, status: "locked", lesson_count: 7, mastery_scores: {} },
-  { id: 3, module_id: 3, title: "The Three Superscripts", description: "The superscripts ར, ལ, and ས, their consonant combinations, tone changes, and vocabulary.", progress: 0, status: "locked", lesson_count: 5, mastery_scores: {} },
-  { id: 4, module_id: 4, title: "The Four Subscripts", description: "The Subscripts (ya-ra-la-wa) and their complex sound shifts.", progress: 0, status: "locked", lesson_count: 6, mastery_scores: {} },
-  { id: 5, module_id: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", progress: 0, status: "locked", lesson_count: 7, mastery_scores: {} },
-  { id: 6, module_id: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", progress: 0, status: "locked", lesson_count: 9, mastery_scores: {} },
-  { id: 7, module_id: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", progress: 0, status: "locked", lesson_count: 3, mastery_scores: {} }
-];
 
 export default function UnifiedDashboard() {
   const { user, isLoaded } = useUser();
@@ -136,7 +128,7 @@ export default function UnifiedDashboard() {
   
   // FIX: Safety check! If the phone remembers Module 2+, but the user hasn't even started Module 1, force them to Module 1!
   const module1 = mergedModules.find(m => Number(m.module_id) === 1);
-  if (activeModuleId !== 1 && module1 && module1.progress === 0 && module1.status !== "completed") {
+  if (activeModuleId > 1 && activeModuleId <= 7 && module1 && module1.progress === 0 && module1.status !== "completed") {
       activeModule = module1;
       activeModuleId = 1;
   }

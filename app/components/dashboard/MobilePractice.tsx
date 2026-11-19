@@ -8,6 +8,7 @@ import { useDevBypass } from "@/hooks/useDevBypass";
 import PracticeSuite from "@/app/components/practice/PracticeSuite";
 import { useAudio } from "@/hooks/useAudio";
 import { getPracticeData } from "@/app/data/practiceData";
+import { getDisplayUnitNumber, isBeginner2Module } from "@/app/data/syllabus";
 
 export function MobilePractice({ modules }: { modules: any[] }) {
   const { isDevUnlocked } = useDevBypass();
@@ -87,8 +88,11 @@ export function MobilePractice({ modules }: { modules: any[] }) {
               }`}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="w-12 h-12 rounded-full border border-border-strong flex items-center justify-center font-serif text-xl bg-surface-muted text-ink shrink-0">
-                  {module.module_id}
+                <div className="flex items-center gap-2.5">
+                  <div className="w-12 h-12 rounded-full border border-border-strong flex items-center justify-center font-serif text-xl bg-surface-muted text-ink shrink-0">
+                    {getDisplayUnitNumber(module.module_id)}
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">{isBeginner2Module(module.module_id) ? "Beginner 2" : "Beginner 1"}</span>
                 </div>
                 {isLocked ? (
                   <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-ink-muted bg-surface-muted px-3 py-1.5 rounded-full border border-border-subtle">

@@ -11,6 +11,7 @@ import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 import { usePlatform } from "@/hooks/usePlatform";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { AUDIO_MAP } from "@/app/data/audioMap";
 
 export interface PracticeItem {
   id: string;
@@ -338,22 +339,31 @@ function ListenSelect({ items, speak, playingItem, playErrorBeep, isNative }: Li
     setSeed(s => s + 1);
   };
 
+  const mappedFile = AUDIO_MAP[target.audioTarget.trim()];
+  const isPlaceholderSound = !mappedFile || mappedFile.startsWith("__placeholder__/");
+
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in pb-12">
-      <p className="text-sm font-bold text-ink-light mb-6 self-start w-full">Listen to the audio and select the matching Tibetan text.</p>
+      <p className="text-sm font-bold text-ink-light mb-6 self-start w-full">
+        {isPlaceholderSound
+          ? "Read the pronunciation prompt and select the matching Tibetan text."
+          : "Listen to the audio and select the matching Tibetan text."}
+      </p>
       
       <div className="flex flex-col items-center gap-5 w-full max-w-xl">
         <Button 
           variant="outline" 
           onClick={() => speak(target.audioTarget)}
-          className={`w-full max-w-[220px] shadow-sm border-2 ${isNative ? 'rounded-full' : ''}`}
+          className={`w-full max-w-[240px] shadow-sm border-2 ${isNative ? 'rounded-full' : ''}`}
         >
           {playingItem === target.audioTarget ? (
             <Loader2 size={20} className="animate-spin text-brand" />
           ) : (
             <Volume2 size={20} className="text-brand-dark" />
           )}
-          <span className="font-bold text-ink">Play Audio</span>
+          <span className="font-bold text-ink">
+            {isPlaceholderSound ? `Reading: [${target.reading}]` : "Play Audio"}
+          </span>
         </Button>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full">

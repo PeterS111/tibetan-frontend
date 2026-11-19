@@ -6,6 +6,7 @@ import { Flame, Clock, BookOpen, Trophy, CheckCircle2, Lock, ChevronDown } from 
 import { StatCard } from "@/app/components/ui/StatCard";
 import { ProgressBar } from "@/app/components/ui/ProgressBar";
 import { useDevBypass } from "@/hooks/useDevBypass";
+import { getDisplayUnitNumber, isBeginner2Module } from "@/app/data/syllabus";
 
 export function MobileProgress({ profile, modules }: { profile: any, modules: any[] }) {
   const { isDevUnlocked } = useDevBypass();
@@ -82,7 +83,7 @@ export function MobileProgress({ profile, modules }: { profile: any, modules: an
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-serif border shrink-0 ${
                       isCompleted ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-surface-muted border-border-strong text-ink"
                     }`}>
-                      {isCompleted ? <CheckCircle2 size={20} /> : module.module_id}
+                      {isCompleted ? <CheckCircle2 size={20} /> : getDisplayUnitNumber(module.module_id)}
                     </div>
                     <h3 className="font-bold text-[15px] text-ink truncate pr-2">{module.title}</h3>
                   </div>

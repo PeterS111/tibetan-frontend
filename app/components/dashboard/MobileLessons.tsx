@@ -1,51 +1,71 @@
 // app/components/dashboard/MobileLessons.tsx
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-
-import { Check, Play, Lock, Star } from "lucide-react";
+import { Check, Play, Lock, Star, Clock } from "lucide-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
+import {
+  BEGINNER_2_UPCOMING,
+  isBeginner1Module,
+  isBeginner2Module,
+  getDisplayUnitNumber,
+} from "@/app/data/syllabus";
 
 export function MobileLessons({ modules }: any) {
   const { isDevUnlocked } = useDevBypass();
-  const visibleModules = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
-  
-  const completedCount = visibleModules.filter(m => m.status === "completed").length;
-  const totalCount = visibleModules.length;
-  const progressPercent = Math.round((completedCount / totalCount) * 100) || 5; // Floor at 5% for visual
+  const [selectedCourse, setSelectedCourse] = useState<"b1" | "b2">(() => {
+    if (typeof window !== "undefined") {
+      const last = parseInt(localStorage.getItem("tibetan_last_active_lesson") || "1", 10);
+      if (last >= 8) return "b2";
+    }
+    return "b1";
+  });
+
+  const sorted = [...modules].sort((a, b) => Number(a.module_id) - Number(b.module_id));
+  const visibleModules =
+    selectedCourse === "b1"
+      ? sorted.filter((m) => isBeginner1Module(m.module_id))
+      : sorted.filter((m) => isBeginner2Module(m.module_id));
+
+  const completedCount = visibleModules.filter((m) => m.status === "completed").length;
+  const totalCount = Math.max(visibleModules.length, 1);
+  const progressPercent = Math.round((completedCount / totalCount) * 100) || 5;
 
   return (
     <div className="px-5 pt-12 pb-24 animate-in fade-in">
-      
-      {/* Header & Progress */}
       <div className="mb-8">
         <h1 className="font-serif text-[32px] text-ink mb-2">Lessons</h1>
         <div className="text-sm text-ink-light mb-4">
-          Beginner 1 · The Script — {completedCount} of {totalCount} complete
+          {selectedCourse === "b1"
+            ? `Beginner 1 · The Script — ${completedCount} of ${visibleModules.length} complete`
+            : `Beginner 2 · Everyday Tibetan — ${completedCount} of ${visibleModules.length} complete`}
         </div>
-        
-        {/* Progress Bar */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-1.5 bg-ink/10 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-brand rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
+            <div className="h-full bg-brand rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
           </div>
           <span className="text-xs font-bold text-brand-dark">{progressPercent}%</span>
         </div>
       </div>
 
-      {/* Course Switcher Pills */}
       <div className="flex items-center gap-2 mb-8">
-        {/* Using the dark red destructive color from globals.css for the active pill */}
-        <button className="bg-[#8C2A21] text-white px-5 py-2.5 rounded-full text-[13px] font-bold shadow-sm">
+        <button
+          type="button"
+          onClick={() => setSelectedCourse("b1")}
+          className={`px-5 py-2.5 rounded-full text-[13px] font-bold transition-colors ${selectedCourse === "b1" ? "bg-[#8C2A21] text-white shadow-sm" : "bg-white text-ink-light border border-border-subtle"}`}
+        >
           Beginner 1
         </button>
-        
+        <button
+          type="button"
+          onClick={() => setSelectedCourse("b2")}
+          className={`px-5 py-2.5 rounded-full text-[13px] font-bold transition-colors ${selectedCourse === "b2" ? "bg-[#8C2A21] text-white shadow-sm" : "bg-white text-ink-light border border-border-subtle"}`}
+        >
+          Beginner 2
+        </button>
       </div>
 
-      {/* Module List */}
       <div className="space-y-4">
         {visibleModules.map((module) => {
           const lessonUrl = `/dashboard/lessons/${Number(module.module_id)}`;
@@ -54,58 +74,57 @@ export function MobileLessons({ modules }: any) {
           const isCurrent = module.status !== "completed" && !isLocked;
 
           return (
-            <Link 
-              key={module.id || module.module_id} 
+            <Link
+              key={module.id || module.module_id}
               href={isLocked ? "#" : lessonUrl}
-              className={`block bg-white rounded-[1.25rem] p-4 shadow-sm border ${isCurrent ? 'border-brand/40 shadow-md transform scale-[1.02] transition-transform' : 'border-border-subtle'} ${isLocked ? 'opacity-60 cursor-not-allowed' : 'active:scale-95 transition-transform'}`}
+              className={`block bg-white rounded-[1.25rem] p-4 shadow-sm border ${isCurrent ? "border-brand/40 shadow-md transform scale-[1.01] transition-transform" : "border-border-subtle"} ${isLocked ? "opacity-60 cursor-not-allowed" : "active:scale-95 transition-transform"}`}
             >
               <div className="flex items-center gap-4">
-                
-                {/* Status Icon */}
                 <div className="shrink-0">
-                  {isCompleted && (
-                    <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
-                      <Check size={20} strokeWidth={3} />
-                    </div>
-                  )}
-                  {isCurrent && (
-                    <div className="w-14 h-14 rounded-full bg-brand text-ink flex items-center justify-center shadow-sm">
-                      <Play size={24} fill="currentColor" className="ml-1" />
-                    </div>
-                  )}
-                  {isLocked && (
-                    <div className="w-12 h-12 rounded-full bg-surface-muted border border-border-strong text-ink-muted flex items-center justify-center">
-                      <Lock size={18} />
-                    </div>
-                  )}
+                  {isCompleted && <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center"><Check size={20} strokeWidth={3} /></div>}
+                  {isCurrent && <div className="w-14 h-14 rounded-full bg-brand text-ink flex items-center justify-center shadow-sm"><Play size={24} fill="currentColor" className="ml-1" /></div>}
+                  {isLocked && <div className="w-12 h-12 rounded-full bg-surface-muted border border-border-strong text-ink-muted flex items-center justify-center"><Lock size={18} /></div>}
                 </div>
-
-                {/* Text Content */}
                 <div className="flex-1 min-w-0 py-1">
-                  <h3 className="font-serif text-[17px] font-bold text-ink truncate mb-0.5">
-                    {module.title}
-                  </h3>
-                  
-                  {/* Current Lesson Progress Bar */}
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-0.5">Unit {getDisplayUnitNumber(module.module_id)}</div>
+                  <h3 className="font-serif text-[17px] font-bold text-ink truncate mb-0.5">{module.title}</h3>
                   {isCurrent && (
-                    <div className="w-24 h-1 bg-ink/10 rounded-full mt-3">
-                      <div className="h-full bg-brand rounded-full" style={{ width: `${Math.max((module.progress / module.lesson_count) * 100, 5)}%` }}></div>
+                    <div className="w-24 h-1 bg-ink/10 rounded-full mt-2.5">
+                      <div className="h-full bg-brand rounded-full" style={{ width: `${Math.max((module.progress / module.lesson_count) * 100, 5)}%` }} />
                     </div>
                   )}
                 </div>
-
-                {/* Stars (Only for completed or current) */}
                 {!isLocked && (
                   <div className="flex gap-0.5 shrink-0">
-                    <Star size={14} fill={isCompleted ? "#FFB600" : "#F2EDE1"} className={isCompleted ? "text-brand" : "text-border-strong"} />
-                    <Star size={14} fill={isCompleted ? "#FFB600" : "#F2EDE1"} className={isCompleted ? "text-brand" : "text-border-strong"} />
-                    <Star size={14} fill={isCompleted ? "#FFB600" : "#F2EDE1"} className={isCompleted ? "text-brand" : "text-border-strong"} />
+                    {[0, 1, 2].map((s) => (
+                      <Star key={s} size={14} fill={isCompleted ? "#FFB600" : "#F2EDE1"} className={isCompleted ? "text-brand" : "text-border-strong"} />
+                    ))}
                   </div>
                 )}
               </div>
             </Link>
           );
         })}
+
+        {selectedCourse === "b2" &&
+          BEGINNER_2_UPCOMING.map((up) => (
+            <div
+              key={up.unitNumber}
+              className="bg-white/70 rounded-[1.25rem] p-4 border border-border-subtle/70 opacity-75 flex items-center gap-4"
+            >
+              <div className="w-12 h-12 rounded-full bg-surface-muted border border-border-subtle text-ink-muted flex items-center justify-center shrink-0">
+                <Clock size={17} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted">
+                  Unit {up.unitNumber} · Coming Soon
+                </div>
+                <h3 className="font-serif text-[16px] font-bold text-ink-light truncate">
+                  {up.title}
+                </h3>
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );

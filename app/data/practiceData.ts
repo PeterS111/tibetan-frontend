@@ -8,6 +8,7 @@ import { SUPERS, VOCAB as L3_VOCAB } from "@/app/data/lesson3";
 import { SUBS, VOCAB as L4_VOCAB, TONE_META as L4_TONE_META, Tone as L4Tone } from "@/app/data/lesson4";
 import { PREFIXES, VOCAB as L5_VOCAB, TONE_META as L5_TONE_META, Tone as L5Tone } from "@/app/data/lesson5";
 import { SUFFIXES, VOCAB as L6_VOCAB, QUIZ as L6_QUIZ } from "@/app/data/lesson6";
+import { VOCAB as L8_VOCAB, USEFUL_PHRASES as L8_PHRASES, CLASSROOM_COMMANDS as L8_COMMANDS } from "@/app/data/lesson8";
 
 /**
  * Transforms lesson data into the standardized PracticeGroup format required by PracticeSuite.
@@ -121,6 +122,30 @@ export function getPracticeData(moduleId: number | string): { isLesson1: boolean
             name: "Vocabulary",
             items: L6_VOCAB.map(v => ({
               id: `v-${v.tib}`, tibetan: v.tib, reading: v.read, english: v.en, audioTarget: v.tib, emoji: v.emoji
+            }))
+          }
+        ]
+      };
+    case 8:
+      return {
+        isLesson1: false,
+        groups: [
+          {
+            name: "Vocabulary",
+            items: L8_VOCAB.map(v => ({
+              id: `b2-l1-v-${v.tib}`, tibetan: v.tib, reading: v.pron, english: v.en, audioTarget: v.tib, emoji: v.emoji
+            }))
+          },
+          {
+            name: "Useful Phrases",
+            items: L8_PHRASES.map(p => ({
+              id: `b2-l1-p-${p.id}`, tibetan: p.tib, reading: p.pron, english: p.en, audioTarget: p.tib
+            }))
+          },
+          {
+            name: "Class Commands",
+            items: L8_COMMANDS.map(c => ({
+              id: `b2-l1-c-${c.num}`, tibetan: c.tib, reading: c.pron, english: c.en, audioTarget: c.tib
             }))
           }
         ]

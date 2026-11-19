@@ -99,6 +99,29 @@ export function useAudio() {
         fileName = AUDIO_MAP[cleanText.slice(0, -1)];
       }
 
+      if (fileName && fileName.startsWith("__placeholder__/")) {
+        if (Capacitor.isNativePlatform()) {
+          try { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); } catch {}
+        }
+        try {
+          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(520, ctx.currentTime);
+          gain.gain.setValueAtTime(0.06, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.12);
+        } catch {}
+        playbackTimerRef.current = setTimeout(() => {
+          if (currentReqId === requestIdRef.current) setPlayingItem(null);
+        }, 280);
+        return;
+      }
+
       // ==========================================
       // 1. NATIVE APP (iOS / Android Capacitor)
       // ==========================================
