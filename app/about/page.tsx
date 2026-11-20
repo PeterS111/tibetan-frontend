@@ -167,25 +167,6 @@ const TEAM_MEMBERS: TeamMember[] = [
       },
     ],
   },
-  {
-    id: "wang",
-    name: "Wang Bhumo",
-    role: "Tutor — Colloquial Tibetan",
-    initial: "W",
-    paragraphs: [
-      "Wang Bhumo grew up speaking Tibetan in her family home and brings warmth and authenticity to every class.",
-      "She specialises in conversational Tibetan and cultural immersion, helping students speak naturally and confidently in everyday life.",
-    ],
-    sectionLabel: "Teaching & Focus",
-    highlights: [
-      { motif: "/motif_khata.png", text: "Spoken & colloquial Tibetan" },
-      {
-        motif: "/motif_singing_bowl.png",
-        text: "Everyday conversation practice",
-      },
-      { motif: "/motif_yak.png", text: "Tibetan cultural immersion" },
-    ],
-  },
 ];
 
 export default function AboutPage() {
@@ -640,7 +621,7 @@ export default function AboutPage() {
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {TEAM_MEMBERS.map((member, idx) => (
               <Reveal key={member.id} delay={idx * 90} className="h-full flex">
                 <div
