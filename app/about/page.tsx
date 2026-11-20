@@ -106,7 +106,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     name: "Piotr Sawicki",
     role: "AI Specialist & Platform Architect",
     initial: "P",
-    avatar: "/piotr.jpg",
+    avatar: "/piotr_avatar.png",
     avatarFallback: "/peter.jpg",
     avatarMode: "cover",
     paragraphs: [
@@ -646,7 +646,7 @@ export default function AboutPage() {
                   className="w-full group bg-surface border border-border-subtle hover:border-brand rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer"
                 >
                   {/* Top Dark Navy Banner with Corner Gold Mandala + Circular Gold-Bordered Avatar */}
-                  <div className="relative bg-ink h-36 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="relative bg-ink h-40 flex items-center justify-center overflow-hidden shrink-0">
                     <img
                       src="/motif_mandala_gold.png"
                       alt=""
@@ -654,7 +654,11 @@ export default function AboutPage() {
                       className="pointer-events-none select-none absolute -bottom-8 -right-8 w-32 h-32 object-contain opacity-15"
                     />
 
-                    <div className="relative z-10 w-20 h-20 rounded-full border-2 border-brand bg-white shadow-xl flex items-center justify-center overflow-hidden">
+                    <div
+                      className={`relative z-10 w-28 h-28 rounded-full border-2 border-brand shadow-xl flex items-center justify-center overflow-hidden ${
+                        member.avatar && member.avatarMode === "cover" ? "bg-ink" : "bg-white"
+                      }`}
+                    >
                       {member.avatar ? (
                         <img
                           src={member.avatar}
@@ -666,7 +670,7 @@ export default function AboutPage() {
                           alt={member.name}
                           className={
                             member.avatarMode === "contain"
-                              ? "w-full h-full object-contain p-2.5"
+                              ? "w-full h-full object-contain p-4"
                               : "w-full h-full object-cover object-center"
                           }
                         />
@@ -779,14 +783,18 @@ export default function AboutPage() {
               <X size={18} />
             </button>
 
-            <div className="relative bg-ink h-44 flex items-center justify-center overflow-hidden">
+            <div className="relative bg-ink h-52 flex items-center justify-center overflow-hidden">
               <img
                 src="/motif_mandala_gold.png"
                 alt=""
                 aria-hidden="true"
-                className="pointer-events-none select-none absolute -bottom-10 -right-10 w-40 h-40 object-contain opacity-15"
+                className="pointer-events-none select-none absolute -bottom-10 -right-10 w-44 h-44 object-contain opacity-15"
               />
-              <div className="relative z-10 w-24 h-24 rounded-full border-2 border-brand bg-white shadow-xl flex items-center justify-center overflow-hidden">
+              <div
+                className={`relative z-10 w-36 h-36 rounded-full border-2 border-brand shadow-xl flex items-center justify-center overflow-hidden ${
+                  selectedMember.avatar && selectedMember.avatarMode === "cover" ? "bg-ink" : "bg-white"
+                }`}
+              >
                 {selectedMember.avatar ? (
                   <img
                     src={selectedMember.avatar}
@@ -801,7 +809,7 @@ export default function AboutPage() {
                     alt={selectedMember.name}
                     className={
                       selectedMember.avatarMode === "contain"
-                        ? "w-full h-full object-contain p-3"
+                        ? "w-full h-full object-contain p-5"
                         : "w-full h-full object-cover object-center"
                     }
                   />
