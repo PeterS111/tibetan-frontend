@@ -101,7 +101,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     website: "https://www.loplao.com/",
     websiteLabel: "www.loplao.com",
   },
-  {
+{
     id: "piotr",
     name: "Piotr Sawicki",
     role: "AI Specialist & Platform Architect",
@@ -110,26 +110,26 @@ const TEAM_MEMBERS: TeamMember[] = [
     avatarFallback: "/peter.jpg",
     avatarMode: "cover",
     paragraphs: [
-      "Piotr holds a PhD in Computer Science and Artificial Intelligence from the University of Kent, where he is an Assistant Lecturer and researcher specializing in Computational Creativity, Large Language Models (LLMs), Natural Language Processing, and Generative AI.",
-      "At Loplao, he works alongside Tenzin and the Tibetan teaching and design team on AI tools, web design, platform architecture, and mobile app development — building the technical infrastructure that powers the website and apps.",
+      "Piotr holds a PhD in Artificial Intelligence from the University of Kent, where he teaches in the School of Computing and specialises in Computational Creativity, Large Language Models, Natural Language Processing, and Generative AI.",
+      "He works alongside Tenzin and the Tibetan teaching and design team on AI tools, web design, platform architecture, and native mobile applications — building the digital infrastructure behind Loplao.",
     ],
     sectionLabel: "Technology & Research",
     highlights: [
       {
         motif: "/motif_mandala.png",
-        text: "PhD in AI & Computational Creativity, University of Kent",
+        text: "PhD in Artificial Intelligence",
+      },
+      {
+        motif: "/motif_stupa.png",
+        text: "School of Computing, University of Kent",
       },
       {
         motif: "/motif_vajra.png",
-        text: "Large Language Models (LLMs), NLP & Generative AI",
+        text: "LLMs, NLP & Computational Creativity",
       },
       {
         motif: "/motif_bell.png",
-        text: "Web Design, Platform & Native App Architecture",
-      },
-      {
-        motif: "/motif_wind_horse.png",
-        text: "AI Tools & Digital Infrastructure for Loplao",
+        text: "Web, Platform & Mobile App Architecture",
       },
     ],
     links: [
