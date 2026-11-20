@@ -171,7 +171,7 @@ export function WebLesson6() {
                 {SUFFIXES.map((x) => (
                   <button 
                     key={x.key} 
-                    onClick={() => { setActiveTab(x.key); playAudio(x.head); }} 
+                    onClick={() => { setActiveTab(x.key); playAudio("རྗེས་འཇུག་" + x.head); }} 
                     className={`border rounded-xl p-2 text-center transition-colors ${activeTab === x.key ? "border-amber-400 bg-brand-light" : "border-border-strong hover:bg-surface-muted hover:border-amber-300 bg-surface"}`}
                   >
                     <div className="font-tibetan font-normal leading-none text-xl pt-1" style={{ color: x.accent }}>{x.head}</div>
@@ -267,12 +267,12 @@ export function WebLesson6() {
             <div className="mt-6 border border-border-strong bg-surface overflow-hidden rounded-[1.5rem]">
               <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 divide-x divide-y md:divide-y-0 divide-border-strong text-center">
                 {SUFFIXES.map((x) => (
-                  <button key={x.key} onClick={() => playAudio(x.head)} className="group flex flex-col items-center gap-2 p-4 transition hover:bg-surface-muted">
+                  <button key={x.key} onClick={() => playAudio("རྗེས་འཇུག་" + x.head)} className="group flex flex-col items-center gap-2 p-4 transition hover:bg-surface-muted">
                     <span className="h-1 w-8 rounded-full" style={{ backgroundColor: x.accent }} />
                     <span className="mt-2 font-tibetan font-normal leading-none pt-1" style={{ fontSize: "2.5rem", color: x.accent }}>{x.head}</span>
                     <div className="flex items-center gap-1 text-[11px] font-bold text-ink">
                       {x.latin}
-                      {playingItem === x.head ? <Loader2 size={10} className="animate-spin text-brand" /> : <Volume2 size={10} className="text-brand opacity-0 group-hover:opacity-100 transition-opacity" />}
+                      {playingItem === ("རྗེས་འཇུག་" + x.head) ? <Loader2 size={10} className="animate-spin text-brand" /> : <Volume2 size={10} className="text-brand opacity-0 group-hover:opacity-100 transition-opacity" />}
                     </div>
                   </button>
                 ))}

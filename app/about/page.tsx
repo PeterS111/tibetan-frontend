@@ -47,12 +47,18 @@ interface TeamHighlight {
   text: string;
 }
 
+interface TeamLink {
+  href: string;
+  label: string;
+}
+
 interface TeamMember {
   id: string;
   name: string;
   role: string;
   initial: string;
   avatar?: string;
+  avatarFallback?: string;
   avatarMode?: "contain" | "cover";
   paragraphs: string[];
   sectionLabel: string;
@@ -60,6 +66,7 @@ interface TeamMember {
   email?: string;
   website?: string;
   websiteLabel?: string;
+  links?: TeamLink[];
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
@@ -95,33 +102,46 @@ const TEAM_MEMBERS: TeamMember[] = [
     websiteLabel: "www.loplao.com",
   },
   {
-    id: "peter",
-    name: "Peter Smith",
-    role: "AI Specialist & Lead Developer",
+    id: "piotr",
+    name: "Piotr Sawicki",
+    role: "AI Specialist & Platform Architect",
     initial: "P",
-    avatar: "/peter.jpg",
+    avatar: "/piotr.jpg",
+    avatarFallback: "/peter.jpg",
     avatarMode: "cover",
     paragraphs: [
-      "Peter is an AI specialist, programmer, and platform architect. Since 2023 he has worked alongside Tenzin on Tibetan language tools, native applications, and Large Language Model projects.",
-      "His work looks at how artificial intelligence and modern digital infrastructure can make Tibetan easier to learn, search and use inside modern software — so the language has a place in the tools people already open every day.",
+      "Piotr holds a PhD in Computer Science and Artificial Intelligence from the University of Kent, where he is an Assistant Lecturer and researcher specializing in Computational Creativity, Large Language Models (LLMs), Natural Language Processing, and Generative AI.",
+      "At Loplao, he works alongside Tenzin and the Tibetan teaching and design team on AI tools, web design, platform architecture, and mobile app development — building the technical infrastructure that powers the website and apps.",
     ],
     sectionLabel: "Technology & Research",
     highlights: [
       {
         motif: "/motif_mandala.png",
-        text: "Artificial Intelligence & Platform Architecture",
+        text: "PhD in AI & Computational Creativity, University of Kent",
+      },
+      {
+        motif: "/motif_vajra.png",
+        text: "Large Language Models (LLMs), NLP & Generative AI",
+      },
+      {
+        motif: "/motif_bell.png",
+        text: "Web Design, Platform & Native App Architecture",
       },
       {
         motif: "/motif_wind_horse.png",
-        text: "Tibetan language tools since 2023",
-      },
-      { motif: "/motif_vajra.png", text: "Large Language Model projects" },
-      {
-        motif: "/motif_bell.png",
-        text: "Web & native mobile application development",
+        text: "AI Tools & Digital Infrastructure for Loplao",
       },
     ],
-    email: "p.sm1549c@gmail.com",
+    links: [
+      {
+        href: "https://www.linkedin.com/in/piotr-sawicki-ai/",
+        label: "LinkedIn Profile",
+      },
+      {
+        href: "https://www.kent.ac.uk/school-of-computing/people/3144",
+        label: "University of Kent",
+      },
+    ],
   },
   {
     id: "kunga",
@@ -396,15 +416,14 @@ export default function AboutPage() {
                 delay={idx * 100}
                 className="flex flex-col items-center text-center px-4 py-6 sm:py-2"
               >
-                
-				<div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-paper border border-border-subtle flex items-center justify-center mb-4 shadow-xs">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-paper border border-border-subtle flex items-center justify-center mb-4 shadow-xs">
                   <img
                     src={stat.motif}
                     alt={stat.label}
                     className="w-11 h-11 sm:w-14 sm:h-14 object-contain"
                   />
                 </div>
-				
+
                 <div className="font-serif font-normal text-3xl sm:text-4xl text-ink mb-1">
                   {stat.value}
                 </div>
@@ -602,7 +621,7 @@ export default function AboutPage() {
       </section>
 
       {/* ====================================================================
-          7. MEET OUR TEAM (EXACT SCREENSHOT CARD STYLE, SCALED FOR 4 PEOPLE)
+          7. MEET OUR TEAM (4-COLUMN GRID + CLICKABLE MODAL)
       ==================================================================== */}
       <section className="py-20 md:py-24 bg-paper">
         <div className="max-w-6xl mx-auto px-6">
@@ -619,7 +638,6 @@ export default function AboutPage() {
             </p>
           </Reveal>
 
-          {/* 4-Column Grid in the Exact Screenshot Style (Compact Enough to Fit All 4) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {TEAM_MEMBERS.map((member, idx) => (
               <Reveal key={member.id} delay={idx * 90} className="h-full flex">
@@ -627,97 +645,114 @@ export default function AboutPage() {
                   onClick={() => setSelectedMember(member)}
                   className="w-full group bg-surface border border-border-subtle hover:border-brand rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer"
                 >
-                {/* Top Dark Navy Banner with Corner Gold Mandala + Circular Gold-Bordered Avatar */}
-                <div className="relative bg-ink h-36 flex items-center justify-center overflow-hidden shrink-0">
-                  <img
-                    src="/motif_mandala_gold.png"
-                    alt=""
-                    aria-hidden="true"
-                    className="pointer-events-none select-none absolute -bottom-8 -right-8 w-32 h-32 object-contain opacity-15"
-                  />
+                  {/* Top Dark Navy Banner with Corner Gold Mandala + Circular Gold-Bordered Avatar */}
+                  <div className="relative bg-ink h-36 flex items-center justify-center overflow-hidden shrink-0">
+                    <img
+                      src="/motif_mandala_gold.png"
+                      alt=""
+                      aria-hidden="true"
+                      className="pointer-events-none select-none absolute -bottom-8 -right-8 w-32 h-32 object-contain opacity-15"
+                    />
 
-                  <div className="relative z-10 w-20 h-20 rounded-full border-2 border-brand bg-white shadow-xl flex items-center justify-center overflow-hidden">
-                    {member.avatar ? (
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className={
-                          member.avatarMode === "contain"
-                            ? "w-full h-full object-contain p-2.5"
-                            : "w-full h-full object-cover object-center"
-                        }
-                      />
-                    ) : (
-                      <span className="font-serif text-3xl text-ink">
-                        {member.initial}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card Body */}
-                <div className="p-5 flex-1 flex flex-col">
-                  <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-brand-dark mb-1">
-                    {member.role}
-                  </div>
-                  <h3 className="font-serif font-normal text-xl text-ink mb-3 group-hover:text-brand-dark transition-colors">
-                    {member.name}
-                  </h3>
-
-                  <div className="space-y-2.5 text-xs text-ink-light leading-relaxed mb-5">
-                    {member.paragraphs.map((p, idx) => (
-                      <p key={idx}>{p}</p>
-                    ))}
-                  </div>
-
-                  {/* Highlights with Custom Motif Icons */}
-                  <div className="pt-4 border-t border-border-subtle mt-auto">
-                    <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-ink-muted mb-2.5">
-                      {member.sectionLabel}
+                    <div className="relative z-10 w-20 h-20 rounded-full border-2 border-brand bg-white shadow-xl flex items-center justify-center overflow-hidden">
+                      {member.avatar ? (
+                        <img
+                          src={member.avatar}
+                          onError={(e) => {
+                            if (member.avatarFallback && !e.currentTarget.src.endsWith(member.avatarFallback)) {
+                              e.currentTarget.src = member.avatarFallback;
+                            }
+                          }}
+                          alt={member.name}
+                          className={
+                            member.avatarMode === "contain"
+                              ? "w-full h-full object-contain p-2.5"
+                              : "w-full h-full object-cover object-center"
+                          }
+                        />
+                      ) : (
+                        <span className="font-serif text-3xl text-ink">
+                          {member.initial}
+                        </span>
+                      )}
                     </div>
-                    <ul className="space-y-2 text-[11px] text-ink-light">
-                      {member.highlights.map((h) => (
-                        <li key={h.text} className="flex items-start gap-2">
-                          <img
-                            src={h.motif}
-                            alt=""
-                            className="w-3.5 h-3.5 object-contain shrink-0 mt-0.5"
-                          />
-                          <span className="leading-snug">{h.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* Contact Footer (Only for Tenzin & Peter) */}
-                    {(member.email || member.website) && (
-                      <div
-                        className="flex flex-col gap-1.5 pt-3.5 mt-4 border-t border-border-subtle text-[11px] font-bold text-ink-muted"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {member.email && (
-                          <a
-                            href={`mailto:${member.email}`}
-                            className="inline-flex items-center gap-1.5 hover:text-ink transition-colors break-all"
-                          >
-                            <Mail size={12} className="shrink-0" />{" "}
-                            {member.email}
-                          </a>
-                        )}
-                        {member.website && (
-                          <a
-                            href={member.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 hover:text-ink transition-colors"
-                          >
-                            <Globe size={12} className="shrink-0" />{" "}
-                            {member.websiteLabel}
-                          </a>
-                        )}
-                      </div>
-                    )}
                   </div>
-                </div>
+
+                  {/* Card Body */}
+                  <div className="p-5 flex-1 flex flex-col">
+                    <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-brand-dark mb-1">
+                      {member.role}
+                    </div>
+                    <h3 className="font-serif font-normal text-xl text-ink mb-3 group-hover:text-brand-dark transition-colors">
+                      {member.name}
+                    </h3>
+
+                    <div className="space-y-2.5 text-xs text-ink-light leading-relaxed mb-5">
+                      {member.paragraphs.map((p, pIdx) => (
+                        <p key={pIdx}>{p}</p>
+                      ))}
+                    </div>
+
+                    {/* Highlights with Custom Motif Icons */}
+                    <div className="pt-4 border-t border-border-subtle mt-auto">
+                      <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-ink-muted mb-2.5">
+                        {member.sectionLabel}
+                      </div>
+                      <ul className="space-y-2 text-[11px] text-ink-light">
+                        {member.highlights.map((h) => (
+                          <li key={h.text} className="flex items-start gap-2">
+                            <img
+                              src={h.motif}
+                              alt=""
+                              className="w-3.5 h-3.5 object-contain shrink-0 mt-0.5"
+                            />
+                            <span className="leading-snug">{h.text}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Contact & Profile Links Footer */}
+                      {(member.email || member.website || (member.links && member.links.length > 0)) && (
+                        <div
+                          className="flex flex-col gap-1.5 pt-3.5 mt-4 border-t border-border-subtle text-[11px] font-bold text-ink-muted"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {member.email && (
+                            <a
+                              href={`mailto:${member.email}`}
+                              className="inline-flex items-center gap-1.5 hover:text-ink transition-colors break-all"
+                            >
+                              <Mail size={12} className="shrink-0" />{" "}
+                              {member.email}
+                            </a>
+                          )}
+                          {member.website && (
+                            <a
+                              href={member.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 hover:text-ink transition-colors"
+                            >
+                              <Globe size={12} className="shrink-0" />{" "}
+                              {member.websiteLabel}
+                            </a>
+                          )}
+                          {member.links?.map((link) => (
+                            <a
+                              key={link.href}
+                              href={link.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 hover:text-ink transition-colors"
+                            >
+                              <ExternalLink size={12} className="shrink-0" />{" "}
+                              {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </Reveal>
             ))}
@@ -755,6 +790,14 @@ export default function AboutPage() {
                 {selectedMember.avatar ? (
                   <img
                     src={selectedMember.avatar}
+                    onError={(e) => {
+                      if (
+                        selectedMember.avatarFallback &&
+                        !e.currentTarget.src.endsWith(selectedMember.avatarFallback)
+                      ) {
+                        e.currentTarget.src = selectedMember.avatarFallback;
+                      }
+                    }}
                     alt={selectedMember.name}
                     className={
                       selectedMember.avatarMode === "contain"
@@ -801,7 +844,9 @@ export default function AboutPage() {
                   ))}
                 </ul>
 
-                {(selectedMember.email || selectedMember.website) && (
+                {(selectedMember.email ||
+                  selectedMember.website ||
+                  (selectedMember.links && selectedMember.links.length > 0)) && (
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-4 mt-5 border-t border-border-subtle text-xs font-bold text-ink-muted">
                     {selectedMember.email && (
                       <a
@@ -821,6 +866,17 @@ export default function AboutPage() {
                         <Globe size={14} /> {selectedMember.websiteLabel}
                       </a>
                     )}
+                    {selectedMember.links?.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 hover:text-ink transition-colors"
+                      >
+                        <ExternalLink size={14} /> {link.label}
+                      </a>
+                    ))}
                   </div>
                 )}
               </div>
@@ -928,12 +984,10 @@ export default function AboutPage() {
         </Reveal>
       </section>
 
-      
-	  {/* ====================================================================
+      {/* ====================================================================
           10. SHARED SITE FOOTER
       ==================================================================== */}
       <SiteFooter />
-	  
     </div>
   );
 }

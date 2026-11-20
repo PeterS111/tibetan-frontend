@@ -210,7 +210,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // Listen -> Meaning
   shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
     });
   });
@@ -218,7 +218,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // Read -> Roman
   shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     qs.push({
-      questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack, audioTarget: c.read,
+      questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack, audioTarget: c.stack,
       choices: shuffle([c, ...pickWrongs(ALL_COMBOS, c, 3, x => x.read !== c.read)]).map(x => ({ value: x.read, label: `[${x.read}]` }))
     });
   });
@@ -226,7 +226,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // Identify Head Letter
   shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
     qs.push({
-      questionText: `Which superscript heads the stack ${c.stack}?`, prominentTibetan: c.stack, answer: c.name, audioString: c.stack, audioTarget: c.name,
+      questionText: `Which superscript heads the stack ${c.stack}?`, prominentTibetan: c.stack, answer: c.name, audioString: c.stack, audioTarget: c.stack,
       choices: shuffle([c.name, ...pickWrongs(SUPERS.map(s => s.name), c.name, 2)]).map(x => ({ value: x, label: x }))
     });
   });
@@ -236,7 +236,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     const answerLabel = TONE_META[c.tone as Tone].label;
     const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
     qs.push({
-      questionText: `What happens to the tone of the root letter in ${c.stack}?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack, audioTarget: answerLabel,
+      questionText: `What happens to the tone of the root letter in ${c.stack}?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack, audioTarget: c.stack,
       choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
     });
   });
@@ -262,7 +262,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // Vocab -> Meaning
   shuffle(VOCAB).slice(0, 6).forEach(v => {
     qs.push({
-      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
     });
   });

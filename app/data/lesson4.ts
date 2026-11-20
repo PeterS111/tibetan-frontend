@@ -388,7 +388,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 3. Listen -> Meaning
   shuffle(VOCAB).slice(0, 4).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
@@ -396,7 +396,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 4. Read -> Roman
   shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     qs.push({
-      questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack, audioTarget: c.read,
+      questionText: `How does ${c.stack} read?`, prominentTibetan: c.stack, answer: c.read, audioString: c.stack, audioTarget: c.stack,
       choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
     });
   });
@@ -406,7 +406,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     const answerLabel = TONE_META[c.tone as Tone].label;
     const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
     qs.push({
-      questionText: `What happens to the tone of the root letter in ${c.stack}?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack, audioTarget: answerLabel,
+      questionText: `What happens to the tone of the root letter in ${c.stack}?`, prominentTibetan: c.stack, answer: answerLabel, audioString: c.stack, audioTarget: c.stack,
       choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
     });
   });
@@ -432,7 +432,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 8. Vocab -> Meaning
   shuffle(VOCAB).slice(0, 6).forEach(v => {
     qs.push({
-      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });

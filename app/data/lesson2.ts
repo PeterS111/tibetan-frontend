@@ -233,7 +233,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 2. listenMeanQs
   shuffle(VOCAB).slice(0, 2).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v, ...pickWrongs(VOCAB, v, 3)]).map(x => ({ value: x.en, label: x.en }))
     });
   });

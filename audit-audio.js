@@ -11,7 +11,8 @@ let match;
 const expectedFiles = new Set();
 
 while ((match = wavRegex.exec(mapContent)) !== null) {
-  expectedFiles.add(match[1].trim());
+  const val = match[1].trim();
+  if (!val.startsWith('__placeholder__/')) expectedFiles.add(val);
 }
 
 // 3. Read the actual files in the public/sounds/ directory

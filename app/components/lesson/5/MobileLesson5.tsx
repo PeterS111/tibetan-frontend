@@ -301,6 +301,14 @@ export function MobileLesson5() {
                </button>
 
                <div className="mt-4 text-[15px] italic text-ink-light font-medium"><span className="not-italic font-bold text-ink">bsgrims</span> — read <span className="not-italic font-bold text-ink">drim</span></div>
+               <div className="mt-3 flex items-center justify-center gap-2">
+                 <button onClick={() => playAudio("བསྒྲིམས་")} className="px-3.5 py-2 bg-ink text-white text-xs font-bold rounded-full inline-flex items-center gap-1.5 shadow-xs">
+                   {playingItem === "བསྒྲིམས་" ? <Loader2 size={13} className="animate-spin" /> : <Volume2 size={13} />} Pronunciation
+                 </button>
+                 <button onClick={() => playAudio("བསྒྲིམས་ spelling")} className="px-3.5 py-2 bg-brand-light text-brand-dark border border-brand/20 text-xs font-bold rounded-full inline-flex items-center gap-1.5 shadow-xs">
+                   {playingItem === "བསྒྲིམས་ spelling" ? <Loader2 size={13} className="animate-spin" /> : <Volume2 size={13} />} Spelling
+                 </button>
+               </div>
             </div>
 
             <div>
@@ -617,10 +625,12 @@ export function MobileLesson5() {
                 {playingItem === selectedCombo.word ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />}
                 <span className="text-sm">Pronunciation</span>
               </button>
-              <button onClick={() => playAudio(selectedCombo.word + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                {playingItem === (selectedCombo.word + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
-                <span className="text-sm">Spelling</span>
-              </button>
+              {selectedCombo.word !== "གསོ་" && (
+                <button onClick={() => playAudio(selectedCombo.word + " spelling")} className="flex-1 py-4 bg-brand-light text-brand-dark font-bold rounded-full border border-brand/20 active:bg-brand/30 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                  {playingItem === (selectedCombo.word + " spelling") ? <Loader2 size={20} className="animate-spin" /> : <Volume2 size={20} />} 
+                  <span className="text-sm">Spelling</span>
+                </button>
+              )}
             </div>
 
             <button onClick={closeComboInspector} className="w-full mt-4 py-4 text-center font-bold text-ink hover:bg-ink/5 rounded-full transition-colors">Close</button>

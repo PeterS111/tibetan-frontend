@@ -269,6 +269,14 @@ export default function WebLesson5() {
                 </button>
 
                 <div className="mt-6 text-[15px] italic text-ink-light"><span className="not-italic font-bold text-ink">bsgrims</span> — “concentrated” · read <span className="not-italic font-bold text-ink">drim</span></div>
+                <div className="mt-4 flex items-center justify-center gap-3">
+                  <Button variant="outline" onClick={() => playAudio("བསྒྲིམས་")} className="px-4 py-2 text-xs rounded-full">
+                    {playingItem === "བསྒྲིམས་" ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} className="text-brand-dark" />} Pronunciation
+                  </Button>
+                  <Button variant="outline" onClick={() => playAudio("བསྒྲིམས་ spelling")} className="px-4 py-2 text-xs rounded-full">
+                    {playingItem === "བསྒྲིམས་ spelling" ? <Loader2 size={14} className="animate-spin" /> : <Volume2 size={14} className="text-brand-dark" />} Spelling Audio
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 divide-y sm:divide-y-0 sm:divide-x divide-border-strong text-center items-stretch">
@@ -607,9 +615,15 @@ function PrefixPanel({ p, playAudio, stopAudio, playingItem, playErrorBeep }: an
                 
                 <div className="ml-auto flex items-center gap-3">
                   <span className={`hidden xl:inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full ${M.bg} ${M.text}`}><M.Icon size={14} strokeWidth={2.5} /> {M.label}</span>
-                  <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} className="px-4 py-2 rounded-full">
-                    {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
-                  </Button>
+                  {c.word !== "གསོ་" ? (
+                    <Button variant="outline" onClick={() => playAudio(c.word + " spelling")} className="px-4 py-2 rounded-full">
+                      {playingItem === (c.word + " spelling") ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Spelling Audio
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => playAudio(c.word)} className="px-4 py-2 rounded-full">
+                      {playingItem === c.word ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} className="text-brand-dark" />} Pronunciation
+                    </Button>
+                  )}
                 </div>
               </div>
             );

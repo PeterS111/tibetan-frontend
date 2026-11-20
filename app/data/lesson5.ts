@@ -147,16 +147,18 @@ export function generatePrefixQuiz(prefixKey: PrefixKey): QuizQuestion[] {
   const prefix = PREFIXES.find(p => p.key === prefixKey)!;
 
   prefix.combos.forEach(c => {
-    // 1. Audio Spelling
-    const spellWrongs = shuffle(prefix.combos.filter(x => x.word !== c.word)).slice(0, 3);
-    qs.push({
-      isAudioType: true,
-      questionText: "Listen to the spelling and select the matching stack.",
-      answer: c.word,
-      audioString: `${c.word} spelling`,
-      audioTarget: c.word,
-      choices: shuffle([c, ...spellWrongs]).map(x => ({ tib: x.word, value: x.word }))
-    });
+    // 1. Audio Spelling (skip གསོ་ until its spelling audio is recorded)
+    if (c.word !== "གསོ་") {
+      const spellWrongs = shuffle(prefix.combos.filter(x => x.word !== c.word)).slice(0, 3);
+      qs.push({
+        isAudioType: true,
+        questionText: "Listen to the spelling and select the matching stack.",
+        answer: c.word,
+        audioString: `${c.word} spelling`,
+        audioTarget: c.word,
+        choices: shuffle([c, ...spellWrongs]).map(x => ({ tib: x.word, value: x.word }))
+      });
+    }
 
     // 2. Reading
     const romanWrongs = shuffle(Array.from(new Set(prefix.combos.map(x => x.read))).filter(r => r !== c.read)).slice(0, 3);
@@ -252,8 +254,8 @@ export function generateFinalQuiz(): QuizQuestion[] {
 
   const ALL_COMBOS = PREFIXES.flatMap(p => p.combos.map(c => ({ ...c, prefKey: p.key, head: p.head, latin: p.latin, family: p.family })));
   
-  // 1. Audio Spelling for Random Stacks
-  shuffle(ALL_COMBOS).slice(0, 7).forEach(c => {
+  // 1. Audio Spelling for Random Stacks (exclude གསོ་ until spelling audio is recorded)
+  shuffle(ALL_COMBOS.filter(c => c.word !== "གསོ་")).slice(0, 7).forEach(c => {
     qs.push({
       isAudioType: true, questionText: "Listen to the spelling and select the matching stack.", answer: c.word, audioString: `${c.word} spelling`, audioTarget: c.word,
       choices: shuffle([c.word, ...pickWrongs(ALL_COMBOS.map(x => x.word), c.word, 3)]).map(x => ({ value: x, tib: x }))
@@ -271,7 +273,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 3. Vocab Listen -> Meaning
   shuffle(VOCAB).slice(0, 5).forEach(v => {
     qs.push({
-      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.en,
+      isAudioType: true, questionText: "Listen, then select the meaning of the word you hear.", answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
@@ -279,7 +281,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 4. Read -> Roman
   shuffle(ALL_COMBOS).slice(0, 6).forEach(c => {
     qs.push({
-      questionText: `How does ${c.word} read?`, prominentTibetan: c.word, answer: c.read, audioString: c.word, audioTarget: c.read,
+      questionText: `How does ${c.word} read?`, prominentTibetan: c.word, answer: c.read, audioString: c.word, audioTarget: c.word,
       choices: shuffle([c.read, ...pickWrongs(ALL_COMBOS.map(x => x.read), c.read, 3)]).map(x => ({ value: x, label: `[${x}]` }))
     });
   });
@@ -287,7 +289,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 5. Identify Prefix Logic
   shuffle(ALL_COMBOS).slice(0, 5).forEach(c => {
     qs.push({
-      questionText: `Which prefix opens the syllable ${c.word}?`, prominentTibetan: c.word, answer: c.latin, audioString: c.word, audioTarget: c.latin,
+      questionText: `Which prefix opens the syllable ${c.word}?`, prominentTibetan: c.word, answer: c.latin, audioString: c.word, audioTarget: c.word,
       choices: shuffle([c.latin, ...pickWrongs(PREFIXES.map(p => p.latin), c.latin, 3)]).map(x => ({ value: x, label: x }))
     });
   });
@@ -306,7 +308,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
     const answerLabel = TONE_META[c.tone as Tone].label;
     const wrongs = Object.keys(TONE_META).filter(k => k !== c.tone).map(k => TONE_META[k as Tone].label);
     qs.push({
-      questionText: `What happens to the tone of the root letter in ${c.word}?`, prominentTibetan: c.word, answer: answerLabel, audioString: c.word, audioTarget: answerLabel,
+      questionText: `What happens to the tone of the root letter in ${c.word}?`, prominentTibetan: c.word, answer: answerLabel, audioString: c.word, audioTarget: c.word,
       choices: shuffle([answerLabel, ...wrongs]).map(x => ({ value: x, label: x }))
     });
   });
@@ -314,7 +316,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
   // 8. Vocab -> Meaning
   shuffle(VOCAB).slice(0, 6).forEach(v => {
     qs.push({
-      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.en,
+      questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, audioTarget: v.tib,
       choices: shuffle([v.en, ...pickWrongs(VOCAB.map(x => x.en), v.en, 3)]).map(x => ({ value: x, label: x }))
     });
   });
