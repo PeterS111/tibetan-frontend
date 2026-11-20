@@ -103,7 +103,7 @@ const TEAM_MEMBERS: TeamMember[] = [
   },
 {
     id: "piotr",
-    name: "Piotr Sawicki",
+    name: "Piotr Sawicki, PhD",
     role: "AI Specialist & Platform Architect",
     initial: "P",
     avatar: "/piotr_avatar.png",
