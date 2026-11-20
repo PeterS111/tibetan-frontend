@@ -75,8 +75,9 @@ const TEAM_MEMBERS: TeamMember[] = [
     name: "Tenzin Choephel Ju",
     role: "Founder, Director & Teacher",
     initial: "T",
-    avatar: "/icon.png",
-    avatarMode: "contain",
+    avatar: "/tenzin_avatar.png",
+    avatarFallback: "/Tenzin.jpeg",
+    avatarMode: "cover",
     paragraphs: [
       "Tenzin Choephel studied at Drepung Monastery and is a graduate of the College of Higher Tibetan Studies, the University of Edinburgh and the University of Oxford. He has taught Tibetan language in India and the UK at institutions including Thosamling Nunnery in Dharamsala, Sarah College, SOAS, University of London, and at Oxford over the past 12 years.",
       "Drawing on his experience as a Tibetan language teacher, Tenzin has co-authored two Tibetan language textbooks and translated numerous original works from Tibetan. He is also a translator and cultural ambassador for Tib Shelf.",
