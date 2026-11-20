@@ -767,7 +767,7 @@ export default function AboutPage() {
           onClick={() => setSelectedMember(null)}
         >
           <div
-            className="bg-surface border border-border-subtle rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            className="bg-surface border border-border-subtle rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
             <button
