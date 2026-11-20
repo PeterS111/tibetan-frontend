@@ -78,8 +78,9 @@ const TEAM_MEMBERS: TeamMember[] = [
     avatar: "/icon.png",
     avatarMode: "contain",
     paragraphs: [
-      "Tenzin has taught Tibetan for more than a decade, beginning at Sarah College of Higher Tibetan Studies in India and continuing at SOAS, University of London, the Tibetan Language Summer School in Oxford, and Buddhist centres across the UK.",
-      "That classroom experience shapes everything Loplao publishes: the order of the lessons, the examples we choose, and the care we take with pronunciation, politeness and culture.",
+      "Tenzin Choephel studied at Drepung Monastery and is a graduate of the College of Higher Tibetan Studies, the University of Edinburgh and the University of Oxford. He has taught Tibetan language in India and the UK at institutions including Thosamling Nunnery in Dharamsala, Sarah College, SOAS, University of London, and at Oxford over the past 12 years.",
+      "Drawing on his experience as a Tibetan language teacher, Tenzin has co-authored two Tibetan language textbooks and translated numerous original works from Tibetan. He is also a translator and cultural ambassador for Tib Shelf.",
+	  "In his free time, Tenzin can often be found playing basketball or snooker with friends.",
     ],
     sectionLabel: "Teaching & Work",
     highlights: [
