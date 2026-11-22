@@ -90,9 +90,22 @@ export interface CultureNote {
   paragraphs: string[];
 }
 
+export interface Beginner2SectionMeta {
+  id: string;
+  navTitle: string;
+  tibetanTitle: string;
+  eyebrow: string;
+  heroEyebrow: string;
+  title: string;
+  description: string;
+  proverbTib: string;
+  proverbEn: string;
+  bannerImage: string;
+}
+
 export const VOCAB_CATEGORIES: { id: VocabCategory; label: string; hex: string }[] = [
-  { id: "classroom", label: "In the Classroom", hex: "#0ea5e9" },
-  { id: "people", label: "People", hex: "#f59e0b" },
+  { id: "classroom", label: "In the Classroom", hex: "#D49700" },
+  { id: "people", label: "People", hex: "#0ea5e9" },
   { id: "time", label: "Time Words", hex: "#8b5cf6" },
 ];
 
@@ -253,16 +266,103 @@ export const SPEAKING_PROMPTS: string[] = [
   "Role-play arriving late: apologise, and let the teacher answer.",
 ];
 
-export const WEB_STEPS = [
-  { id: "welcome", eyebrow: "Introduction", title: "Welcome to the Class", tibetanTitle: "འཛིན་གྲྭར་ཕེབས་པར་དགའ་བསུ་ཞུ།", description: "An overview of your first conversational Tibetan unit." },
-  { id: "vocab", eyebrow: "Step 02", title: "Vocabulary · Eighteen words for your first lesson", tibetanTitle: "ཚིག་གསར།", description: "Classroom objects, people, and three everyday time words." },
-  { id: "phrases", eyebrow: "Step 03", title: "Useful phrases · Every single lesson", tibetanTitle: "བརྗོད་པ།", description: "Greetings, thanks, apologies, goodbyes, and the polite particle ལགས་." },
-  { id: "grammar", eyebrow: "Step 04", title: "Grammar · Pronouns and the verb 'to be'", tibetanTitle: "བརྡ་སྤྲོད།", description: "Informal vs honorific pronouns, demonstratives, plus ཡིན་ / རེད་ and their negatives." },
-  { id: "conversation", eyebrow: "Step 05", title: "Conversation · First day in the classroom", tibetanTitle: "ཁ་བརྡ།", description: "Four short classroom exchanges that pull the whole unit together." },
-  { id: "reference", eyebrow: "Step 06", title: "Reference · Classroom instructions & Culture Corner", tibetanTitle: "དཔྱད་གཞི།", description: "Seven quick commands from your teacher, Tashi Delek, and Tibetan names." },
-  { id: "practice", eyebrow: "Step 07", title: "Practice · Exercises & Drills", tibetanTitle: "སྦྱོང་ཚན།", description: "Copula drills, pronoun choice, flashcards, matching, and memory review." },
-  { id: "review", eyebrow: "Step 08", title: "Review · Consolidate before the test", tibetanTitle: "བསྐྱར་ཞིབ།", description: "Can-do self-check and three out-loud speaking prompts." },
-  { id: "test", eyebrow: "Final step", title: "Final Test", tibetanTitle: "མཐའ་མའི་རྒྱུགས་ཞིབ།", description: "40 questions across vocabulary, phrases, grammar, conversation, and classroom commands." },
+export const WEB_STEPS: Beginner2SectionMeta[] = [
+  {
+    id: "vocab",
+    navTitle: "Vocabulary",
+    tibetanTitle: "ཚིག་གསར།",
+    eyebrow: "Section 1",
+    heroEyebrow: "VOCABULARY · BEGINNER 2",
+    title: "Eighteen words for your first lesson",
+    description: "Classroom objects, people, and three time words.",
+    proverbTib: "བསོད་ནམས་བརྒྱ་བས་ཚད་ལས་འདས།",
+    proverbEn: "A HUNDRED MERITS EXCEED ALL MEASURE.",
+    bannerImage: "/loplao-hero-scene.jpg",
+  },
+  {
+    id: "phrases",
+    navTitle: "Useful phrases",
+    tibetanTitle: "བརྗོད་པ།",
+    eyebrow: "Section 2",
+    heroEyebrow: "USEFUL PHRASES · BEGINNER 2",
+    title: "Phrases you will use every single lesson",
+    description: "Greetings, thanks, apologies, and goodbyes.",
+    proverbTib: "ཆུ་མིག་རྐྱལ་པས་མི་ཆོད།",
+    proverbEn: "A LEATHER BAG WON'T DAM A SPRING.",
+    bannerImage: "/loplao-hero-scene.jpg",
+  },
+  {
+    id: "grammar",
+    navTitle: "Grammar",
+    tibetanTitle: "བརྡ་སྤྲོད།",
+    eyebrow: "Section 3",
+    heroEyebrow: "GRAMMAR · BEGINNER 2",
+    title: "Pronouns and the verb 'to be'",
+    description: "Informal vs formal pronouns, plus ཡིན་ / རེད་ and their negatives.",
+    proverbTib: "རི་མཐོན་པོའི་རྩེ་ལ་མཐོང་ཆེན་པོ།",
+    proverbEn: "FROM A HIGH PEAK, A WIDE VIEW.",
+    bannerImage: "/06_suffixes_post_suffixes.jpg",
+  },
+  {
+    id: "conversation",
+    navTitle: "Conversation",
+    tibetanTitle: "ཁ་བརྡ།",
+    eyebrow: "Section 4",
+    heroEyebrow: "CONVERSATION · BEGINNER 2",
+    title: "First day in the classroom",
+    description: "Four short exchanges that pull the whole unit together.",
+    proverbTib: "ལག་པས་མ་ཟིན་པར་ཁ་མ་བླེབ།",
+    proverbEn: "DON'T RUSH THE MOUTH BEFORE THE HAND GRASPS.",
+    bannerImage: "/loplao-hero-scene.jpg",
+  },
+  {
+    id: "reference",
+    navTitle: "Reference",
+    tibetanTitle: "དཔྱད་གཞི།",
+    eyebrow: "Section 5",
+    heroEyebrow: "REFERENCE · BEGINNER 2",
+    title: "Classroom instructions & Culture Corner",
+    description: "Quick commands you will hear in class, plus a short cultural note.",
+    proverbTib: "སྨན་པ་རང་གི་ནད་མི་གསོས།",
+    proverbEn: "A DOCTOR CAN'T CURE HIS OWN ILLNESS.",
+    bannerImage: "/06_suffixes_post_suffixes.jpg",
+  },
+  {
+    id: "practice",
+    navTitle: "Practice",
+    tibetanTitle: "སྦྱོང་ཚན།",
+    eyebrow: "Section 6",
+    heroEyebrow: "PRACTICE · BEGINNER 2",
+    title: "Exercises",
+    description: "Copula drills, pronoun choice, and a matching activity.",
+    proverbTib: "ལམ་རིང་པོའི་གོམ་པས་བརྩི་དགོས།",
+    proverbEn: "A LONG ROAD IS COUNTED IN STEPS.",
+    bannerImage: "/loplao-hero-scene.jpg",
+  },
+  {
+    id: "review",
+    navTitle: "Review",
+    tibetanTitle: "བསྐྱར་ཞིབ།",
+    eyebrow: "Section 7",
+    heroEyebrow: "REVIEW · BEGINNER 2",
+    title: "Consolidate before the test",
+    description: "A checklist and three speaking prompts.",
+    proverbTib: "ཁ་བ་ཆེན་པོའི་མེ་ཕུང་ཆུང་ངུ།",
+    proverbEn: "A SMALL FIRE WARMS IN GREAT SNOW.",
+    bannerImage: "/06_suffixes_post_suffixes.jpg",
+  },
+  {
+    id: "test",
+    navTitle: "Final test",
+    tibetanTitle: "མཐའ་མའི་རྒྱུགས་ཞིབ།",
+    eyebrow: "Section 8",
+    heroEyebrow: "ASSESSMENT · BEGINNER 2",
+    title: "Final test",
+    description: "40 questions: vocabulary, romanisation, listening, conversation, grammar and reference.",
+    proverbTib: "ཤེས་རྒྱུ་མེད་ན་སྐྱེས་བུ་མ་རེད།",
+    proverbEn: "WITHOUT KNOWLEDGE, ONE IS NO PERSON.",
+    bannerImage: "/loplao-hero-scene.jpg",
+  },
 ];
 
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => 0.5 - Math.random());
@@ -270,14 +370,14 @@ const pickWrongs = <T,>(arr: T[], excludeFn: (item: T) => boolean, count: number
   shuffle(arr.filter((x) => !excludeFn(x))).slice(0, count);
 
 export function generateVocabQuiz(): QuizQuestion[] {
-  const qs: QuizQuestion[] = VOCAB.map((v, idx) => {
+  const qs: QuizQuestion[] = shuffle(VOCAB).slice(0, 12).map((v, idx) => {
     const mode = idx % 3;
     if (mode === 0) {
       const wrongs = pickWrongs(VOCAB, (x) => x.pron === v.pron, 3);
       return { questionText: `How is ${v.tib} read aloud?`, prominentTibetan: v.tib, answer: v.pron, audioString: v.tib, choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.pron, label: c.pron })) };
     } else if (mode === 1) {
       const wrongs = pickWrongs(VOCAB, (x) => x.tib === v.tib, 3);
-      return { type: "vocab", questionText: `Which Tibetan word means "${v.en}"?`, answer: v.tib, audioString: v.tib, choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.tib, tib: c.tib, pron: c.pron, en: c.en })) };
+      return { type: "vocab", questionText: `Which Tibetan word means "${v.en}"?`, answer: v.tib, audioString: v.tib, choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.tib, tib: c.tib, pron: c.pron, en: c.en, isTibetan: true })) };
     } else {
       const wrongs = pickWrongs(VOCAB, (x) => x.en === v.en, 3);
       return { questionText: `What does ${v.tib} mean?`, prominentTibetan: v.tib, answer: v.en, audioString: v.tib, choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.en, label: c.en })) };
@@ -347,15 +447,44 @@ export function generateCommandsQuiz(): QuizQuestion[] {
   return shuffle(qs).slice(0, 10);
 }
 
-export function generatePracticeDrills(): Record<"copula" | "pronouns" | "conversation", QuizQuestion[]> {
-  const yinRe = [{ value: "ཡིན།", label: "ཡིན།", isTibetan: true }, { value: "རེད།", label: "རེད།", isTibetan: true }];
+export interface PracticeDrillsBundle {
+  copulaPositive: QuizQuestion[];
+  copulaNegative: QuizQuestion[];
+  pronouns: QuizQuestion[];
+  conversation: QuizQuestion[];
+  listening: QuizQuestion[];
+}
+
+export function generatePracticeDrills(): PracticeDrillsBundle {
+  const yinRe = [
+    { value: "ཡིན།", label: "ཡིན།", isTibetan: true },
+    { value: "རེད།", label: "རེད།", isTibetan: true },
+  ];
+
+  const listeningItems = shuffle([...VOCAB.slice(0, 12)]).slice(0, 6).map((v) => {
+    const wrongs = pickWrongs(VOCAB, (x) => x.tib === v.tib, 3);
+    return {
+      isAudioType: true,
+      questionText: `Listen and select the Tibetan word for "${v.pron}"`,
+      answer: v.tib,
+      audioString: v.tib,
+      choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.tib, label: c.tib, isTibetan: true })),
+    };
+  });
+
   return {
-    copula: [
+    copulaPositive: [
       { promptText: "I am Tibetan.", promptHighlight: "ང་བོད་པ་ ___", answer: "ཡིན།", noAudio: true, choices: yinRe },
       { promptText: "She is a student.", promptHighlight: "ཁོང་སློབ་ཕྲུག་ ___", answer: "རེད།", noAudio: true, choices: yinRe },
       { promptText: "This is a whiteboard.", promptHighlight: "འདི་དཀར་པང་ ___", answer: "རེད།", noAudio: true, choices: yinRe },
-      { questionText: "Negate correctly: 'I am not a teacher.'", answer: "ང་དགེ་རྒན་མིན།", noAudio: true, choices: shuffle(["ང་དགེ་རྒན་མིན།", "ང་དགེ་རྒན་མ་རེད།", "ང་དགེ་རྒན་ཡིན།", "ཁོང་དགེ་རྒན་མིན།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
-      { questionText: "Use the phrase for arriving late: 'I am late.'", answer: "ང་རྗེས་ལུས་ཐེབས་སོང་།", noAudio: true, choices: shuffle(["ང་རྗེས་ལུས་ཐེབས་སོང་།", "ང་རྗེས་ལུས་མིན།", "ང་སློབ་ཕྲུག་ཡིན།", "ང་རྗེས་ལུས་མ་རེད།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
+      { promptText: "I am a student.", promptHighlight: "ང་སློབ་ཕྲུག་ ___", answer: "ཡིན།", noAudio: true, choices: yinRe },
+      { promptText: "He is a teacher.", promptHighlight: "ཁོང་དགེ་རྒན་ ___", answer: "རེད།", noAudio: true, choices: yinRe },
+    ],
+    copulaNegative: [
+      { promptText: "I am late.", promptEnd: "Use the phrase for arriving late.", answer: "ང་རྗེས་ལུས་ཐེབས་སོང་།", noAudio: true, choices: shuffle(["ང་རྗེས་ལུས་ཐེབས་སོང་།", "ང་རྗེས་ལུས་མིན།", "ང་སློབ་ཕྲུག་ཡིན།", "ང་རྗེས་ལུས་མ་རེད།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
+      { promptText: "Negate correctly: 'I am not a teacher.'", answer: "ང་དགེ་རྒན་མིན།", noAudio: true, choices: shuffle(["ང་དགེ་རྒན་མིན།", "ང་དགེ་རྒན་མ་རེད།", "ང་དགེ་རྒན་ཡིན།", "ཁོང་དགེ་རྒན་མིན།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
+      { promptText: "Negate correctly: 'This is not a book.'", answer: "འདི་དེབ་མ་རེད།", noAudio: true, choices: shuffle(["འདི་དེབ་མ་རེད།", "འདི་དེབ་མིན།", "འདི་དེབ་རེད།", "ང་དེབ་མིན།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
+      { promptText: "Negate correctly: 'I am not Tibetan.'", answer: "ང་བོད་པ་མིན།", noAudio: true, choices: shuffle(["ང་བོད་པ་མིན།", "ང་བོད་པ་མ་རེད།", "ང་བོད་པ་ཡིན།", "ཁོང་བོད་པ་མིན།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
     ],
     pronouns: [
       { questionText: "Which pronoun should you use to refer respectfully to your teacher?", answer: "ཁོང་", noAudio: true, choices: shuffle(["ཁོང་", "ང་", "འདི་", "དེ་ཚོ་"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
@@ -369,6 +498,7 @@ export function generatePracticeDrills(): Record<"copula" | "pronouns" | "conver
       { promptText: "Someone says བཞུགས་ཨ། as they leave. As the person staying, how do you reply?", answer: "ག་ལེར་ཕེབས།", noAudio: true, choices: shuffle(["ག་ལེར་ཕེབས།", "བཞུགས་ཨ།", "ང་བོད་པ་མིན།", "ཡར་ལོངས།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
       { promptText: "A student says: དགོངས་དག ང་རྗེས་ལུས་ཐེབས་སོང་། How does the teacher warmly reply?", answer: "གལ་ཡོད་མ་རེད། ཡར་ཕེབས་ཤོག། བཞུགས།", noAudio: true, choices: shuffle(["གལ་ཡོད་མ་རེད། ཡར་ཕེབས་ཤོག། བཞུགས།", "དེབ་ཁ་རྒྱོབས།", "ཁྱེད་རང་སུ་ཡིན།", "འདི་དེབ་མ་རེད།"]).map((s) => ({ value: s, label: s, isTibetan: true })) },
     ],
+    listening: listeningItems,
   };
 }
 
@@ -377,7 +507,7 @@ export function generateFinalQuiz(): QuizQuestion[] {
 
   shuffle(VOCAB).slice(0, 6).forEach((v) => {
     const wrongs = pickWrongs(VOCAB, (x) => x.tib === v.tib, 3);
-    qs.push({ questionText: `Which one means "${v.en}"?`, answer: v.tib, audioString: v.tib, choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.tib, tib: c.tib, pron: c.pron, en: c.en })) });
+    qs.push({ questionText: `Which one means "${v.en}"?`, answer: v.tib, audioString: v.tib, choices: shuffle([v, ...wrongs]).map((c) => ({ value: c.tib, tib: c.tib, pron: c.pron, en: c.en, isTibetan: true })) });
   });
 
   shuffle(VOCAB).slice(0, 5).forEach((v) => {

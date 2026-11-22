@@ -92,6 +92,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const currentPageName =
     [...libraryItems, ...moreItems].find((i) => i.href === pathname)?.name || "Dashboard";
 
+  const isBeginner2Lesson = /^\/dashboard\/lessons\/([89]|\d{2,})/.test(pathname || "");
+
   if (!isReady) {
     return <div className="min-h-[100dvh] bg-paper" />;
   }
@@ -342,7 +344,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
           </header>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12">{children}</div>
+          <div className={`flex-1 overflow-y-auto custom-scrollbar ${isBeginner2Lesson ? "p-4 md:p-6 xl:px-8 xl:py-6" : "p-6 md:p-12"}`}>{children}</div>
         </main>
       </div>
     </DevBypassProvider>

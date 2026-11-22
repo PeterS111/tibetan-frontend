@@ -31,7 +31,7 @@ export const FALLBACK_MODULES: SyllabusModule[] = [
   { id: 5, module_id: 5, courseId: "beginner1", unitNumber: 5, title: "The Prefix Letters", description: "The five prefix letters and their complex role in Tibetan spelling and pronunciation.", time_est: "2h", progress: 0, status: "locked", lesson_count: 7, mastery_scores: {} },
   { id: 6, module_id: 6, courseId: "beginner1", unitNumber: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", time_est: "2h", progress: 0, status: "locked", lesson_count: 9, mastery_scores: {} },
   { id: 7, module_id: 7, courseId: "beginner1", unitNumber: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", time_est: "30m", progress: 0, status: "locked", lesson_count: 3, isCapstone: true, mastery_scores: {} },
-  { id: 8, module_id: 8, courseId: "beginner2", unitNumber: 1, title: "Welcome to the Class", description: "Classroom phrases and the language of a Tibetan teacher.", time_est: "1h", progress: 0, status: "locked", lesson_count: 9, mastery_scores: {} },
+  { id: 8, module_id: 8, courseId: "beginner2", unitNumber: 1, title: "Welcome to the Class", description: "Classroom phrases and the language of a Tibetan teacher.", time_est: "1h", progress: 0, status: "locked", lesson_count: 8, mastery_scores: {} },
 ];
 
 export const BEGINNER_2_UPCOMING: UpcomingUnit[] = [
@@ -44,7 +44,7 @@ export const BEGINNER_2_UPCOMING: UpcomingUnit[] = [
   { unitNumber: "08", title: "Our House", description: "Describe your own home in more detail.", time_est: "2h" },
   { unitNumber: "09", title: "What do you need to do?", description: "Talk about daily tasks and things you need to do.", time_est: "2h" },
   { unitNumber: "10", title: "Four Seasons", description: "Weather, clothing, and how each season feels.", time_est: "1.5h" },
-  { unitNumber: "11", title: "Beginner 2 Final Assessment", description: "Show what you've learned across everyday topics and unlock your Beginner 2 certificate.", time_est: "15m", isCapstone: true },
+  { unitNumber: "11", title: "Beginner 2 Final Assessment", description: "Show what you've learned across everyday topics and unlock your Beginner 2 certificate.", time_est: "10–15 min", isCapstone: true },
 ];
 
 export function isBeginner1Module(moduleId: number | string): boolean {
