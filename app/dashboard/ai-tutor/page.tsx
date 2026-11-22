@@ -47,6 +47,11 @@ interface HealthStatus {
   default_model: string;
 }
 
+interface AudioInputDevice {
+  deviceId: string;
+  label: string;
+}
+
 const TUTOR_MODES = [
   { id: "conversation", label: "Free Chat" },
   { id: "beginner_drill", label: "Beginner 1–2 Drill" },
@@ -104,6 +109,10 @@ export default function AiTutorPage() {
   const [selectedModel, setSelectedModel] = useState("gemini-4-hydrogen");
   const [selectedVoice, setSelectedVoice] = useState("lhasa_female");
 
+  const [audioDevices, setAudioDevices] = useState<AudioInputDevice[]>([]);
+  const [selectedMicId, setSelectedMicId] = useState<string>("");
+  const [micLevel, setMicLevel] = useState<number>(0);
+
   const [autoPlayTts, setAutoPlayTts] = useState(true);
   const [autoSendVoice, setAutoSendVoice] = useState(true);
   const [showTranslations, setShowTranslations] = useState(true);
@@ -124,7 +133,23 @@ export default function AiTutorPage() {
   const recordedChunksRef = useRef<Blob[]>([]);
   const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelRecordRef = useRef<boolean>(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const rafMeterRef = useRef<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  const refreshMicrophones = useCallback(async () => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const mics = devices
+        .filter((d) => d.kind === "audioinput")
+        .map((d, idx) => ({
+          deviceId: d.deviceId,
+          label: d.label || `Microphone ${idx + 1}`,
+        }));
+      setAudioDevices(mics);
+    } catch {}
+  }, []);
 
   const stopPlayback = useCallback(() => {
     if (audioRef.current) {
@@ -140,6 +165,16 @@ export default function AiTutorPage() {
   }, []);
 
   const cleanupRecorder = useCallback(() => {
+    if (rafMeterRef.current !== null) {
+      cancelAnimationFrame(rafMeterRef.current);
+      rafMeterRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try {
+        audioCtxRef.current.close();
+      } catch {}
+      audioCtxRef.current = null;
+    }
     if (recordTimerRef.current) {
       clearInterval(recordTimerRef.current);
       recordTimerRef.current = null;
@@ -151,20 +186,21 @@ export default function AiTutorPage() {
     mediaRecorderRef.current = null;
     setIsRecording(false);
     setRecordSeconds(0);
+    setMicLevel(0);
   }, []);
 
   useEffect(() => {
+    refreshMicrophones();
     return () => {
       stopPlayback();
       cleanupRecorder();
     };
-  }, [stopPlayback, cleanupRecorder]);
+  }, [refreshMicrophones, stopPlayback, cleanupRecorder]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isSending, isTranscribing]);
 
-  // Check backend readiness (Monlam + Gemini keys configured)
   useEffect(() => {
     if (isChecking || !isDevUnlocked || !user) return;
     let active = true;
@@ -245,10 +281,11 @@ export default function AiTutorPage() {
         };
 
         await audio.play();
-      } catch (err: any) {
+      } catch (err: unknown) {
         setLoadingAudioMsgId(null);
         setPlayingMsgId(null);
-        setErrorBanner(err?.message || "Could not play Monlam AI audio.");
+        const msg = err instanceof Error ? err.message : "Could not play Monlam AI audio.";
+        setErrorBanner(msg);
       }
     },
     [getToken, playingMsgId, selectedVoice, stopPlayback]
@@ -324,9 +361,10 @@ export default function AiTutorPage() {
         if (autoPlayTts && assistantMessage.tibetan) {
           speakTibetan(assistantId, assistantMessage.tibetan);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setIsSending(false);
-        setErrorBanner(err?.message || "Could not reach AI Tutor backend.");
+        const msg = err instanceof Error ? err.message : "Could not reach AI Tutor backend.";
+        setErrorBanner(msg);
       }
     },
     [inputText, isSending, messages, getToken, mode, selectedModel, autoPlayTts, speakTibetan]
@@ -366,7 +404,19 @@ export default function AiTutorPage() {
         setIsTranscribing(false);
 
         if (!transcript) {
-          setErrorBanner("No speech detected. Try speaking a bit closer to the microphone.");
+          const dbg = data?.debug;
+          if (dbg?.reason === "silent_mic") {
+            setShowControls(true);
+            setErrorBanner(
+              `Microphone recorded silence (RMS=${dbg.rms_level}). Open Dev Config above to pick your active Windows microphone.`
+            );
+          } else if (dbg?.raw_response) {
+            setErrorBanner(
+              `Monlam STT returned empty transcript (RMS=${dbg.rms_level ?? "?"}, raw=${dbg.raw_response}).`
+            );
+          } else {
+            setErrorBanner("No speech detected. Try speaking for 1–3 seconds closer to the mic.");
+          }
           return;
         }
 
@@ -375,9 +425,10 @@ export default function AiTutorPage() {
         } else {
           setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setIsTranscribing(false);
-        setErrorBanner(err?.message || "Speech transcription failed.");
+        const msg = err instanceof Error ? err.message : "Speech transcription failed.";
+        setErrorBanner(msg);
       }
     },
     [getToken, autoSendVoice, sendMessage]
@@ -394,8 +445,51 @@ export default function AiTutorPage() {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioConstraints: MediaTrackConstraints = selectedMicId
+        ? {
+            deviceId: { exact: selectedMicId },
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          }
+        : {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          };
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       mediaStreamRef.current = stream;
+      refreshMicrophones();
+
+      // Start live mic level meter so the user immediately sees whether Chrome hears them
+      try {
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          audioCtxRef.current = ctx;
+          const source = ctx.createMediaStreamSource(stream);
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          source.connect(analyser);
+          const dataArr = new Uint8Array(analyser.frequencyBinCount);
+
+          const tickMeter = () => {
+            analyser.getByteTimeDomainData(dataArr);
+            let sum = 0;
+            for (let i = 0; i < dataArr.length; i++) {
+              const v = (dataArr[i] - 128) / 128;
+              sum += v * v;
+            }
+            const rms = Math.sqrt(sum / dataArr.length);
+            setMicLevel(Math.min(100, Math.round(rms * 420)));
+            rafMeterRef.current = requestAnimationFrame(tickMeter);
+          };
+          tickMeter();
+        }
+      } catch {}
 
       const candidateTypes = [
         "audio/webm;codecs=opus",
@@ -433,19 +527,20 @@ export default function AiTutorPage() {
       };
 
       mediaRecorderRef.current = recorder;
-      recorder.start(250);
+      recorder.start();
       setIsRecording(true);
       setRecordSeconds(0);
 
       recordTimerRef.current = setInterval(() => {
         setRecordSeconds((s) => s + 1);
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       cleanupRecorder();
+      const errName = err instanceof Error ? err.name : "";
       setErrorBanner(
-        err?.name === "NotAllowedError"
+        errName === "NotAllowedError"
           ? "Microphone permission was denied. Please enable mic access in your browser/app settings."
-          : "Could not start microphone recording."
+          : "Could not start microphone recording. Check Dev Config to select a valid microphone."
       );
     }
   };
@@ -453,6 +548,9 @@ export default function AiTutorPage() {
   const stopRecording = (cancel = false) => {
     cancelRecordRef.current = cancel;
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try {
+        mediaRecorderRef.current.requestData();
+      } catch {}
       mediaRecorderRef.current.stop();
     } else {
       cleanupRecorder();
@@ -465,7 +563,6 @@ export default function AiTutorPage() {
     setErrorBanner(null);
   };
 
-  // Strict render gate: never flash content to non-dev users
   if (isChecking) {
     return <div className="min-h-[60vh] bg-paper" />;
   }
@@ -538,7 +635,10 @@ export default function AiTutorPage() {
 
             <button
               type="button"
-              onClick={() => setShowControls((v) => !v)}
+              onClick={() => {
+                refreshMicrophones();
+                setShowControls((v) => !v);
+              }}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${
                 showControls
                   ? "bg-ink text-white border-ink"
@@ -582,7 +682,7 @@ export default function AiTutorPage() {
 
         {/* Collapsible Dev Configuration Strip */}
         {showControls && (
-          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs animate-in fade-in">
+          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs animate-in fade-in">
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
                 Gemini Brain Model
@@ -617,7 +717,25 @@ export default function AiTutorPage() {
               </select>
             </div>
 
-            <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-1">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
+                Microphone Input
+              </label>
+              <select
+                value={selectedMicId}
+                onChange={(e) => setSelectedMicId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
+              >
+                <option value="">System Default Mic</option>
+                {audioDevices.map((d) => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="sm:col-span-3 flex flex-wrap items-center gap-4 pt-1">
               <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
                 <input
                   type="checkbox"
@@ -645,14 +763,14 @@ export default function AiTutorPage() {
       {/* Error Banner */}
       {errorBanner && (
         <div className="shrink-0 mb-3 px-4 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <AlertCircle size={15} className="shrink-0" />
-            <span>{errorBanner}</span>
+            <span className="break-words">{errorBanner}</span>
           </div>
           <button
             type="button"
             onClick={() => setErrorBanner(null)}
-            className="text-rose-600 hover:text-rose-900"
+            className="text-rose-600 hover:text-rose-900 shrink-0"
           >
             <X size={14} />
           </button>
@@ -826,11 +944,23 @@ export default function AiTutorPage() {
       <div className="shrink-0 pt-2">
         {isRecording ? (
           <div className="bg-surface border-2 border-rose-400 rounded-full px-4 py-2.5 flex items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse shrink-0" />
               <span className="text-sm font-bold text-ink">
                 Listening... {formatTimer(recordSeconds)}
               </span>
+
+              {/* Live Mic Volume Meter */}
+              <div className="hidden sm:flex items-center gap-1 h-5">
+                {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
+                  <span
+                    key={idx}
+                    className={`w-1.5 rounded-full transition-all duration-75 ${
+                      micLevel >= thresh ? "bg-emerald-500 h-4" : "bg-border-subtle h-1.5"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
