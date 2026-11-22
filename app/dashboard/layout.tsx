@@ -62,7 +62,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
           if (isMounted && data.profile) {
             setProfile(data.profile);
-            if (!data.profile.learning_goals && pathname !== "/onboarding") {
+            if (!data.profile.learning_goals && window.location.pathname !== "/onboarding") {
               router.replace("/onboarding");
             }
           }
@@ -73,11 +73,12 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [user, isLoaded, isSignedIn, getToken, router, pathname]);
+  }, [user, isLoaded, isSignedIn, getToken, router]);
 
   const handleSignOut = () => {
     if (typeof window !== "undefined") {
       localStorage.clear();
+      sessionStorage.clear();
     }
     signOut({ redirectUrl: "/" });
   };
@@ -106,7 +107,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     return <div className="min-h-[100dvh] bg-paper" />;
   }
 
-  // Mobile / Capacitor keeps the 5-tab bar untouched; Dev AI Tutor is launched from Profile & Practice
   if (isNative) {
     const mobileTabs = [
       { name: "Home", href: "/dashboard", icon: Home },
@@ -118,7 +118,13 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
     return (
       <div className="flex flex-col h-[100dvh] w-full max-w-[100vw] overflow-hidden bg-paper text-ink font-sans">
-        <main className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-[100vw] bg-paper pb-28">
+        <main
+          className={`flex-1 w-full max-w-[100vw] bg-paper ${
+            isAiTutorPage
+              ? "overflow-hidden pb-[calc(5.75rem+env(safe-area-inset-bottom))]"
+              : "overflow-y-auto overflow-x-hidden pb-28"
+          }`}
+        >
           {children}
         </main>
 

@@ -86,13 +86,12 @@ export function DevBypassProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [user, isLoaded, isSignedIn, getToken, storageKey, pathname]);
+  }, [user, isLoaded, isSignedIn, getToken, storageKey]);
 
   // Global URL Route Guard when Developer Bypass is OFF
   useEffect(() => {
     if (isChecking || isDevUnlocked || !pathname) return;
 
-    // Strictly block Dev-Only AI Tutor routes for non-dev accounts
     if (pathname.startsWith("/dashboard/ai-tutor") || pathname === "/dashboard/ai") {
       router.replace("/dashboard");
       return;

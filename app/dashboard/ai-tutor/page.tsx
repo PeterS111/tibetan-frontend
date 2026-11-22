@@ -18,6 +18,7 @@ import {
   AlertCircle,
   CheckCircle2,
   MessageCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -38,12 +39,15 @@ interface ChatMessage {
   suggestedReplies?: SuggestedReply[];
   modelUsed?: string;
   latencyMs?: number;
+  sttProvider?: string;
+  needsTapToPlay?: boolean;
 }
 
 interface HealthStatus {
   ready: boolean;
   monlam_configured: boolean;
   gemini_configured: boolean;
+  jwks_verified?: boolean;
   default_model: string;
 }
 
@@ -59,10 +63,17 @@ const TUTOR_MODES = [
   { id: "pronunciation", label: "Speaking Practice" },
 ];
 
+// Fast models only
 const GEMINI_MODELS = [
   { id: "gemini-4-hydrogen", label: "Gemini 4 Hydrogen (Default)" },
   { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
   { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
+];
+
+const STT_PROVIDERS = [
+  { id: "auto", label: "Auto (Monlam → Gemini Fallback)" },
+  { id: "monlam", label: "Monlam STT Only" },
+  { id: "gemini", label: "Gemini 4 Hydrogen Audio" },
 ];
 
 const MONLAM_VOICES = [
@@ -96,6 +107,25 @@ const STARTER_PROMPTS: SuggestedReply[] = [
   },
 ];
 
+const SESSION_CHAT_KEY = "loplao_dev_ai_tutor_messages_v1";
+const PREFS_KEY = "loplao_dev_ai_tutor_prefs_v1";
+
+function renderRichFeedback(text: string) {
+  const parts = text.split(/([\u0F00-\u0FFF]+)/g);
+  return parts.map((part, idx) =>
+    /[\u0F00-\u0FFF]/.test(part) ? (
+      <span
+        key={idx}
+        className="font-tibetan text-[17px] leading-relaxed text-ink mx-0.5 inline-block"
+      >
+        {part}
+      </span>
+    ) : (
+      <span key={idx}>{part}</span>
+    )
+  );
+}
+
 export default function AiTutorPage() {
   const { user } = useUser();
   const { getToken } = useAuth();
@@ -108,6 +138,7 @@ export default function AiTutorPage() {
   const [mode, setMode] = useState("conversation");
   const [selectedModel, setSelectedModel] = useState("gemini-4-hydrogen");
   const [selectedVoice, setSelectedVoice] = useState("lhasa_female");
+  const [sttProvider, setSttProvider] = useState("auto");
 
   const [audioDevices, setAudioDevices] = useState<AudioInputDevice[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string>("");
@@ -123,11 +154,19 @@ export default function AiTutorPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [infoNotice, setInfoNotice] = useState<string | null>(null);
 
   const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
   const [loadingAudioMsgId, setLoadingAudioMsgId] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsCacheRef = useRef<Map<string, string>>(new Map());
+  const ttsReqIdRef = useRef<number>(0);
+  const ttsAbortRef = useRef<AbortController | null>(null);
+  const chatReqIdRef = useRef<number>(0);
+  const chatAbortRef = useRef<AbortController | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -136,6 +175,60 @@ export default function AiTutorPage() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const rafMeterRef = useRef<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Restore saved chat & dev config preferences
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const savedChat = sessionStorage.getItem(SESSION_CHAT_KEY);
+      if (savedChat) {
+        const parsed = JSON.parse(savedChat);
+        if (Array.isArray(parsed)) setMessages(parsed);
+      }
+      const savedPrefs = localStorage.getItem(PREFS_KEY);
+      if (savedPrefs) {
+        const p = JSON.parse(savedPrefs);
+        if (p.mode) setMode(p.mode);
+        if (p.selectedModel && GEMINI_MODELS.some((m) => m.id === p.selectedModel)) {
+          setSelectedModel(p.selectedModel);
+        }
+        if (p.selectedVoice) setSelectedVoice(p.selectedVoice);
+        if (p.sttProvider) setSttProvider(p.sttProvider);
+        if (typeof p.autoPlayTts === "boolean") setAutoPlayTts(p.autoPlayTts);
+        if (typeof p.autoSendVoice === "boolean") setAutoSendVoice(p.autoSendVoice);
+        if (typeof p.showTranslations === "boolean") setShowTranslations(p.showTranslations);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      sessionStorage.setItem(SESSION_CHAT_KEY, JSON.stringify(messages.slice(-40)));
+    } catch {}
+  }, [messages]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(
+        PREFS_KEY,
+        JSON.stringify({
+          mode,
+          selectedModel,
+          selectedVoice,
+          sttProvider,
+          autoPlayTts,
+          autoSendVoice,
+          showTranslations,
+        })
+      );
+    } catch {}
+  }, [mode, selectedModel, selectedVoice, sttProvider, autoPlayTts, autoSendVoice, showTranslations]);
 
   const refreshMicrophones = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) return;
@@ -151,7 +244,21 @@ export default function AiTutorPage() {
     } catch {}
   }, []);
 
+  const clearTtsCache = useCallback(() => {
+    ttsCacheRef.current.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {}
+    });
+    ttsCacheRef.current.clear();
+  }, []);
+
   const stopPlayback = useCallback(() => {
+    ttsReqIdRef.current += 1;
+    if (ttsAbortRef.current) {
+      ttsAbortRef.current.abort();
+      ttsAbortRef.current = null;
+    }
     if (audioRef.current) {
       audioRef.current.onended = null;
       audioRef.current.onerror = null;
@@ -161,6 +268,7 @@ export default function AiTutorPage() {
       } catch {}
       audioRef.current = null;
     }
+    setLoadingAudioMsgId(null);
     setPlayingMsgId(null);
   }, []);
 
@@ -194,8 +302,10 @@ export default function AiTutorPage() {
     return () => {
       stopPlayback();
       cleanupRecorder();
+      clearTtsCache();
+      if (chatAbortRef.current) chatAbortRef.current.abort();
     };
-  }, [refreshMicrophones, stopPlayback, cleanupRecorder]);
+  }, [refreshMicrophones, stopPlayback, cleanupRecorder, clearTtsCache]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -215,9 +325,6 @@ export default function AiTutorPage() {
         const data = await res.json();
         if (active) {
           setHealth(data);
-          if (data?.default_model) {
-            setSelectedModel(data.default_model);
-          }
         }
       } catch {}
     };
@@ -228,7 +335,7 @@ export default function AiTutorPage() {
   }, [isChecking, isDevUnlocked, user, getToken]);
 
   const speakTibetan = useCallback(
-    async (msgId: string, tibetanText: string) => {
+    async (msgId: string, tibetanText: string, isAutoPlay = false) => {
       const clean = tibetanText.trim();
       if (!clean) return;
 
@@ -238,31 +345,13 @@ export default function AiTutorPage() {
       }
 
       stopPlayback();
-      setLoadingAudioMsgId(msgId);
+      const myReqId = ++ttsReqIdRef.current;
+      const cacheKey = `${msgId}:${selectedVoice}`;
+      const cachedUrl = ttsCacheRef.current.get(cacheKey);
 
-      try {
-        const token = await getToken();
-        if (!token) throw new Error("Authentication unavailable.");
-
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/tts`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: clean,
-            voice_name: selectedVoice,
-          }),
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data?.audio_base64) {
-          throw new Error(data?.error || "Monlam TTS playback failed.");
-        }
-
-        const mime = data.mime_type || "audio/wav";
-        const audio = new Audio(`data:${mime};base64,${data.audio_base64}`);
+      const playBlobUrl = async (blobUrl: string) => {
+        if (myReqId !== ttsReqIdRef.current) return;
+        const audio = new Audio(blobUrl);
         audioRef.current = audio;
         setLoadingAudioMsgId(null);
         setPlayingMsgId(msgId);
@@ -280,19 +369,101 @@ export default function AiTutorPage() {
           }
         };
 
-        await audio.play();
+        try {
+          await audio.play();
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msgId ? { ...m, needsTapToPlay: false } : m))
+          );
+        } catch (playErr: unknown) {
+          if (audioRef.current === audio) {
+            audioRef.current = null;
+          }
+          setPlayingMsgId(null);
+          const errName = playErr instanceof Error ? playErr.name : "";
+          if (errName === "NotAllowedError" && isAutoPlay) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === msgId ? { ...m, needsTapToPlay: true } : m))
+            );
+          } else if (errName !== "AbortError") {
+            setErrorBanner("Could not play audio. Tap the speaker button to retry.");
+          }
+        }
+      };
+
+      if (cachedUrl) {
+        await playBlobUrl(cachedUrl);
+        return;
+      }
+
+      setLoadingAudioMsgId(msgId);
+      const controller = new AbortController();
+      ttsAbortRef.current = controller;
+
+      try {
+        const token = await getToken();
+        if (!token) throw new Error("Authentication unavailable.");
+        if (myReqId !== ttsReqIdRef.current) return;
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/tts`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: clean,
+            voice_name: selectedVoice,
+          }),
+          signal: controller.signal,
+        });
+
+        if (myReqId !== ttsReqIdRef.current) return;
+
+        if (!res.ok) {
+          let errMsg = "Monlam TTS playback failed.";
+          try {
+            const errJson = await res.json();
+            if (errJson?.error) errMsg = errJson.error;
+          } catch {}
+          throw new Error(errMsg);
+        }
+
+        const ctype = (res.headers.get("content-type") || "").toLowerCase();
+        let blobUrl: string;
+        if (ctype.includes("application/json")) {
+          const data = await res.json();
+          if (!data?.audio_base64) throw new Error(data?.error || "Empty audio response.");
+          const raw = atob(data.audio_base64);
+          const bytes = new Uint8Array(raw.length);
+          for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+          blobUrl = URL.createObjectURL(new Blob([bytes], { type: data.mime_type || "audio/wav" }));
+        } else {
+          const blob = await res.blob();
+          blobUrl = URL.createObjectURL(blob);
+        }
+
+        if (myReqId !== ttsReqIdRef.current) {
+          URL.revokeObjectURL(blobUrl);
+          return;
+        }
+
+        ttsCacheRef.current.set(cacheKey, blobUrl);
+        await playBlobUrl(blobUrl);
       } catch (err: unknown) {
-        setLoadingAudioMsgId(null);
-        setPlayingMsgId(null);
-        const msg = err instanceof Error ? err.message : "Could not play Monlam AI audio.";
-        setErrorBanner(msg);
+        if (err instanceof Error && err.name === "AbortError") return;
+        if (myReqId === ttsReqIdRef.current) {
+          setLoadingAudioMsgId(null);
+          setPlayingMsgId(null);
+          const msg = err instanceof Error ? err.message : "Could not play Monlam AI audio.";
+          setErrorBanner(msg);
+        }
       }
     },
     [getToken, playingMsgId, selectedVoice, stopPlayback]
   );
 
   const sendMessage = useCallback(
-    async (textOverride?: string) => {
+    async (textOverride?: string, sttProviderTag?: string) => {
       const content = (textOverride ?? inputText).trim();
       if (!content || isSending) return;
 
@@ -301,14 +472,19 @@ export default function AiTutorPage() {
         setInputText("");
       }
 
-      const userMsgId = `u_${Date.now()}`;
+      const myChatId = ++chatReqIdRef.current;
+      if (chatAbortRef.current) chatAbortRef.current.abort();
+      const controller = new AbortController();
+      chatAbortRef.current = controller;
+
       const userMessage: ChatMessage = {
-        id: userMsgId,
+        id: `u_${Date.now()}`,
         role: "user",
         tibetan: content,
+        sttProvider: sttProviderTag,
       };
 
-      const historyPayload = messages.map((m) => ({
+      const historyPayload = messagesRef.current.map((m) => ({
         role: m.role,
         text: m.role === "assistant" ? `${m.tibetan} (${m.english || ""})` : m.tibetan,
       }));
@@ -332,9 +508,12 @@ export default function AiTutorPage() {
             mode,
             model: selectedModel,
           }),
+          signal: controller.signal,
         });
 
         const data = await res.json();
+        if (myChatId !== chatReqIdRef.current) return;
+
         if (!res.ok || !data?.reply) {
           throw new Error(data?.error || "Tutor request failed.");
         }
@@ -359,21 +538,25 @@ export default function AiTutorPage() {
         setIsSending(false);
 
         if (autoPlayTts && assistantMessage.tibetan) {
-          speakTibetan(assistantId, assistantMessage.tibetan);
+          speakTibetan(assistantId, assistantMessage.tibetan, true);
         }
       } catch (err: unknown) {
-        setIsSending(false);
-        const msg = err instanceof Error ? err.message : "Could not reach AI Tutor backend.";
-        setErrorBanner(msg);
+        if (err instanceof Error && err.name === "AbortError") return;
+        if (myChatId === chatReqIdRef.current) {
+          setIsSending(false);
+          const msg = err instanceof Error ? err.message : "Could not reach AI Tutor backend.";
+          setErrorBanner(msg);
+        }
       }
     },
-    [inputText, isSending, messages, getToken, mode, selectedModel, autoPlayTts, speakTibetan]
+    [inputText, isSending, getToken, mode, selectedModel, autoPlayTts, speakTibetan]
   );
 
   const transcribeAudioBlob = useCallback(
     async (blob: Blob, mimeType: string) => {
       setIsTranscribing(true);
       setErrorBanner(null);
+      setInfoNotice(null);
 
       try {
         const token = await getToken();
@@ -385,9 +568,20 @@ export default function AiTutorPage() {
           ? "ogg"
           : "webm";
 
+        const lastAssistant = [...messagesRef.current]
+          .reverse()
+          .find((m) => m.role === "assistant");
+        const contextHint = lastAssistant
+          ? `${lastAssistant.tibetan} (${lastAssistant.english || ""})`
+          : "";
+
         const formData = new FormData();
         formData.append("audio", blob, `recording.${ext}`);
         formData.append("language", "bo");
+        formData.append("stt_provider", sttProvider);
+        if (contextHint) {
+          formData.append("context_hint", contextHint);
+        }
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/stt`, {
           method: "POST",
@@ -397,31 +591,32 @@ export default function AiTutorPage() {
 
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data?.error || "Monlam Speech-to-Text failed.");
+          throw new Error(data?.error || "Speech-to-Text failed.");
         }
 
         const transcript = (data?.transcript || "").trim();
+        const usedProvider = data?.provider || "";
         setIsTranscribing(false);
+
+        if (usedProvider === "gemini_fallback") {
+          setInfoNotice("Monlam STT returned 503 — automatically transcribed using Gemini 4 Hydrogen audio.");
+        }
 
         if (!transcript) {
           const dbg = data?.debug;
           if (dbg?.reason === "silent_mic") {
             setShowControls(true);
             setErrorBanner(
-              `Microphone recorded silence (RMS=${dbg.rms_level}). Open Dev Config above to pick your active Windows microphone.`
-            );
-          } else if (dbg?.raw_response) {
-            setErrorBanner(
-              `Monlam STT returned empty transcript (RMS=${dbg.rms_level ?? "?"}, raw=${dbg.raw_response}).`
+              `Microphone recorded silence (RMS=${dbg.rms_level}). Open Dev Config above to pick your active microphone.`
             );
           } else {
-            setErrorBanner("No speech detected. Try speaking for 1–3 seconds closer to the mic.");
+            setErrorBanner("No speech detected. Try speaking clearly for 1–3 seconds.");
           }
           return;
         }
 
         if (autoSendVoice) {
-          await sendMessage(transcript);
+          await sendMessage(transcript, usedProvider);
         } else {
           setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         }
@@ -431,7 +626,7 @@ export default function AiTutorPage() {
         setErrorBanner(msg);
       }
     },
-    [getToken, autoSendVoice, sendMessage]
+    [getToken, sttProvider, autoSendVoice, sendMessage]
   );
 
   const startRecording = async () => {
@@ -462,7 +657,6 @@ export default function AiTutorPage() {
       mediaStreamRef.current = stream;
       refreshMicrophones();
 
-      // Start live mic level meter so the user immediately sees whether Chrome hears them
       try {
         const AudioCtx =
           window.AudioContext ||
@@ -558,9 +752,20 @@ export default function AiTutorPage() {
   };
 
   const handleResetChat = () => {
+    chatReqIdRef.current += 1;
+    if (chatAbortRef.current) {
+      chatAbortRef.current.abort();
+      chatAbortRef.current = null;
+    }
     stopPlayback();
+    clearTtsCache();
+    setIsSending(false);
     setMessages([]);
     setErrorBanner(null);
+    setInfoNotice(null);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(SESSION_CHAT_KEY);
+    }
   };
 
   if (isChecking) {
@@ -579,7 +784,7 @@ export default function AiTutorPage() {
   return (
     <div
       className={`flex flex-col ${
-        isNative ? "h-[calc(100dvh-7.5rem)] pt-10 px-4" : "h-full max-w-4xl mx-auto"
+        isNative ? "h-full pt-safe px-4" : "h-full max-w-4xl mx-auto"
       }`}
     >
       {/* Top Bar */}
@@ -598,13 +803,21 @@ export default function AiTutorPage() {
                   Dev Only
                 </span>
               </div>
-              <div className="text-[11px] text-ink-muted mt-1 flex items-center gap-1.5">
+              <div className="text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-1.5">
                 {health === null ? (
                   <span>Connecting to Monlam AI &amp; Gemini...</span>
                 ) : health.ready ? (
                   <>
                     <CheckCircle2 size={12} className="text-emerald-600" />
-                    <span>Monlam STT/TTS + {selectedModel}</span>
+                    <span>Monlam Voice + {selectedModel}</span>
+                    {health.jwks_verified && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[10px] text-emerald-700 font-bold"
+                        title="Clerk RS256 JWKS Signature Verified"
+                      >
+                        <ShieldCheck size={11} /> JWKS
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>
@@ -682,10 +895,10 @@ export default function AiTutorPage() {
 
         {/* Collapsible Dev Configuration Strip */}
         {showControls && (
-          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs animate-in fade-in">
+          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs animate-in fade-in">
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                Gemini Brain Model
+                Gemini Fast Model
               </label>
               <select
                 value={selectedModel}
@@ -695,6 +908,23 @@ export default function AiTutorPage() {
                 {GEMINI_MODELS.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
+                Speech-to-Text Engine
+              </label>
+              <select
+                value={sttProvider}
+                onChange={(e) => setSttProvider(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
+              >
+                {STT_PROVIDERS.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
                   </option>
                 ))}
               </select>
@@ -735,7 +965,7 @@ export default function AiTutorPage() {
               </select>
             </div>
 
-            <div className="sm:col-span-3 flex flex-wrap items-center gap-4 pt-1">
+            <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center gap-4 pt-1">
               <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
                 <input
                   type="checkbox"
@@ -753,16 +983,30 @@ export default function AiTutorPage() {
                   onChange={(e) => setAutoSendVoice(e.target.checked)}
                   className="accent-ink w-4 h-4 rounded"
                 />
-                Auto-send after voice transcription (Monlam STT)
+                Auto-send after voice transcription
               </label>
             </div>
           </div>
         )}
       </div>
 
+      {/* Info Notice (e.g. automatic Gemini STT fallback when Monlam is 503) */}
+      {infoNotice && (
+        <div className="shrink-0 mb-2.5 px-4 py-2 rounded-2xl bg-brand-light border border-brand/30 text-ink text-xs font-medium flex items-center justify-between gap-2">
+          <span>{infoNotice}</span>
+          <button
+            type="button"
+            onClick={() => setInfoNotice(null)}
+            className="text-ink-muted hover:text-ink shrink-0"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Error Banner */}
       {errorBanner && (
-        <div className="shrink-0 mb-3 px-4 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center justify-between gap-2">
+        <div className="shrink-0 mb-2.5 px-4 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <AlertCircle size={15} className="shrink-0" />
             <span className="break-words">{errorBanner}</span>
@@ -789,9 +1033,9 @@ export default function AiTutorPage() {
               Practice Speaking &amp; Reading Tibetan
             </h2>
             <p className="text-sm text-ink-light max-w-lg mx-auto mb-6">
-              Tap the microphone to speak in Tibetan (transcribed by Monlam AI), or type in
-              Tibetan, phonetic spelling, or English. Gen-la will respond in natural Lhasa
-              Tibetan and read it aloud.
+              Tap the microphone to speak in Tibetan (Monlam STT with automatic Gemini 4
+              Hydrogen audio fallback), or type in Tibetan, phonetic spelling, or English.
+              Gen-la will respond in Lhasa Tibetan and speak it aloud.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-left">
@@ -826,12 +1070,21 @@ export default function AiTutorPage() {
 
             if (msg.role === "user") {
               return (
-                <div key={msg.id} className="flex justify-end">
+                <div key={msg.id} className="flex flex-col items-end gap-1">
                   <div className="max-w-[85%] sm:max-w-[75%] bg-ink text-white rounded-[1.25rem] rounded-br-sm px-4 py-3 shadow-sm">
                     <div className="font-tibetan text-xl leading-[1.8] text-white">
                       {msg.tibetan}
                     </div>
                   </div>
+                  {msg.sttProvider && (
+                    <span className="text-[10px] font-mono text-ink-muted/80 pr-1">
+                      {msg.sttProvider === "monlam"
+                        ? "Voice · Monlam STT"
+                        : msg.sttProvider === "gemini_fallback"
+                        ? "Voice · Gemini Audio Fallback"
+                        : "Voice · Gemini Audio"}
+                    </span>
+                  )}
                 </div>
               );
             }
@@ -846,25 +1099,32 @@ export default function AiTutorPage() {
                     <div className="font-tibetan text-[24px] sm:text-[28px] leading-[1.9] pb-1 text-ink">
                       {msg.tibetan}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => speakTibetan(msg.id, msg.tibetan)}
-                      disabled={isLoadingAudio}
-                      className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                        isPlaying
-                          ? "bg-brand text-ink"
-                          : "bg-paper border border-border-subtle text-ink hover:border-ink"
-                      }`}
-                      title={isPlaying ? "Stop audio" : "Play Monlam AI voice"}
-                    >
-                      {isLoadingAudio ? (
-                        <Loader2 size={17} className="animate-spin" />
-                      ) : isPlaying ? (
-                        <Square size={15} fill="currentColor" />
-                      ) : (
-                        <Volume2 size={18} />
+                    <div className="flex flex-col items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => speakTibetan(msg.id, msg.tibetan, false)}
+                        disabled={isLoadingAudio}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                          isPlaying
+                            ? "bg-brand text-ink"
+                            : "bg-paper border border-border-subtle text-ink hover:border-ink"
+                        }`}
+                        title={isPlaying ? "Stop audio" : "Play Monlam AI voice"}
+                      >
+                        {isLoadingAudio ? (
+                          <Loader2 size={17} className="animate-spin" />
+                        ) : isPlaying ? (
+                          <Square size={15} fill="currentColor" />
+                        ) : (
+                          <Volume2 size={18} />
+                        )}
+                      </button>
+                      {msg.needsTapToPlay && !isPlaying && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-brand-dark">
+                          Tap
+                        </span>
                       )}
-                    </button>
+                    </div>
                   </div>
 
                   {showTranslations && (msg.phonetic || msg.english) && (
@@ -885,7 +1145,7 @@ export default function AiTutorPage() {
                       <span className="font-bold uppercase tracking-wider text-[10px] text-brand-dark mr-1.5">
                         Gen-la Tip:
                       </span>
-                      {msg.feedback}
+                      {renderRichFeedback(msg.feedback)}
                     </div>
                   )}
 
@@ -931,7 +1191,7 @@ export default function AiTutorPage() {
             <Loader2 size={14} className="animate-spin text-brand-dark" />
             <span>
               {isTranscribing
-                ? "Transcribing Tibetan speech with Monlam STT..."
+                ? "Transcribing your voice..."
                 : `Gen-la is thinking (${selectedModel})...`}
             </span>
           </div>
@@ -950,7 +1210,6 @@ export default function AiTutorPage() {
                 Listening... {formatTimer(recordSeconds)}
               </span>
 
-              {/* Live Mic Volume Meter */}
               <div className="hidden sm:flex items-center gap-1 h-5">
                 {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
                   <span
@@ -994,7 +1253,7 @@ export default function AiTutorPage() {
               onClick={startRecording}
               disabled={isTranscribing || isSending}
               className="w-11 h-11 rounded-full bg-brand text-ink hover:bg-brand-dark disabled:opacity-50 flex items-center justify-center shrink-0 transition-transform active:scale-95"
-              title="Speak in Tibetan (Monlam STT)"
+              title="Speak in Tibetan"
             >
               <Mic size={20} />
             </button>
@@ -1004,7 +1263,7 @@ export default function AiTutorPage() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Type Tibetan, phonetic, or English..."
-              className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm md:text-base text-ink placeholder:text-ink-muted focus:outline-none font-tibetan"
+              className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm md:text-base text-ink placeholder:text-ink-muted focus:outline-none font-sans"
             />
 
             <button
