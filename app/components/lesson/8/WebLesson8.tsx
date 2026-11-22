@@ -253,6 +253,14 @@ export function WebLesson8() {
             Welcome to the Class
           </span>
 
+          <Link
+            href="/dashboard/lessons/9"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-surface text-ink hover:border-brand border border-border-strong transition-colors"
+          >
+            <BookOpen size={11} className="text-ink-muted" />
+            Numbers, Time &amp; Days
+          </Link>
+
           {upcomingLessonsStrip.map((u) => (
             <span
               key={u.unitNumber}
@@ -1612,7 +1620,7 @@ export function WebLesson8() {
                     playingItem={playingItem}
                     playErrorBeep={playErrorBeep}
                     isUnlockTest={true}
-                    nextLessonPath="/dashboard?hub=beginner2"
+                    nextLessonPath="/dashboard/lessons/9"
                     onPass={() => markComplete(7)}
                     hideHeader={true}
                   />

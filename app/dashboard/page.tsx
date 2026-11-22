@@ -8,7 +8,7 @@ import { usePlatform } from "@/hooks/usePlatform";
 
 import { WebDashboard } from "../components/dashboard/WebDashboard";
 import { MobileHome } from "../components/dashboard/MobileHome";
-import { FALLBACK_MODULES } from "@/app/data/syllabus";
+import { FALLBACK_MODULES, mergeWithFallbackModules } from "@/app/data/syllabus";
 
 
 export default function UnifiedDashboard() {
@@ -45,7 +45,7 @@ export default function UnifiedDashboard() {
           if (isMounted) {
             if (data.profile) setProfile(data.profile);
             if (data.modules && Array.isArray(data.modules) && data.modules.length > 0) {
-              setModules(data.modules);
+              setModules(mergeWithFallbackModules(data.modules));
             } else {
               setModules(FALLBACK_MODULES);
             }

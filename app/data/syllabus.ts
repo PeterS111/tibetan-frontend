@@ -32,10 +32,10 @@ export const FALLBACK_MODULES: SyllabusModule[] = [
   { id: 6, module_id: 6, courseId: "beginner1", unitNumber: 6, title: "The Suffix Letters", description: "The ten suffix letters and the two secondary suffixes.", time_est: "2h", progress: 0, status: "locked", lesson_count: 9, mastery_scores: {} },
   { id: 7, module_id: 7, courseId: "beginner1", unitNumber: 7, title: "Final Assessment", description: "A short mixed assessment drawing on every step so far. Score 80% or higher to pass.", time_est: "30m", progress: 0, status: "locked", lesson_count: 3, isCapstone: true, mastery_scores: {} },
   { id: 8, module_id: 8, courseId: "beginner2", unitNumber: 1, title: "Welcome to the Class", description: "Classroom phrases and the language of a Tibetan teacher.", time_est: "1h", progress: 0, status: "locked", lesson_count: 8, mastery_scores: {} },
+  { id: 9, module_id: 9, courseId: "beginner2", unitNumber: 2, title: "Numbers, Time & Days", description: "Count to 100, tell the time, and name the days of the week.", time_est: "2h", progress: 0, status: "locked", lesson_count: 8, mastery_scores: {} },
 ];
 
 export const BEGINNER_2_UPCOMING: UpcomingUnit[] = [
-  { unitNumber: "02", title: "Numbers, Time & Days", description: "Count to 100, tell the time, and name the days of the week.", time_est: "2h" },
   { unitNumber: "03", title: "Greetings", description: "Everyday greetings and appropriate responses.", time_est: "1h" },
   { unitNumber: "04", title: "Where are you from?", description: "Ask and answer where someone is from.", time_est: "1.5h" },
   { unitNumber: "05", title: "Introduction", description: "Introduce yourself, your family, age, birthday, and work.", time_est: "2h" },
@@ -46,6 +46,22 @@ export const BEGINNER_2_UPCOMING: UpcomingUnit[] = [
   { unitNumber: "10", title: "Four Seasons", description: "Weather, clothing, and how each season feels.", time_est: "1.5h" },
   { unitNumber: "11", title: "Beginner 2 Final Assessment", description: "Show what you've learned across everyday topics and unlock your Beginner 2 certificate.", time_est: "10–15 min", isCapstone: true },
 ];
+
+export function mergeWithFallbackModules(serverModules: any[]): any[] {
+  if (!Array.isArray(serverModules) || serverModules.length === 0) return FALLBACK_MODULES;
+  const byId = new Map<number, any>();
+  serverModules.forEach((m) => byId.set(Number(m.module_id), m));
+
+  const merged = [...serverModules];
+  for (const fb of FALLBACK_MODULES) {
+    if (!byId.has(fb.module_id)) {
+      const prev = byId.get(fb.module_id - 1);
+      const unlockedByPrev = prev && prev.status === "completed";
+      merged.push({ ...fb, status: unlockedByPrev ? "active" : fb.status });
+    }
+  }
+  return merged.sort((a, b) => Number(a.module_id) - Number(b.module_id));
+}
 
 export function isBeginner1Module(moduleId: number | string): boolean {
   const id = Number(moduleId);

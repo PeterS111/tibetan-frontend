@@ -5,7 +5,7 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { MobileLessons } from "@/app/components/dashboard/MobileLessons";
-import { FALLBACK_MODULES } from "@/app/data/syllabus";
+import { FALLBACK_MODULES, mergeWithFallbackModules } from "@/app/data/syllabus";
 
 
 export default function LessonsPageRouter() {
@@ -32,7 +32,7 @@ export default function LessonsPageRouter() {
         });
         const data = await res.json();
         if (isMounted) {
-          if (data.modules && data.modules.length > 0) setModules(data.modules);
+          if (data.modules && data.modules.length > 0) setModules(mergeWithFallbackModules(data.modules));
           else setModules(FALLBACK_MODULES);
         }
       } catch(e) {
