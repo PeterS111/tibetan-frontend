@@ -91,7 +91,7 @@ export function WebLesson8() {
   const [bubbleReveal, setBubbleReveal] = useState<Record<string, number>>({});
   const [dialogueViewMode, setDialogueViewMode] = useState<Record<string, "thread" | "focus">>({});
   const [dialogueFocusIdx, setDialogueFocusIdx] = useState<Record<string, number>>({});
-  const [expandedCmdNum, setExpandedCmdNum] = useState<string | null>(null);
+  const [expandedCmds, setExpandedCmds] = useState<Record<string, boolean>>({});
   const [activePracticeTab, setActivePracticeTab] = useState<PracticeTabKey>("grammar");
   const [drillResults, setDrillResults] = useState<Record<string, { score: number; total: number }>>({});
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
@@ -195,12 +195,37 @@ export function WebLesson8() {
     setBubbleReveal((prev) => ({ ...prev, [key]: ((prev[key] || 0) + 1) % 3 }));
   };
 
-  const revealThread = (threadId: string, lineCount: number) => {
+  const toggleFocusLineReveal = (key: string) => {
+    setBubbleReveal((prev) => ({ ...prev, [key]: (prev[key] || 0) >= 2 ? 0 : 2 }));
+  };
+
+  const toggleAllDialogues = () => {
+    const nextShow = !showAllDialogues;
+    setShowAllDialogues(nextShow);
     setBubbleReveal((prev) => {
       const next = { ...prev };
-      for (let i = 0; i < lineCount; i++) next[`${threadId}-${i}`] = 2;
+      DIALOGUES.forEach((thread) => {
+        thread.lines.forEach((_, i) => {
+          next[`${thread.id}-${i}`] = nextShow ? 2 : 0;
+        });
+      });
       return next;
     });
+  };
+
+  const toggleThreadReveal = (threadId: string, lineCount: number) => {
+    setBubbleReveal((prev) => {
+      const allFull = Array.from({ length: lineCount }, (_, i) => (prev[`${threadId}-${i}`] || 0) >= 2).every(Boolean);
+      const next = { ...prev };
+      for (let i = 0; i < lineCount; i++) {
+        next[`${threadId}-${i}`] = allFull ? 0 : 2;
+      }
+      return next;
+    });
+  };
+
+  const toggleCmd = (num: string) => {
+    setExpandedCmds((prev) => ({ ...prev, [num]: !prev[num] }));
   };
 
   return (
@@ -872,7 +897,7 @@ export function WebLesson8() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => setShowAllDialogues((v) => !v)}
+                      onClick={toggleAllDialogues}
                       className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border text-xs font-bold transition-colors shrink-0 cursor-pointer ${
                         showAllDialogues
                           ? "bg-ink text-white border-ink"
@@ -888,14 +913,11 @@ export function WebLesson8() {
                     {DIALOGUES.map((thread) => {
                       const mode = dialogueViewMode[thread.id] || "thread";
                       const focusIdx = dialogueFocusIdx[thread.id] || 0;
-                      const revealedCount = thread.lines.filter((_, idx) => {
-                        const lvl = showAllDialogues ? 2 : bubbleReveal[`${thread.id}-${idx}`] || 0;
-                        return lvl > 0;
-                      }).length;
+                      const revealedCount = thread.lines.filter((_, idx) => (bubbleReveal[`${thread.id}-${idx}`] || 0) > 0).length;
+                      const allFullyRevealed = thread.lines.every((_, idx) => (bubbleReveal[`${thread.id}-${idx}`] || 0) >= 2);
 
                       return (
                         <div key={thread.id} className="bg-paper/45 border border-border-subtle rounded-2xl p-5">
-                          {/* Dialogue Card Header */}
                           <div className="flex items-start justify-between gap-3 mb-5">
                             <div className="flex items-center gap-3">
                               <div className="size-8 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-brand-dark shrink-0">
@@ -907,12 +929,12 @@ export function WebLesson8() {
                               </div>
                             </div>
 
-                            <div className="inline-flex rounded-lg border border-border-subtle bg-surface p-0.5 text-[10px] font-bold">
+                            <div className="inline-flex rounded-full border border-border-subtle bg-surface-muted/70 p-0.5 text-[10px] font-bold">
                               <button
                                 type="button"
                                 onClick={() => setDialogueViewMode((p) => ({ ...p, [thread.id]: "thread" }))}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                                  mode === "thread" ? "bg-paper text-ink shadow-2xs" : "text-ink-muted hover:text-ink"
+                                className={`px-3 py-1 rounded-full transition-colors cursor-pointer ${
+                                  mode === "thread" ? "bg-surface text-ink shadow-2xs" : "text-ink-muted hover:text-ink"
                                 }`}
                               >
                                 Thread
@@ -920,8 +942,8 @@ export function WebLesson8() {
                               <button
                                 type="button"
                                 onClick={() => setDialogueViewMode((p) => ({ ...p, [thread.id]: "focus" }))}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                                  mode === "focus" ? "bg-paper text-ink shadow-2xs" : "text-ink-muted hover:text-ink"
+                                className={`px-3 py-1 rounded-full transition-colors cursor-pointer ${
+                                  mode === "focus" ? "bg-surface text-ink shadow-2xs" : "text-ink-muted hover:text-ink"
                                 }`}
                               >
                                 Focus
@@ -929,165 +951,213 @@ export function WebLesson8() {
                             </div>
                           </div>
 
-                          {/* Thread View */}
                           {mode === "thread" ? (
-                            <div className="space-y-4">
-                              {thread.lines.map((line, idx) => {
-                                const key = `${thread.id}-${idx}`;
-                                const level = showAllDialogues ? 2 : bubbleReveal[key] || 0;
-                                const isRight = line.side === "right";
-                                return (
-                                  <div key={key} className={`flex items-start gap-2.5 ${isRight ? "flex-row-reverse" : "flex-row"}`}>
+                            <>
+                              <div className="space-y-4">
+                                {thread.lines.map((line, idx) => {
+                                  const key = `${thread.id}-${idx}`;
+                                  const level = bubbleReveal[key] || 0;
+                                  const isRight = line.side === "right";
+                                  const tapCue =
+                                    level === 0
+                                      ? "Tap to reveal"
+                                      : level === 1
+                                      ? "Tap again for English"
+                                      : "Tap to reset";
+
+                                  return (
+                                    <div key={key} className={`flex items-start gap-2.5 ${isRight ? "flex-row-reverse" : "flex-row"}`}>
+                                      <div
+                                        className={`size-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 mt-4 ${
+                                          isRight
+                                            ? "bg-brand-light text-brand-dark border border-amber-300/70"
+                                            : "bg-surface text-ink-light border border-border-subtle"
+                                        }`}
+                                      >
+                                        {line.speakerInitial}
+                                      </div>
+
+                                      <div className={`max-w-[82%] flex flex-col ${isRight ? "items-end" : "items-start"}`}>
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-ink-muted mb-1 px-1">
+                                          {line.speaker}
+                                        </span>
+
+                                        <div className="flex items-center gap-2">
+                                          {isRight && (
+                                            <button
+                                              type="button"
+                                              onClick={() => playAudio(line.tib)}
+                                              aria-label="Play line"
+                                              className="size-7 rounded-lg border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-brand-dark shrink-0 cursor-pointer"
+                                            >
+                                              {playingItem === line.tib ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
+                                            </button>
+                                          )}
+
+                                          <button
+                                            type="button"
+                                            onClick={() => cycleBubbleReveal(key)}
+                                            className={`text-left rounded-xl px-4 py-3 border transition-all cursor-pointer select-none ${
+                                              isRight
+                                                ? "bg-[#FFF8DE] border-amber-200/90 hover:border-brand"
+                                                : "bg-[#FAF6EC] border-border-subtle hover:border-border-strong"
+                                            }`}
+                                          >
+                                            <div className="font-tibetan text-xl text-ink leading-normal">{line.tib}</div>
+                                            {level >= 1 && (
+                                              <div className="text-xs font-serif italic text-ink-muted mt-1.5 animate-in fade-in duration-150">
+                                                {line.pron}
+                                              </div>
+                                            )}
+                                            {level >= 2 && (
+                                              <div className="text-xs font-medium text-ink mt-1 animate-in fade-in duration-150">
+                                                {line.en}
+                                              </div>
+                                            )}
+                                            <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-muted/90 mt-2">
+                                              {tapCue}
+                                            </div>
+                                          </button>
+
+                                          {!isRight && (
+                                            <button
+                                              type="button"
+                                              onClick={() => playAudio(line.tib)}
+                                              aria-label="Play line"
+                                              className="size-7 rounded-lg border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-brand-dark shrink-0 cursor-pointer"
+                                            >
+                                              {playingItem === line.tib ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <div className="mt-5 pt-3.5 border-t border-border-subtle/70 flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-[10px] text-ink-muted">
+                                  <div className="flex items-center gap-1">
+                                    {thread.lines.map((_, i) => {
+                                      const isRev = (bubbleReveal[`${thread.id}-${i}`] || 0) > 0;
+                                      return (
+                                        <span
+                                          key={i}
+                                          className={`size-1.5 rounded-full ${isRev ? "bg-brand" : "bg-border-strong/50"}`}
+                                        />
+                                      );
+                                    })}
+                                  </div>
+                                  <span>{revealedCount} / {thread.lines.length} lines revealed</span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => toggleThreadReveal(thread.id, thread.lines.length)}
+                                  className="text-[10px] font-bold uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full border border-border-subtle bg-surface text-ink-light hover:text-ink hover:border-border-strong transition-colors cursor-pointer"
+                                >
+                                  {allFullyRevealed ? "Reset all" : "Reveal all"}
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            (() => {
+                              const line = thread.lines[focusIdx] || thread.lines[0];
+                              const key = `${thread.id}-${focusIdx}`;
+                              const isShown = (bubbleReveal[key] || 0) >= 2;
+                              const isRight = line.side === "right";
+
+                              return (
+                                <div className="bg-surface border border-border-subtle rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xs">
+                                  {/* Line counter + Circular Stepper Arrows */}
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-muted">
+                                      Line {focusIdx + 1} of {thread.lines.length}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        aria-label="Previous line"
+                                        disabled={focusIdx === 0}
+                                        onClick={() => setDialogueFocusIdx((p) => ({ ...p, [thread.id]: Math.max(0, focusIdx - 1) }))}
+                                        className="size-8 rounded-full border border-border-subtle bg-surface flex items-center justify-center text-ink hover:border-border-strong disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                      >
+                                        <ChevronLeft size={14} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        aria-label="Next line"
+                                        disabled={focusIdx === thread.lines.length - 1}
+                                        onClick={() => setDialogueFocusIdx((p) => ({ ...p, [thread.id]: Math.min(thread.lines.length - 1, focusIdx + 1) }))}
+                                        className="size-8 rounded-full border border-border-subtle bg-surface flex items-center justify-center text-ink hover:border-border-strong disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                      >
+                                        <ChevronRight size={14} />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Speaker Avatar + Label */}
+                                  <div className="flex items-center gap-3">
                                     <div
-                                      className={`size-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 mt-4 ${
+                                      className={`size-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                                         isRight
                                           ? "bg-brand-light text-brand-dark border border-amber-300/70"
-                                          : "bg-surface text-ink-light border border-border-subtle"
+                                          : "bg-surface-muted text-ink-light border border-border-subtle"
                                       }`}
                                     >
                                       {line.speakerInitial}
                                     </div>
-
-                                    <div className={`max-w-[82%] flex flex-col ${isRight ? "items-end" : "items-start"}`}>
-                                      <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-ink-muted mb-1 px-1">
-                                        {line.speaker}
-                                      </span>
-
-                                      <div className="flex items-center gap-2">
-                                        {isRight && (
-                                          <button
-                                            type="button"
-                                            onClick={() => playAudio(line.tib)}
-                                            aria-label="Play line"
-                                            className="size-7 rounded-lg border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-brand-dark shrink-0 cursor-pointer"
-                                          >
-                                            {playingItem === line.tib ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
-                                          </button>
-                                        )}
-
-                                        <button
-                                          type="button"
-                                          onClick={() => cycleBubbleReveal(key)}
-                                          className={`text-left rounded-xl px-4 py-3 border transition-all cursor-pointer ${
-                                            isRight
-                                              ? "bg-[#FFF8E4] border-amber-200/90 hover:border-brand"
-                                              : "bg-surface border-border-subtle hover:border-border-strong"
-                                          }`}
-                                        >
-                                          <div className="font-tibetan text-xl text-ink leading-normal">{line.tib}</div>
-                                          {level >= 1 && (
-                                            <div className="text-xs font-serif italic text-ink-muted mt-1">{line.pron}</div>
-                                          )}
-                                          {level >= 2 && (
-                                            <div className="text-xs font-semibold text-ink mt-1 pt-1 border-t border-border-subtle/70">
-                                              {line.en}
-                                            </div>
-                                          )}
-                                          {level === 0 && (
-                                            <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-muted mt-1">
-                                              Tap to reveal
-                                            </div>
-                                          )}
-                                        </button>
-
-                                        {!isRight && (
-                                          <button
-                                            type="button"
-                                            onClick={() => playAudio(line.tib)}
-                                            aria-label="Play line"
-                                            className="size-7 rounded-lg border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-brand-dark shrink-0 cursor-pointer"
-                                          >
-                                            {playingItem === line.tib ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            /* Focus View (one line at a time) */
-                            (() => {
-                              const line = thread.lines[focusIdx] || thread.lines[0];
-                              const key = `${thread.id}-${focusIdx}`;
-                              const level = showAllDialogues ? 2 : bubbleReveal[key] || 0;
-                              return (
-                                <div className="bg-surface border border-border-subtle rounded-xl p-5 space-y-4">
-                                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.15em] text-ink-muted">
-                                    <span>{line.speaker} · Line {focusIdx + 1} of {thread.lines.length}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => playAudio(line.tib)}
-                                      className="inline-flex items-center gap-1.5 text-brand-dark hover:underline cursor-pointer"
-                                    >
-                                      {playingItem === line.tib ? <Loader2 size={12} className="animate-spin" /> : <Volume2 size={12} />} Listen
-                                    </button>
+                                    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-muted">
+                                      {line.speaker}
+                                    </span>
                                   </div>
 
+                                  {/* Speech Bubble */}
                                   <button
                                     type="button"
-                                    onClick={() => cycleBubbleReveal(key)}
-                                    className="w-full text-center py-4 px-3 rounded-xl bg-paper/50 border border-border-subtle hover:border-brand transition-colors cursor-pointer"
+                                    onClick={() => toggleFocusLineReveal(key)}
+                                    className={`w-full text-left px-5 py-5 rounded-2xl border transition-all cursor-pointer select-none ${
+                                      isRight
+                                        ? "bg-[#FFF8DE] border-amber-200/90 hover:border-brand rounded-tr-sm"
+                                        : "bg-[#FAF6EC] border-border-subtle hover:border-border-strong rounded-tl-sm"
+                                    }`}
                                   >
-                                    <div className="font-tibetan text-3xl text-ink leading-normal">{line.tib}</div>
-                                    {level >= 1 && <div className="text-sm font-serif italic text-ink-muted mt-2">{line.pron}</div>}
-                                    {level >= 2 && <div className="text-sm font-bold text-ink mt-1.5">{line.en}</div>}
-                                    {level === 0 && (
-                                      <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-ink-muted mt-2">
-                                        Tap to reveal romanisation & meaning
+                                    <div className="font-tibetan text-2xl sm:text-[26px] text-ink leading-normal">
+                                      {line.tib}
+                                    </div>
+                                    {isShown && (
+                                      <div className="mt-3 space-y-1 animate-in fade-in duration-150">
+                                        <div className="text-sm font-serif italic text-ink-muted">{line.pron}</div>
+                                        <div className="text-sm font-medium text-ink">{line.en}</div>
                                       </div>
                                     )}
                                   </button>
 
-                                  <div className="flex items-center justify-between">
+                                  {/* Bottom Action Bar: Show/Hide Romanisation & English + Audio */}
+                                  <div className="flex items-center justify-between gap-3 pt-1">
                                     <button
                                       type="button"
-                                      disabled={focusIdx === 0}
-                                      onClick={() => setDialogueFocusIdx((p) => ({ ...p, [thread.id]: Math.max(0, focusIdx - 1) }))}
-                                      className="inline-flex items-center gap-1 text-xs font-bold text-ink-light hover:text-ink disabled:opacity-40 cursor-pointer"
+                                      onClick={() => toggleFocusLineReveal(key)}
+                                      className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-brand-dark hover:text-ink transition-colors cursor-pointer"
                                     >
-                                      <ChevronLeft size={14} /> Prev line
+                                      {isShown ? <EyeOff size={14} /> : <Eye size={14} />}
+                                      <span>{isShown ? "Hide romanisation & English" : "Show romanisation & English"}</span>
                                     </button>
+
                                     <button
                                       type="button"
-                                      disabled={focusIdx === thread.lines.length - 1}
-                                      onClick={() => setDialogueFocusIdx((p) => ({ ...p, [thread.id]: Math.min(thread.lines.length - 1, focusIdx + 1) }))}
-                                      className="inline-flex items-center gap-1 text-xs font-bold text-ink-light hover:text-ink disabled:opacity-40 cursor-pointer"
+                                      onClick={() => playAudio(line.tib)}
+                                      aria-label="Play line audio"
+                                      className="size-8 rounded-lg border border-border-subtle bg-surface flex items-center justify-center text-ink-light hover:text-brand-dark hover:border-brand transition-colors cursor-pointer"
                                     >
-                                      Next line <ChevronRight size={14} />
+                                      {playingItem === line.tib ? <Loader2 size={14} className="animate-spin text-brand" /> : <Volume2 size={14} />}
                                     </button>
                                   </div>
                                 </div>
                               );
                             })()
                           )}
-
-                          {/* Dialogue Card Footer */}
-                          <div className="mt-5 pt-3.5 border-t border-border-subtle/70 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-[10px] text-ink-muted">
-                              <div className="flex items-center gap-1">
-                                {thread.lines.map((_, i) => {
-                                  const isRev = showAllDialogues || (bubbleReveal[`${thread.id}-${i}`] || 0) > 0;
-                                  return (
-                                    <span
-                                      key={i}
-                                      className={`size-1.5 rounded-full ${isRev ? "bg-brand" : "bg-border-strong/50"}`}
-                                    />
-                                  );
-                                })}
-                              </div>
-                              <span>{revealedCount} / {thread.lines.length} lines revealed</span>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => revealThread(thread.id, thread.lines.length)}
-                              className="text-[10px] font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-md border border-border-subtle bg-surface text-ink-light hover:text-ink hover:border-border-strong transition-colors cursor-pointer"
-                            >
-                              Reveal all
-                            </button>
-                          </div>
                         </div>
                       );
                     })}
@@ -1118,54 +1188,103 @@ export function WebLesson8() {
                       </div>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
                       {CLASSROOM_COMMANDS.map((cmd) => {
-                        const isOpen = expandedCmdNum === cmd.num;
+                        const isOpen = !!expandedCmds[cmd.num];
                         return (
-                          <div key={cmd.num} className="bg-surface border border-border-subtle rounded-xl p-4 flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-start justify-between gap-2 mb-1.5">
-                                <div className="flex items-baseline gap-2.5">
-                                  <span className="text-[11px] font-bold text-brand-dark/80">{cmd.num}</span>
-                                  <span className="font-tibetan text-2xl text-ink leading-normal">{cmd.tib}</span>
-                                </div>
-                                <div className="flex items-center gap-1 shrink-0">
+                          <div key={cmd.num} className="flex items-start gap-2.5">
+                            <span className="text-[11px] font-serif font-bold text-brand-dark/80 pt-3.5 w-5 shrink-0 select-none">
+                              {cmd.num}
+                            </span>
+
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => toggleCmd(cmd.num)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  toggleCmd(cmd.num);
+                                }
+                              }}
+                              aria-expanded={isOpen}
+                              className={`flex-1 min-w-0 bg-surface border border-border-subtle border-l-2 border-l-amber-300/90 hover:border-border-strong rounded-xl p-4 transition-all cursor-pointer shadow-2xs ${
+                                isOpen ? "ring-1 ring-amber-200/70 shadow-sm" : ""
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-2.5">
+                                <span className="font-tibetan text-2xl text-ink leading-normal min-w-0 break-words">
+                                  {cmd.tib}
+                                </span>
+                                <div className="flex items-center gap-1 shrink-0 pt-0.5">
                                   <button
                                     type="button"
-                                    onClick={() => playAudio(cmd.tib)}
-                                    className="size-7 rounded-md border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-brand-dark cursor-pointer"
+                                    aria-label={`Play ${cmd.pron}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      playAudio(cmd.tib);
+                                    }}
+                                    className="size-7 rounded-md border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-brand-dark hover:border-brand cursor-pointer"
                                   >
                                     {playingItem === cmd.tib ? <Loader2 size={12} className="animate-spin text-brand" /> : <Volume2 size={12} />}
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => setExpandedCmdNum(isOpen ? null : cmd.num)}
-                                    className="size-7 rounded-md border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer"
+                                    aria-label={isOpen ? "Collapse breakdown" : "Unfold breakdown"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleCmd(cmd.num);
+                                    }}
+                                    className="size-7 rounded-md border border-border-subtle bg-surface flex items-center justify-center text-ink-muted hover:text-ink hover:border-border-strong cursor-pointer"
                                   >
-                                    <ChevronDown size={12} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                                    <ChevronDown size={12} className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
                                   </button>
                                 </div>
                               </div>
 
-                              <div className="pl-6 space-y-1">
-                                <span className="inline-block bg-brand-light/70 text-brand-dark font-serif italic text-xs px-2 py-0.5 rounded">
+                              <div className="space-y-1.5">
+                                <span className="inline-block bg-brand-light/75 text-brand-dark font-serif italic text-xs px-2 py-0.5 rounded">
                                   {cmd.pron}
                                 </span>
-                                <div className="text-xs font-medium text-ink">{cmd.en}</div>
+                                <div className="text-xs sm:text-[13px] font-medium text-ink">
+                                  {cmd.en}
+                                </div>
                               </div>
-                            </div>
 
-                            {isOpen && (
-                              <div className="mt-3 pt-2.5 border-t border-border-subtle/80 pl-6 space-y-1">
-                                {cmd.breakdown.map((b, i) => (
-                                  <div key={i} className="text-xs text-ink-light flex items-baseline gap-1.5">
-                                    <span className="font-tibetan text-base text-ink">{b.tib}</span>
-                                    <span className="italic text-ink-muted">({b.pron})</span>
-                                    <span>— {b.gloss}</span>
+                              {isOpen && (
+                                <div
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="mt-4 pt-3.5 border-t border-border-subtle/80 animate-in fade-in slide-in-from-top-1 duration-150"
+                                >
+                                  <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-muted mb-2.5">
+                                    Breakdown
                                   </div>
-                                ))}
-                              </div>
-                            )}
+                                  <div className="space-y-2">
+                                    {cmd.breakdown.map((b, i) => (
+                                      <div
+                                        key={i}
+                                        className="bg-paper/65 border border-border-subtle/90 rounded-lg px-3 py-2.5 space-y-0.5"
+                                      >
+                                        <div className="font-tibetan text-xl text-ink leading-normal">
+                                          {b.tib}
+                                        </div>
+                                        <div className="font-serif italic text-xs text-ink-muted">
+                                          {b.pron}
+                                        </div>
+                                        <div className="text-xs font-medium text-ink leading-snug pt-0.5">
+                                          {b.gloss}
+                                        </div>
+                                        {b.pos && (
+                                          <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-brand-dark pt-1">
+                                            {b.pos}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         );
                       })}

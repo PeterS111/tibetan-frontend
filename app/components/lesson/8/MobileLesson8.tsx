@@ -508,11 +508,9 @@ export function MobileLesson8() {
                           {line.en}
                         </div>
                       )}
-                      {lvl === 0 && (
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mt-1">
-                          Tap to reveal
-                        </div>
-                      )}
+                      <div className="text-[9px] font-bold uppercase tracking-widest text-ink-muted mt-1.5">
+                        {lvl === 0 ? "Tap to reveal" : lvl === 1 ? "Tap again for English" : "Tap to reset"}
+                      </div>
                     </div>
                   );
                 })}
@@ -749,6 +747,11 @@ export function MobileLesson8() {
                   <span className="font-tibetan text-xl text-ink">{b.tib}</span>
                   <span className="italic text-ink-muted">({b.pron})</span>
                   <span className="font-bold text-ink-light">— {b.gloss}</span>
+                  {b.pos && (
+                    <span className="ml-auto text-[9px] font-bold uppercase tracking-widest text-brand-dark">
+                      {b.pos}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

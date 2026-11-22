@@ -17,6 +17,7 @@ export interface WordPart {
   tib: string;
   pron: string;
   gloss: string;
+  pos?: string;
 }
 
 export interface UsefulPhrase {
@@ -216,13 +217,75 @@ export const DIALOGUES: DialogueThread[] = [
 ];
 
 export const CLASSROOM_COMMANDS: ClassroomCommand[] = [
-  { num: "01", tib: "དེབ་ཁ་ཕྱེས།", pron: "deb kha che", en: "Open your book.", breakdown: [{ tib: "དེབ་", pron: "deb", gloss: "book" }, { tib: "ཁ་", pron: "kha", gloss: "cover" }, { tib: "ཕྱེས་", pron: "che", gloss: "open!" }] },
-  { num: "02", tib: "དེབ་ཁ་རྒྱོབས།", pron: "deb kha gyob", en: "Close your book.", breakdown: [{ tib: "དེབ་", pron: "deb", gloss: "book" }, { tib: "ཁ་", pron: "kha", gloss: "cover" }, { tib: "རྒྱོབས་", pron: "gyob", gloss: "close!" }] },
-  { num: "03", tib: "ཉོན་ཨ།", pron: "nyön a", en: "Listen.", breakdown: [{ tib: "ཉོན་", pron: "nyön", gloss: "listen!" }, { tib: "ཨ་", pron: "a", gloss: "polite particle" }] },
-  { num: "04", tib: "བྲིས།", pron: "dri", en: "Write.", breakdown: [{ tib: "བྲིས་", pron: "dri", gloss: "write! (imperative)" }] },
-  { num: "05", tib: "ཀློགས།", pron: "lok", en: "Read (aloud).", breakdown: [{ tib: "ཀློགས་", pron: "lok", gloss: "read! (imperative)" }] },
-  { num: "06", tib: "བཞུགས།", pron: "zhug", en: "Sit down.", breakdown: [{ tib: "བཞུགས་", pron: "zhug", gloss: "please sit (honorific)" }] },
-  { num: "07", tib: "ཡར་ལོངས།", pron: "yar long", en: "Stand up.", breakdown: [{ tib: "ཡར་", pron: "yar", gloss: "upward" }, { tib: "ལོངས་", pron: "long", gloss: "stand / rise!" }] },
+  {
+    num: "01",
+    tib: "དེབ་ཁ་ཕྱེས།",
+    pron: "deb kha che",
+    en: "Open your book.",
+    breakdown: [
+      { tib: "དེབ།", pron: "deb", gloss: "book", pos: "NOUN" },
+      { tib: "ཁ་", pron: "kha", gloss: "mouth / opening", pos: "NOUN" },
+      { tib: "ཕྱེས།", pron: "che", gloss: "open (imperative)", pos: "VERB" },
+    ],
+  },
+  {
+    num: "02",
+    tib: "དེབ་ཁ་རྒྱོབས།",
+    pron: "deb kha gyob",
+    en: "Close your book.",
+    breakdown: [
+      { tib: "དེབ།", pron: "deb", gloss: "book", pos: "NOUN" },
+      { tib: "ཁ་", pron: "kha", gloss: "mouth / opening", pos: "NOUN" },
+      { tib: "རྒྱོབས།", pron: "gyob", gloss: "close (imperative)", pos: "VERB" },
+    ],
+  },
+  {
+    num: "03",
+    tib: "ཉོན་ཨ།",
+    pron: "nyön a",
+    en: "Listen.",
+    breakdown: [
+      { tib: "ཉོན།", pron: "nyön", gloss: "listen (imperative)", pos: "VERB" },
+      { tib: "ཨ།", pron: "a", gloss: "softening / polite particle", pos: "PARTICLE" },
+    ],
+  },
+  {
+    num: "04",
+    tib: "བྲིས།",
+    pron: "dri",
+    en: "Write.",
+    breakdown: [
+      { tib: "བྲིས།", pron: "dri", gloss: "write (imperative)", pos: "VERB" },
+    ],
+  },
+  {
+    num: "05",
+    tib: "ཀློགས།",
+    pron: "lok",
+    en: "Read (aloud).",
+    breakdown: [
+      { tib: "ཀློགས།", pron: "lok", gloss: "read aloud (imperative)", pos: "VERB" },
+    ],
+  },
+  {
+    num: "06",
+    tib: "བཞུགས།",
+    pron: "zhug",
+    en: "Sit down.",
+    breakdown: [
+      { tib: "བཞུགས།", pron: "zhug", gloss: "sit / stay (honorific imperative)", pos: "VERB" },
+    ],
+  },
+  {
+    num: "07",
+    tib: "ཡར་ལོངས།",
+    pron: "yar long",
+    en: "Stand up.",
+    breakdown: [
+      { tib: "ཡར་", pron: "yar", gloss: "upward", pos: "ADVERB" },
+      { tib: "ལོངས།", pron: "long", gloss: "rise / stand (imperative)", pos: "VERB" },
+    ],
+  },
 ];
 
 export const CULTURE_NOTES: CultureNote[] = [
