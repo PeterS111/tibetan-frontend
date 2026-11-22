@@ -112,8 +112,8 @@ const TEAM_MEMBERS: TeamMember[] = [
     avatarFallback: "/peter.jpg",
     avatarMode: "cover",
     paragraphs: [
-      "Piotr holds a PhD in Artificial Intelligence from the University of Kent, where he teaches in the School of Computing and specialises in Computational Creativity and Generative AI.",
-      "He works alongside Tenzin and the Tibetan teaching and design team on AI tools, web design, platform architecture, and native mobile applications — building the digital infrastructure behind Loplao.",
+      "Piotr holds a PhD in Artificial Intelligence from the University of Kent, where his research focuses on Computational Creativity, Large Language Models (LLMs), Natural Language Processing, and Generative AI. He also serves as an Assistant Lecturer in the School of Computing, teaching core programming in Python and Java.",
+      "Since 2023, he has worked alongside Tenzin and the Tibetan teaching and design team on AI tools, web design, platform architecture, and native mobile applications — building the digital infrastructure that brings Loplao's lessons and Tibetan language tools to learners worldwide.",
     ],
     sectionLabel: "Technology & Research",
     highlights: [
