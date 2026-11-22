@@ -26,6 +26,7 @@ import {
 import { useState, useEffect } from "react";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useDevBypass } from "@/hooks/useDevBypass";
+import { DevAiTutorBanner } from "@/app/components/DevAiTutorBanner";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
@@ -86,7 +87,7 @@ export default function ProfilePage() {
       setDevCode("");
       setDevFeedback({
         type: "success",
-        msg: "Developer access confirmed. All lessons and sections are now unlocked.",
+        msg: "Developer access confirmed. All lessons, sections, and AI Tutor are now unlocked.",
       });
     } else {
       setDevFeedback({
@@ -120,7 +121,7 @@ export default function ProfilePage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
           <div className="flex items-center gap-2.5 text-emerald-800 text-xs font-bold">
             <Unlock size={16} className="shrink-0" />
-            <span>Developer Bypass Active — All lessons & steps unlocked</span>
+            <span>Developer Bypass Active — All lessons &amp; AI Tutor unlocked</span>
           </div>
           <button
             type="button"
@@ -222,6 +223,9 @@ export default function ProfilePage() {
         )}
       </div>
 
+      {/* Dev-Only AI Tutor Card (only renders when isDevUnlocked === true) */}
+      <DevAiTutorBanner className="mb-6" />
+
       {/* 2. Stats Grid */}
       <div className="grid grid-cols-2 gap-3 mb-8">
         <div className="bg-white rounded-[1.25rem] p-4 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
@@ -302,7 +306,7 @@ export default function ProfilePage() {
 
       {/* 4. Support & About */}
       <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-3 pl-2">
-        About & Help
+        About &amp; Help
       </div>
       <div className={menuGroupClass}>
         <Link href="/about" className={`${menuItemClass} border-b border-border-subtle`}>
@@ -319,7 +323,7 @@ export default function ProfilePage() {
             <div className="w-8 h-8 rounded-full bg-surface-muted text-ink-muted flex items-center justify-center">
               <HelpCircle size={16} />
             </div>
-            <span className="font-medium text-[15px]">Help & Support</span>
+            <span className="font-medium text-[15px]">Help &amp; Support</span>
           </div>
           <ChevronRight size={18} className="text-ink-muted" />
         </Link>

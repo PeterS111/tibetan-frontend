@@ -90,7 +90,15 @@ export function DevBypassProvider({ children }: { children: ReactNode }) {
 
   // Global URL Route Guard when Developer Bypass is OFF
   useEffect(() => {
-    if (isChecking || isDevUnlocked || modules.length === 0 || !pathname) return;
+    if (isChecking || isDevUnlocked || !pathname) return;
+
+    // Strictly block Dev-Only AI Tutor routes for non-dev accounts
+    if (pathname.startsWith("/dashboard/ai-tutor") || pathname === "/dashboard/ai") {
+      router.replace("/dashboard");
+      return;
+    }
+
+    if (modules.length === 0) return;
 
     const lessonMatch = pathname.match(/^\/dashboard\/lessons\/(\d+)/);
     if (lessonMatch) {
