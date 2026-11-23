@@ -70,15 +70,12 @@ interface ReadingEvaluation {
 interface QuotaTierInfo {
   used: number;
   limit: number;
-  global_used?: number;
-  global_limit?: number;
 }
 
 interface QuotaSnapshot {
   date_utc: string;
-  frontier: QuotaTierInfo;
-  fast: QuotaTierInfo;
-  lite: QuotaTierInfo;
+  fast?: QuotaTierInfo;
+  lite?: QuotaTierInfo;
 }
 
 interface HealthStatus {
@@ -104,31 +101,9 @@ const TUTOR_MODES = [
 ];
 
 const GEMINI_MODELS = [
-  { id: "gemini-4-hydrogen", label: "Gemini 4 Hydrogen (Fast Default)" },
-  { id: "gemini-4-argon", label: "Gemini 4 Argon (Frontier · Capped)" },
-  { id: "gemini-4-carbon", label: "Gemini 4 Carbon (Deepest · Capped)" },
-  { id: "gemini-4-neon", label: "Gemini 4 Neon (High Accuracy · Capped)" },
+  { id: "gemini-4-hydrogen", label: "Gemini 4 Hydrogen (Default)" },
   { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
   { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
-];
-
-const FRONTIER_MODEL_IDS = new Set([
-  "gemini-4-neon",
-  "gemini-4-argon",
-  "gemini-4-carbon",
-]);
-
-const STT_PROVIDERS = [
-  { id: "auto", label: "Auto (Monlam → Gemini Fallback)" },
-  { id: "monlam", label: "Monlam STT Only" },
-  { id: "gemini", label: "Gemini 4 Hydrogen Audio" },
-];
-
-const TTS_PROVIDERS = [
-  { id: "auto", label: "Auto (Monlam → Gemini 3.8 TTS)" },
-  { id: "monlam", label: "Monlam TTS Only" },
-  { id: "gemini_flash", label: "Gemini 3.8 Flash TTS" },
-  { id: "gemini_lite", label: "Gemini 3.8 Flash-Lite TTS" },
 ];
 
 const MONLAM_VOICES = [
@@ -190,7 +165,7 @@ const READING_PRESETS = [
 ];
 
 const SESSION_CHAT_KEY = "loplao_dev_ai_tutor_messages_v1";
-const PREFS_KEY = "loplao_dev_ai_tutor_prefs_v3";
+const PREFS_KEY = "loplao_dev_ai_tutor_prefs_v4";
 
 function renderRichFeedback(text: string) {
   const parts = text.split(/([\u0F00-\u0FFF]+)/g);
@@ -222,10 +197,8 @@ export default function AiTutorPage() {
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState("conversation");
   const [selectedModel, setSelectedModel] = useState("gemini-4-hydrogen");
-  const [readingModel, setReadingModel] = useState("gemini-4-argon");
+  const [readingModel, setReadingModel] = useState("gemini-4-hydrogen");
   const [selectedVoice, setSelectedVoice] = useState("lhasa_female");
-  const [sttProvider, setSttProvider] = useState("auto");
-  const [ttsProvider, setTtsProvider] = useState("auto");
 
   // Reading Practice state
   const [readingText, setReadingText] = useState(READING_PRESETS[0].tibetan);
@@ -292,9 +265,9 @@ export default function AiTutorPage() {
         if (p.readingModel && GEMINI_MODELS.some((m) => m.id === p.readingModel)) {
           setReadingModel(p.readingModel);
         }
-        if (p.selectedVoice) setSelectedVoice(p.selectedVoice);
-        if (p.sttProvider) setSttProvider(p.sttProvider);
-        if (p.ttsProvider) setTtsProvider(p.ttsProvider);
+        if (p.selectedVoice && MONLAM_VOICES.some((v) => v.id === p.selectedVoice)) {
+          setSelectedVoice(p.selectedVoice);
+        }
         if (typeof p.autoPlayTts === "boolean") setAutoPlayTts(p.autoPlayTts);
         if (typeof p.autoSendVoice === "boolean") setAutoSendVoice(p.autoSendVoice);
         if (typeof p.showTranslations === "boolean") setShowTranslations(p.showTranslations);
@@ -319,8 +292,6 @@ export default function AiTutorPage() {
           selectedModel,
           readingModel,
           selectedVoice,
-          sttProvider,
-          ttsProvider,
           autoPlayTts,
           autoSendVoice,
           showTranslations,
@@ -332,8 +303,6 @@ export default function AiTutorPage() {
     selectedModel,
     readingModel,
     selectedVoice,
-    sttProvider,
-    ttsProvider,
     autoPlayTts,
     autoSendVoice,
     showTranslations,
@@ -458,7 +427,7 @@ export default function AiTutorPage() {
 
       stopPlayback();
       const myReqId = ++ttsReqIdRef.current;
-      const cacheKey = `${msgId}:${ttsProvider}:${selectedVoice}:${clean}`;
+      const cacheKey = `${msgId}:${selectedVoice}:${clean}`;
       const cachedUrl = ttsCacheRef.current.get(cacheKey);
 
       const playBlobUrl = async (blobUrl: string) => {
@@ -527,7 +496,6 @@ export default function AiTutorPage() {
           body: JSON.stringify({
             text: clean,
             voice_name: selectedVoice,
-            tts_provider: ttsProvider,
           }),
           signal: controller.signal,
         });
@@ -536,21 +504,15 @@ export default function AiTutorPage() {
 
         if (!res.ok) {
           let errMsg =
-            "Voice playback is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally.";
+            "Monlam TTS is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally.";
           try {
             const errJson = await res.json();
             if (errJson?.error) errMsg = errJson.error;
           } catch {}
-          // Non-breaking notice so STT/chat continue smoothly
           setLoadingAudioMsgId(null);
           setPlayingMsgId(null);
           setInfoNotice(errMsg);
           return;
-        }
-
-        const usedProvider = (res.headers.get("x-tts-provider") || "").toLowerCase();
-        if (usedProvider === "gemini_fallback") {
-          setInfoNotice("Monlam TTS was unavailable — playing Gemini 3.8 Flash TTS fallback.");
         }
 
         const ctype = (res.headers.get("content-type") || "").toLowerCase();
@@ -582,12 +544,12 @@ export default function AiTutorPage() {
           const msg =
             err instanceof Error
               ? `${err.message} (Speech-to-Text and Chat still work normally.)`
-              : "Voice playback unavailable — Speech-to-Text and Chat still work normally.";
+              : "Monlam TTS unavailable — Speech-to-Text and Chat still work normally.";
           setInfoNotice(msg);
         }
       }
     },
-    [getToken, playingMsgId, selectedVoice, ttsProvider, stopPlayback]
+    [getToken, playingMsgId, selectedVoice, stopPlayback]
   );
 
   const sendMessage = useCallback(
@@ -717,7 +679,6 @@ export default function AiTutorPage() {
         const formData = new FormData();
         formData.append("audio", blob, `recording.${ext}`);
         formData.append("language", "bo");
-        formData.append("stt_provider", sttProvider);
         if (contextHint) {
           formData.append("context_hint", contextHint);
         }
@@ -731,17 +692,20 @@ export default function AiTutorPage() {
         const data = await res.json();
         if (data?.quota) setQuota(data.quota);
 
+        if (res.status === 429 || data?.code === "quota_exceeded") {
+          setIsTranscribing(false);
+          setQuotaExceededError(true);
+          setErrorBanner(data?.error || "Daily token limit reached for Gemini 4 Hydrogen.");
+          return;
+        }
+
         if (!res.ok) {
           throw new Error(data?.error || "Speech-to-Text failed.");
         }
 
         const transcript = (data?.transcript || "").trim();
-        const usedProvider = data?.provider || "";
+        const usedProvider = data?.provider || "gemini-4-hydrogen";
         setIsTranscribing(false);
-
-        if (usedProvider === "gemini_fallback") {
-          setInfoNotice("Monlam STT returned 503 — automatically transcribed using Gemini 4 Hydrogen audio.");
-        }
 
         if (!transcript) {
           const dbg = data?.debug;
@@ -767,7 +731,7 @@ export default function AiTutorPage() {
         setErrorBanner(msg);
       }
     },
-    [getToken, sttProvider, autoSendVoice, sendMessage]
+    [getToken, autoSendVoice, sendMessage]
   );
 
   const evaluateReadingBlob = useCallback(
@@ -809,7 +773,7 @@ export default function AiTutorPage() {
         if (res.status === 429 || data?.code === "quota_exceeded") {
           setIsEvaluatingReading(false);
           setQuotaExceededError(true);
-          setErrorBanner(data?.error || "Daily token limit reached for Frontier models.");
+          setErrorBanner(data?.error || "Daily token limit reached for this model.");
           return;
         }
 
@@ -993,15 +957,15 @@ export default function AiTutorPage() {
     }
   };
 
-  const handleSwitchToHydrogen = () => {
+  const handleSwitchToLite = () => {
     if (mode === "reading") {
-      setReadingModel("gemini-4-hydrogen");
+      setReadingModel("gemini-3.5-flash-lite");
     } else {
-      setSelectedModel("gemini-4-hydrogen");
+      setSelectedModel("gemini-3.5-flash-lite");
     }
     setErrorBanner(null);
     setQuotaExceededError(false);
-    setInfoNotice("Switched to Gemini 4 Hydrogen (higher daily token budget).");
+    setInfoNotice("Switched to Gemini 3.5 Flash-Lite (higher daily token budget).");
   };
 
   if (isChecking) {
@@ -1019,13 +983,17 @@ export default function AiTutorPage() {
 
   const isReadingMode = mode === "reading";
   const activeHeaderModel = isReadingMode ? readingModel : selectedModel;
-  const isUsingFrontier = FRONTIER_MODEL_IDS.has(activeHeaderModel);
 
-  const frontierPct = quota
-    ? Math.min(100, Math.round((quota.frontier.used / Math.max(1, quota.frontier.limit)) * 100))
-    : 0;
+  const fastUsed = quota?.fast?.used ?? 0;
+  const fastLimit = quota?.fast?.limit ?? 150000;
+  const liteUsed = quota?.lite?.used ?? 0;
+  const liteLimit = quota?.lite?.limit ?? 300000;
+
   const fastPct = quota
-    ? Math.min(100, Math.round((quota.fast.used / Math.max(1, quota.fast.limit)) * 100))
+    ? Math.min(100, Math.round((fastUsed / Math.max(1, fastLimit)) * 100))
+    : 0;
+  const litePct = quota
+    ? Math.min(100, Math.round((liteUsed / Math.max(1, liteLimit)) * 100))
     : 0;
 
   const getScoreColors = (score: number) => {
@@ -1066,7 +1034,7 @@ export default function AiTutorPage() {
               </div>
               <div className="text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-1.5">
                 {health === null ? (
-                  <span>Connecting to Monlam AI &amp; Gemini...</span>
+                  <span>Connecting to Gemini 4 Hydrogen &amp; Monlam TTS...</span>
                 ) : health.ready ? (
                   <>
                     <CheckCircle2 size={12} className="text-emerald-600" />
@@ -1079,20 +1047,17 @@ export default function AiTutorPage() {
                         <ShieldCheck size={11} /> JWKS
                       </span>
                     )}
-                    {quota && isUsingFrontier && (
+                    {quota && fastPct >= 75 && activeHeaderModel !== "gemini-3.5-flash-lite" && (
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          frontierPct >= 100
+                          fastPct >= 100
                             ? "bg-rose-50 text-rose-700 border-rose-200"
-                            : frontierPct >= 75
-                            ? "bg-amber-50 text-amber-800 border-amber-200"
-                            : "bg-surface text-ink-light border-border-subtle"
+                            : "bg-amber-50 text-amber-800 border-amber-200"
                         }`}
-                        title="Daily Frontier (Neon/Argon/Carbon) token cap"
+                        title="Daily Fast model token budget"
                       >
                         <Gauge size={10} />
-                        {quota.frontier.used.toLocaleString()} /{" "}
-                        {quota.frontier.limit.toLocaleString()} tok
+                        {fastUsed.toLocaleString()} / {fastLimit.toLocaleString()} tok
                       </span>
                     )}
                   </>
@@ -1172,7 +1137,7 @@ export default function AiTutorPage() {
         {/* Collapsible Dev Configuration Strip */}
         {showControls && (
           <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm space-y-3 text-xs animate-in fade-in">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
                   Chat Model
@@ -1209,41 +1174,7 @@ export default function AiTutorPage() {
 
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Speech-to-Text Engine
-                </label>
-                <select
-                  value={sttProvider}
-                  onChange={(e) => setSttProvider(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
-                >
-                  {STT_PROVIDERS.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  TTS Voice Engine
-                </label>
-                <select
-                  value={ttsProvider}
-                  onChange={(e) => setTtsProvider(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
-                >
-                  {TTS_PROVIDERS.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Speaker Voice
+                  Monlam Speaker Voice
                 </label>
                 <select
                   value={selectedVoice}
@@ -1282,69 +1213,76 @@ export default function AiTutorPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-subtle">
                 <div>
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">
-                    <span>Frontier (Neon / Argon / Carbon)</span>
-                    <span className={frontierPct >= 85 ? "text-rose-600" : "text-ink"}>
-                      {quota.frontier.used.toLocaleString()} /{" "}
-                      {quota.frontier.limit.toLocaleString()} tok
+                    <span className="inline-flex items-center gap-1">
+                      <Gauge size={11} />
+                      Fast (Hydrogen / 3.8 Flash)
+                    </span>
+                    <span className={fastPct >= 85 ? "text-rose-600" : "text-ink"}>
+                      {fastUsed.toLocaleString()} / {fastLimit.toLocaleString()} tok
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-paper overflow-hidden border border-border-subtle">
                     <div
                       className={`h-full transition-all ${
-                        frontierPct >= 95
+                        fastPct >= 95
                           ? "bg-rose-500"
-                          : frontierPct >= 75
+                          : fastPct >= 75
                           ? "bg-amber-500"
-                          : "bg-emerald-500"
+                          : "bg-ink"
                       }`}
-                      style={{ width: `${frontierPct}%` }}
+                      style={{ width: `${fastPct}%` }}
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">
-                    <span>Fast (Hydrogen / 3.8 Flash)</span>
+                    <span>Lite (3.5 Flash-Lite)</span>
                     <span className="text-ink">
-                      {quota.fast.used.toLocaleString()} / {quota.fast.limit.toLocaleString()} tok
+                      {liteUsed.toLocaleString()} / {liteLimit.toLocaleString()} tok
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-paper overflow-hidden border border-border-subtle">
                     <div
-                      className="h-full bg-ink transition-all"
-                      style={{ width: `${fastPct}%` }}
+                      className="h-full bg-emerald-600 transition-all"
+                      style={{ width: `${litePct}%` }}
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-4 pt-1">
-              <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
-                <input
-                  type="checkbox"
-                  checked={autoPlayTts}
-                  onChange={(e) => setAutoPlayTts(e.target.checked)}
-                  className="accent-ink w-4 h-4 rounded"
-                />
-                Auto-speak chat replies
-              </label>
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+              <div className="flex flex-wrap items-center gap-4">
+                <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
+                  <input
+                    type="checkbox"
+                    checked={autoPlayTts}
+                    onChange={(e) => setAutoPlayTts(e.target.checked)}
+                    className="accent-ink w-4 h-4 rounded"
+                  />
+                  Auto-speak chat replies (Monlam TTS)
+                </label>
 
-              <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
-                <input
-                  type="checkbox"
-                  checked={autoSendVoice}
-                  onChange={(e) => setAutoSendVoice(e.target.checked)}
-                  className="accent-ink w-4 h-4 rounded"
-                />
-                Auto-send after voice transcription
-              </label>
+                <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
+                  <input
+                    type="checkbox"
+                    checked={autoSendVoice}
+                    onChange={(e) => setAutoSendVoice(e.target.checked)}
+                    className="accent-ink w-4 h-4 rounded"
+                  />
+                  Auto-send after voice transcription
+                </label>
+              </div>
+              <span className="text-[10px] font-mono text-ink-muted">
+                STT: gemini-4-hydrogen · TTS: Monlam AI
+              </span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Non-Breaking Info Notice (TTS fallback, STT fallback, TTS outage notice) */}
+      {/* Non-Breaking Info Notice */}
       {infoNotice && (
         <div className="shrink-0 mb-2.5 px-4 py-2 rounded-2xl bg-brand-light border border-brand/30 text-ink text-xs font-medium flex items-center justify-between gap-2">
           <span className="break-words">{infoNotice}</span>
@@ -1358,7 +1296,7 @@ export default function AiTutorPage() {
         </div>
       )}
 
-      {/* Error Banner (with 1-click Hydrogen switch on Frontier quota limit) */}
+      {/* Error Banner */}
       {errorBanner && (
         <div className="shrink-0 mb-2.5 px-4 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -1366,13 +1304,13 @@ export default function AiTutorPage() {
             <span className="break-words">{errorBanner}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {quotaExceededError && (
+            {quotaExceededError && activeHeaderModel !== "gemini-3.5-flash-lite" && (
               <button
                 type="button"
-                onClick={handleSwitchToHydrogen}
+                onClick={handleSwitchToLite}
                 className="px-3 py-1 rounded-full bg-ink text-white text-[11px] font-bold hover:bg-ink-light transition-colors"
               >
-                Switch to Hydrogen
+                Switch to 3.5 Flash-Lite
               </button>
             )}
             <button
@@ -1496,7 +1434,7 @@ export default function AiTutorPage() {
                 )}
                 {playingMsgId === "reading_model_passage"
                   ? "Stop Model Voice"
-                  : "Listen First (Model Voice)"}
+                  : "Listen First (Monlam Voice)"}
               </button>
 
               {isRecording ? (
@@ -1762,9 +1700,9 @@ export default function AiTutorPage() {
                   Practice Speaking &amp; Reading Tibetan
                 </h2>
                 <p className="text-sm text-ink-light max-w-lg mx-auto mb-6">
-                  Tap the microphone to speak in Tibetan (Monlam STT with automatic Gemini 4
-                  Hydrogen audio fallback), or type in Tibetan, phonetic spelling, or English.
-                  Gen-la can discuss everyday life, Dharma, prayers, philosophy, or grammar.
+                  Tap the microphone to speak in Tibetan (transcribed by Gemini 4 Hydrogen), or
+                  type in Tibetan, phonetic spelling, or English. Gen-la replies with Monlam AI
+                  voice and can discuss everyday life, Dharma, prayers, philosophy, or grammar.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-left">
@@ -1807,11 +1745,7 @@ export default function AiTutorPage() {
                       </div>
                       {msg.sttProvider && (
                         <span className="text-[10px] font-mono text-ink-muted/80 pr-1">
-                          {msg.sttProvider === "monlam"
-                            ? "Voice · Monlam STT"
-                            : msg.sttProvider === "gemini_fallback"
-                            ? "Voice · Gemini Audio Fallback"
-                            : "Voice · Gemini Audio"}
+                          Voice · Gemini 4 Hydrogen
                         </span>
                       )}
                     </div>
@@ -1838,7 +1772,7 @@ export default function AiTutorPage() {
                                 ? "bg-brand text-ink"
                                 : "bg-paper border border-border-subtle text-ink hover:border-ink"
                             }`}
-                            title={isPlaying ? "Stop audio" : "Play voice"}
+                            title={isPlaying ? "Stop audio" : "Play Monlam voice"}
                           >
                             {isLoadingAudio ? (
                               <Loader2 size={17} className="animate-spin" />
@@ -1921,7 +1855,7 @@ export default function AiTutorPage() {
                 <Loader2 size={14} className="animate-spin text-brand-dark" />
                 <span>
                   {isTranscribing
-                    ? "Transcribing your voice..."
+                    ? "Transcribing your voice (Gemini 4 Hydrogen)..."
                     : `Gen-la is thinking (${selectedModel})...`}
                 </span>
               </div>
