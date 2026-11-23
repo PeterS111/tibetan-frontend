@@ -18,10 +18,8 @@ import {
   AlertCircle,
   CheckCircle2,
   MessageCircle,
-  ShieldCheck,
   BookOpen,
   Award,
-  Gauge,
 } from "lucide-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -40,10 +38,7 @@ interface ChatMessage {
   english?: string;
   feedback?: string;
   suggestedReplies?: SuggestedReply[];
-  modelUsed?: string;
-  tokensUsed?: number;
-  latencyMs?: number;
-  sttProvider?: string;
+  isVoice?: boolean;
   needsTapToPlay?: boolean;
 }
 
@@ -62,29 +57,10 @@ interface ReadingEvaluation {
   summary_feedback: string;
   word_evaluations: ReadingWordEval[];
   next_focus: string;
-  modelUsed?: string;
-  tokensUsed?: number;
-  latencyMs?: number;
-}
-
-interface QuotaTierInfo {
-  used: number;
-  limit: number;
-}
-
-interface QuotaSnapshot {
-  date_utc: string;
-  fast?: QuotaTierInfo;
-  lite?: QuotaTierInfo;
 }
 
 interface HealthStatus {
   ready: boolean;
-  monlam_configured: boolean;
-  gemini_configured: boolean;
-  jwks_verified?: boolean;
-  default_model: string;
-  quota?: QuotaSnapshot;
 }
 
 interface AudioInputDevice {
@@ -100,13 +76,7 @@ const TUTOR_MODES = [
   { id: "reading", label: "Reading Practice" },
 ];
 
-const GEMINI_MODELS = [
-  { id: "gemini-4-hydrogen", label: "Gemini 4 Hydrogen (Default)" },
-  { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
-  { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
-];
-
-const MONLAM_VOICES = [
+const SPEAKER_VOICES = [
   { id: "lhasa_female", label: "Lhasa Female (Default)" },
   { id: "lhasa_male", label: "Lhasa Male" },
   { id: "dolkar_lhasa_female", label: "Dolkar (Lhasa F)" },
@@ -165,7 +135,7 @@ const READING_PRESETS = [
 ];
 
 const SESSION_CHAT_KEY = "loplao_dev_ai_tutor_messages_v1";
-const PREFS_KEY = "loplao_dev_ai_tutor_prefs_v4";
+const PREFS_KEY = "loplao_ai_tutor_prefs_v5";
 
 function renderRichFeedback(text: string) {
   const parts = text.split(/([\u0F00-\u0FFF]+)/g);
@@ -190,14 +160,10 @@ export default function AiTutorPage() {
   const { isNative } = usePlatform();
 
   const [health, setHealth] = useState<HealthStatus | null>(null);
-  const [quota, setQuota] = useState<QuotaSnapshot | null>(null);
-  const [quotaExceededError, setQuotaExceededError] = useState<boolean>(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState("conversation");
-  const [selectedModel, setSelectedModel] = useState("gemini-4-hydrogen");
-  const [readingModel, setReadingModel] = useState("gemini-4-hydrogen");
   const [selectedVoice, setSelectedVoice] = useState("lhasa_female");
 
   // Reading Practice state
@@ -246,7 +212,7 @@ export default function AiTutorPage() {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Restore saved chat & dev config preferences
+  // Restore saved chat & audio preferences
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -259,13 +225,7 @@ export default function AiTutorPage() {
       if (savedPrefs) {
         const p = JSON.parse(savedPrefs);
         if (p.mode) setMode(p.mode);
-        if (p.selectedModel && GEMINI_MODELS.some((m) => m.id === p.selectedModel)) {
-          setSelectedModel(p.selectedModel);
-        }
-        if (p.readingModel && GEMINI_MODELS.some((m) => m.id === p.readingModel)) {
-          setReadingModel(p.readingModel);
-        }
-        if (p.selectedVoice && MONLAM_VOICES.some((v) => v.id === p.selectedVoice)) {
+        if (p.selectedVoice && SPEAKER_VOICES.some((v) => v.id === p.selectedVoice)) {
           setSelectedVoice(p.selectedVoice);
         }
         if (typeof p.autoPlayTts === "boolean") setAutoPlayTts(p.autoPlayTts);
@@ -289,8 +249,6 @@ export default function AiTutorPage() {
         PREFS_KEY,
         JSON.stringify({
           mode,
-          selectedModel,
-          readingModel,
           selectedVoice,
           autoPlayTts,
           autoSendVoice,
@@ -298,15 +256,7 @@ export default function AiTutorPage() {
         })
       );
     } catch {}
-  }, [
-    mode,
-    selectedModel,
-    readingModel,
-    selectedVoice,
-    autoPlayTts,
-    autoSendVoice,
-    showTranslations,
-  ]);
+  }, [mode, selectedVoice, autoPlayTts, autoSendVoice, showTranslations]);
 
   const refreshMicrophones = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) return;
@@ -404,8 +354,7 @@ export default function AiTutorPage() {
         if (!res.ok) return;
         const data = await res.json();
         if (active) {
-          setHealth(data);
-          if (data?.quota) setQuota(data.quota);
+          setHealth({ ready: Boolean(data?.ready) });
         }
       } catch {}
     };
@@ -504,7 +453,7 @@ export default function AiTutorPage() {
 
         if (!res.ok) {
           let errMsg =
-            "Monlam TTS is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally.";
+            "Voice playback is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally.";
           try {
             const errJson = await res.json();
             if (errJson?.error) errMsg = errJson.error;
@@ -519,7 +468,7 @@ export default function AiTutorPage() {
         let blobUrl: string;
         if (ctype.includes("application/json")) {
           const data = await res.json();
-          if (!data?.audio_base64) throw new Error(data?.error || "Empty audio response.");
+          if (!data?.audio_base64) throw new Error("Empty audio response.");
           const raw = atob(data.audio_base64);
           const bytes = new Uint8Array(raw.length);
           for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
@@ -541,11 +490,9 @@ export default function AiTutorPage() {
         if (myReqId === ttsReqIdRef.current) {
           setLoadingAudioMsgId(null);
           setPlayingMsgId(null);
-          const msg =
-            err instanceof Error
-              ? `${err.message} (Speech-to-Text and Chat still work normally.)`
-              : "Monlam TTS unavailable — Speech-to-Text and Chat still work normally.";
-          setInfoNotice(msg);
+          setInfoNotice(
+            "Voice playback is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally."
+          );
         }
       }
     },
@@ -553,12 +500,11 @@ export default function AiTutorPage() {
   );
 
   const sendMessage = useCallback(
-    async (textOverride?: string, sttProviderTag?: string) => {
+    async (textOverride?: string, fromVoice = false) => {
       const content = (textOverride ?? inputText).trim();
       if (!content || isSending) return;
 
       setErrorBanner(null);
-      setQuotaExceededError(false);
       if (textOverride === undefined) {
         setInputText("");
       }
@@ -572,7 +518,7 @@ export default function AiTutorPage() {
         id: `u_${Date.now()}`,
         role: "user",
         tibetan: content,
-        sttProvider: sttProviderTag,
+        isVoice: fromVoice,
       };
 
       const historyPayload = messagesRef.current.map((m) => ({
@@ -597,7 +543,6 @@ export default function AiTutorPage() {
             message: content,
             history: historyPayload,
             mode: mode === "reading" ? "conversation" : mode,
-            model: selectedModel,
           }),
           signal: controller.signal,
         });
@@ -605,17 +550,17 @@ export default function AiTutorPage() {
         const data = await res.json();
         if (myChatId !== chatReqIdRef.current) return;
 
-        if (data?.quota) setQuota(data.quota);
-
         if (res.status === 429 || data?.code === "quota_exceeded") {
           setIsSending(false);
-          setQuotaExceededError(true);
-          setErrorBanner(data?.error || "Daily token quota reached for this model.");
+          setErrorBanner(
+            data?.error ||
+              "You have reached your daily AI Tutor usage limit. Please try again after 00:00 UTC."
+          );
           return;
         }
 
         if (!res.ok || !data?.reply) {
-          throw new Error(data?.error || "Tutor request failed.");
+          throw new Error(data?.error || "The AI Tutor could not respond right now. Please try again.");
         }
 
         const assistantId = `a_${Date.now()}`;
@@ -630,9 +575,6 @@ export default function AiTutorPage() {
           suggestedReplies: Array.isArray(reply.suggested_replies)
             ? reply.suggested_replies
             : [],
-          modelUsed: data.model_used,
-          tokensUsed: data.tokens_used,
-          latencyMs: data.latency_ms,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
@@ -645,19 +587,18 @@ export default function AiTutorPage() {
         if (err instanceof Error && err.name === "AbortError") return;
         if (myChatId === chatReqIdRef.current) {
           setIsSending(false);
-          const msg = err instanceof Error ? err.message : "Could not reach AI Tutor backend.";
+          const msg = err instanceof Error ? err.message : "Could not reach the AI Tutor.";
           setErrorBanner(msg);
         }
       }
     },
-    [inputText, isSending, getToken, mode, selectedModel, autoPlayTts, speakTibetan]
+    [inputText, isSending, getToken, mode, autoPlayTts, speakTibetan]
   );
 
   const transcribeAudioBlob = useCallback(
     async (blob: Blob, mimeType: string) => {
       setIsTranscribing(true);
       setErrorBanner(null);
-      setQuotaExceededError(false);
 
       try {
         const token = await getToken();
@@ -690,21 +631,21 @@ export default function AiTutorPage() {
         });
 
         const data = await res.json();
-        if (data?.quota) setQuota(data.quota);
 
         if (res.status === 429 || data?.code === "quota_exceeded") {
           setIsTranscribing(false);
-          setQuotaExceededError(true);
-          setErrorBanner(data?.error || "Daily token limit reached for Gemini 4 Hydrogen.");
+          setErrorBanner(
+            data?.error ||
+              "You have reached your daily AI Tutor usage limit. Please try again after 00:00 UTC."
+          );
           return;
         }
 
         if (!res.ok) {
-          throw new Error(data?.error || "Speech-to-Text failed.");
+          throw new Error(data?.error || "Speech transcription failed. Please try again.");
         }
 
         const transcript = (data?.transcript || "").trim();
-        const usedProvider = data?.provider || "gemini-4-hydrogen";
         setIsTranscribing(false);
 
         if (!transcript) {
@@ -712,7 +653,7 @@ export default function AiTutorPage() {
           if (dbg?.reason === "silent_mic") {
             setShowControls(true);
             setErrorBanner(
-              `Microphone recorded silence (RMS=${dbg.rms_level}). Open Dev Config above to pick your active microphone.`
+              "No voice was detected in your recording. Open Audio Settings above to pick your active microphone."
             );
           } else {
             setErrorBanner("No speech detected. Try speaking clearly for 1–3 seconds.");
@@ -721,7 +662,7 @@ export default function AiTutorPage() {
         }
 
         if (autoSendVoice) {
-          await sendMessage(transcript, usedProvider);
+          await sendMessage(transcript, true);
         } else {
           setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         }
@@ -744,7 +685,6 @@ export default function AiTutorPage() {
 
       setIsEvaluatingReading(true);
       setErrorBanner(null);
-      setQuotaExceededError(false);
 
       try {
         const token = await getToken();
@@ -759,7 +699,6 @@ export default function AiTutorPage() {
         const formData = new FormData();
         formData.append("audio", blob, `reading.${ext}`);
         formData.append("target_text", target);
-        formData.append("model", readingModel);
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/evaluate-reading`, {
           method: "POST",
@@ -768,25 +707,21 @@ export default function AiTutorPage() {
         });
 
         const data = await res.json();
-        if (data?.quota) setQuota(data.quota);
 
         if (res.status === 429 || data?.code === "quota_exceeded") {
           setIsEvaluatingReading(false);
-          setQuotaExceededError(true);
-          setErrorBanner(data?.error || "Daily token limit reached for this model.");
+          setErrorBanner(
+            data?.error ||
+              "You have reached your daily AI Tutor usage limit. Please try again after 00:00 UTC."
+          );
           return;
         }
 
         if (!res.ok || !data?.evaluation) {
-          throw new Error(data?.error || "Reading evaluation failed.");
+          throw new Error(data?.error || "Could not evaluate your reading right now. Please try again.");
         }
 
-        setReadingEval({
-          ...data.evaluation,
-          modelUsed: data.model_used,
-          tokensUsed: data.tokens_used,
-          latencyMs: data.latency_ms,
-        });
+        setReadingEval(data.evaluation);
         setIsEvaluatingReading(false);
       } catch (err: unknown) {
         setIsEvaluatingReading(false);
@@ -794,7 +729,7 @@ export default function AiTutorPage() {
         setErrorBanner(msg);
       }
     },
-    [getToken, readingText, readingModel]
+    [getToken, readingText]
   );
 
   const startRecording = async (intent: "chat" | "reading") => {
@@ -805,7 +740,6 @@ export default function AiTutorPage() {
     }
 
     setErrorBanner(null);
-    setQuotaExceededError(false);
     stopPlayback();
     recordIntentRef.current = intent;
 
@@ -914,7 +848,7 @@ export default function AiTutorPage() {
       setErrorBanner(
         errName === "NotAllowedError"
           ? "Microphone permission was denied. Please enable mic access in your browser/app settings."
-          : "Could not start microphone recording. Check Dev Config to select a valid microphone."
+          : "Could not start microphone recording. Open Audio Settings to select a valid microphone."
       );
     }
   };
@@ -934,7 +868,6 @@ export default function AiTutorPage() {
   const handleModeChange = (nextMode: string) => {
     if (isRecording) stopRecording(true);
     setErrorBanner(null);
-    setQuotaExceededError(false);
     setMode(nextMode);
   };
 
@@ -950,22 +883,10 @@ export default function AiTutorPage() {
     setMessages([]);
     setReadingEval(null);
     setErrorBanner(null);
-    setQuotaExceededError(false);
     setInfoNotice(null);
     if (typeof window !== "undefined") {
       sessionStorage.removeItem(SESSION_CHAT_KEY);
     }
-  };
-
-  const handleSwitchToLite = () => {
-    if (mode === "reading") {
-      setReadingModel("gemini-3.5-flash-lite");
-    } else {
-      setSelectedModel("gemini-3.5-flash-lite");
-    }
-    setErrorBanner(null);
-    setQuotaExceededError(false);
-    setInfoNotice("Switched to Gemini 3.5 Flash-Lite (higher daily token budget).");
   };
 
   if (isChecking) {
@@ -982,19 +903,6 @@ export default function AiTutorPage() {
   };
 
   const isReadingMode = mode === "reading";
-  const activeHeaderModel = isReadingMode ? readingModel : selectedModel;
-
-  const fastUsed = quota?.fast?.used ?? 0;
-  const fastLimit = quota?.fast?.limit ?? 150000;
-  const liteUsed = quota?.lite?.used ?? 0;
-  const liteLimit = quota?.lite?.limit ?? 300000;
-
-  const fastPct = quota
-    ? Math.min(100, Math.round((fastUsed / Math.max(1, fastLimit)) * 100))
-    : 0;
-  const litePct = quota
-    ? Math.min(100, Math.round((liteUsed / Math.max(1, liteLimit)) * 100))
-    : 0;
 
   const getScoreColors = (score: number) => {
     if (score >= 85) return "bg-emerald-50 text-emerald-800 border-emerald-200";
@@ -1028,43 +936,19 @@ export default function AiTutorPage() {
                 <h1 className="font-serif text-xl md:text-2xl text-ink leading-none">
                   Tibetan AI Tutor
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-brand-light text-brand-dark border border-brand/30 text-[9px] font-bold uppercase tracking-widest">
-                  Dev Only
-                </span>
               </div>
               <div className="text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-1.5">
                 {health === null ? (
-                  <span>Connecting to Gemini 4 Hydrogen &amp; Monlam TTS...</span>
+                  <span>Connecting to Tibetan AI Tutor...</span>
                 ) : health.ready ? (
                   <>
                     <CheckCircle2 size={12} className="text-emerald-600" />
-                    <span>{activeHeaderModel}</span>
-                    {health.jwks_verified && (
-                      <span
-                        className="inline-flex items-center gap-0.5 text-[10px] text-emerald-700 font-bold"
-                        title="Clerk RS256 JWKS Signature Verified"
-                      >
-                        <ShieldCheck size={11} /> JWKS
-                      </span>
-                    )}
-                    {quota && fastPct >= 75 && activeHeaderModel !== "gemini-3.5-flash-lite" && (
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          fastPct >= 100
-                            ? "bg-rose-50 text-rose-700 border-rose-200"
-                            : "bg-amber-50 text-amber-800 border-amber-200"
-                        }`}
-                        title="Daily Fast model token budget"
-                      >
-                        <Gauge size={10} />
-                        {fastUsed.toLocaleString()} / {fastLimit.toLocaleString()} tok
-                      </span>
-                    )}
+                    <span>Ready · Voice &amp; Text</span>
                   </>
                 ) : (
                   <>
                     <AlertCircle size={12} className="text-amber-600" />
-                    <span>Missing GEMINI_API_KEY on backend</span>
+                    <span>AI Tutor is temporarily unavailable</span>
                   </>
                 )}
               </div>
@@ -1099,7 +983,7 @@ export default function AiTutorPage() {
               }`}
             >
               <SlidersHorizontal size={14} />
-              <span className="hidden sm:inline">Dev Config</span>
+              <span className="hidden sm:inline">Audio Settings</span>
             </button>
 
             {(messages.length > 0 || readingEval) && (
@@ -1134,54 +1018,20 @@ export default function AiTutorPage() {
           ))}
         </div>
 
-        {/* Collapsible Dev Configuration Strip */}
+        {/* Collapsible Audio Settings Strip (Voice & Microphone ONLY) */}
         {showControls && (
           <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm space-y-3 text-xs animate-in fade-in">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Chat Model
-                </label>
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
-                >
-                  {GEMINI_MODELS.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Reading Eval Model
-                </label>
-                <select
-                  value={readingModel}
-                  onChange={(e) => setReadingModel(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
-                >
-                  {GEMINI_MODELS.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Monlam Speaker Voice
+                  Speaker Voice
                 </label>
                 <select
                   value={selectedVoice}
                   onChange={(e) => setSelectedVoice(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
                 >
-                  {MONLAM_VOICES.map((v) => (
+                  {SPEAKER_VOICES.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.label}
                     </option>
@@ -1208,75 +1058,26 @@ export default function AiTutorPage() {
               </div>
             </div>
 
-            {/* Daily Token Quota Meters */}
-            {quota && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-subtle">
-                <div>
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">
-                    <span className="inline-flex items-center gap-1">
-                      <Gauge size={11} />
-                      Fast (Hydrogen / 3.8 Flash)
-                    </span>
-                    <span className={fastPct >= 85 ? "text-rose-600" : "text-ink"}>
-                      {fastUsed.toLocaleString()} / {fastLimit.toLocaleString()} tok
-                    </span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-paper overflow-hidden border border-border-subtle">
-                    <div
-                      className={`h-full transition-all ${
-                        fastPct >= 95
-                          ? "bg-rose-500"
-                          : fastPct >= 75
-                          ? "bg-amber-500"
-                          : "bg-ink"
-                      }`}
-                      style={{ width: `${fastPct}%` }}
-                    />
-                  </div>
-                </div>
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={autoPlayTts}
+                  onChange={(e) => setAutoPlayTts(e.target.checked)}
+                  className="accent-ink w-4 h-4 rounded"
+                />
+                Auto-speak chat replies
+              </label>
 
-                <div>
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-ink-muted mb-1">
-                    <span>Lite (3.5 Flash-Lite)</span>
-                    <span className="text-ink">
-                      {liteUsed.toLocaleString()} / {liteLimit.toLocaleString()} tok
-                    </span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-paper overflow-hidden border border-border-subtle">
-                    <div
-                      className="h-full bg-emerald-600 transition-all"
-                      style={{ width: `${litePct}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-              <div className="flex flex-wrap items-center gap-4">
-                <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
-                  <input
-                    type="checkbox"
-                    checked={autoPlayTts}
-                    onChange={(e) => setAutoPlayTts(e.target.checked)}
-                    className="accent-ink w-4 h-4 rounded"
-                  />
-                  Auto-speak chat replies (Monlam TTS)
-                </label>
-
-                <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
-                  <input
-                    type="checkbox"
-                    checked={autoSendVoice}
-                    onChange={(e) => setAutoSendVoice(e.target.checked)}
-                    className="accent-ink w-4 h-4 rounded"
-                  />
-                  Auto-send after voice transcription
-                </label>
-              </div>
-              <span className="text-[10px] font-mono text-ink-muted">
-                STT: gemini-4-hydrogen · TTS: Monlam AI
-              </span>
+              <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={autoSendVoice}
+                  onChange={(e) => setAutoSendVoice(e.target.checked)}
+                  className="accent-ink w-4 h-4 rounded"
+                />
+                Auto-send after voice transcription
+              </label>
             </div>
           </div>
         )}
@@ -1303,27 +1104,13 @@ export default function AiTutorPage() {
             <AlertCircle size={15} className="shrink-0" />
             <span className="break-words">{errorBanner}</span>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {quotaExceededError && activeHeaderModel !== "gemini-3.5-flash-lite" && (
-              <button
-                type="button"
-                onClick={handleSwitchToLite}
-                className="px-3 py-1 rounded-full bg-ink text-white text-[11px] font-bold hover:bg-ink-light transition-colors"
-              >
-                Switch to 3.5 Flash-Lite
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setErrorBanner(null);
-                setQuotaExceededError(false);
-              }}
-              className="text-rose-600 hover:text-rose-900"
-            >
-              <X size={14} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setErrorBanner(null)}
+            className="text-rose-600 hover:text-rose-900 shrink-0"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
@@ -1333,28 +1120,11 @@ export default function AiTutorPage() {
       {isReadingMode ? (
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 space-y-4 pb-6">
           <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-4 sm:p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <div>
-                <div className="text-eyebrow mb-1">Reading Verification Studio</div>
-                <h2 className="font-serif text-lg sm:text-xl text-ink">
-                  Choose a Passage or Paste Your Own Tibetan Text
-                </h2>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <select
-                  value={readingModel}
-                  onChange={(e) => setReadingModel(e.target.value)}
-                  className="px-3 py-1.5 rounded-full bg-paper border border-border-strong text-xs font-bold text-ink focus:outline-none focus:border-brand"
-                  title="Model used to evaluate your reading audio"
-                >
-                  {GEMINI_MODELS.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      Eval: {m.id}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="mb-3">
+              <div className="text-eyebrow mb-1">Reading Verification Studio</div>
+              <h2 className="font-serif text-lg sm:text-xl text-ink">
+                Choose a Passage or Paste Your Own Tibetan Text
+              </h2>
             </div>
 
             <div className="flex flex-wrap gap-1.5 mb-4">
@@ -1433,8 +1203,8 @@ export default function AiTutorPage() {
                   <Volume2 size={16} />
                 )}
                 {playingMsgId === "reading_model_passage"
-                  ? "Stop Model Voice"
-                  : "Listen First (Monlam Voice)"}
+                  ? "Stop Voice"
+                  : "Listen First"}
               </button>
 
               {isRecording ? (
@@ -1479,7 +1249,7 @@ export default function AiTutorPage() {
                   {isEvaluatingReading ? (
                     <>
                       <Loader2 size={17} className="animate-spin" />
-                      Evaluating with {readingModel}...
+                      Evaluating your reading...
                     </>
                   ) : (
                     <>
@@ -1499,8 +1269,7 @@ export default function AiTutorPage() {
                 Listening closely to your Tibetan pronunciation...
               </p>
               <p className="text-xs text-ink-muted mt-1">
-                Checking silent prefixes, stacked consonants, vowel shifts, and tone register with{" "}
-                <span className="font-mono">{readingModel}</span>
+                Checking silent prefixes, stacked consonants, vowel shifts, and tone register...
               </p>
             </div>
           )}
@@ -1522,18 +1291,11 @@ export default function AiTutorPage() {
                         / 100
                       </span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Award size={16} className="text-brand-dark" />
-                        <h3 className="font-serif text-xl text-ink">
-                          {readingEval.grade_label || "Reading Evaluation"}
-                        </h3>
-                      </div>
-                      <p className="text-[11px] font-mono text-ink-muted mt-1">
-                        {readingEval.modelUsed}
-                        {readingEval.latencyMs ? ` · ${readingEval.latencyMs}ms` : ""}
-                        {readingEval.tokensUsed ? ` · ${readingEval.tokensUsed.toLocaleString()} tok` : ""}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <Award size={16} className="text-brand-dark" />
+                      <h3 className="font-serif text-xl text-ink">
+                        {readingEval.grade_label || "Reading Evaluation"}
+                      </h3>
                     </div>
                   </div>
 
@@ -1649,7 +1411,7 @@ export default function AiTutorPage() {
                               type="button"
                               onClick={() => speakTibetan(wId, w.target, false)}
                               className="w-8 h-8 rounded-full bg-paper border border-border-subtle hover:border-ink flex items-center justify-center text-ink"
-                              title="Hear model pronunciation"
+                              title="Hear pronunciation"
                             >
                               {loadingAudioMsgId === wId ? (
                                 <Loader2 size={13} className="animate-spin" />
@@ -1700,9 +1462,9 @@ export default function AiTutorPage() {
                   Practice Speaking &amp; Reading Tibetan
                 </h2>
                 <p className="text-sm text-ink-light max-w-lg mx-auto mb-6">
-                  Tap the microphone to speak in Tibetan (transcribed by Gemini 4 Hydrogen), or
-                  type in Tibetan, phonetic spelling, or English. Gen-la replies with Monlam AI
-                  voice and can discuss everyday life, Dharma, prayers, philosophy, or grammar.
+                  Tap the microphone to speak in Tibetan, or type in Tibetan, phonetic spelling, or
+                  English. Gen-la replies in spoken Tibetan and can discuss everyday life, Dharma,
+                  prayers, philosophy, or grammar.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-left">
@@ -1743,9 +1505,9 @@ export default function AiTutorPage() {
                           {msg.tibetan}
                         </div>
                       </div>
-                      {msg.sttProvider && (
-                        <span className="text-[10px] font-mono text-ink-muted/80 pr-1">
-                          Voice · Gemini 4 Hydrogen
+                      {msg.isVoice && (
+                        <span className="text-[10px] font-medium text-ink-muted/80 pr-1">
+                          Voice message
                         </span>
                       )}
                     </div>
@@ -1772,7 +1534,7 @@ export default function AiTutorPage() {
                                 ? "bg-brand text-ink"
                                 : "bg-paper border border-border-subtle text-ink hover:border-ink"
                             }`}
-                            title={isPlaying ? "Stop audio" : "Play Monlam voice"}
+                            title={isPlaying ? "Stop audio" : "Play voice"}
                           >
                             {isLoadingAudio ? (
                               <Loader2 size={17} className="animate-spin" />
@@ -1811,14 +1573,6 @@ export default function AiTutorPage() {
                           {renderRichFeedback(msg.feedback)}
                         </div>
                       )}
-
-                      {(msg.modelUsed || msg.latencyMs) && (
-                        <div className="mt-2.5 text-[10px] font-mono text-ink-muted/70">
-                          {msg.modelUsed}
-                          {msg.latencyMs ? ` · ${msg.latencyMs}ms` : ""}
-                          {msg.tokensUsed ? ` · ${msg.tokensUsed.toLocaleString()} tok` : ""}
-                        </div>
-                      )}
                     </div>
 
                     {isLatestAssistant &&
@@ -1855,8 +1609,8 @@ export default function AiTutorPage() {
                 <Loader2 size={14} className="animate-spin text-brand-dark" />
                 <span>
                   {isTranscribing
-                    ? "Transcribing your voice (Gemini 4 Hydrogen)..."
-                    : `Gen-la is thinking (${selectedModel})...`}
+                    ? "Transcribing your voice..."
+                    : "Gen-la is thinking..."}
                 </span>
               </div>
             )}

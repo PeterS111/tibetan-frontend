@@ -36,7 +36,7 @@ export function DevAiTutorBanner({ className }: { className?: string }) {
             </div>
             <p className="text-xs text-ink-muted flex items-center gap-1.5 truncate">
               <Mic size={12} className="text-brand-dark shrink-0" />
-              Voice + Text chat powered by Monlam AI &amp; Gemini 4 Hydrogen
+              Voice + Text Tibetan practice &amp; reading feedback with Gen-la
             </p>
           </div>
         </div>
