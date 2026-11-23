@@ -19,6 +19,8 @@ import {
   CheckCircle2,
   MessageCircle,
   ShieldCheck,
+  BookOpen,
+  Award,
 } from "lucide-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -43,6 +45,25 @@ interface ChatMessage {
   needsTapToPlay?: boolean;
 }
 
+interface ReadingWordEval {
+  target: string;
+  status: "correct" | "needs_work" | "missed" | string;
+  expected_phonetic: string;
+  heard_as: string;
+  tip: string;
+}
+
+interface ReadingEvaluation {
+  overall_score: number;
+  grade_label: string;
+  what_was_heard: string;
+  summary_feedback: string;
+  word_evaluations: ReadingWordEval[];
+  next_focus: string;
+  modelUsed?: string;
+  latencyMs?: number;
+}
+
 interface HealthStatus {
   ready: boolean;
   monlam_configured: boolean;
@@ -61,11 +82,14 @@ const TUTOR_MODES = [
   { id: "beginner_drill", label: "Beginner 1–2 Drill" },
   { id: "grammar", label: "Grammar Coach" },
   { id: "pronunciation", label: "Speaking Practice" },
+  { id: "reading", label: "Reading Practice" },
 ];
 
-// Fast models only
 const GEMINI_MODELS = [
-  { id: "gemini-4-hydrogen", label: "Gemini 4 Hydrogen (Default)" },
+  { id: "gemini-4-hydrogen", label: "Gemini 4 Hydrogen (Fast Default)" },
+  { id: "gemini-4-argon", label: "Gemini 4 Argon (Frontier · Paid)" },
+  { id: "gemini-4-carbon", label: "Gemini 4 Carbon (Deepest · Paid)" },
+  { id: "gemini-4-neon", label: "Gemini 4 Neon (High Accuracy · Paid)" },
   { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
   { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
 ];
@@ -107,8 +131,35 @@ const STARTER_PROMPTS: SuggestedReply[] = [
   },
 ];
 
+const READING_PRESETS = [
+  {
+    id: "classroom",
+    title: "Classroom (Beginner 1–2)",
+    tibetan: "བཀྲ་ཤིས་བདེ་ལེགས། ང་བོད་སྐད་སྦྱོང་གི་ཡོད། དེ་རིང་གཟའ་ཟླ་བ་རེད།",
+    english: "Hello! I am learning Tibetan. Today is Monday.",
+  },
+  {
+    id: "everyday",
+    title: "Everyday Lhasa",
+    tibetan: "ཁྱེད་རང་གང་ནས་ཡིན་པས། ང་དབྱིན་ཡུལ་ནས་ཡིན། ང་བོད་ཇ་མངར་མོ་ལ་དགའ་པོ་ཡོད།",
+    english: "Where are you from? I am from the UK. I like sweet Tibetan tea.",
+  },
+  {
+    id: "refuge",
+    title: "Dharma · Refuge",
+    tibetan: "སངས་རྒྱས་ཆོས་དང་ཚོགས་ཀྱི་མཆོག་རྣམས་ལ། བྱང་ཆུབ་བར་དུ་བདག་ནི་སྐྱབས་སུ་མཆི།",
+    english: "In the Buddha, the Dharma, and the Supreme Assembly, I take refuge until enlightenment.",
+  },
+  {
+    id: "simhamukha",
+    title: "Dharma · Simhamukha",
+    tibetan: "མཁའ་འགྲོ་སེང་གེ་གདོང་མ་ལ་ཕྱག་འཚལ་ལོ། བར་ཆད་ཐམས་ཅད་ཞི་བར་མཛོད།",
+    english: "Homage to Dakini Simhamukha; please pacify all obstacles.",
+  },
+];
+
 const SESSION_CHAT_KEY = "loplao_dev_ai_tutor_messages_v1";
-const PREFS_KEY = "loplao_dev_ai_tutor_prefs_v1";
+const PREFS_KEY = "loplao_dev_ai_tutor_prefs_v2";
 
 function renderRichFeedback(text: string) {
   const parts = text.split(/([\u0F00-\u0FFF]+)/g);
@@ -137,8 +188,14 @@ export default function AiTutorPage() {
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState("conversation");
   const [selectedModel, setSelectedModel] = useState("gemini-4-hydrogen");
+  const [readingModel, setReadingModel] = useState("gemini-4-argon");
   const [selectedVoice, setSelectedVoice] = useState("lhasa_female");
   const [sttProvider, setSttProvider] = useState("auto");
+
+  // Reading Practice state
+  const [readingText, setReadingText] = useState(READING_PRESETS[0].tibetan);
+  const [readingEval, setReadingEval] = useState<ReadingEvaluation | null>(null);
+  const [isEvaluatingReading, setIsEvaluatingReading] = useState(false);
 
   const [audioDevices, setAudioDevices] = useState<AudioInputDevice[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string>("");
@@ -166,6 +223,7 @@ export default function AiTutorPage() {
   const chatReqIdRef = useRef<number>(0);
   const chatAbortRef = useRef<AbortController | null>(null);
   const messagesRef = useRef<ChatMessage[]>([]);
+  const recordIntentRef = useRef<"chat" | "reading">("chat");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -196,6 +254,9 @@ export default function AiTutorPage() {
         if (p.selectedModel && GEMINI_MODELS.some((m) => m.id === p.selectedModel)) {
           setSelectedModel(p.selectedModel);
         }
+        if (p.readingModel && GEMINI_MODELS.some((m) => m.id === p.readingModel)) {
+          setReadingModel(p.readingModel);
+        }
         if (p.selectedVoice) setSelectedVoice(p.selectedVoice);
         if (p.sttProvider) setSttProvider(p.sttProvider);
         if (typeof p.autoPlayTts === "boolean") setAutoPlayTts(p.autoPlayTts);
@@ -220,6 +281,7 @@ export default function AiTutorPage() {
         JSON.stringify({
           mode,
           selectedModel,
+          readingModel,
           selectedVoice,
           sttProvider,
           autoPlayTts,
@@ -228,7 +290,16 @@ export default function AiTutorPage() {
         })
       );
     } catch {}
-  }, [mode, selectedModel, selectedVoice, sttProvider, autoPlayTts, autoSendVoice, showTranslations]);
+  }, [
+    mode,
+    selectedModel,
+    readingModel,
+    selectedVoice,
+    sttProvider,
+    autoPlayTts,
+    autoSendVoice,
+    showTranslations,
+  ]);
 
   const refreshMicrophones = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) return;
@@ -308,8 +379,10 @@ export default function AiTutorPage() {
   }, [refreshMicrophones, stopPlayback, cleanupRecorder, clearTtsCache]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isSending, isTranscribing]);
+    if (mode !== "reading") {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isSending, isTranscribing, mode]);
 
   useEffect(() => {
     if (isChecking || !isDevUnlocked || !user) return;
@@ -346,7 +419,7 @@ export default function AiTutorPage() {
 
       stopPlayback();
       const myReqId = ++ttsReqIdRef.current;
-      const cacheKey = `${msgId}:${selectedVoice}`;
+      const cacheKey = `${msgId}:${selectedVoice}:${clean}`;
       const cachedUrl = ttsCacheRef.current.get(cacheKey);
 
       const playBlobUrl = async (blobUrl: string) => {
@@ -505,7 +578,7 @@ export default function AiTutorPage() {
           body: JSON.stringify({
             message: content,
             history: historyPayload,
-            mode,
+            mode: mode === "reading" ? "conversation" : mode,
             model: selectedModel,
           }),
           signal: controller.signal,
@@ -629,10 +702,69 @@ export default function AiTutorPage() {
     [getToken, sttProvider, autoSendVoice, sendMessage]
   );
 
-  const startRecording = async () => {
-    if (isRecording || isTranscribing || isSending) return;
+  const evaluateReadingBlob = useCallback(
+    async (blob: Blob, mimeType: string) => {
+      const target = readingText.trim();
+      if (!target) {
+        setErrorBanner("Please enter or choose a Tibetan passage to read first.");
+        return;
+      }
+
+      setIsEvaluatingReading(true);
+      setErrorBanner(null);
+      setInfoNotice(null);
+
+      try {
+        const token = await getToken();
+        if (!token) throw new Error("Authentication unavailable.");
+
+        const ext = mimeType.includes("mp4")
+          ? "mp4"
+          : mimeType.includes("ogg")
+          ? "ogg"
+          : "webm";
+
+        const formData = new FormData();
+        formData.append("audio", blob, `reading.${ext}`);
+        formData.append("target_text", target);
+        formData.append("model", readingModel);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/evaluate-reading`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data?.evaluation) {
+          throw new Error(data?.error || "Reading evaluation failed.");
+        }
+
+        setReadingEval({
+          ...data.evaluation,
+          modelUsed: data.model_used,
+          latencyMs: data.latency_ms,
+        });
+        setIsEvaluatingReading(false);
+      } catch (err: unknown) {
+        setIsEvaluatingReading(false);
+        const msg = err instanceof Error ? err.message : "Could not evaluate your reading.";
+        setErrorBanner(msg);
+      }
+    },
+    [getToken, readingText, readingModel]
+  );
+
+  const startRecording = async (intent: "chat" | "reading") => {
+    if (isRecording || isTranscribing || isSending || isEvaluatingReading) return;
+    if (intent === "reading" && !readingText.trim()) {
+      setErrorBanner("Enter or pick a Tibetan passage before recording.");
+      return;
+    }
+
     setErrorBanner(null);
     stopPlayback();
+    recordIntentRef.current = intent;
 
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setErrorBanner("Microphone access is not supported on this device or browser.");
@@ -713,10 +845,15 @@ export default function AiTutorPage() {
       recorder.onstop = () => {
         const wasCancelled = cancelRecordRef.current;
         const chunks = recordedChunksRef.current;
+        const activeIntent = recordIntentRef.current;
         cleanupRecorder();
         if (!wasCancelled && chunks.length > 0) {
           const blob = new Blob(chunks, { type: activeMime });
-          transcribeAudioBlob(blob, activeMime);
+          if (activeIntent === "reading") {
+            evaluateReadingBlob(blob, activeMime);
+          } else {
+            transcribeAudioBlob(blob, activeMime);
+          }
         }
       };
 
@@ -751,6 +888,12 @@ export default function AiTutorPage() {
     }
   };
 
+  const handleModeChange = (nextMode: string) => {
+    if (isRecording) stopRecording(true);
+    setErrorBanner(null);
+    setMode(nextMode);
+  };
+
   const handleResetChat = () => {
     chatReqIdRef.current += 1;
     if (chatAbortRef.current) {
@@ -761,6 +904,7 @@ export default function AiTutorPage() {
     clearTtsCache();
     setIsSending(false);
     setMessages([]);
+    setReadingEval(null);
     setErrorBanner(null);
     setInfoNotice(null);
     if (typeof window !== "undefined") {
@@ -779,6 +923,23 @@ export default function AiTutorPage() {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const isReadingMode = mode === "reading";
+  const activeHeaderModel = isReadingMode ? readingModel : selectedModel;
+
+  const getScoreColors = (score: number) => {
+    if (score >= 85) return "bg-emerald-50 text-emerald-800 border-emerald-200";
+    if (score >= 65) return "bg-amber-50 text-amber-800 border-amber-200";
+    return "bg-rose-50 text-rose-800 border-rose-200";
+  };
+
+  const getWordChipColors = (status: string) => {
+    if (status === "correct")
+      return "bg-emerald-50 text-emerald-900 border-emerald-200 hover:border-emerald-500";
+    if (status === "missed")
+      return "bg-rose-50 text-rose-900 border-rose-200 hover:border-rose-500";
+    return "bg-amber-50 text-amber-900 border-amber-300 hover:border-amber-500";
   };
 
   return (
@@ -809,7 +970,7 @@ export default function AiTutorPage() {
                 ) : health.ready ? (
                   <>
                     <CheckCircle2 size={12} className="text-emerald-600" />
-                    <span>Monlam Voice + {selectedModel}</span>
+                    <span>Monlam Voice + {activeHeaderModel}</span>
                     {health.jwks_verified && (
                       <span
                         className="inline-flex items-center gap-0.5 text-[10px] text-emerald-700 font-bold"
@@ -834,17 +995,19 @@ export default function AiTutorPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setShowTranslations((v) => !v)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-subtle text-xs font-bold text-ink-light hover:border-ink transition-colors"
-              title="Toggle phonetics & English"
-            >
-              {showTranslations ? <Eye size={14} /> : <EyeOff size={14} />}
-              <span className="hidden sm:inline">
-                {showTranslations ? "Gloss On" : "Tibetan Only"}
-              </span>
-            </button>
+            {!isReadingMode && (
+              <button
+                type="button"
+                onClick={() => setShowTranslations((v) => !v)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-subtle text-xs font-bold text-ink-light hover:border-ink transition-colors"
+                title="Toggle phonetics & English"
+              >
+                {showTranslations ? <Eye size={14} /> : <EyeOff size={14} />}
+                <span className="hidden sm:inline">
+                  {showTranslations ? "Gloss On" : "Tibetan Only"}
+                </span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -862,12 +1025,12 @@ export default function AiTutorPage() {
               <span className="hidden sm:inline">Dev Config</span>
             </button>
 
-            {messages.length > 0 && (
+            {(messages.length > 0 || readingEval) && (
               <button
                 type="button"
                 onClick={handleResetChat}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-subtle text-xs font-bold text-ink-light hover:border-ink transition-colors"
-                title="Reset conversation"
+                title="Reset session"
               >
                 <RotateCcw size={14} />
               </button>
@@ -875,19 +1038,20 @@ export default function AiTutorPage() {
           </div>
         </div>
 
-        {/* Scenario Pills */}
+        {/* 5 Mode Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
           {TUTOR_MODES.map((m) => (
             <button
               key={m.id}
               type="button"
-              onClick={() => setMode(m.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
+              onClick={() => handleModeChange(m.id)}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
                 mode === m.id
                   ? "bg-brand text-ink shadow-sm"
                   : "bg-surface border border-border-subtle text-ink-light hover:border-ink"
               }`}
             >
+              {m.id === "reading" && <BookOpen size={13} />}
               {m.label}
             </button>
           ))}
@@ -895,14 +1059,31 @@ export default function AiTutorPage() {
 
         {/* Collapsible Dev Configuration Strip */}
         {showControls && (
-          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs animate-in fade-in">
+          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs animate-in fade-in">
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                Gemini Fast Model
+                Chat Model
               </label>
               <select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
+              >
+                {GEMINI_MODELS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
+                Reading Eval Model
+              </label>
+              <select
+                value={readingModel}
+                onChange={(e) => setReadingModel(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
               >
                 {GEMINI_MODELS.map((m) => (
@@ -965,7 +1146,7 @@ export default function AiTutorPage() {
               </select>
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center gap-4 pt-1">
+            <div className="sm:col-span-2 lg:col-span-5 flex flex-wrap items-center gap-4 pt-1">
               <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
                 <input
                   type="checkbox"
@@ -973,7 +1154,7 @@ export default function AiTutorPage() {
                   onChange={(e) => setAutoPlayTts(e.target.checked)}
                   className="accent-ink w-4 h-4 rounded"
                 />
-                Auto-speak tutor replies (Monlam TTS)
+                Auto-speak chat replies (Monlam TTS)
               </label>
 
               <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
@@ -990,7 +1171,7 @@ export default function AiTutorPage() {
         )}
       </div>
 
-      {/* Info Notice (e.g. automatic Gemini STT fallback when Monlam is 503) */}
+      {/* Info Notice */}
       {infoNotice && (
         <div className="shrink-0 mb-2.5 px-4 py-2 rounded-2xl bg-brand-light border border-brand/30 text-ink text-xs font-medium flex items-center justify-between gap-2">
           <span>{infoNotice}</span>
@@ -1021,262 +1202,633 @@ export default function AiTutorPage() {
         </div>
       )}
 
-      {/* Chat Transcript */}
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 space-y-4 pb-4">
-        {messages.length === 0 ? (
-          <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-6 md:p-8 shadow-sm text-center my-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand-light text-brand-dark flex items-center justify-center mx-auto mb-3">
-              <MessageCircle size={22} />
-            </div>
-            <h2 className="font-serif text-xl md:text-2xl text-ink mb-2">
-              <span className="font-tibetan text-2xl md:text-3xl mr-2">བཀྲ་ཤིས་བདེ་ལེགས།</span>
-              Practice Speaking &amp; Reading Tibetan
-            </h2>
-            <p className="text-sm text-ink-light max-w-lg mx-auto mb-6">
-              Tap the microphone to speak in Tibetan (Monlam STT with automatic Gemini 4
-              Hydrogen audio fallback), or type in Tibetan, phonetic spelling, or English.
-              Gen-la will respond in Lhasa Tibetan and speak it aloud.
-            </p>
+      {/* ======================================================== */}
+      {/* TAB 5: READING PRACTICE STUDIO                           */}
+      {/* ======================================================== */}
+      {isReadingMode ? (
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 space-y-4 pb-6">
+          {/* Preset Passages */}
+          <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-4 sm:p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div>
+                <div className="text-eyebrow mb-1">Reading Verification Studio</div>
+                <h2 className="font-serif text-lg sm:text-xl text-ink">
+                  Choose a Passage or Paste Your Own Tibetan Text
+                </h2>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-left">
-              {STARTER_PROMPTS.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => sendMessage(prompt.tibetan)}
-                  className="p-3.5 rounded-2xl bg-paper/70 border border-border-subtle hover:border-ink transition-all text-left group"
+              <div className="flex items-center gap-2">
+                <select
+                  value={readingModel}
+                  onChange={(e) => setReadingModel(e.target.value)}
+                  className="px-3 py-1.5 rounded-full bg-paper border border-border-strong text-xs font-bold text-ink focus:outline-none focus:border-brand"
+                  title="Model used to evaluate your reading audio"
                 >
-                  <div className="font-tibetan text-xl leading-[1.8] text-ink mb-1">
-                    {prompt.tibetan}
+                  {GEMINI_MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      Eval: {m.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {READING_PRESETS.map((preset) => {
+                const isSelected = readingText.trim() === preset.tibetan.trim();
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setReadingText(preset.tibetan);
+                      setReadingEval(null);
+                      setErrorBanner(null);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                      isSelected
+                        ? "bg-ink text-white"
+                        : "bg-paper border border-border-subtle text-ink-light hover:border-ink"
+                    }`}
+                  >
+                    {preset.title}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Editable Target Tibetan Text */}
+            <div className="relative">
+              <textarea
+                value={readingText}
+                onChange={(e) => {
+                  setReadingText(e.target.value);
+                  if (readingEval) setReadingEval(null);
+                }}
+                rows={3}
+                placeholder="Paste or type any Tibetan Uchen passage you want Gen-la to verify..."
+                className="w-full p-4 sm:p-5 rounded-2xl bg-paper/70 border border-border-strong focus:border-ink focus:outline-none font-tibetan text-[26px] sm:text-[32px] leading-[1.95] text-ink resize-y"
+              />
+              {readingText && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReadingText("");
+                    setReadingEval(null);
+                  }}
+                  className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface border border-border-subtle text-[10px] font-bold uppercase tracking-wider text-ink-muted hover:text-ink"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Matching preset English meaning if using a preset */}
+            {READING_PRESETS.find((p) => p.tibetan.trim() === readingText.trim()) && (
+              <p className="text-xs text-ink-muted mt-2 pl-1">
+                Meaning:{" "}
+                {READING_PRESETS.find((p) => p.tibetan.trim() === readingText.trim())?.english}
+              </p>
+            )}
+
+            {/* Action Bar: Listen First + Record Reading */}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => speakTibetan("reading_model_passage", readingText, false)}
+                disabled={!readingText.trim() || loadingAudioMsgId === "reading_model_passage"}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full border text-xs font-bold transition-colors disabled:opacity-40 ${
+                  playingMsgId === "reading_model_passage"
+                    ? "bg-brand text-ink border-brand"
+                    : "bg-paper border-border-strong text-ink hover:border-ink"
+                }`}
+              >
+                {loadingAudioMsgId === "reading_model_passage" ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : playingMsgId === "reading_model_passage" ? (
+                  <Square size={13} fill="currentColor" />
+                ) : (
+                  <Volume2 size={16} />
+                )}
+                {playingMsgId === "reading_model_passage"
+                  ? "Stop Model Voice"
+                  : "Listen First (Monlam Voice)"}
+              </button>
+
+              {isRecording ? (
+                <div className="flex flex-wrap items-center gap-2.5 bg-rose-50 border-2 border-rose-400 rounded-full px-4 py-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="text-xs font-bold text-ink">
+                    Recording... {formatTimer(recordSeconds)}
+                  </span>
+                  <div className="hidden sm:flex items-center gap-1 h-4">
+                    {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
+                      <span
+                        key={idx}
+                        className={`w-1.5 rounded-full transition-all duration-75 ${
+                          micLevel >= thresh ? "bg-emerald-500 h-4" : "bg-border-subtle h-1.5"
+                        }`}
+                      />
+                    ))}
                   </div>
-                  {showTranslations && (
+                  <button
+                    type="button"
+                    onClick={() => stopRecording(true)}
+                    className="px-2.5 py-1 text-xs font-bold text-ink-muted hover:text-ink"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => stopRecording(false)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700"
+                  >
+                    <Square size={11} fill="currentColor" />
+                    Stop &amp; Evaluate
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => startRecording("reading")}
+                  disabled={!readingText.trim() || isEvaluatingReading}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand text-ink hover:bg-brand-dark disabled:opacity-40 text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
+                >
+                  {isEvaluatingReading ? (
                     <>
-                      <div className="text-[11px] font-medium text-ink-light">
-                        {prompt.phonetic}
-                      </div>
-                      <div className="text-[11px] text-ink-muted mt-0.5">
-                        {prompt.english}
-                      </div>
+                      <Loader2 size={17} className="animate-spin" />
+                      Evaluating with {readingModel}...
+                    </>
+                  ) : (
+                    <>
+                      <Mic size={18} />
+                      Read Aloud &amp; Verify
                     </>
                   )}
                 </button>
-              ))}
+              )}
             </div>
           </div>
-        ) : (
-          messages.map((msg, idx) => {
-            const isLatestAssistant =
-              msg.role === "assistant" && idx === messages.length - 1;
 
-            if (msg.role === "user") {
-              return (
-                <div key={msg.id} className="flex flex-col items-end gap-1">
-                  <div className="max-w-[85%] sm:max-w-[75%] bg-ink text-white rounded-[1.25rem] rounded-br-sm px-4 py-3 shadow-sm">
-                    <div className="font-tibetan text-xl leading-[1.8] text-white">
-                      {msg.tibetan}
+          {/* Reading Evaluation Loading */}
+          {isEvaluatingReading && (
+            <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-6 text-center shadow-sm">
+              <Loader2 size={24} className="animate-spin text-brand-dark mx-auto mb-2" />
+              <p className="text-sm font-bold text-ink">
+                Listening closely to your Tibetan pronunciation...
+              </p>
+              <p className="text-xs text-ink-muted mt-1">
+                Checking silent prefixes, stacked consonants, vowel shifts, and tone register with{" "}
+                <span className="font-mono">{readingModel}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Reading Evaluation Scorecard */}
+          {readingEval && !isEvaluatingReading && (
+            <div className="space-y-4 animate-in fade-in">
+              {/* Top Score & Summary Card */}
+              <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-5 sm:p-6 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border-subtle">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-16 h-16 rounded-2xl border flex flex-col items-center justify-center shrink-0 ${getScoreColors(
+                        readingEval.overall_score
+                      )}`}
+                    >
+                      <span className="font-serif text-2xl font-bold leading-none">
+                        {readingEval.overall_score}
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5">
+                        / 100
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Award size={16} className="text-brand-dark" />
+                        <h3 className="font-serif text-xl text-ink">
+                          {readingEval.grade_label || "Reading Evaluation"}
+                        </h3>
+                      </div>
+                      <p className="text-[11px] font-mono text-ink-muted mt-1">
+                        {readingEval.modelUsed}
+                        {readingEval.latencyMs ? ` · ${readingEval.latencyMs}ms` : ""}
+                      </p>
                     </div>
                   </div>
-                  {msg.sttProvider && (
-                    <span className="text-[10px] font-mono text-ink-muted/80 pr-1">
-                      {msg.sttProvider === "monlam"
-                        ? "Voice · Monlam STT"
-                        : msg.sttProvider === "gemini_fallback"
-                        ? "Voice · Gemini Audio Fallback"
-                        : "Voice · Gemini Audio"}
-                    </span>
+
+                  <button
+                    type="button"
+                    onClick={() => startRecording("reading")}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ink text-white hover:bg-ink-light text-xs font-bold transition-colors"
+                  >
+                    <Mic size={14} /> Try Reading Again
+                  </button>
+                </div>
+
+                {/* Clickable Color-Coded Word Strip */}
+                {readingEval.word_evaluations.length > 0 && (
+                  <div className="py-4 border-b border-border-subtle">
+                    <div className="text-eyebrow mb-2">
+                      Word-by-Word Accuracy (Tap any word to hear native pronunciation)
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {readingEval.word_evaluations.map((w, idx) => {
+                        const wId = `eval_word_${idx}`;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => speakTibetan(wId, w.target, false)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-colors ${getWordChipColors(
+                              w.status
+                            )}`}
+                            title={`${w.expected_phonetic} — ${w.heard_as}`}
+                          >
+                            <span className="font-tibetan text-xl leading-[1.7]">{w.target}</span>
+                            {loadingAudioMsgId === wId ? (
+                              <Loader2 size={12} className="animate-spin opacity-70" />
+                            ) : (
+                              <Volume2 size={12} className="opacity-60" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* What Gen-la Heard + Summary + Next Focus */}
+                <div className="pt-4 space-y-3 text-sm">
+                  {readingEval.what_was_heard && (
+                    <div className="p-3.5 rounded-xl bg-paper border border-border-subtle">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
+                        What Gen-la Heard in Your Audio
+                      </div>
+                      <div className="text-ink leading-relaxed">
+                        {renderRichFeedback(readingEval.what_was_heard)}
+                      </div>
+                    </div>
+                  )}
+
+                  {readingEval.summary_feedback && (
+                    <div className="text-ink-light leading-relaxed">
+                      {renderRichFeedback(readingEval.summary_feedback)}
+                    </div>
+                  )}
+
+                  {readingEval.next_focus && (
+                    <div className="px-4 py-3 rounded-xl bg-brand-light/70 border border-brand/30 text-xs text-ink leading-relaxed">
+                      <span className="font-bold uppercase tracking-wider text-[10px] text-brand-dark mr-1.5">
+                        Next Attempt Focus:
+                      </span>
+                      {renderRichFeedback(readingEval.next_focus)}
+                    </div>
                   )}
                 </div>
-              );
-            }
+              </div>
 
-            const isPlaying = playingMsgId === msg.id;
-            const isLoadingAudio = loadingAudioMsgId === msg.id;
+              {/* Detailed Word-by-Word Coaching Cards */}
+              {readingEval.word_evaluations.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {readingEval.word_evaluations.map((w, idx) => {
+                    const wId = `eval_card_${idx}`;
+                    const statusBadge =
+                      w.status === "correct"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : w.status === "missed"
+                        ? "bg-rose-50 text-rose-700 border-rose-200"
+                        : "bg-amber-50 text-amber-800 border-amber-200";
 
-            return (
-              <div key={msg.id} className="flex flex-col items-start gap-2">
-                <div className="max-w-[95%] sm:max-w-[85%] bg-surface border border-border-subtle rounded-[1.25rem] rounded-bl-sm p-4 sm:p-5 shadow-sm">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="font-tibetan text-[24px] sm:text-[28px] leading-[1.9] pb-1 text-ink">
-                      {msg.tibetan}
-                    </div>
-                    <div className="flex flex-col items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => speakTibetan(msg.id, msg.tibetan, false)}
-                        disabled={isLoadingAudio}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                          isPlaying
-                            ? "bg-brand text-ink"
-                            : "bg-paper border border-border-subtle text-ink hover:border-ink"
-                        }`}
-                        title={isPlaying ? "Stop audio" : "Play Monlam AI voice"}
+                    const statusText =
+                      w.status === "correct"
+                        ? "Correct"
+                        : w.status === "missed"
+                        ? "Missed"
+                        : "Needs Work";
+
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-surface border border-border-subtle rounded-2xl p-4 shadow-sm flex flex-col justify-between gap-2"
                       >
-                        {isLoadingAudio ? (
-                          <Loader2 size={17} className="animate-spin" />
-                        ) : isPlaying ? (
-                          <Square size={15} fill="currentColor" />
-                        ) : (
-                          <Volume2 size={18} />
-                        )}
-                      </button>
-                      {msg.needsTapToPlay && !isPlaying && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-brand-dark">
-                          Tap
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="font-tibetan text-2xl leading-[1.8] text-ink">
+                              {w.target}
+                            </div>
+                            <div className="text-xs font-medium text-ink-light italic">
+                              Expected: {w.expected_phonetic}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-widest ${statusBadge}`}
+                            >
+                              {statusText}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => speakTibetan(wId, w.target, false)}
+                              className="w-8 h-8 rounded-full bg-paper border border-border-subtle hover:border-ink flex items-center justify-center text-ink"
+                              title="Hear model pronunciation"
+                            >
+                              {loadingAudioMsgId === wId ? (
+                                <Loader2 size={13} className="animate-spin" />
+                              ) : playingMsgId === wId ? (
+                                <Square size={11} fill="currentColor" />
+                              ) : (
+                                <Volume2 size={14} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-ink-muted pt-1 border-t border-border-subtle/60 space-y-1">
+                          <div>
+                            <span className="font-bold text-ink">Heard:</span>{" "}
+                            {renderRichFeedback(w.heard_as)}
+                          </div>
+                          {w.tip && (
+                            <div>
+                              <span className="font-bold text-brand-dark">Tip:</span>{" "}
+                              {renderRichFeedback(w.tip)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ======================================================== */
+        /* TABS 1–4: VOICE & TEXT CHAT WORKSPACE                    */
+        /* ======================================================== */
+        <>
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 space-y-4 pb-4">
+            {messages.length === 0 ? (
+              <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-6 md:p-8 shadow-sm text-center my-4">
+                <div className="w-12 h-12 rounded-2xl bg-brand-light text-brand-dark flex items-center justify-center mx-auto mb-3">
+                  <MessageCircle size={22} />
+                </div>
+                <h2 className="font-serif text-xl md:text-2xl text-ink mb-2">
+                  <span className="font-tibetan text-2xl md:text-3xl mr-2">
+                    བཀྲ་ཤིས་བདེ་ལེགས།
+                  </span>
+                  Practice Speaking &amp; Reading Tibetan
+                </h2>
+                <p className="text-sm text-ink-light max-w-lg mx-auto mb-6">
+                  Tap the microphone to speak in Tibetan (Monlam STT with automatic Gemini 4
+                  Hydrogen audio fallback), or type in Tibetan, phonetic spelling, or English.
+                  Gen-la can discuss everyday life, Dharma, prayers, philosophy, or grammar.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-left">
+                  {STARTER_PROMPTS.map((prompt, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => sendMessage(prompt.tibetan)}
+                      className="p-3.5 rounded-2xl bg-paper/70 border border-border-subtle hover:border-ink transition-all text-left group"
+                    >
+                      <div className="font-tibetan text-xl leading-[1.8] text-ink mb-1">
+                        {prompt.tibetan}
+                      </div>
+                      {showTranslations && (
+                        <>
+                          <div className="text-[11px] font-medium text-ink-light">
+                            {prompt.phonetic}
+                          </div>
+                          <div className="text-[11px] text-ink-muted mt-0.5">
+                            {prompt.english}
+                          </div>
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              messages.map((msg, idx) => {
+                const isLatestAssistant =
+                  msg.role === "assistant" && idx === messages.length - 1;
+
+                if (msg.role === "user") {
+                  return (
+                    <div key={msg.id} className="flex flex-col items-end gap-1">
+                      <div className="max-w-[85%] sm:max-w-[75%] bg-ink text-white rounded-[1.25rem] rounded-br-sm px-4 py-3 shadow-sm">
+                        <div className="font-tibetan text-xl leading-[1.8] text-white">
+                          {msg.tibetan}
+                        </div>
+                      </div>
+                      {msg.sttProvider && (
+                        <span className="text-[10px] font-mono text-ink-muted/80 pr-1">
+                          {msg.sttProvider === "monlam"
+                            ? "Voice · Monlam STT"
+                            : msg.sttProvider === "gemini_fallback"
+                            ? "Voice · Gemini Audio Fallback"
+                            : "Voice · Gemini Audio"}
                         </span>
                       )}
                     </div>
+                  );
+                }
+
+                const isPlaying = playingMsgId === msg.id;
+                const isLoadingAudio = loadingAudioMsgId === msg.id;
+
+                return (
+                  <div key={msg.id} className="flex flex-col items-start gap-2">
+                    <div className="max-w-[95%] sm:max-w-[85%] bg-surface border border-border-subtle rounded-[1.25rem] rounded-bl-sm p-4 sm:p-5 shadow-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="font-tibetan text-[24px] sm:text-[28px] leading-[1.9] pb-1 text-ink">
+                          {msg.tibetan}
+                        </div>
+                        <div className="flex flex-col items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => speakTibetan(msg.id, msg.tibetan, false)}
+                            disabled={isLoadingAudio}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                              isPlaying
+                                ? "bg-brand text-ink"
+                                : "bg-paper border border-border-subtle text-ink hover:border-ink"
+                            }`}
+                            title={isPlaying ? "Stop audio" : "Play Monlam AI voice"}
+                          >
+                            {isLoadingAudio ? (
+                              <Loader2 size={17} className="animate-spin" />
+                            ) : isPlaying ? (
+                              <Square size={15} fill="currentColor" />
+                            ) : (
+                              <Volume2 size={18} />
+                            )}
+                          </button>
+                          {msg.needsTapToPlay && !isPlaying && (
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-brand-dark">
+                              Tap
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {showTranslations && (msg.phonetic || msg.english) && (
+                        <div className="mt-2 pt-2.5 border-t border-border-subtle/70 space-y-1">
+                          {msg.phonetic && (
+                            <p className="text-xs sm:text-sm font-medium text-ink-light italic">
+                              {msg.phonetic}
+                            </p>
+                          )}
+                          {msg.english && (
+                            <p className="text-xs sm:text-sm text-ink-muted">{msg.english}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {msg.feedback && (
+                        <div className="mt-3 px-3.5 py-2.5 rounded-xl bg-brand-light/60 border border-brand/25 text-xs text-ink leading-relaxed">
+                          <span className="font-bold uppercase tracking-wider text-[10px] text-brand-dark mr-1.5">
+                            Gen-la Tip:
+                          </span>
+                          {renderRichFeedback(msg.feedback)}
+                        </div>
+                      )}
+
+                      {(msg.modelUsed || msg.latencyMs) && (
+                        <div className="mt-2.5 text-[10px] font-mono text-ink-muted/70">
+                          {msg.modelUsed}
+                          {msg.latencyMs ? ` · ${msg.latencyMs}ms` : ""}
+                        </div>
+                      )}
+                    </div>
+
+                    {isLatestAssistant &&
+                      msg.suggestedReplies &&
+                      msg.suggestedReplies.length > 0 &&
+                      !isSending && (
+                        <div className="flex flex-wrap gap-2 pl-1">
+                          {msg.suggestedReplies.map((sr, sIdx) => (
+                            <button
+                              key={sIdx}
+                              type="button"
+                              onClick={() => sendMessage(sr.tibetan)}
+                              className="px-3.5 py-2 rounded-2xl bg-surface border border-border-subtle hover:border-ink text-left transition-all shadow-sm active:scale-[0.99]"
+                            >
+                              <div className="font-tibetan text-base leading-[1.7] text-ink">
+                                {sr.tibetan}
+                              </div>
+                              {showTranslations && (
+                                <div className="text-[10px] text-ink-muted">
+                                  {sr.phonetic} · {sr.english}
+                                </div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                   </div>
+                );
+              })
+            )}
 
-                  {showTranslations && (msg.phonetic || msg.english) && (
-                    <div className="mt-2 pt-2.5 border-t border-border-subtle/70 space-y-1">
-                      {msg.phonetic && (
-                        <p className="text-xs sm:text-sm font-medium text-ink-light italic">
-                          {msg.phonetic}
-                        </p>
-                      )}
-                      {msg.english && (
-                        <p className="text-xs sm:text-sm text-ink-muted">{msg.english}</p>
-                      )}
-                    </div>
-                  )}
+            {(isTranscribing || isSending) && (
+              <div className="flex items-center gap-2 text-xs font-bold text-ink-muted px-2">
+                <Loader2 size={14} className="animate-spin text-brand-dark" />
+                <span>
+                  {isTranscribing
+                    ? "Transcribing your voice..."
+                    : `Gen-la is thinking (${selectedModel})...`}
+                </span>
+              </div>
+            )}
 
-                  {msg.feedback && (
-                    <div className="mt-3 px-3.5 py-2.5 rounded-xl bg-brand-light/60 border border-brand/25 text-xs text-ink leading-relaxed">
-                      <span className="font-bold uppercase tracking-wider text-[10px] text-brand-dark mr-1.5">
-                        Gen-la Tip:
-                      </span>
-                      {renderRichFeedback(msg.feedback)}
-                    </div>
-                  )}
+            <div ref={chatEndRef} />
+          </div>
 
-                  {(msg.modelUsed || msg.latencyMs) && (
-                    <div className="mt-2.5 text-[10px] font-mono text-ink-muted/70">
-                      {msg.modelUsed}
-                      {msg.latencyMs ? ` · ${msg.latencyMs}ms` : ""}
-                    </div>
-                  )}
+          {/* Bottom Voice + Text Composer */}
+          <div className="shrink-0 pt-2">
+            {isRecording ? (
+              <div className="bg-surface border-2 border-rose-400 rounded-full px-4 py-2.5 flex items-center justify-between gap-3 shadow-md">
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                  <span className="text-sm font-bold text-ink">
+                    Listening... {formatTimer(recordSeconds)}
+                  </span>
+
+                  <div className="hidden sm:flex items-center gap-1 h-5">
+                    {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
+                      <span
+                        key={idx}
+                        className={`w-1.5 rounded-full transition-all duration-75 ${
+                          micLevel >= thresh ? "bg-emerald-500 h-4" : "bg-border-subtle h-1.5"
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                {isLatestAssistant &&
-                  msg.suggestedReplies &&
-                  msg.suggestedReplies.length > 0 &&
-                  !isSending && (
-                    <div className="flex flex-wrap gap-2 pl-1">
-                      {msg.suggestedReplies.map((sr, sIdx) => (
-                        <button
-                          key={sIdx}
-                          type="button"
-                          onClick={() => sendMessage(sr.tibetan)}
-                          className="px-3.5 py-2 rounded-2xl bg-surface border border-border-subtle hover:border-ink text-left transition-all shadow-sm active:scale-[0.99]"
-                        >
-                          <div className="font-tibetan text-base leading-[1.7] text-ink">
-                            {sr.tibetan}
-                          </div>
-                          {showTranslations && (
-                            <div className="text-[10px] text-ink-muted">
-                              {sr.phonetic} · {sr.english}
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => stopRecording(true)}
+                    className="px-3 py-1.5 rounded-full text-xs font-bold text-ink-muted hover:text-ink"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => stopRecording(false)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors"
+                  >
+                    <Square size={12} fill="currentColor" />
+                    Stop &amp; Transcribe
+                  </button>
+                </div>
               </div>
-            );
-          })
-        )}
-
-        {(isTranscribing || isSending) && (
-          <div className="flex items-center gap-2 text-xs font-bold text-ink-muted px-2">
-            <Loader2 size={14} className="animate-spin text-brand-dark" />
-            <span>
-              {isTranscribing
-                ? "Transcribing your voice..."
-                : `Gen-la is thinking (${selectedModel})...`}
-            </span>
-          </div>
-        )}
-
-        <div ref={chatEndRef} />
-      </div>
-
-      {/* Bottom Voice + Text Composer */}
-      <div className="shrink-0 pt-2">
-        {isRecording ? (
-          <div className="bg-surface border-2 border-rose-400 rounded-full px-4 py-2.5 flex items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse shrink-0" />
-              <span className="text-sm font-bold text-ink">
-                Listening... {formatTimer(recordSeconds)}
-              </span>
-
-              <div className="hidden sm:flex items-center gap-1 h-5">
-                {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
-                  <span
-                    key={idx}
-                    className={`w-1.5 rounded-full transition-all duration-75 ${
-                      micLevel >= thresh ? "bg-emerald-500 h-4" : "bg-border-subtle h-1.5"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => stopRecording(true)}
-                className="px-3 py-1.5 rounded-full text-xs font-bold text-ink-muted hover:text-ink"
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendMessage();
+                }}
+                className="bg-surface border border-border-strong rounded-full p-1.5 flex items-center gap-2 shadow-sm focus-within:border-ink transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => stopRecording(false)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors"
-              >
-                <Square size={12} fill="currentColor" />
-                Stop &amp; Transcribe
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => startRecording("chat")}
+                  disabled={isTranscribing || isSending}
+                  className="w-11 h-11 rounded-full bg-brand text-ink hover:bg-brand-dark disabled:opacity-50 flex items-center justify-center shrink-0 transition-transform active:scale-95"
+                  title="Speak in Tibetan"
+                >
+                  <Mic size={20} />
+                </button>
+
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="Type Tibetan, phonetic, or English..."
+                  className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm md:text-base text-ink placeholder:text-ink-muted focus:outline-none font-sans"
+                />
+
+                <button
+                  type="submit"
+                  disabled={!inputText.trim() || isSending || isTranscribing}
+                  className="w-11 h-11 rounded-full bg-ink text-white hover:bg-ink-light disabled:opacity-40 flex items-center justify-center shrink-0 transition-transform active:scale-95"
+                  title="Send message"
+                >
+                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
+              </form>
+            )}
           </div>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              sendMessage();
-            }}
-            className="bg-surface border border-border-strong rounded-full p-1.5 flex items-center gap-2 shadow-sm focus-within:border-ink transition-colors"
-          >
-            <button
-              type="button"
-              onClick={startRecording}
-              disabled={isTranscribing || isSending}
-              className="w-11 h-11 rounded-full bg-brand text-ink hover:bg-brand-dark disabled:opacity-50 flex items-center justify-center shrink-0 transition-transform active:scale-95"
-              title="Speak in Tibetan"
-            >
-              <Mic size={20} />
-            </button>
-
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type Tibetan, phonetic, or English..."
-              className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm md:text-base text-ink placeholder:text-ink-muted focus:outline-none font-sans"
-            />
-
-            <button
-              type="submit"
-              disabled={!inputText.trim() || isSending || isTranscribing}
-              className="w-11 h-11 rounded-full bg-ink text-white hover:bg-ink-light disabled:opacity-40 flex items-center justify-center shrink-0 transition-transform active:scale-95"
-              title="Send message"
-            >
-              {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-            </button>
-          </form>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
