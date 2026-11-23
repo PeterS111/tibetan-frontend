@@ -108,7 +108,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     name: "Piotr Sawicki, PhD",
     role: "AI Specialist & Platform Architect",
     initial: "P",
-    avatar: "/piotr_avatar.png?v=2",
+    avatar: "/piotr_avatar.png?v=3",
     avatarFallback: "/peter.jpg",
     avatarMode: "cover",
     paragraphs: [
