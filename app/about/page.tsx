@@ -150,20 +150,32 @@ const TEAM_MEMBERS: TeamMember[] = [
     name: "Kunga Jampa",
     role: "Social Media Manager & Teacher",
     initial: "K",
+    avatar: "/kunga_avatar.png?v=1",
+    avatarFallback: "/Kunga.jpeg",
+    avatarMode: "cover",
     paragraphs: [
-      "Kunga specialises in classical Tibetan literature and Buddhist philosophy. With a background in monastic education, he brings unparalleled depth to our intermediate and advanced courses.",
-      "Alongside teaching, he manages Loplao's educational posts and daily language outreach across Instagram and Facebook.",
+      "Kunga Jampa holds two bachelor’s degrees: one in Tibetan Studies from Sarah College and another in Sociology from Delhi University. He also holds a teacher training qualification.",
+      "He taught Tibetan at Esukhia and worked in the Manuscripts Section of the Library of Tibetan Works and Archives (LTWA) and the Department of Religion and Culture of the Central Tibetan Administration from 2014 to 2022.",
+      "He has attended international academic conferences, including IATS in Paris (2019) and Prague (2022).",
+      "He has been part of the Loplao team since 2023, sharing his knowledge of the Tibetan language through teaching and managing Loplao’s social media.",
     ],
-    sectionLabel: "Teaching & Community",
+    sectionLabel: "Teaching & Heritage",
     highlights: [
-      { motif: "/motif_pecha.png", text: "Classical Tibetan literature" },
+      {
+        motif: "/motif_pecha.png",
+        text: "Sarah College & Delhi University",
+      },
       {
         motif: "/motif_stupa.png",
-        text: "Buddhist philosophy & monastic study",
+        text: "LTWA Manuscripts & CTA (2014–2022)",
+      },
+      {
+        motif: "/motif_butter_lamp.png",
+        text: "Taught Tibetan at Esukhia · IATS Conferences",
       },
       {
         motif: "/motif_prayer_flags.png",
-        text: "Social media & global community",
+        text: "Loplao Teaching & Social Media (since 2023)",
       },
     ],
   },
