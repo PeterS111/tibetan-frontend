@@ -4,7 +4,6 @@
 import { SpellingFormula, TibetanPart } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useAuth } from "@clerk/clerk-react";
 import { Loader2, Volume2, ArrowRight, BookOpen, Info, Sparkles } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -22,11 +21,9 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 
 export function MobileLesson6() {
   const router = useRouter();
-  const { user } = useUser();
-  const { getToken } = useAuth();
   
   const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
-  const { markComplete, completed } = useLessonProgress(8);
+  const { markComplete } = useLessonProgress(8);
 
   const totalSteps = 14; 
   const MODULE_ID = 6;
@@ -51,8 +48,7 @@ export function MobileLesson6() {
   const handleNext = () => {
     stopAudio();
     const currentWebStep = webStepMap[currentStep];
-    markComplete(currentWebStep); 
-    if (currentStep === 11 && !completed.has(currentWebStep)) saveWords(VOCAB.length);
+    markComplete(currentWebStep, currentStep === 11);
     if (currentStep < totalSteps - 1) {
       const next = currentStep + 1;
       setCurrentStep(next);
@@ -89,22 +85,6 @@ export function MobileLesson6() {
   const closeSuffixInspector = () => {
     stopAudio();
     setSelectedSuffix(null);
-  };
-
-  const saveWords = async (wordCount: number) => {
-    if (user) {
-      try {
-        const token = await getToken();
-        if (token) {
-          const formData = new FormData();
-          formData.append("user_id", user.id);
-          formData.append("new_words", wordCount.toString());
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
-            method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData
-          });
-        }
-      } catch (e) { console.error("Failed to save words", e); }
-    }
   };
 
   const practiceGroups = useMemo(() => [

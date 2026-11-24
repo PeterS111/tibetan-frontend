@@ -4,7 +4,6 @@
 import { SpellingFormula, TibetanPart } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useAuth } from "@clerk/clerk-react";
 import { Loader2, Volume2, ArrowUp, Info, Anchor } from "lucide-react";
 
 import { useAudio } from "@/hooks/useAudio";
@@ -17,11 +16,9 @@ import PracticeSuite from "@/app/components/practice/PracticeSuite";
 
 export function MobileLesson4() {
   const router = useRouter();
-  const { user } = useUser();
-  const { getToken } = useAuth();
   
   const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
-  const { markComplete, completed } = useLessonProgress(6);
+  const { markComplete } = useLessonProgress(6);
 
   const totalSteps = 17; 
   const MODULE_ID = 4;
@@ -47,12 +44,7 @@ export function MobileLesson4() {
   const handleNext = () => {
     stopAudio();
     const currentWebStep = webStepMap[currentStep];
-    markComplete(currentWebStep); 
-    
-    // Save new vocabulary words to the user's global progress ONLY on Step 14 (Vocab Mastery)
-    if (currentStep === 14 && !completed.has(currentWebStep)) {
-      saveWords(VOCAB.length);
-    }
+    markComplete(currentWebStep, currentStep === 14);
 
     if (currentStep < totalSteps - 1) {
       const next = currentStep + 1;
@@ -85,22 +77,6 @@ export function MobileLesson4() {
   const handleClose = () => {
     stopAudio();
     router.push("/dashboard/lessons");
-  };
-
-  const saveWords = async (wordCount: number) => {
-    if (user) {
-      try {
-        const token = await getToken();
-        if (token) {
-          const formData = new FormData();
-          formData.append("user_id", user.id);
-          formData.append("new_words", wordCount.toString());
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
-            method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData
-          });
-        }
-      } catch (e) { console.error("Failed to save words", e); }
-    }
   };
 
   const practiceGroups = useMemo(() => [

@@ -3,7 +3,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, ArrowDown, 
   Info, Volume2, Loader2, CheckCircle2, Sparkles, Layers
@@ -94,36 +93,12 @@ const WEB_STEPS = [
 ];
 
 export function WebLesson2() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
 
   const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
   const { isNative } = usePlatform();
 
   const [selected, setSelected] = useState<{ v: Vowel, rect: DOMRect } | null>(null);
-
-  const saveWords = async (wordCount: number, stepIndex: number) => {
-    if (!completed.has(stepIndex) && user) {
-      try {
-        const token = await getToken();
-        if (token) {
-          const formData = new FormData();
-          formData.append("user_id", user.id);
-          formData.append("new_words", wordCount.toString());
-
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          });
-        }
-      } catch (e) {
-        console.error("Failed to save words", e);
-      }
-    }
-    markComplete(stepIndex);
-  };
 
   const practiceGroups = useMemo(() => [
     {
@@ -510,7 +485,7 @@ export function WebLesson2() {
                 playErrorBeep={playErrorBeep} 
                 questionCount={16} 
                 isVocabMatch={true}
-                onPass={() => saveWords(VOCAB.length, 4)} 
+                onPass={() => markComplete(4)} 
               />
             </div>
           </StepContainer>

@@ -3,7 +3,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
   Loader2, Volume2, ArrowRight 
 } from "lucide-react";
@@ -36,13 +35,11 @@ const VOWEL_STYLE_META: Record<VowelKey, { label: string; swatch: string; text: 
 
 export function MobileLesson2() {
   const router = useRouter();
-  const { user } = useUser();
-  const { getToken } = useAuth();
   
   const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   
   const totalSteps = 10; 
-  const { markComplete, completed } = useLessonProgress(8);
+  const { markComplete } = useLessonProgress(8);
   const MODULE_ID = 2;
 
   // Initialize from saved step so "Resume lesson" opens at the exact point
@@ -71,38 +68,12 @@ export function MobileLesson2() {
   }, [currentStep, hasSeenInstructions]);
 
   // Sync mobile isolated steps to the 8 underlying Web Steps
-  const webStepMap = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7]; 
-
-  const saveWords = async (wordCount: number) => {
-    if (user) {
-      try {
-        const token = await getToken();
-        if (token) {
-          const formData = new FormData();
-          formData.append("user_id", user.id);
-          formData.append("new_words", wordCount.toString());
-
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          });
-        }
-      } catch (e) {
-        console.error("Failed to save words", e);
-      }
-    }
-  };
+  const webStepMap = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7];
 
   const handleNext = () => {
     stopAudio();
     const currentWebStep = webStepMap[currentStep];
-    markComplete(currentWebStep); 
-    
-    // Save words on the Vocabulary quiz step (Step 7)
-    if (currentStep === 7 && !completed.has(currentWebStep)) {
-      saveWords(VOCAB.length);
-    }
+    markComplete(currentWebStep, currentStep === 7);
 
     if (currentStep < totalSteps - 1) {
       const next = currentStep + 1;

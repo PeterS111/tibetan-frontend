@@ -93,7 +93,7 @@ export function MobileLesson9() {
 
   const handleNext = () => {
     stopAudio();
-    markComplete(webStepMap[currentStep]);
+    markComplete(webStepMap[currentStep], currentStep === 2);
     if (currentStep < totalSteps - 1) {
       const next = currentStep + 1;
       setCurrentStep(next);

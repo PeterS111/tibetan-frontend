@@ -4,7 +4,6 @@
 import { SpellingFormula } from "@/app/components/ui/SpellingFormula";
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useUser, useAuth } from "@clerk/clerk-react";
 import { 
   ChevronRight, ChevronLeft, ArrowRight, ArrowUp, 
   Info, Volume2, Loader2, CheckCircle2, Layers, VolumeX, Sparkles 
@@ -89,29 +88,10 @@ function renderTibetanText(text: string) {
 }
 
 export function WebLesson3() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
   const { playAudio, stopAudio, playErrorBeep, playingItem } = useAudio();
   const { expandedStep, completed, progressPercent, toggleStep, markComplete, statusOf } = useLessonProgress(WEB_STEPS.length);
 
   const [activeTab, setActiveTab] = useState<SuperKey>("ra");
-
-  const saveWords = async (wordCount: number, stepIndex: number) => {
-    if (!completed.has(stepIndex) && user) {
-      try {
-        const token = await getToken();
-        if (token) {
-          const formData = new FormData();
-          formData.append("user_id", user.id);
-          formData.append("new_words", wordCount.toString());
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/update-words`, {
-            method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData
-          });
-        }
-      } catch (e) { console.error("Failed to save words", e); }
-    }
-    markComplete(stepIndex);
-  };
 
   const practiceGroups = useMemo(() => [
     { name: "Stacks", items: SUPERS.flatMap(s => s.combos.map(c => ({ id: `c-${c.stack}`, tibetan: c.stack, reading: `[${c.read}]`, english: s.name, audioTarget: c.stack }))) },
@@ -372,7 +352,7 @@ export function WebLesson3() {
                 playErrorBeep={playErrorBeep} 
                 questionCount={16} 
                 isVocabMatch={true} 
-                onPass={() => saveWords(VOCAB.length, 3)} 
+                onPass={() => markComplete(3)} 
               />
             </div>
           </StepContainer>

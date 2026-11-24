@@ -13,7 +13,6 @@ import {
   ChevronRight,
   ChevronDown,
   User as UserIcon,
-  Flame,
   BookOpen,
   Info,
   KeyRound,
@@ -27,6 +26,8 @@ import { useState, useEffect } from "react";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useDevBypass } from "@/hooks/useDevBypass";
 import { DevAiTutorBanner } from "@/app/components/DevAiTutorBanner";
+import { mergeWithFallbackModules } from "@/app/data/syllabus";
+import { syncLearnedWordsIfNeeded } from "@/app/data/vocabCatalog";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
@@ -35,7 +36,7 @@ export default function ProfilePage() {
   const { isNative } = usePlatform();
   const { isDevUnlocked, unlockDevBypass, lockDevBypass } = useDevBypass();
 
-  const [profileData, setProfileData] = useState({ streak: 0, wordsKnown: 0 });
+  const [wordsKnown, setWordsKnown] = useState(0);
   const [devCode, setDevCode] = useState("");
   const [showDevCode, setShowDevCode] = useState(false);
   const [isSubmittingDev, setIsSubmittingDev] = useState(false);
@@ -57,11 +58,22 @@ export default function ProfilePage() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const data = await res.json();
-          if (isMounted && data.profile) {
-            setProfileData({
-              streak: data.profile.streak || 0,
-              wordsKnown: data.profile.words_known || 0,
-            });
+          if (isMounted) {
+            const initialWords = Number(data?.profile?.words_known) || 0;
+            setWordsKnown(initialWords);
+
+            if (Array.isArray(data?.modules)) {
+              const synced = await syncLearnedWordsIfNeeded({
+                userId: user.id,
+                modules: mergeWithFallbackModules(data.modules),
+                learnedWordModules: data?.learned_word_modules,
+                currentWordsKnown: initialWords,
+                token,
+              });
+              if (isMounted && synced !== initialWords) {
+                setWordsKnown(synced);
+              }
+            }
           }
         } catch {
           console.error("Failed to fetch profile stats");
@@ -226,26 +238,23 @@ export default function ProfilePage() {
       {/* Dev-Only AI Tutor Card (only renders when isDevUnlocked === true) */}
       <DevAiTutorBanner className="mb-6" />
 
-      {/* 2. Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        <div className="bg-white rounded-[1.25rem] p-4 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
-          <div className="flex items-center gap-2 text-brand-dark mb-1">
-            <Flame size={18} fill="currentColor" />
-            <span className="font-serif text-2xl text-ink">{profileData.streak}</span>
+      {/* 2. Words Known Highlight Card */}
+      <div className="mb-8">
+        <div className="bg-white rounded-[1.5rem] p-5 flex items-center justify-between shadow-sm border border-border-subtle">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-sky-50 border border-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+              <BookOpen size={20} />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                Words Known
+              </div>
+              <div className="text-xs text-ink-light mt-0.5">
+                Unique Tibetan vocabulary mastered
+              </div>
+            </div>
           </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
-            Day Streak
-          </div>
-        </div>
-
-        <div className="bg-white rounded-[1.25rem] p-4 flex flex-col items-center justify-center text-center shadow-sm border border-border-subtle">
-          <div className="flex items-center gap-2 text-sky-600 mb-1">
-            <BookOpen size={18} />
-            <span className="font-serif text-2xl text-ink">{profileData.wordsKnown}</span>
-          </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
-            Words Known
-          </div>
+          <div className="font-serif text-3xl text-ink pr-1">{wordsKnown}</div>
         </div>
       </div>
 

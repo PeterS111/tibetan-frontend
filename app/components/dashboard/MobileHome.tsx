@@ -2,11 +2,11 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Flame } from "lucide-react";
+import { Play } from "lucide-react";
 
 interface MobileHomeProps {
   nextModule: any;
-  profile: any;
+  profile?: any;
   wordsKnown: number;
   courseProgressPercent: number;
   activeStep: number;
@@ -15,13 +15,11 @@ interface MobileHomeProps {
 
 export function MobileHome({
   nextModule,
-  profile,
   wordsKnown,
   courseProgressPercent,
   activeStep,
   isBrandNew,
 }: MobileHomeProps) {
-  const streak = profile?.streak || 0;
   const isB2 = Number(nextModule?.module_id) >= 8;
   const courseName = isB2 ? "Beginner 2" : "Beginner 1";
   const currentStepNumber = Math.min(activeStep + 1, nextModule.lesson_count || 1);
@@ -29,16 +27,11 @@ export function MobileHome({
 
   return (
     <div className="px-5 pt-12 animate-in fade-in">
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <div className="font-tibetan text-2xl text-brand-dark mb-2 tracking-wider opacity-90">བཀྲ་ཤིས་བདེ་ལེགས།</div>
-          <h1 className="font-serif text-[32px] text-ink leading-tight">
-            Tashi Delek,<br />welcome {isBrandNew ? "to Loplao" : "back"}
-          </h1>
-        </div>
-        <div className="flex items-center gap-1.5 bg-brand-light text-brand-dark px-3.5 py-1.5 rounded-full font-bold text-sm shadow-sm border border-brand/20">
-          <Flame size={16} fill="currentColor" /> {streak}
-        </div>
+      <div className="mb-8">
+        <div className="font-tibetan text-2xl text-brand-dark mb-2 tracking-wider opacity-90">བཀྲ་ཤིས་བདེ་ལེགས།</div>
+        <h1 className="font-serif text-[32px] text-ink leading-tight">
+          Tashi Delek,<br />welcome {isBrandNew ? "to Loplao" : "back"}
+        </h1>
       </div>
 
       <div className="bg-brand rounded-[1.5rem] p-6 shadow-md mb-6 relative overflow-hidden">

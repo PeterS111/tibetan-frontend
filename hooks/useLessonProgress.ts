@@ -2,6 +2,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
+import {
+  WEB_VOCAB_STEP_INDEX,
+  recordLessonVocabulary,
+} from "@/app/data/vocabCatalog";
 
 export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) {
   const { isDevUnlocked } = useDevBypass();
@@ -100,7 +104,7 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
   );
 
   const markComplete = useCallback(
-    async (index: number) => {
+    async (index: number, recordVocabOverride?: boolean) => {
       let updatedCount = 0;
       setCompleted((prev) => {
         const next = new Set(prev);
@@ -126,6 +130,11 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
         }
       }
 
+      const shouldRecordVocab =
+        recordVocabOverride !== undefined
+          ? recordVocabOverride
+          : WEB_VOCAB_STEP_INDEX[lessonId] === index;
+
       try {
         const token = await safeGetToken();
         if (token) {
@@ -138,6 +147,10 @@ export function useLessonProgress(totalSteps: number, bypassAmount: number = 0) 
             headers: { Authorization: `Bearer ${token}` },
             body: formData,
           });
+
+          if (shouldRecordVocab) {
+            recordLessonVocabulary(lessonId, token).catch(() => {});
+          }
         }
       } catch (e) {
         console.warn("Failed to save progress to server, but local progress is saved.", e);
