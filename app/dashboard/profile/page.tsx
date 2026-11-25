@@ -21,6 +21,7 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  Receipt,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -34,7 +35,7 @@ export default function ProfilePage() {
   const { signOut, openUserProfile } = useClerk();
   const { getToken } = useAuth();
   const { isNative } = usePlatform();
-  const { isDevUnlocked, unlockDevBypass, lockDevBypass } = useDevBypass();
+  const { isDevUnlocked, isPaymentsOwner, unlockDevBypass, lockDevBypass } = useDevBypass();
 
   const [wordsKnown, setWordsKnown] = useState(0);
   const [devCode, setDevCode] = useState("");
@@ -236,7 +237,38 @@ export default function ProfilePage() {
       </div>
 
       {/* Dev-Only AI Tutor Card (only renders when isDevUnlocked === true) */}
-      <DevAiTutorBanner className="mb-6" />
+      <DevAiTutorBanner className="mb-4" />
+
+      {isPaymentsOwner && (
+        <Link
+          href="/dashboard/payments"
+          className="block bg-surface border border-brand/50 rounded-[1.5rem] p-4 sm:p-5 shadow-sm hover:border-ink hover:shadow-md transition-all active:scale-[0.99] group relative overflow-hidden mb-6"
+        >
+          <div className="flex items-center justify-between gap-4 relative z-10">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-brand text-ink flex items-center justify-center shrink-0 shadow-sm">
+                <Receipt size={20} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-serif font-medium text-base text-ink truncate">
+                    Payments &amp; Orders
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-brand-light text-brand-dark border border-brand/30 text-[9px] font-bold uppercase tracking-widest shrink-0">
+                    Owner
+                  </span>
+                </div>
+                <p className="text-xs text-ink-muted truncate">
+                  Password-protected · Courses, Shop orders &amp; Donations
+                </p>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-paper border border-border-subtle flex items-center justify-center text-ink group-hover:bg-brand group-hover:border-brand transition-colors shrink-0">
+              <ChevronRight size={18} />
+            </div>
+          </div>
+        </Link>
+      )}
 
       {/* 2. Words Known Highlight Card */}
       <div className="mb-8">

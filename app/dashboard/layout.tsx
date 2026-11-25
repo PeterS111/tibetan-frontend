@@ -21,6 +21,7 @@ import {
   BarChart2,
   User,
   Sparkles,
+  Receipt,
 } from "lucide-react";
 
 import { usePlatform } from "@/hooks/usePlatform";
@@ -33,7 +34,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   const { user, isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const { signOut } = useClerk();
-  const { isDevUnlocked } = useDevBypass();
+  const { isDevUnlocked, isPaymentsOwner } = useDevBypass();
 
   const [profile, setProfile] = useState<any>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,6 +63,30 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
           if (isMounted && data.profile) {
             setProfile(data.profile);
+
+            // Auto-sync missing email / full_name from Clerk to Supabase user_profiles
+            const clerkEmail = user.primaryEmailAddress?.emailAddress?.trim() || "";
+            const clerkName = (
+              user.fullName ||
+              [user.firstName, user.lastName].filter(Boolean).join(" ")
+            ).trim();
+            const needsEmailSync = Boolean(clerkEmail && data.profile.email !== clerkEmail);
+            const needsNameSync = Boolean(clerkName && data.profile.full_name !== clerkName);
+
+            if (needsEmailSync || needsNameSync) {
+              fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sync-profile`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  email: clerkEmail,
+                  full_name: clerkName,
+                }),
+              }).catch(() => {});
+            }
+
             if (!data.profile.learning_goals && window.location.pathname !== "/onboarding") {
               router.replace("/onboarding");
             }
@@ -84,6 +109,9 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   };
 
   const libraryItems = [{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard }];
+  const ownerItems = isPaymentsOwner
+    ? [{ name: "Payments & Orders", href: "/dashboard/payments", icon: Receipt }]
+    : [];
   const devItems = isDevUnlocked
     ? [{ name: "AI Tutor", href: "/dashboard/ai-tutor", icon: Sparkles }]
     : [];
@@ -96,7 +124,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   ];
 
   const currentPageName =
-    [...libraryItems, ...devItems, ...moreItems].find(
+    [...libraryItems, ...ownerItems, ...devItems, ...moreItems].find(
       (i) => pathname === i.href || (pathname.startsWith(i.href) && i.href !== "/dashboard")
     )?.name || "Dashboard";
 
@@ -216,6 +244,43 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+          {ownerItems.length > 0 && (
+            <>
+              <div className="text-eyebrow mb-3 px-6 flex items-center justify-between">
+                <span>Accounts</span>
+                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-brand-light text-brand-dark border border-brand/30">
+                  OWNER
+                </span>
+              </div>
+              <nav className="space-y-0.5 mb-8">
+                {ownerItems.map((item) => {
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`flex items-center justify-between px-6 py-2.5 text-sm transition-colors ${
+                        isActive
+                          ? "bg-brand/10 text-ink font-medium"
+                          : "text-ink-light hover:bg-surface-muted font-normal"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon
+                          size={16}
+                          strokeWidth={isActive ? 2 : 1.5}
+                          className={isActive ? "text-brand-dark" : "text-ink-muted"}
+                        />
+                        {item.name}
+                      </div>
+                      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-brand" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </>
+          )}
+
 
           {devItems.length > 0 && (
             <>
@@ -344,7 +409,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto pt-4">
-              {[...libraryItems, ...devItems, ...moreItems].map((item) => (
+              {[...libraryItems, ...ownerItems, ...devItems, ...moreItems].map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}

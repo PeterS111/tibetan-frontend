@@ -53,11 +53,34 @@ export default function DonatePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [donationRef, setDonationRef] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("success") === "1") setIsSuccess(true);
+    if (typeof window === "undefined") return;
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wakeup`).catch(() => {});
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "1") {
+      const sessionId = params.get("session_id");
+      const refParam = params.get("ref");
+      if (refParam) setDonationRef(refParam);
+
+      if (sessionId) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/verify-session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d?.reference_id) setDonationRef(d.reference_id);
+          })
+          .catch(() => {});
+      }
+
+      setIsSuccess(true);
+      window.history.replaceState({}, "", "/donate");
     }
   }, []);
 
@@ -234,6 +257,11 @@ export default function DonatePage() {
                   <div className="font-bold text-sm mb-1">
                     ཐུགས་རྗེ་ཆེ། — Thank you deeply for your generosity!
                   </div>
+                  {donationRef && (
+                    <div className="inline-block font-mono text-[11px] bg-white/80 border border-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full mb-1.5">
+                      Reference: {donationRef}
+                    </div>
+                  )}
                   <p className="text-xs leading-relaxed">
                     Your support directly helps us sustain our projects, develop
                     new learning resources, and share Tibetan language and
