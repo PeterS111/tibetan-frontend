@@ -416,6 +416,9 @@ export default function AdminPaymentsPage() {
     setSendingCode(true);
     setResetError(null);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     try {
       const clerkToken = await getToken();
       if (!clerkToken) throw new Error("Authentication unavailable.");
@@ -429,6 +432,7 @@ export default function AdminPaymentsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ emailIndex: selectedEmailIndex }),
+          signal: controller.signal,
         }
       );
       const data = await res.json();
@@ -439,8 +443,15 @@ export default function AdminPaymentsPage() {
       setCodeSentToMasked(data?.sent_to_masked || "owner email");
       setResetStep("enter_code");
     } catch (err: unknown) {
-      setResetError(err instanceof Error ? err.message : "Could not send verification email.");
+      if (err instanceof Error && err.name === "AbortError") {
+        setResetError(
+          "The server took too long to respond. If the 6-digit code arrived in your email, click 'Already received a code? Enter it here' below."
+        );
+      } else {
+        setResetError(err instanceof Error ? err.message : "Could not send verification email.");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setSendingCode(false);
     }
   };
@@ -794,6 +805,20 @@ export default function AdminPaymentsPage() {
                 <Mail size={15} /> Send 6-Digit Verification Code
               </>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setResetError(null);
+              setCodeSentToMasked(
+                ownerEmailOptions[selectedEmailIndex]?.masked || "your owner email"
+              );
+              setResetStep("enter_code");
+            }}
+            className="w-full text-center text-xs font-medium text-ink-muted hover:text-ink py-1 cursor-pointer"
+          >
+            Already received a 6-digit code? Enter it here
           </button>
         </div>
       ) : (
