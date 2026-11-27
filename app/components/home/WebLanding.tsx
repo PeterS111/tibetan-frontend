@@ -578,7 +578,7 @@ export function WebLanding() {
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/75">
+          <div className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-medium text-white/75">
             <a href="#levels" className="hover:text-white transition-colors">
               Curriculum
             </a>
@@ -587,6 +587,9 @@ export function WebLanding() {
             </Link>
             <Link href="/shop" className="hover:text-white transition-colors">
               Shop
+            </Link>
+            <Link href="/oxford-visitorship" className="hover:text-white transition-colors">
+              Visitorship
             </Link>
             <a href="#faq" className="hover:text-white transition-colors">
               FAQ

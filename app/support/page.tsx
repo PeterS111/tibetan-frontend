@@ -39,6 +39,7 @@ const QUICK_LINKS = [
   { href: "/courses?tab=private", label: "Book a 1-to-1 private lesson" },
   { href: "/shop", label: "Visit the shop" },
   { href: "/#faq", label: "Read our FAQs" },
+  { href: "/oxford-visitorship", label: "Explore the Oxford Visitorship" },
   { href: "/about", label: "About Loplao & our team" },
   { href: "/donate", label: "Support & donate to Loplao" },
 ];
@@ -113,7 +114,7 @@ export default function SupportPage() {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/75">
+          <div className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-medium text-white/75">
             <Link href="/#levels" className="hover:text-white transition-colors">
               Curriculum
             </Link>
@@ -122,6 +123,9 @@ export default function SupportPage() {
             </Link>
             <Link href="/shop" className="hover:text-white transition-colors">
               Shop
+            </Link>
+            <Link href="/oxford-visitorship" className="hover:text-white transition-colors">
+              Visitorship
             </Link>
             <Link href="/#faq" className="hover:text-white transition-colors">
               FAQ

@@ -488,7 +488,7 @@ export default function ShopPage() {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/75">
+          <div className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-medium text-white/75">
             <Link href="/#levels" className="hover:text-white transition-colors">
               Curriculum
             </Link>
@@ -500,6 +500,9 @@ export default function ShopPage() {
               className="text-brand font-semibold transition-colors"
             >
               Shop
+            </Link>
+            <Link href="/oxford-visitorship" className="hover:text-white transition-colors">
+              Visitorship
             </Link>
             <Link href="/#faq" className="hover:text-white transition-colors">
               FAQ

@@ -9,6 +9,7 @@ const FOOTER_LINKS = [
   { href: "/", label: "Home" },
   { href: "/courses", label: "Live Courses" },
   { href: "/shop", label: "Shop" },
+  { href: "/oxford-visitorship", label: "Visitorship" },
   { href: "/about", label: "About" },
   { href: "/support", label: "Contact" },
   { href: "/donate", label: "Donate", isBrand: true },

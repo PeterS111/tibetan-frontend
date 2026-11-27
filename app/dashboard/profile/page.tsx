@@ -15,6 +15,7 @@ import {
   User as UserIcon,
   BookOpen,
   Info,
+  Landmark,
   KeyRound,
   Unlock,
   Lock,
@@ -356,6 +357,15 @@ export default function ProfilePage() {
               <Info size={16} />
             </div>
             <span className="font-medium text-[15px]">About the Project</span>
+          </div>
+          <ChevronRight size={18} className="text-ink-muted" />
+        </Link>
+        <Link href="/oxford-visitorship" className={`${menuItemClass} border-b border-border-subtle`}>
+          <div className="flex items-center gap-3 text-ink">
+            <div className="w-8 h-8 rounded-full bg-brand-light text-brand-dark flex items-center justify-center">
+              <Landmark size={16} />
+            </div>
+            <span className="font-medium text-[15px]">Oxford Visitorship</span>
           </div>
           <ChevronRight size={18} className="text-ink-muted" />
         </Link>

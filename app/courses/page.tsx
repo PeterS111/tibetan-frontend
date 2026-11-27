@@ -292,7 +292,7 @@ export default function CoursesPage() {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/75">
+          <div className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-medium text-white/75">
             <Link href="/" className="hover:text-white transition-colors">
               Home
             </Link>
@@ -304,6 +304,9 @@ export default function CoursesPage() {
             </Link>
             <Link href="/shop" className="hover:text-white transition-colors">
               Shop
+            </Link>
+            <Link href="/oxford-visitorship" className="hover:text-white transition-colors">
+              Visitorship
             </Link>
             <Link href="/about" className="hover:text-white transition-colors">
               About
