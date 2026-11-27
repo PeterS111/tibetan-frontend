@@ -909,7 +909,7 @@ export default function AiTutorPage() {
     // Switch empty stage cleanly if no messages yet; preserve conversation if active or let user reset
     if (nextMode === "ask") {
       setInputKind("english");
-    } else if (inputKind === "english" && nextMode !== "ask") {
+    } else if (inputKind === "english") {
       setInputKind("tibetan");
     }
   };
