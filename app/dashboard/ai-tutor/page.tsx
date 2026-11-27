@@ -1717,7 +1717,7 @@ export default function AiTutorPage() {
       };
 
       mediaRecorderRef.current = recorder;
-      recorder.start();
+      recorder.start(1000);
       setIsRecording(true);
       setRecordSeconds(0);
 
@@ -1738,9 +1738,6 @@ export default function AiTutorPage() {
   const stopRecording = (cancel = false) => {
     cancelRecordRef.current = cancel;
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      try {
-        mediaRecorderRef.current.requestData();
-      } catch {}
       mediaRecorderRef.current.stop();
     } else {
       cleanupRecorder();
@@ -2163,7 +2160,7 @@ export default function AiTutorPage() {
             <textarea
               rows={2}
               value={customReadText}
-              maxLength={1500}
+              maxLength={8000}
               onChange={(e) => setCustomReadText(e.target.value)}
               placeholder="བཀྲ་ཤིས་བདེ་ལེགས། ..."
               className="w-full bg-paper/70 border border-border-subtle focus:border-brand rounded-xl p-3 font-tibetan text-2xl leading-[1.8] text-ink outline-none resize-y"
@@ -2943,7 +2940,7 @@ export default function AiTutorPage() {
               <input
                 type="text"
                 value={inputText}
-                maxLength={1500}
+                maxLength={8000}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={inputPlaceholder}
                 className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm sm:text-[15px] text-ink placeholder:text-ink-muted focus:outline-none"
