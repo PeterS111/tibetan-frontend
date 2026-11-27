@@ -1,24 +1,23 @@
 // app/oxford-visitorship/page.tsx
 "use client";
 
-import { useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Mail,
+  Menu,
+  Phone,
+  Send,
+  X,
+  useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Calendar,
-  Check,
-  Globe,
-  GraduationCap,
-  Handshake,
-  Mail,
-  Menu,
-  Phone,
-  Sparkles,
-  Users,
-  X,
 } from "lucide-react";
 import {
   SignedIn,
@@ -209,22 +208,99 @@ const NAV_LINKS = [
 ];
 
 function HighlightIcon({ kind }: { kind: "handshake" | "calendar" | "book" }) {
-  if (kind === "handshake") return <Handshake size={18} />;
-  if (kind === "calendar") return <Calendar size={18} />;
-  return <BookOpen size={18} />;
+  const motifMap = {
+    handshake: { src: "/motif_khata.png", alt: "Tibetan Khata Scarf" },
+    calendar: { src: "/motif_stupa.png", alt: "Tibetan Stupa" },
+    book: { src: "/motif_mandala.png", alt: "Tibetan Mandala" },
+  };
+  const item = motifMap[kind];
+  return (
+    <div className="w-16 h-16 rounded-full bg-surface border border-border-subtle flex items-center justify-center mb-5 shrink-0 shadow-xs">
+      <img src={item.src} alt={item.alt} className="w-11 h-11 object-contain" />
+    </div>
+  );
 }
 
 function PillarIcon({ kind }: { kind: "graduation" | "globe" | "users" }) {
-  if (kind === "graduation") return <GraduationCap size={18} />;
-  if (kind === "globe") return <Globe size={18} />;
-  return <Users size={18} />;
+  const motifMap = {
+    graduation: { src: "/motif_pecha.png", alt: "Tibetan Pecha Scripture" },
+    globe: { src: "/motif_prayer_flags.png", alt: "Tibetan Prayer Flags" },
+    users: { src: "/motif_butter_lamp.png", alt: "Tibetan Butter Lamp" },
+  };
+  const item = motifMap[kind];
+  return (
+    <div className="w-16 h-16 rounded-full bg-paper border border-border-subtle flex items-center justify-center mb-5 shrink-0 shadow-xs">
+      <img src={item.src} alt={item.alt} className="w-11 h-11 object-contain" />
+    </div>
+  );
 }
 
 export default function OxfordVisitorshipPage() {
   const router = useRouter();
   const { isCapacitor } = usePlatform();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeScholar, setActiveScholar] = useState<VisitingScholar | null>(null);
+    const [activeScholar, setActiveScholar] = useState<VisitingScholar | null>(null);
+
+  // Visitorship Application Modal State
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [appName, setAppName] = useState("");
+  const [appEmail, setAppEmail] = useState("");
+  const [appInstitution, setAppInstitution] = useState("");
+  const [appTradition, setAppTradition] = useState("");
+  const [appCvLink, setAppCvLink] = useState("");
+  const [appStatement, setAppStatement] = useState("");
+  const [applySending, setApplySending] = useState(false);
+  const [applySent, setApplySent] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  const handleCopyApplyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(HOW_TO_APPLY_COPY.email);
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2200);
+    } catch {}
+  };
+
+  const handleApplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setApplyError(null);
+    setApplySending(true);
+
+    const formattedMessage = [
+      "2027 Oxford Tibetan Buddhist Visitorship Application",
+      `Tradition: ${appTradition || "Not specified"}`,
+      `CV Link: ${appCvLink.trim() || "To be sent via email attachment"}`,
+      "",
+      "Statement of Purpose:",
+      appStatement.trim(),
+    ].join("\n");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: appName.trim(),
+          email: appEmail.trim(),
+          region: appInstitution.trim(),
+          topic: "Oxford Visitorship 2027 Application",
+          message: formattedMessage,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not submit application.");
+      setApplySent(true);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Could not submit online. Please email your CV and statement directly.";
+      setApplyError(msg);
+    } finally {
+      setApplySending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink font-sans selection:bg-brand-light selection:text-brand-dark overflow-x-hidden">
@@ -427,9 +503,7 @@ export default function OxfordVisitorshipPage() {
               {HIGHLIGHT_CARDS.map((card, idx) => (
                 <Reveal key={card.id} delay={idx * 90} className="h-full">
                   <div className="h-full bg-paper border border-border-subtle rounded-2xl p-6 sm:p-7 shadow-2xs flex flex-col">
-                    <div className="w-10 h-10 rounded-xl bg-brand-light border border-brand/30 text-brand-dark flex items-center justify-center mb-4 shrink-0">
-                      <HighlightIcon kind={card.icon} />
-                    </div>
+                    <HighlightIcon kind={card.icon} />
                     <h3 className="font-serif font-normal text-xl text-ink mb-2.5">
                       {card.title}
                     </h3>
@@ -491,13 +565,17 @@ export default function OxfordVisitorshipPage() {
                   </div>
 
                   <div className="relative z-10">
-                    <a
-                      href={HOW_TO_APPLY_COPY.ctaHref}
-                      className="w-full bg-brand hover:bg-brand-dark text-ink font-bold text-xs sm:text-sm py-3.5 px-6 rounded-xl transition-all shadow-md inline-flex items-center justify-center gap-2"
+                                        <button
+                      type="button"
+                      onClick={() => {
+                        setApplyModalOpen(true);
+                        setApplyError(null);
+                      }}
+                      className="w-full bg-brand hover:bg-brand-dark text-ink font-bold text-xs sm:text-sm py-3.5 px-6 rounded-xl transition-all shadow-md inline-flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <span>{HOW_TO_APPLY_COPY.ctaLabel}</span>
                       <Mail size={15} />
-                    </a>
+                    </button>
                   </div>
                 </div>
               </Reveal>
@@ -536,9 +614,7 @@ export default function OxfordVisitorshipPage() {
             {VALUE_PILLARS.map((pillar, idx) => (
               <Reveal key={pillar.id} delay={idx * 90} className="h-full">
                 <div className="h-full bg-surface border border-border-subtle rounded-2xl p-6 sm:p-7 shadow-2xs flex flex-col">
-                  <div className="w-10 h-10 rounded-xl bg-brand-light border border-brand/30 text-brand-dark flex items-center justify-center mb-4">
-                    <PillarIcon kind={pillar.icon} />
-                  </div>
+                  <PillarIcon kind={pillar.icon} />
                   <div className="font-tibetan text-base text-brand-dark leading-[1.8] mb-1">
                     {pillar.tibetan}
                   </div>
@@ -726,6 +802,222 @@ export default function OxfordVisitorshipPage() {
           </div>
         </div>
       )}
+
+      {/* ====================================================================
+          8B. VISITORSHIP APPLICATION MODAL (DIRECT SUBMISSION + EMAIL TOOLS)
+      ==================================================================== */}
+      {applyModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setApplyModalOpen(false)}
+        >
+          <div
+            className="bg-surface border border-border-strong rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Dark Navy Modal Header */}
+            <div className="bg-ink text-white px-6 sm:px-8 py-6 relative">
+              <button
+                type="button"
+                onClick={() => setApplyModalOpen(false)}
+                aria-label="Close application modal"
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-1">
+                2027 Oxford Visitorship
+              </div>
+              <h3 className="font-serif font-normal text-2xl text-white">
+                Submit Your Application
+              </h3>
+              <p className="text-xs text-white/75 mt-1 leading-relaxed">
+                Send your application directly below, or email your CV and one-page statement to{" "}
+                <span className="text-brand font-semibold">{HOW_TO_APPLY_COPY.email}</span>.
+              </p>
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-6">
+              {/* Quick Email / Copy Bar (works even if no desktop mail app is configured) */}
+              <div className="bg-paper border border-border-subtle rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                    Direct Email for CV &amp; Documents
+                  </div>
+                  <div className="text-sm font-bold text-ink truncate">
+                    {HOW_TO_APPLY_COPY.email}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleCopyApplyEmail}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface border border-border-strong hover:border-ink text-xs font-bold text-ink transition-colors cursor-pointer"
+                  >
+                    {emailCopied ? (
+                      <>
+                        <Check size={13} className="text-emerald-600" /> Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={13} /> Copy Email
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={HOW_TO_APPLY_COPY.ctaHref}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-ink hover:bg-ink-light text-white text-xs font-bold transition-colors"
+                  >
+                    <span>Mail App</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+
+              {applySent ? (
+                <div className="py-6 text-center flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                    <CheckCircle2 size={28} />
+                  </div>
+                  <h4 className="font-serif font-normal text-2xl text-ink mb-2">
+                    Application Received
+                  </h4>
+                  <p className="text-sm text-ink-light max-w-md leading-relaxed mb-5">
+                    Thank you, <strong className="text-ink">{appName}</strong>. We have received
+                    your details and sent them to the Loplao team. If you have a PDF CV to attach,
+                    please also email it to{" "}
+                    <strong className="text-ink">{HOW_TO_APPLY_COPY.email}</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApplyModalOpen(false);
+                      setApplySent(false);
+                      setAppStatement("");
+                    }}
+                    className="px-6 py-3 rounded-xl bg-ink hover:bg-ink-light text-white text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleApplySubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-ink mb-1.5">
+                        Full Name <span className="text-destructive">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={appName}
+                        onChange={(e) => setAppName(e.target.value)}
+                        placeholder="Your name & title"
+                        className="w-full bg-surface border border-border-subtle focus:border-brand rounded-xl px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-ink mb-1.5">
+                        Email Address <span className="text-destructive">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={appEmail}
+                        onChange={(e) => setAppEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="w-full bg-surface border border-border-subtle focus:border-brand rounded-xl px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-ink mb-1.5">
+                        Monastery / Institute &amp; Country{" "}
+                        <span className="text-destructive">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={appInstitution}
+                        onChange={(e) => setAppInstitution(e.target.value)}
+                        placeholder="e.g. Sera Jey, India"
+                        className="w-full bg-surface border border-border-subtle focus:border-brand rounded-xl px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-ink mb-1.5">
+                        Tibetan Buddhist Tradition
+                      </label>
+                      <select
+                        value={appTradition}
+                        onChange={(e) => setAppTradition(e.target.value)}
+                        className="w-full bg-surface border border-border-subtle focus:border-brand rounded-xl px-3.5 py-2.5 text-sm text-ink outline-none cursor-pointer"
+                      >
+                        <option value="">Select tradition...</option>
+                        <option value="Kagyu">Kagyu</option>
+                        <option value="Nyingma">Nyingma</option>
+                        <option value="Gelug">Gelug</option>
+                        <option value="Sakya">Sakya</option>
+                        <option value="Rimé / Other">Rimé / Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-ink mb-1.5">
+                      Link to CV (Google Drive / PDF URL — optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={appCvLink}
+                      onChange={(e) => setAppCvLink(e.target.value)}
+                      placeholder="https://... (or email PDF directly to loplao.academy@gmail.com)"
+                      className="w-full bg-surface border border-border-subtle focus:border-brand rounded-xl px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-muted/70 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-ink mb-1.5">
+                      Statement of Purpose (English) <span className="text-destructive">*</span>
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={appStatement}
+                      onChange={(e) => setAppStatement(e.target.value)}
+                      placeholder="Briefly share your academic interests, teaching experience, and reasons for applying..."
+                      className="w-full bg-surface border border-border-subtle focus:border-brand rounded-xl p-3.5 text-sm text-ink placeholder:text-ink-muted/70 outline-none resize-y"
+                    />
+                  </div>
+
+                  {applyError && (
+                    <div className="text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+                      {applyError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={applySending}
+                    className="w-full bg-brand hover:bg-brand-dark text-ink font-bold text-sm py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {applySending ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Send size={15} />
+                    )}
+                    <span>{applySending ? "Sending Application..." : "Submit Application"}</span>
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {/* ====================================================================
           9. SHARED SITE FOOTER (HIDDEN INSIDE NATIVE CAPACITOR SHELL)
