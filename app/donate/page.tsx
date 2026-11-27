@@ -215,7 +215,7 @@ export default function DonatePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40" />
         </div>
 
-        <Reveal className="max-w-5xl mx-auto px-6 relative z-10">
+        <Reveal immediate className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             Support the Project
           </div>

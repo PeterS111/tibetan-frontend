@@ -286,7 +286,7 @@ export default function AboutPage() {
           className="pointer-events-none select-none absolute top-14 left-[56%] -translate-x-1/2 w-72 h-72 md:w-80 md:h-80 object-contain opacity-[0.04]"
         />
 
-        <Reveal className="max-w-5xl mx-auto px-6 relative z-10">
+        <Reveal immediate className="max-w-5xl mx-auto px-6 relative z-10">
           <button
             type="button"
             onClick={() => router.back()}

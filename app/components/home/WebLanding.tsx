@@ -15,6 +15,7 @@ import {
   X,
   CheckCircle2,
   BookOpen,
+  Menu,
 } from "lucide-react";
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/clerk-react";
 
@@ -517,6 +518,7 @@ export function WebLanding() {
 
   // --- FAQ Accordion State ---
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   // --- Bottom Phone Preview Consonant Selection & Detail Pop-up State ---
   const [activePhoneConsonant, setActivePhoneConsonant] = useState<Consonant>(CONSONANTS[0]);
@@ -597,6 +599,9 @@ export function WebLanding() {
             <Link href="/about" className="hover:text-white transition-colors">
               About
             </Link>
+            <Link href="/support" className="hover:text-white transition-colors">
+              Contact
+            </Link>
           </div>
 
           {/* Clerk Authentication Buttons */}
@@ -621,8 +626,47 @@ export function WebLanding() {
                 </button>
               </Link>
             </SignedIn>
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              className="md:hidden p-2 rounded-lg border border-white/20 text-white/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
+
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-[#091e36] border-t border-white/10 px-6 py-5 space-y-1 animate-in fade-in duration-150">
+            <a href="#levels" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              Curriculum
+            </a>
+            <Link href="/courses" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              Live Courses
+            </Link>
+            <Link href="/shop" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              Shop
+            </Link>
+            <Link href="/oxford-visitorship" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              Visitorship
+            </Link>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              FAQ
+            </a>
+            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              About
+            </Link>
+            <Link href="/support" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 text-sm font-medium text-white/85 hover:text-white border-b border-white/10">
+              Contact
+            </Link>
+            <Link href="/donate" onClick={() => setMobileMenuOpen(false)} className="block pt-2.5 text-sm font-bold text-brand">
+              Donate to Loplao →
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* ====================================================================
@@ -639,7 +683,7 @@ export function WebLanding() {
 
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center relative z-10">
           {/* Left Column: Editorial Headline (Matching Original Website Font) & CTA */}
-          <Reveal className="lg:col-span-6 flex flex-col items-start text-left">
+          <Reveal immediate className="lg:col-span-6 flex flex-col items-start text-left">
             <div className="inline-flex items-center gap-2.5 mb-6">
               <img
                 src="/motif_wind_horse_gold.png"
@@ -702,7 +746,7 @@ export function WebLanding() {
           </Reveal>
 
           {/* Right Column: Circular Mountain Vignette + ALL 10 Animated & Clickable Phrases */}
-          <Reveal delay={140} className="lg:col-span-6 flex flex-col items-center justify-center relative py-10">
+          <Reveal immediate className="lg:col-span-6 flex flex-col items-center justify-center relative py-10">
             <div className="relative w-[300px] h-[300px] sm:w-[390px] sm:h-[390px] md:w-[430px] md:h-[430px]">
               {/* Soft outer orbit ring */}
               <div className="absolute -inset-6 rounded-full border border-white/10 pointer-events-none" />
@@ -1124,6 +1168,7 @@ export function WebLanding() {
                 <div key={item.q} className="py-5">
                   <button
                     type="button"
+                    aria-expanded={isOpen}
                     onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                     className="w-full flex items-center justify-between gap-4 text-left cursor-pointer group"
                   >
@@ -1134,11 +1179,15 @@ export function WebLanding() {
                       {isOpen ? <Minus size={18} /> : <Plus size={18} />}
                     </span>
                   </button>
-                  {isOpen && (
-                    <p className="mt-3 text-sm text-ink-light leading-relaxed pr-6">
-                      {item.a}
-                    </p>
-                  )}
+                  <p
+                    className={
+                      isOpen
+                        ? "mt-3 text-sm text-ink-light leading-relaxed pr-6"
+                        : "hidden"
+                    }
+                  >
+                    {item.a}
+                  </p>
                 </div>
               );
             })}

@@ -8,13 +8,24 @@ interface RevealProps {
   children: ReactNode;
   delay?: number;
   className?: string;
+  immediate?: boolean;
 }
 
-export function Reveal({ children, delay = 0, className }: RevealProps) {
+export function Reveal({
+  children,
+  delay = 0,
+  className,
+  immediate = false,
+}: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(immediate);
 
   useEffect(() => {
+    if (immediate) {
+      setIsVisible(true);
+      return;
+    }
+
     const el = ref.current;
     if (!el) return;
 
@@ -47,13 +58,17 @@ export function Reveal({ children, delay = 0, className }: RevealProps) {
       if (timer) clearTimeout(timer);
       observer.disconnect();
     };
-  }, []);
+  }, [immediate]);
 
   return (
     <div
       ref={ref}
-      style={delay > 0 ? { transitionDelay: `${delay}ms` } : undefined}
-      className={twMerge("loplao-reveal", isVisible && "is-visible", className)}
+      style={!immediate && delay > 0 ? { transitionDelay: `${delay}ms` } : undefined}
+      className={twMerge(
+        immediate ? undefined : "loplao-reveal",
+        !immediate && isVisible && "is-visible",
+        className
+      )}
     >
       {children}
     </div>

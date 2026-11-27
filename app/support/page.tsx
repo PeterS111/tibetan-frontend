@@ -177,7 +177,7 @@ export default function SupportPage() {
           འབྲེལ
         </div>
 
-        <Reveal className="max-w-5xl mx-auto px-6 relative z-10">
+        <Reveal immediate className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand mb-3">
             Get in Touch
           </div>

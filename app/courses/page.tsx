@@ -354,7 +354,7 @@ export default function CoursesPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/85 to-ink/60" />
         </div>
 
-        <Reveal className="max-w-5xl mx-auto px-6 text-center relative z-10">
+        <Reveal immediate className="max-w-5xl mx-auto px-6 text-center relative z-10">
           {/* Course Switcher Pills */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/10 p-1.5 rounded-full border border-white/15 mb-10">
             {[
