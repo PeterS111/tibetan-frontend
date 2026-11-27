@@ -153,7 +153,7 @@ const SCHOLARS: VisitingScholar[] = [
     id: "kyabje-yangteng-rinpoche",
     name: "Kyabje Yangteng Rinpoche",
     role: "Geshe Lharampa and teacher",
-    image: "/kyabje-yangteng-rinpoche.jpg",
+    image: "/kyabje-yangteng-rinpoche.png",
   },
   {
     id: "geshe-soepa",
