@@ -40,8 +40,8 @@ const HERO_COPY = {
   titleHighlight: "Oxford",
   titleSuffix: "Visitorship",
   subtitle:
-    "Each year, Loplao and SINI partner with Oxford Tibetan and Himalayan Studies to welcome a classically trained Tibetan Buddhist scholar to Oxford — fostering dialogue between monastic learning and university research.",
-  tibetanLine: "བོད་ཀྱི་མཁས་པ་གདན་ཞུ།",
+    "Each year Loplao and Sini invites one traditionally trained Tibetan Buddhist scholar to Oxford, in collaboration with Oxford Tibetan and Himalayan Studies — a bridge between monastic learning and Western academic enquiry.",
+  tibetanLine: "གླང་རབ་བོད་ཀྱི་མཁས་པ་གདན་ཞུ།",
   heroImage: "/oxford-visitorship-hero.jpg",
 };
 
@@ -49,7 +49,7 @@ const ANNOUNCEMENT_COPY = {
   eyebrow: "2027 Announcement · Applications Open",
   heading: "The 2027 Oxford Tibetan Buddhist Visitorship",
   intro:
-    "Applications are now invited for the 2027 Oxford Tibetan Buddhist Visitorship. We welcome expressions of interest from qualified Tibetan Buddhist monastic scholars currently based in Bhutan, India, or Nepal.",
+    "We are pleased to announce the 2027 Oxford Tibetan Buddhist Visitorship, inviting applications from qualified Tibetan Buddhist monastic scholars currently residing in Bhutan, India, or Nepal.",
 };
 
 const HIGHLIGHT_CARDS = [
@@ -57,44 +57,44 @@ const HIGHLIGHT_CARDS = [
     id: "partnership",
     icon: "handshake" as const,
     title: "A Renewed Partnership",
-    body: "Starting in 2027, the programme brings together Oxford's Tibetan and Himalayan Studies community, the Sarnath International Nyingma Institute (SINI), and Loplao to deepen collaboration between traditional monastic scholarship and modern academic study.",
+    body: "From 2027 onwards, the Visitorship is a collaboration between the University of Oxford's Tibetan and Himalayan Studies programme and the Sarnath International Nyingma Institute (SINI) — a shared commitment to dialogue between traditional Tibetan Buddhist scholarship and contemporary academic research.",
   },
   {
     id: "residency",
     icon: "calendar" as const,
     title: "Residency & Dates",
-    body: "The selected visiting scholar stays at the Oxford Buddha Vihara for roughly two months — 23 April to 19 June 2027, aligned with Oxford's summer term — before returning home to share insights with their institution.",
+    body: "The visiting scholar resides at the Oxford Buddha Vihara for approximately two months — Friday 23 April to Saturday 19 June 2027, corresponding to Oxford's summer term — before returning to share what they have learned.",
   },
   {
     id: "non-sectarian",
     icon: "book" as const,
     title: "A Non-Sectarian Approach",
-    body: "Eligible scholars from every major Tibetan Buddhist lineage — Kagyu, Nyingma, Gelug, and Sakya — are warmly encouraged to apply. Bringing varied traditions into conversation enriches learning for everyone involved.",
+    body: "Applications are welcome from qualified scholars of any Tibetan Buddhist tradition — Kagyu, Nyingma, Gelug, and Sakya — with no preference for any particular order. Diverse perspectives enrich academic understanding and dialogue across traditions.",
   },
 ];
 
 const CANDIDATE_REQUIREMENTS = [
-  "Strong grounding in Buddhist philosophy, textual study, and history",
-  "Command of both classical and spoken Tibetan, alongside confident English",
-  "Prior experience lecturing or teaching on Buddhist philosophy and related fields",
-  "Readiness to converse with international audiences and scholars across disciplines",
-  "Thoughtful engagement with contemporary questions in Tibetan culture and Buddhism",
-  "Dedication to sharing knowledge and supporting Dharma preservation back at home",
+  "Deep knowledge of Buddhist philosophy, history, and texts",
+  "Fluency in classical and modern Tibetan, alongside strong proficiency in English",
+  "Experience teaching or lecturing on Buddhist philosophy or related subjects",
+  "The ability to engage with international academic audiences and scholars from different disciplines",
+  "Familiarity with contemporary issues in Buddhism and Tibetan culture",
+  "A commitment to the transmission and preservation of the Dharma within their own monastic community upon returning",
 ];
 
 const HOW_TO_APPLY_COPY = {
   heading: "How to Apply",
   intro:
-    "Please prepare your application in English, enclosing an up-to-date CV together with a one-page statement outlining your scholarly focus, teaching background, and motivation for applying.",
+    "Applications must be submitted in English and include a current CV and a one-page statement of purpose explaining your academic interests, relevant experience, and reasons for applying.",
   deadlineLabel: "Application deadline:",
   deadlineValue: "To be announced.",
   interviewNote:
-    "Candidates selected for the shortlist will be invited to join an online interview, where full details on scheduling and the 2027 term residency will be shared.",
+    "Shortlisted applicants will be invited to an online interview. Details of the interview schedule and the 2027 visiting period will be communicated to shortlisted candidates.",
   ctaLabel: "Apply by Email",
   ctaHref:
     "mailto:loplao.academy@gmail.com?subject=2027%20Oxford%20Tibetan%20Buddhist%20Visitorship%20Application",
   accommodationNote:
-    "Please note: residency applications are currently limited to monks, as the Oxford Buddha Vihara does not presently have facilities to host female monastics.",
+    "Please note: applications are currently open to monks only (and not nuns), as the Oxford Buddha Vihara is unable to accommodate female monastics.",
   email: "loplao.academy@gmail.com",
   phone: "+44 7856 149455",
   phoneHref: "tel:+447856149455",
@@ -106,21 +106,21 @@ const VALUE_PILLARS = [
     icon: "graduation" as const,
     tibetan: "ཤེས་རིག་བརྗེ་རེས།",
     title: "Scholarly Exchange",
-    body: "Open talks, seminars, and small-group tutorials connecting traditional monastic learning with Oxford's academic community.",
+    body: "Public lectures, seminars, and tutorials that bring monastic scholarship into dialogue with Oxford's academic community.",
   },
   {
     id: "bridge",
     icon: "globe" as const,
     tibetan: "རིག་གཞུང་ཟམ་པ།",
     title: "Cultural Bridge",
-    body: "Creating meaningful pathways for Tibetan Buddhist educators to engage with international universities and public audiences.",
+    body: "Creating a pathway for Tibetan Buddhist teachers to engage with international platforms, universities, and audiences.",
   },
   {
     id: "tradition",
     icon: "users" as const,
     tibetan: "རིག་གཞུང་གསོན་པོ།",
     title: "Living Tradition",
-    body: "Welcoming one classically trained scholar to Oxford each year for an immersive term before returning to share the experience home.",
+    body: "One traditionally trained scholar in residence each year, immersing themselves in Oxford before returning to their institute.",
   },
 ];
 
@@ -128,10 +128,10 @@ const HISTORY_COPY = {
   eyebrow: "Background Story",
   heading: "A Fifteen-Year Journey",
   paragraphs: [
-    "Established in 2011, the Visitorship began as a joint initiative between So-Wide and Oxford's Tibetan and Himalayan Studies community. Following the untimely passing of So-Wide founder Geoff Bamford, the programme entered a temporary hiatus.",
-    "In 2024, Loplao — a UK-registered Community Interest Company dedicated to advancing Tibetan language and heritage worldwide — partnered with Oxford Tibetan and Himalayan Studies to renew the fellowship. It offers a vital platform for Tibetan monastic scholars to represent their living traditions directly within Oxford's academic environment.",
-    "Beyond university seminars, inviting Tibetan monastic educators to institutions like Oxford opens lasting international channels of dialogue and strengthens the global visibility of Tibetan language, philosophy, and cultural heritage.",
-    "Each year, the fellowship invites one traditionally trained scholar for a term-long residency in Oxford, encouraging mutual exchange among students, researchers, and practitioners. Distinguished past visitors have included Dzongsar Khyentse, Arja Rinpoche, Kyabje Yangteng Rinpoche, and Geshe Soepa, each contributing public lectures and teachings before carrying their Oxford experience back to their home institutions in India or Nepal.",
+    "This visitorship scheme has been running since 2011 and was initially a collaborative project between So-Wide and Tibetan and Himalayan Studies in Oxford. However, due to the sudden passing of So-Wide's founder, Geoff Bamford, the project was paused for a year.",
+    "In 2024, Loplao revived the scheme in collaboration with Oxford Tibetan and Himalayan Studies. Loplao is a CIC registered in the UK with the aim of promoting and advancing Tibetan language and culture worldwide. This is an important platform for Tibetan monks to showcase Tibetan Buddhism, especially given the fact that, while there are Buddhist scholars at Oxford, there are otherwise no Tibetan scholars of Buddhism at the university.",
+    "Additionally, providing such opportunities for Tibetan Buddhist monks to visit institutions like Oxford could create a pathway for monks to participate on international platforms, which is important for Tibetan culture and Buddhism.",
+    "The goal of this scheme is to invite one traditionally trained Tibetan Buddhist scholar to Oxford each year, with the intention of facilitating an exchange between academic students, researchers of Tibetan Buddhist studies, and practitioners from Tibetan Buddhist traditions. So far, many Tibetan monks — including Dzongsar Khyentse, Arja Rinpoche, Kyabje Yangteng Rinpoche, and Geshe Soepa — have visited Oxford to teach and give public lectures on Tibetan Buddhism, as well as to imbibe aspects of Western academic rigour. These visitors reside in Oxford for a term, after which they return to their respective institutes in India or Nepal to share what they have learned from their Oxford experience.",
   ],
 };
 
@@ -152,7 +152,7 @@ const SCHOLARS: VisitingScholar[] = [
   {
     id: "kyabje-yangteng-rinpoche",
     name: "Kyabje Yangteng Rinpoche",
-    role: "Geshe Lharampa & Teacher",
+    role: "Geshe Lharampa and teacher",
     image: "/kyabje-yangteng-rinpoche.jpg",
   },
   {
@@ -170,13 +170,13 @@ const SCHOLARS: VisitingScholar[] = [
   {
     id: "minyak-rinpoche",
     name: "Minyak Rinpoche",
-    role: "Tibetan Buddhist Scholar",
+    role: "Tibetan Buddhist scholar",
     image: "/minyak-rinpoche.jpg",
   },
   {
     id: "lopon-tenzin-sherpa",
     name: "Lopon Tenzin Sherpa",
-    role: "Lopon & Buddhist Scholar",
+    role: "Lopon & Buddhist scholar",
     image: "/lopon-tenzin-sherpa.jpg",
   },
   {
@@ -188,7 +188,7 @@ const SCHOLARS: VisitingScholar[] = [
   {
     id: "ven-jampa-gyaltsen",
     name: "Ven Jampa Gyaltsen",
-    role: "Tibetan Buddhist Scholar",
+    role: "Tibetan Buddhist scholar",
     image: "/ven-jampa-gyaltsen.jpg",
   },
 ];
@@ -196,7 +196,7 @@ const SCHOLARS: VisitingScholar[] = [
 const SUPPORT_CTA_COPY = {
   tibetan: "བོད་ཀྱི་མཁས་པ་གདན་ཞུ།",
   heading: "Support the Visitorship",
-  body: "Whether you wish to recommend a scholar, become a patron, collaborate on future residencies, or attend an upcoming talk, our team would love to hear from you.",
+  body: "To nominate a scholar, become a patron, partner with the programme, or attend a public lecture, please get in touch with the Loplao team.",
 };
 
 const NAV_LINKS = [
@@ -589,8 +589,8 @@ export default function OxfordVisitorshipPage() {
                 Scholars
               </h2>
               <p className="text-sm sm:text-base text-ink-muted leading-relaxed">
-                Tibetan Buddhist teachers and scholars who have shared their learning and
-                insights with the Oxford community.
+                A distinguished lineage of Tibetan Buddhist masters who have shared their
+                scholarship with Oxford.
               </p>
             </Reveal>
 
@@ -661,18 +661,17 @@ export default function OxfordVisitorshipPage() {
 
             <div className="flex flex-wrap items-center justify-center gap-3.5">
               <Link
-                href="/donate"
+                href="/support"
                 className="bg-brand hover:bg-brand-dark text-ink font-bold text-xs sm:text-sm px-7 py-3.5 rounded-lg transition-all shadow-md inline-flex items-center gap-2"
               >
-                <Sparkles size={14} />
-                <span>Donate Now</span>
+                <span>Contact Us</span>
+                <ArrowRight size={14} />
               </Link>
               <Link
-                href="/support"
+                href="/about"
                 className="border border-white/30 hover:border-white hover:bg-white/10 text-white font-bold text-xs sm:text-sm px-7 py-3.5 rounded-lg transition-all inline-flex items-center gap-2"
               >
-                <span>Get in Touch</span>
-                <ArrowRight size={14} />
+                <span>About Loplao</span>
               </Link>
             </div>
           </Reveal>
