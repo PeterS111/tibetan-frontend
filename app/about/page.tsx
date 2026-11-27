@@ -100,8 +100,8 @@ const TEAM_MEMBERS: TeamMember[] = [
       },
     ],
     email: "loplao.academy@gmail.com",
-    website: "https://www.loplao.com/",
-    websiteLabel: "www.loplao.com",
+    website: "https://loplao.com",
+    websiteLabel: "loplao.com",
   },
 {
     id: "piotr",

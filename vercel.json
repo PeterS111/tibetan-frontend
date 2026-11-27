@@ -1,0 +1,79 @@
+{
+  "redirects": [
+    {
+      "source": "/contact",
+      "destination": "/support",
+      "permanent": true
+    },
+    {
+      "source": "/contact-us",
+      "destination": "/support",
+      "permanent": true
+    },
+    {
+      "source": "/visitorship",
+      "destination": "/oxford-visitorship",
+      "permanent": true
+    },
+    {
+      "source": "/oxford",
+      "destination": "/oxford-visitorship",
+      "permanent": true
+    },
+    {
+      "source": "/store",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/winter-school",
+      "destination": "/courses?tab=winter",
+      "permanent": true
+    },
+    {
+      "source": "/summer-school",
+      "destination": "/courses?tab=summer",
+      "permanent": true
+    },
+    {
+      "source": "/flexible-lessons",
+      "destination": "/courses?tab=flexible",
+      "permanent": true
+    },
+    {
+      "source": "/flexible-courses",
+      "destination": "/courses?tab=flexible",
+      "permanent": true
+    },
+    {
+      "source": "/private-classes",
+      "destination": "/courses?tab=private",
+      "permanent": true
+    },
+    {
+      "source": "/private-lessons",
+      "destination": "/courses?tab=private",
+      "permanent": true
+    },
+    {
+      "source": "/one-to-one",
+      "destination": "/courses?tab=private",
+      "permanent": true
+    },
+    {
+      "source": "/about-us",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/donations",
+      "destination": "/donate",
+      "permanent": true
+    },
+    {
+      "source": "/faq",
+      "destination": "/#faq",
+      "permanent": true
+    }
+  ]
+}

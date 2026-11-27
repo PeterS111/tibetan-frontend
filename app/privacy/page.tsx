@@ -48,8 +48,8 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-serif text-ink mb-4">3. Contact</h2>
             <p>
               If you wish to have your account and all associated data deleted, please contact us at 
-              <a href="mailto:p.sm1549c@gmail.com" className="text-brand-dark font-medium hover:underline ml-1.5">
-                p.sm1549c@learntibetan.uk
+              <a href="mailto:loplao.academy@gmail.com" className="text-brand-dark font-medium hover:underline ml-1.5">
+                loplao.academy@gmail.com
               </a>.
             </p>
           </div>
