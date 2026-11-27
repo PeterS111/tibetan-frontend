@@ -1,45 +1,65 @@
 // app/dashboard/ai-tutor/page.tsx
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, ReactNode } from "react";
+import Link from "next/link";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import {
-  Sparkles,
   Mic,
   Square,
   Send,
+  Play,
   Volume2,
   Loader2,
   RotateCcw,
-  SlidersHorizontal,
-  Eye,
-  EyeOff,
+  Settings,
   X,
   AlertCircle,
   CheckCircle2,
+  Check,
+  Bookmark,
+  BookmarkCheck,
   MessageCircle,
-  BookOpen,
+  Drama,
+  Speech,
+  ScrollText,
+  HelpCircle,
+  GraduationCap,
+  Mountain,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Turtle,
+  FileText,
   Award,
 } from "lucide-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
 import { usePlatform } from "@/hooks/usePlatform";
 
-interface SuggestedReply {
+// ============================================================================
+// TYPES & V5 SPEC CONFIGURATION
+// ============================================================================
+type LevelId = "beginner1" | "beginner2" | "pre_intermediate" | "intermediate";
+type ModeId = "converse" | "situations" | "pronounce" | "read" | "ask";
+type DialectId = "lhasa_colloquial" | "lhasa_honorific" | "amdo" | "kham";
+type SpeedId = "slow" | "normal" | "natural";
+type InputKind = "tibetan" | "phonetic" | "english";
+
+interface GlossWord {
   tibetan: string;
   phonetic: string;
-  english: string;
+  meaning: string;
 }
 
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  tibetan: string;
-  phonetic?: string;
-  english?: string;
-  feedback?: string;
-  suggestedReplies?: SuggestedReply[];
-  isVoice?: boolean;
-  needsTapToPlay?: boolean;
+interface SpeechFeedback {
+  status: "good" | "needs_work";
+  message: string;
+}
+
+interface LessonSuggestion {
+  title: string;
+  course: string;
+  url: string;
 }
 
 interface ReadingWordEval {
@@ -59,8 +79,20 @@ interface ReadingEvaluation {
   next_focus: string;
 }
 
-interface HealthStatus {
-  ready: boolean;
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  tibetan: string;
+  phonetic?: string;
+  english?: string;
+  words?: GlossWord[];
+  feedback?: SpeechFeedback | null;
+  evaluation?: ReadingEvaluation | null;
+  suggestedReplies?: string[];
+  lessonSuggestion?: LessonSuggestion | null;
+  isVoice?: boolean;
+  inputKind?: InputKind | "speech";
+  needsTapToPlay?: boolean;
 }
 
 interface AudioInputDevice {
@@ -68,151 +100,593 @@ interface AudioInputDevice {
   label: string;
 }
 
-const TUTOR_MODES = [
-  { id: "conversation", label: "Free Chat" },
-  { id: "beginner_drill", label: "Beginner 1–2 Drill" },
-  { id: "grammar", label: "Grammar Coach" },
-  { id: "pronunciation", label: "Speaking Practice" },
-  { id: "reading", label: "Reading Practice" },
-];
-
-const SPEAKER_VOICES = [
-  { id: "lhasa_female", label: "Lhasa Female (Default)" },
-  { id: "lhasa_male", label: "Lhasa Male" },
-  { id: "dolkar_lhasa_female", label: "Dolkar (Lhasa F)" },
-  { id: "yangchen_lhasa_female", label: "Yangchen (Lhasa F)" },
-  { id: "darjeeyalphel_lhasa_male", label: "Darjeeyalphel (Lhasa M)" },
-  { id: "sonamtsering_lhasa_male", label: "Sonam Tsering (Lhasa M)" },
-  { id: "amdo_female", label: "Amdo Female" },
-  { id: "amdo_male", label: "Amdo Male" },
-  { id: "kham_female", label: "Kham Female" },
-  { id: "kham_male", label: "Kham Male" },
-];
-
-const STARTER_PROMPTS: SuggestedReply[] = [
-  {
-    tibetan: "བཀྲ་ཤིས་བདེ་ལེགས། ང་བོད་སྐད་སྦྱོང་གི་ཡོད།",
-    phonetic: "Tashi delek! Nga Bö-ke jong-gi yö.",
-    english: "Hello! I am learning Tibetan.",
-  },
-  {
-    tibetan: "རྒན་ལགས། ཁྱེད་རང་སྐུ་ཁམས་བཟང་ངམ།",
-    phonetic: "Gen-la, khye-rang ku-kham sang-ngam?",
-    english: "Teacher, how are you?",
-  },
-  {
-    tibetan: "དེ་རིང་གཟའ་གང་རེད།",
-    phonetic: "De-ring za gang re?",
-    english: "What day of the week is today?",
-  },
-];
-
-const READING_PRESETS = [
-  {
-    id: "classroom",
-    title: "Classroom (Beginner 1–2)",
-    tibetan: "བཀྲ་ཤིས་བདེ་ལེགས། ང་བོད་སྐད་སྦྱོང་གི་ཡོད། དེ་རིང་གཟའ་ཟླ་བ་རེད།",
-    english: "Hello! I am learning Tibetan. Today is Monday.",
-  },
-  {
-    id: "everyday",
-    title: "Everyday Lhasa",
-    tibetan: "ཁྱེད་རང་གང་ནས་ཡིན་པས། ང་དབྱིན་ཡུལ་ནས་ཡིན། ང་བོད་ཇ་མངར་མོ་ལ་དགའ་པོ་ཡོད།",
-    english: "Where are you from? I am from the UK. I like sweet Tibetan tea.",
-  },
-  {
-    id: "refuge",
-    title: "Dharma · Refuge",
-    tibetan: "སངས་རྒྱས་ཆོས་དང་ཚོགས་ཀྱི་མཆོག་རྣམས་ལ། བྱང་ཆུབ་བར་དུ་བདག་ནི་སྐྱབས་སུ་མཆི།",
-    english: "In the Buddha, the Dharma, and the Supreme Assembly, I take refuge until enlightenment.",
-  },
-  {
-    id: "simhamukha",
-    title: "Dharma · Simhamukha",
-    tibetan: "མཁའ་འགྲོ་སེང་གེ་གདོང་མ་ལ་ཕྱག་འཚལ་ལོ། བར་ཆད་ཐམས་ཅད་ཞི་བར་མཛོད།",
-    english: "Homage to Dakini Simhamukha; please pacify all obstacles.",
-  },
-];
-
-const SESSION_CHAT_KEY = "loplao_dev_ai_tutor_messages_v1";
-const PREFS_KEY = "loplao_ai_tutor_prefs_v5";
-
-function renderRichFeedback(text: string) {
-  const parts = text.split(/([\u0F00-\u0FFF]+)/g);
-  return parts.map((part, idx) =>
-    /[\u0F00-\u0FFF]/.test(part) ? (
-      <span
-        key={idx}
-        className="font-tibetan text-[17px] leading-relaxed text-ink mx-0.5 inline-block"
-      >
-        {part}
-      </span>
-    ) : (
-      <span key={idx}>{part}</span>
-    )
-  );
+interface StarterCard {
+  tibetan: string;
+  phonetic: string;
+  english: string;
 }
 
+interface LevelConfig {
+  id: LevelId;
+  badge: string;
+  label: string;
+  tierIndex: 0 | 1 | 2;
+  defaultGloss: boolean;
+  defaultPhonetics: boolean;
+  defaultSpeed: SpeedId;
+  recommendedModes: ModeId[];
+  courseName: string;
+}
+
+const LEVELS: LevelConfig[] = [
+  {
+    id: "beginner1",
+    badge: "B1",
+    label: "Beginner 1",
+    tierIndex: 0,
+    defaultGloss: true,
+    defaultPhonetics: true,
+    defaultSpeed: "slow",
+    recommendedModes: ["pronounce", "situations"],
+    courseName: "Beginner 1 Course",
+  },
+  {
+    id: "beginner2",
+    badge: "B2",
+    label: "Beginner 2",
+    tierIndex: 0,
+    defaultGloss: true,
+    defaultPhonetics: true,
+    defaultSpeed: "slow",
+    recommendedModes: ["converse", "situations"],
+    courseName: "Beginner 2 Course",
+  },
+  {
+    id: "pre_intermediate",
+    badge: "PI",
+    label: "Pre-Intermediate",
+    tierIndex: 1,
+    defaultGloss: true,
+    defaultPhonetics: false,
+    defaultSpeed: "normal",
+    recommendedModes: ["converse", "read"],
+    courseName: "Pre-Intermediate Course",
+  },
+  {
+    id: "intermediate",
+    badge: "I",
+    label: "Intermediate",
+    tierIndex: 2,
+    defaultGloss: false,
+    defaultPhonetics: false,
+    defaultSpeed: "natural",
+    recommendedModes: ["converse", "read"],
+    courseName: "Intermediate Course",
+  },
+];
+
+const LEVEL_MAP: Record<LevelId, LevelConfig> = {
+  beginner1: LEVELS[0],
+  beginner2: LEVELS[1],
+  pre_intermediate: LEVELS[2],
+  intermediate: LEVELS[3],
+};
+
+interface ModeConfig {
+  id: ModeId;
+  label: string;
+  tierDescriptions: [string, string, string];
+  greetingTib: string;
+  greetingPho: string;
+  cardsLabel: string;
+  hint: string;
+}
+
+const MODES: ModeConfig[] = [
+  {
+    id: "converse",
+    label: "Converse",
+    tierDescriptions: [
+      "Slow chat with English help",
+      "Mostly Tibetan chat",
+      "Tibetan-only chat",
+    ],
+    greetingTib: "བཀྲ་ཤིས་བདེ་ལེགས།",
+    greetingPho: "Tashi delek",
+    cardsLabel: "Try saying",
+    hint: "Tap the mic and speak · Tap underlined words for their meaning",
+  },
+  {
+    id: "situations",
+    label: "Situations",
+    tierDescriptions: [
+      "Short scripted scenes",
+      "Open role-play scenes",
+      "Idioms & honorific speech",
+    ],
+    greetingTib: "གནས་སྟངས།",
+    greetingPho: "Pick a scene",
+    cardsLabel: "Try saying",
+    hint: "Tap the mic and speak · Tap underlined words for their meaning",
+  },
+  {
+    id: "pronounce",
+    label: "Pronounce",
+    tierDescriptions: [
+      "Sounds, then words",
+      "Full phrases",
+      "Tone & rhythm",
+    ],
+    greetingTib: "ངག་འབྱུང་།",
+    greetingPho: "Say it aloud",
+    cardsLabel: "Try saying",
+    hint: "Tap Play to listen, then tap Repeat after me for feedback on aspiration, tone & rhythm",
+  },
+  {
+    id: "read",
+    label: "Read",
+    tierDescriptions: [
+      "Alphabet & syllables",
+      "Dialogues & stories",
+      "Prayers & classical texts",
+    ],
+    greetingTib: "ཀློག་པ།",
+    greetingPho: "Choose a text",
+    cardsLabel: "Start reading",
+    hint: "Tap any underlined word in a text to see its meaning · Tap Repeat after me to check your reading",
+  },
+  {
+    id: "ask",
+    label: "Ask",
+    tierDescriptions: [
+      "Answers in simple English",
+      "Mixed English & Tibetan",
+      "Can answer in Tibetan",
+    ],
+    greetingTib: "དྲི་བ།",
+    greetingPho: "Ask anything",
+    cardsLabel: "Popular questions",
+    hint: "Ask in English or Tibetan about grammar, vocabulary, culture, or Dharma",
+  },
+];
+
+const MODE_MAP: Record<ModeId, ModeConfig> = {
+  converse: MODES[0],
+  situations: MODES[1],
+  pronounce: MODES[2],
+  read: MODES[3],
+  ask: MODES[4],
+};
+
+const DIALECT_OPTIONS: { id: DialectId; label: string }[] = [
+  { id: "lhasa_colloquial", label: "Lhasa · Colloquial" },
+  { id: "lhasa_honorific", label: "Lhasa · Honorific" },
+  { id: "amdo", label: "Amdo" },
+  { id: "kham", label: "Kham" },
+];
+
+const SPEED_OPTIONS: { id: SpeedId; label: string; rate: number }[] = [
+  { id: "slow", label: "Slow", rate: 0.78 },
+  { id: "normal", label: "Normal", rate: 1.0 },
+  { id: "natural", label: "Natural", rate: 1.08 },
+];
+
+const INPUT_KIND_CYCLE: { id: InputKind; label: string; placeholder: string }[] = [
+  { id: "tibetan", label: "ཀ Tibetan", placeholder: "Tap the mic, or type Tibetan here…" },
+  { id: "phonetic", label: "Phonetic", placeholder: "Tap the mic, or type phonetics (e.g. Tashi delek)…" },
+  { id: "english", label: "English", placeholder: "Tap the mic, or type in English…" },
+];
+
+const STARTER_CARDS: Record<ModeId, [StarterCard[], StarterCard[], StarterCard[]]> = {
+  converse: [
+    [
+      {
+        tibetan: "བཀྲ་ཤིས་བདེ་ལེགས། ང་བོད་སྐད་སློབ་གི་ཡོད།",
+        phonetic: "Tashi delek! Nga Bö-ke lob-gi yö.",
+        english: "Hello! I am learning Tibetan.",
+      },
+      {
+        tibetan: "ཁྱེད་རང་སྐུ་གཟུགས་བདེ་པོ་ཡིན་ནམ།",
+        phonetic: "Khyerang ku-zuk de-po yin-nam?",
+        english: "How are you?",
+      },
+      {
+        tibetan: "དེ་རིང་གཟའ་གང་རེད།",
+        phonetic: "De-ring za gang re?",
+        english: "What day is today?",
+      },
+    ],
+    [
+      {
+        tibetan: "དེ་རིང་གནམ་གཤིས་ཅི་འདྲ་འདུག",
+        phonetic: "De-ring nam-shi chi-dra dug?",
+        english: "How is the weather today?",
+      },
+      {
+        tibetan: "ཁྱེད་རང་གིས་ཉིན་རེའི་ཁ་ལག་ག་འདྲ་བཟོ་གི་ཡོད།",
+        phonetic: "Khyerang-gi nyin-re kha-lak ga-dra zo-gi yö?",
+        english: "What do you usually cook?",
+      },
+      {
+        tibetan: "གཟའ་མཇུག་ལ་ཁྱེད་རང་གང་བྱེད་ཀྱི་ཡོད།",
+        phonetic: "Za-juk la khyerang gang je-kyi yö?",
+        english: "What do you do on weekends?",
+      },
+    ],
+    [
+      {
+        tibetan: "ཁྱེད་རང་གི་འཚོ་བའི་སྐོར་ལ་བཤད་དང་།",
+        phonetic: "Khyerang-gi tso-we kor la she dang.",
+        english: "Tell me about your life.",
+      },
+      {
+        tibetan: "ཁྱེད་རང་གི་སྔར་གྱི་ལོ་རྒྱུས་ལ་བཤད་རོགས།",
+        phonetic: "Khyerang-gi ngar-gyi lo-gyü la she rok.",
+        english: "Tell me about your background.",
+      },
+      {
+        tibetan: "དགའ་ཚོར་ཅི་འདྲ་འདུག",
+        phonetic: "Ga-tsor chi-dra dug?",
+        english: "Share your opinion on a topic.",
+      },
+    ],
+  ],
+  situations: [
+    [
+      {
+        tibetan: "ཚོང་ཁང་ནང་།",
+        phonetic: "Tsong-khang nang",
+        english: "At the shop: buy tea",
+      },
+      {
+        tibetan: "ཇ་ཁང་ནང་།",
+        phonetic: "Ja-khang nang",
+        english: "At the teahouse: order food",
+      },
+      {
+        tibetan: "གྲོགས་པོ་དང་ཕྲད་པ།",
+        phonetic: "Drok-po dang thre-pa",
+        english: "Meeting a friend",
+      },
+    ],
+    [
+      {
+        tibetan: "ཁྱིམ་ལ་མགྲོན་པོ་འབྱོར།",
+        phonetic: "Khyim la drön-po jor",
+        english: "Welcome a guest to your home",
+      },
+      {
+        tibetan: "སྨན་ཁང་།",
+        phonetic: "Men-khang",
+        english: "At the clinic",
+      },
+      {
+        tibetan: "ལམ་ཁ་འདྲི་བ།",
+        phonetic: "Lam-kha dri-wa",
+        english: "Asking directions in town",
+      },
+    ],
+    [
+      {
+        tibetan: "དགོན་པར་ཕེབས་པ།",
+        phonetic: "Gön-par pheb-pa",
+        english: "Visiting a monastery (honorific)",
+      },
+      {
+        tibetan: "ཚོང་ར་ནང་རིན་གོང་གཏམ་པ།",
+        phonetic: "Tsong-ra nang rin-gong tam-pa",
+        english: "Bargaining at the market",
+      },
+      {
+        tibetan: "ཞུ་ཡིག་འབྲི་བ།",
+        phonetic: "Zhu-yik dri-wa",
+        english: "Making a formal request",
+      },
+    ],
+  ],
+  pronounce: [
+    [
+      {
+        tibetan: "ཀ་ཁ་ག་ང་།",
+        phonetic: "ka · kha · ga · nga",
+        english: "First four letters",
+      },
+      {
+        tibetan: "ཁ་ཁྱེར་བ།",
+        phonetic: "kha khyer-wa",
+        english: "Practice aspirated sounds",
+      },
+      {
+        tibetan: "གཅིག་གཉིས་གསུམ།",
+        phonetic: "chik · nyi · sum",
+        english: "Numbers 1 to 3",
+      },
+    ],
+    [
+      {
+        tibetan: "བཀྲ་ཤིས་བདེ་ལེགས། ཁྱེད་རང་སྐུ་གཟུགས་བདེ་པོ་ཡིན་ནམ།",
+        phonetic: "Tashi delek. Khyerang ku-zuk de-po yin-nam?",
+        english: "Full greetings",
+      },
+      {
+        tibetan: "ང་ལོ་ཉི་ཤུ་ཡིན།",
+        phonetic: "Nga lo nyi-shu yin.",
+        english: "Introduce yourself",
+      },
+      {
+        tibetan: "དེ་རིང་གཟའ་གང་རེད།",
+        phonetic: "De-ring za gang re?",
+        english: "Ask the day",
+      },
+    ],
+    [
+      {
+        tibetan: "ཚིག་གྲུབ་ཀྱི་སྒྲ་གདངས།",
+        phonetic: "Tsik-drup kyi dra-dang",
+        english: "Tone drill: minimal pairs",
+      },
+      {
+        tibetan: "ཁྱེད་རང་གིས་ལེགས་པོ་བཤད།",
+        phonetic: "Khyerang-gi lek-po she.",
+        english: "Read a sentence aloud",
+      },
+      {
+        tibetan: "ཚིག་རྟགས།",
+        phonetic: "Tsik-tak",
+        english: "Rhythm and stress",
+      },
+    ],
+  ],
+  read: [
+    [
+      {
+        tibetan: "ཀ་ཁ་ག་ང་།",
+        phonetic: "ka · kha · ga · nga",
+        english: "The alphabet",
+      },
+      {
+        tibetan: "བཀྲ་ཤིས་བདེ་ལེགས།",
+        phonetic: "Tashi delek",
+        english: "First syllables",
+      },
+      {
+        tibetan: "ང་བོད་པ་ཡིན།",
+        phonetic: "Nga Bö-pa yin",
+        english: "A one-line text",
+      },
+    ],
+    [
+      {
+        tibetan: "གྲོགས་པོ་གཉིས་ཀྱི་གླེང་མོལ།",
+        phonetic: "Drok-po nyi kyi leng-möl",
+        english: "A short dialogue",
+      },
+      {
+        tibetan: "གཏམ་རྒྱུད།",
+        phonetic: "Tam-gyü",
+        english: "A short story",
+      },
+      {
+        tibetan: "ཉིན་རེའི་གསར་འགྱུར།",
+        phonetic: "Nyin-re sar-gyur",
+        english: "Simple news",
+      },
+    ],
+    [
+      {
+        tibetan: "སྨོན་ལམ།",
+        phonetic: "Mön-lam",
+        english: "A prayer with tap-to-gloss",
+      },
+      {
+        tibetan: "གསར་འགྱུར་རིང་པོ།",
+        phonetic: "Sar-gyur ring-po",
+        english: "A news article",
+      },
+      {
+        tibetan: "དཔེ་ཆ།",
+        phonetic: "Pe-cha",
+        english: "A classical passage",
+      },
+    ],
+  ],
+  ask: [
+    [
+      { tibetan: "", phonetic: "", english: 'What does "tashi delek" literally mean?' },
+      { tibetan: "", phonetic: "", english: "Why does Tibetan put the verb at the end?" },
+      { tibetan: "", phonetic: "", english: "What is the Losar festival?" },
+    ],
+    [
+      { tibetan: "", phonetic: "", english: "When do I use honorific words?" },
+      { tibetan: "", phonetic: "", english: "Explain the difference between གི་ཡོད and གི་འདུག" },
+      { tibetan: "", phonetic: "", english: "Tell me about Tibetan New Year" },
+    ],
+    [
+      { tibetan: "", phonetic: "", english: "Explain the ergative particle གིས" },
+      { tibetan: "", phonetic: "", english: "Compare Lhasa and Amdo verbs" },
+      { tibetan: "", phonetic: "", english: "What is the structure of a sādhana?" },
+    ],
+  ],
+};
+
+const SESSION_CHAT_KEY = "loplao_ai_tutor_v5_messages";
+const PREFS_KEY = "loplao_ai_tutor_v5_prefs";
+
+function normalizeWordKey(tib: string): string {
+  return (tib || "").trim().replace(/[\s་།༎༏༐༑]+$/g, "");
+}
+
+function renderModeIcon(id: ModeId) {
+  switch (id) {
+    case "converse":
+      return <MessageCircle size={15} />;
+    case "situations":
+      return <Drama size={15} />;
+    case "pronounce":
+      return <Speech size={15} />;
+    case "read":
+      return <ScrollText size={15} />;
+    case "ask":
+      return <HelpCircle size={15} />;
+  }
+}
+
+function renderInteractiveTibetan(
+  text: string,
+  words: GlossWord[] | undefined,
+  activeWordKey: string | null,
+  onSelectWord: (word: GlossWord) => void
+): ReactNode {
+  if (!text) return null;
+  if (!words || words.length === 0) return text;
+
+  // Build candidate match tokens sorted longest-first to avoid partial syllable collisions
+  const candidates: { token: string; word: GlossWord }[] = [];
+  const seen = new Set<string>();
+  for (const w of words) {
+    const raw = (w.tibetan || "").trim();
+    const norm = normalizeWordKey(raw);
+    for (const variant of [raw, norm]) {
+      if (variant && variant.length >= 1 && !seen.has(variant)) {
+        seen.add(variant);
+        candidates.push({ token: variant, word: w });
+      }
+    }
+  }
+  candidates.sort((a, b) => b.token.length - a.token.length);
+
+  const nodes: ReactNode[] = [];
+  let i = 0;
+  let plainBuf = "";
+  let keyCounter = 0;
+
+  while (i < text.length) {
+    let matched: { token: string; word: GlossWord } | null = null;
+    for (const cand of candidates) {
+      if (text.startsWith(cand.token, i)) {
+        matched = cand;
+        break;
+      }
+    }
+
+    if (matched) {
+      if (plainBuf) {
+        nodes.push(<span key={`p_${keyCounter++}`}>{plainBuf}</span>);
+        plainBuf = "";
+      }
+      const wKey = normalizeWordKey(matched.word.tibetan);
+      const isSelected = activeWordKey === wKey;
+      const pickedWord = matched.word;
+      nodes.push(
+        <button
+          key={`w_${keyCounter++}`}
+          type="button"
+          onClick={() => onSelectWord(pickedWord)}
+          title={`${pickedWord.phonetic ? `${pickedWord.phonetic} — ` : ""}${pickedWord.meaning}`}
+          className={`inline font-tibetan border-b-2 border-dotted border-brand hover:bg-brand-light/80 rounded-xs px-0.5 transition-colors cursor-pointer ${
+            isSelected ? "bg-brand-light text-ink" : ""
+          }`}
+        >
+          {matched.token}
+        </button>
+      );
+      i += matched.token.length;
+    } else {
+      plainBuf += text[i];
+      i += 1;
+    }
+  }
+
+  if (plainBuf) {
+    nodes.push(<span key={`p_${keyCounter++}`}>{plainBuf}</span>);
+  }
+
+  return nodes;
+}
+
+// ============================================================================
+// MAIN V5 AI TUTOR COMPONENT
+// ============================================================================
 export default function AiTutorPage() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { isDevUnlocked, isChecking } = useDevBypass();
   const { isNative } = usePlatform();
 
-  const [health, setHealth] = useState<HealthStatus | null>(null);
+  // Core v5 state
+  const [level, setLevel] = useState<LevelId>("beginner1");
+  const [mode, setMode] = useState<ModeId>("converse");
+  const [dialect, setDialect] = useState<DialectId>("lhasa_colloquial");
+  const [voiceGender, setVoiceGender] = useState<"female" | "male">("female");
 
+  // Settings (level sets defaults, learner can override anytime)
+  const [showGloss, setShowGloss] = useState<boolean>(true);
+  const [showPhonetics, setShowPhonetics] = useState<boolean>(true);
+  const [speed, setSpeed] = useState<SpeedId>("slow");
+  const [autoPlayTts, setAutoPlayTts] = useState<boolean>(false);
+  const [autoSendVoice, setAutoSendVoice] = useState<boolean>(true);
+
+  // Popovers & UI helpers
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
+  const [mobileDeeperOpen, setMobileDeeperOpen] = useState<boolean>(false);
+  const [customReadOpen, setCustomReadOpen] = useState<boolean>(false);
+  const [customReadText, setCustomReadText] = useState<string>("");
+
+  // Input & Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputText, setInputText] = useState("");
-  const [mode, setMode] = useState("conversation");
-  const [selectedVoice, setSelectedVoice] = useState("lhasa_female");
+  const [inputText, setInputText] = useState<string>("");
+  const [inputKind, setInputKind] = useState<InputKind>("tibetan");
+  const [activeGloss, setActiveGloss] = useState<{ msgId: string; word: GlossWord } | null>(null);
+  const [expandedEvalMsgIds, setExpandedEvalMsgIds] = useState<Record<string, boolean>>({});
 
-  // Reading Practice state
-  const [readingText, setReadingText] = useState(READING_PRESETS[0].tibetan);
-  const [readingEval, setReadingEval] = useState<ReadingEvaluation | null>(null);
-  const [isEvaluatingReading, setIsEvaluatingReading] = useState(false);
+  // Vocabulary saving (synced with public.user_learned_words)
+  const [savedWordKeys, setSavedWordKeys] = useState<Set<string>>(new Set());
+  const [savingMsgId, setSavingMsgId] = useState<string | null>(null);
+  const [savingWordKey, setSavingWordKey] = useState<string | null>(null);
 
+  // Audio & Recording state
+  const [healthReady, setHealthReady] = useState<boolean | null>(null);
   const [audioDevices, setAudioDevices] = useState<AudioInputDevice[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string>("");
   const [micLevel, setMicLevel] = useState<number>(0);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [recordSeconds, setRecordSeconds] = useState<number>(0);
+  const [recordingForMsgId, setRecordingForMsgId] = useState<string | null>(null);
 
-  const [autoPlayTts, setAutoPlayTts] = useState(true);
-  const [autoSendVoice, setAutoSendVoice] = useState(true);
-  const [showTranslations, setShowTranslations] = useState(true);
-  const [showControls, setShowControls] = useState(false);
+  const [isSending, setIsSending] = useState<boolean>(false);
+  const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
+  const [evaluatingMsgId, setEvaluatingMsgId] = useState<string | null>(null);
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+  const [loadingAudioKey, setLoadingAudioKey] = useState<string | null>(null);
 
-  const [isSending, setIsSending] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordSeconds, setRecordSeconds] = useState(0);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [infoNotice, setInfoNotice] = useState<string | null>(null);
 
-  const [playingMsgId, setPlayingMsgId] = useState<string | null>(null);
-  const [loadingAudioMsgId, setLoadingAudioMsgId] = useState<string | null>(null);
-
+  // Refs
+  const settingsRef = useRef<HTMLDivElement | null>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsCacheRef = useRef<Map<string, string>>(new Map());
   const ttsReqIdRef = useRef<number>(0);
   const ttsAbortRef = useRef<AbortController | null>(null);
   const chatReqIdRef = useRef<number>(0);
   const chatAbortRef = useRef<AbortController | null>(null);
-  const messagesRef = useRef<ChatMessage[]>([]);
-  const recordIntentRef = useRef<"chat" | "reading">("chat");
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelRecordRef = useRef<boolean>(false);
+  const recordTargetRef = useRef<{ msgId: string; text: string } | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const rafMeterRef = useRef<number | null>(null);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Restore saved chat & audio preferences
+  // Restore saved preferences & chat
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -224,13 +698,18 @@ export default function AiTutorPage() {
       const savedPrefs = localStorage.getItem(PREFS_KEY);
       if (savedPrefs) {
         const p = JSON.parse(savedPrefs);
-        if (p.mode) setMode(p.mode);
-        if (p.selectedVoice && SPEAKER_VOICES.some((v) => v.id === p.selectedVoice)) {
-          setSelectedVoice(p.selectedVoice);
-        }
+        if (p.level && LEVEL_MAP[p.level as LevelId]) setLevel(p.level);
+        if (p.mode && MODE_MAP[p.mode as ModeId]) setMode(p.mode);
+        if (p.dialect && DIALECT_OPTIONS.some((d) => d.id === p.dialect)) setDialect(p.dialect);
+        if (p.voiceGender === "male" || p.voiceGender === "female") setVoiceGender(p.voiceGender);
+        if (typeof p.showGloss === "boolean") setShowGloss(p.showGloss);
+        if (typeof p.showPhonetics === "boolean") setShowPhonetics(p.showPhonetics);
+        if (p.speed && SPEED_OPTIONS.some((s) => s.id === p.speed)) setSpeed(p.speed);
         if (typeof p.autoPlayTts === "boolean") setAutoPlayTts(p.autoPlayTts);
         if (typeof p.autoSendVoice === "boolean") setAutoSendVoice(p.autoSendVoice);
-        if (typeof p.showTranslations === "boolean") setShowTranslations(p.showTranslations);
+        if (p.inputKind && INPUT_KIND_CYCLE.some((k) => k.id === p.inputKind)) {
+          setInputKind(p.inputKind);
+        }
       }
     } catch {}
   }, []);
@@ -248,15 +727,43 @@ export default function AiTutorPage() {
       localStorage.setItem(
         PREFS_KEY,
         JSON.stringify({
+          level,
           mode,
-          selectedVoice,
+          dialect,
+          voiceGender,
+          showGloss,
+          showPhonetics,
+          speed,
           autoPlayTts,
           autoSendVoice,
-          showTranslations,
+          inputKind,
         })
       );
     } catch {}
-  }, [mode, selectedVoice, autoPlayTts, autoSendVoice, showTranslations]);
+  }, [
+    level,
+    mode,
+    dialect,
+    voiceGender,
+    showGloss,
+    showPhonetics,
+    speed,
+    autoPlayTts,
+    autoSendVoice,
+    inputKind,
+  ]);
+
+  // Close settings popover on outside click
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setSettingsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [settingsOpen]);
 
   const refreshMicrophones = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) return;
@@ -296,8 +803,8 @@ export default function AiTutorPage() {
       } catch {}
       audioRef.current = null;
     }
-    setLoadingAudioMsgId(null);
-    setPlayingMsgId(null);
+    setLoadingAudioKey(null);
+    setPlayingKey(null);
   }, []);
 
   const cleanupRecorder = useCallback(() => {
@@ -320,7 +827,9 @@ export default function AiTutorPage() {
       mediaStreamRef.current = null;
     }
     mediaRecorderRef.current = null;
+    recordTargetRef.current = null;
     setIsRecording(false);
+    setRecordingForMsgId(null);
     setRecordSeconds(0);
     setMicLevel(0);
   }, []);
@@ -336,87 +845,164 @@ export default function AiTutorPage() {
   }, [refreshMicrophones, stopPlayback, cleanupRecorder, clearTtsCache]);
 
   useEffect(() => {
-    if (mode !== "reading") {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, isSending, isTranscribing, mode]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isSending, isTranscribing, evaluatingMsgId]);
 
+  // Fetch AI health & user's saved words from Supabase
   useEffect(() => {
     if (isChecking || !isDevUnlocked || !user) return;
     let active = true;
-    const checkHealth = async () => {
+    const bootstrap = async () => {
       try {
         const token = await getToken();
         if (!token) return;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/health`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (active) {
-          setHealth({ ready: Boolean(data?.ready) });
+
+        const [healthRes, wordsRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/health`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/learned-words`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (active && healthRes.ok) {
+          const hd = await healthRes.json();
+          setHealthReady(Boolean(hd?.ready));
+        }
+        if (active && wordsRes.ok) {
+          const wd = await wordsRes.json();
+          if (Array.isArray(wd?.words)) {
+            const keys = new Set<string>(
+              wd.words.map((w: { word_key?: string; tibetan?: string }) =>
+                normalizeWordKey(w.word_key || w.tibetan || "")
+              )
+            );
+            setSavedWordKeys(keys);
+          }
         }
       } catch {}
     };
-    checkHealth();
+    bootstrap();
     return () => {
       active = false;
     };
   }, [isChecking, isDevUnlocked, user, getToken]);
 
+  // ============================================================================
+  // LEVEL & MODE SWITCHERS (Spec Section 3: level sets defaults, user can override)
+  // ============================================================================
+  const handleLevelChange = (nextLevel: LevelId) => {
+    const cfg = LEVEL_MAP[nextLevel];
+    setLevel(nextLevel);
+    setShowGloss(cfg.defaultGloss);
+    setShowPhonetics(cfg.defaultPhonetics);
+    setSpeed(cfg.defaultSpeed);
+  };
+
+  const handleModeChange = (nextMode: ModeId) => {
+    if (isRecording) stopRecording(true);
+    stopPlayback();
+    setMode(nextMode);
+    setErrorBanner(null);
+    setCustomReadOpen(false);
+    // Switch empty stage cleanly if no messages yet; preserve conversation if active or let user reset
+    if (nextMode === "ask") {
+      setInputKind("english");
+    } else if (inputKind === "english" && nextMode !== "ask") {
+      setInputKind("tibetan");
+    }
+  };
+
+  const handleResetSession = () => {
+    chatReqIdRef.current += 1;
+    if (chatAbortRef.current) {
+      chatAbortRef.current.abort();
+      chatAbortRef.current = null;
+    }
+    stopPlayback();
+    clearTtsCache();
+    setIsSending(false);
+    setEvaluatingMsgId(null);
+    setMessages([]);
+    setActiveGloss(null);
+    setExpandedEvalMsgIds({});
+    setErrorBanner(null);
+    setInfoNotice(null);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(SESSION_CHAT_KEY);
+    }
+  };
+
+  // ============================================================================
+  // AUDIO PLAYBACK (NORMAL + INSTANT SLOW PLAYBACK ON CACHED WAV)
+  // ============================================================================
   const speakTibetan = useCallback(
-    async (msgId: string, tibetanText: string, isAutoPlay = false) => {
-      const clean = tibetanText.trim();
+    async (
+      key: string,
+      tibetanText: string,
+      opts?: { slow?: boolean; isAutoPlay?: boolean; msgId?: string }
+    ) => {
+      const clean = (tibetanText || "").trim();
       if (!clean) return;
 
-      if (playingMsgId === msgId) {
+      const playTag = `${key}:${opts?.slow ? "slow" : "norm"}`;
+      if (playingKey === playTag) {
         stopPlayback();
         return;
       }
 
       stopPlayback();
       const myReqId = ++ttsReqIdRef.current;
-      const cacheKey = `${msgId}:${selectedVoice}:${clean}`;
+      const cacheKey = `${dialect}:${voiceGender}:${clean}`;
       const cachedUrl = ttsCacheRef.current.get(cacheKey);
+      const activeSpeedRate =
+        SPEED_OPTIONS.find((s) => s.id === speed)?.rate ?? 1.0;
+      const playbackRate = opts?.slow ? 0.74 : activeSpeedRate;
 
       const playBlobUrl = async (blobUrl: string) => {
         if (myReqId !== ttsReqIdRef.current) return;
         const audio = new Audio(blobUrl);
+        audio.playbackRate = playbackRate;
         audioRef.current = audio;
-        setLoadingAudioMsgId(null);
-        setPlayingMsgId(msgId);
+        setLoadingAudioKey(null);
+        setPlayingKey(playTag);
 
         audio.onended = () => {
           if (audioRef.current === audio) {
             audioRef.current = null;
-            setPlayingMsgId(null);
+            setPlayingKey(null);
           }
         };
         audio.onerror = () => {
           if (audioRef.current === audio) {
             audioRef.current = null;
-            setPlayingMsgId(null);
+            setPlayingKey(null);
           }
         };
 
         try {
           await audio.play();
-          setMessages((prev) =>
-            prev.map((m) => (m.id === msgId ? { ...m, needsTapToPlay: false } : m))
-          );
-        } catch (playErr: unknown) {
-          if (audioRef.current === audio) {
-            audioRef.current = null;
-          }
-          setPlayingMsgId(null);
-          const errName = playErr instanceof Error ? playErr.name : "";
-          if (errName === "NotAllowedError" && isAutoPlay) {
+          if (opts?.msgId) {
             setMessages((prev) =>
-              prev.map((m) => (m.id === msgId ? { ...m, needsTapToPlay: true } : m))
+              prev.map((m) =>
+                m.id === opts.msgId ? { ...m, needsTapToPlay: false } : m
+              )
+            );
+          }
+        } catch (playErr: unknown) {
+          if (audioRef.current === audio) audioRef.current = null;
+          setPlayingKey(null);
+          const errName = playErr instanceof Error ? playErr.name : "";
+          if (errName === "NotAllowedError" && opts?.isAutoPlay && opts?.msgId) {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === opts.msgId ? { ...m, needsTapToPlay: true } : m
+              )
             );
           } else if (errName !== "AbortError") {
             setInfoNotice(
-              "Audio playback was blocked or unavailable — Speech-to-Text and Chat still work normally."
+              "Audio playback was blocked or unavailable — text and speech feedback still work normally."
             );
           }
         }
@@ -427,7 +1013,7 @@ export default function AiTutorPage() {
         return;
       }
 
-      setLoadingAudioMsgId(msgId);
+      setLoadingAudioKey(playTag);
       const controller = new AbortController();
       ttsAbortRef.current = controller;
 
@@ -444,7 +1030,8 @@ export default function AiTutorPage() {
           },
           body: JSON.stringify({
             text: clean,
-            voice_name: selectedVoice,
+            dialect,
+            voice_gender: voiceGender,
           }),
           signal: controller.signal,
         });
@@ -453,30 +1040,19 @@ export default function AiTutorPage() {
 
         if (!res.ok) {
           let errMsg =
-            "Voice playback is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally.";
+            "Voice playback is temporarily unavailable — chat and speech feedback still work normally.";
           try {
             const errJson = await res.json();
             if (errJson?.error) errMsg = errJson.error;
           } catch {}
-          setLoadingAudioMsgId(null);
-          setPlayingMsgId(null);
+          setLoadingAudioKey(null);
+          setPlayingKey(null);
           setInfoNotice(errMsg);
           return;
         }
 
-        const ctype = (res.headers.get("content-type") || "").toLowerCase();
-        let blobUrl: string;
-        if (ctype.includes("application/json")) {
-          const data = await res.json();
-          if (!data?.audio_base64) throw new Error("Empty audio response.");
-          const raw = atob(data.audio_base64);
-          const bytes = new Uint8Array(raw.length);
-          for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-          blobUrl = URL.createObjectURL(new Blob([bytes], { type: data.mime_type || "audio/wav" }));
-        } else {
-          const blob = await res.blob();
-          blobUrl = URL.createObjectURL(blob);
-        }
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
 
         if (myReqId !== ttsReqIdRef.current) {
           URL.revokeObjectURL(blobUrl);
@@ -488,27 +1064,108 @@ export default function AiTutorPage() {
       } catch (err: unknown) {
         if (err instanceof Error && err.name === "AbortError") return;
         if (myReqId === ttsReqIdRef.current) {
-          setLoadingAudioMsgId(null);
-          setPlayingMsgId(null);
+          setLoadingAudioKey(null);
+          setPlayingKey(null);
           setInfoNotice(
-            "Voice playback is temporarily unavailable — Speech-to-Text, Chat, and Reading Practice still work normally."
+            "Voice playback is temporarily unavailable — chat and speech feedback still work normally."
           );
         }
       }
     },
-    [getToken, playingMsgId, selectedVoice, stopPlayback]
+    [getToken, playingKey, dialect, voiceGender, speed, stopPlayback]
   );
 
-  const sendMessage = useCallback(
-    async (textOverride?: string, fromVoice = false) => {
+  // ============================================================================
+  // SAVE TO VOCABULARY (SYNCED TO public.user_learned_words)
+  // ============================================================================
+  const saveWordsToVocabulary = useCallback(
+    async (wordsToSave: GlossWord[], sourceId: string, singleKey?: string) => {
+      const valid = wordsToSave.filter((w) => normalizeWordKey(w.tibetan));
+      if (valid.length === 0) return;
+
+      if (singleKey) setSavingWordKey(singleKey);
+      else setSavingMsgId(sourceId);
+
+      try {
+        const token = await getToken();
+        if (!token) throw new Error("Authentication unavailable.");
+
+        const entries = valid.map((w) => ({
+          module_id: 99,
+          tibetan: w.tibetan.trim(),
+          pronunciation: (w.phonetic || "").trim(),
+          english: (w.meaning || "").trim(),
+        }));
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/learned-words/record`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ entries }),
+          }
+        );
+
+        if (!res.ok) throw new Error("Could not save vocabulary right now.");
+
+        setSavedWordKeys((prev) => {
+          const next = new Set(prev);
+          valid.forEach((w) => next.add(normalizeWordKey(w.tibetan)));
+          return next;
+        });
+        setInfoNotice(
+          valid.length === 1
+            ? `Saved "${valid[0].tibetan}" to your Loplao vocabulary.`
+            : `Saved ${valid.length} words to your Loplao vocabulary.`
+        );
+      } catch (err: unknown) {
+        setErrorBanner(
+          err instanceof Error ? err.message : "Could not save vocabulary."
+        );
+      } finally {
+        setSavingMsgId(null);
+        setSavingWordKey(null);
+      }
+    },
+    [getToken]
+  );
+
+  // ============================================================================
+  // SEND CHAT TURN (V5 SPEC PAYLOAD)
+  // ============================================================================
+  const sendTurn = useCallback(
+    async (
+      textOverride?: string,
+      kindOverride?: InputKind | "speech",
+      metaDisplay?: { phonetic?: string; english?: string }
+    ) => {
       const content = (textOverride ?? inputText).trim();
       if (!content || isSending) return;
 
+      // Smart local shortcut for "Say it slower"
+      if (content.toLowerCase() === "say it slower") {
+        const lastAssistant = [...messagesRef.current]
+          .reverse()
+          .find((m) => m.role === "assistant" && m.tibetan);
+        if (lastAssistant) {
+          speakTibetan(lastAssistant.id, lastAssistant.tibetan, {
+            slow: true,
+            msgId: lastAssistant.id,
+          });
+          return;
+        }
+      }
+
       setErrorBanner(null);
+      setActiveGloss(null);
       if (textOverride === undefined) {
         setInputText("");
       }
 
+      const activeKind: InputKind | "speech" = kindOverride ?? inputKind;
       const myChatId = ++chatReqIdRef.current;
       if (chatAbortRef.current) chatAbortRef.current.abort();
       const controller = new AbortController();
@@ -518,13 +1175,20 @@ export default function AiTutorPage() {
         id: `u_${Date.now()}`,
         role: "user",
         tibetan: content,
-        isVoice: fromVoice,
+        phonetic: metaDisplay?.phonetic,
+        english: metaDisplay?.english,
+        isVoice: activeKind === "speech",
+        inputKind: activeKind,
       };
 
       const historyPayload = messagesRef.current.map((m) => ({
         role: m.role,
         text: m.role === "assistant" ? `${m.tibetan} (${m.english || ""})` : m.tibetan,
       }));
+
+      const lessonSuggestionsShown = messagesRef.current.filter(
+        (m) => m.role === "assistant" && m.lessonSuggestion
+      ).length;
 
       setMessages((prev) => [...prev, userMessage]);
       setIsSending(true);
@@ -540,9 +1204,21 @@ export default function AiTutorPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            message: content,
+            level,
+            mode,
+            dialect,
+            settings: {
+              gloss: showGloss,
+              phonetics: showPhonetics,
+              speed,
+            },
+            input: {
+              kind: activeKind,
+              text: content,
+            },
             history: historyPayload,
-            mode: mode === "reading" ? "conversation" : mode,
+            saved_words: Array.from(savedWordKeys).slice(0, 20),
+            lesson_suggestions_shown: lessonSuggestionsShown,
           }),
           signal: controller.signal,
         });
@@ -560,41 +1236,86 @@ export default function AiTutorPage() {
         }
 
         if (!res.ok || !data?.reply) {
-          throw new Error(data?.error || "The AI Tutor could not respond right now. Please try again.");
+          throw new Error(
+            data?.error || "The AI Tutor could not respond right now. Please try again."
+          );
         }
 
-        const assistantId = `a_${Date.now()}`;
         const reply = data.reply;
+        const assistantId = `a_${Date.now()}`;
         const assistantMessage: ChatMessage = {
           id: assistantId,
           role: "assistant",
           tibetan: reply.tibetan || "",
           phonetic: reply.phonetic || "",
           english: reply.english || "",
-          feedback: reply.feedback || "",
+          words: Array.isArray(reply.words) ? reply.words : [],
+          feedback: reply.feedback || null,
           suggestedReplies: Array.isArray(reply.suggested_replies)
             ? reply.suggested_replies
             : [],
+          lessonSuggestion: reply.lesson_suggestion || null,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
         setIsSending(false);
 
         if (autoPlayTts && assistantMessage.tibetan) {
-          speakTibetan(assistantId, assistantMessage.tibetan, true);
+          speakTibetan(assistantId, assistantMessage.tibetan, {
+            slow: speed === "slow",
+            isAutoPlay: true,
+            msgId: assistantId,
+          });
         }
       } catch (err: unknown) {
         if (err instanceof Error && err.name === "AbortError") return;
         if (myChatId === chatReqIdRef.current) {
           setIsSending(false);
-          const msg = err instanceof Error ? err.message : "Could not reach the AI Tutor.";
-          setErrorBanner(msg);
+          setErrorBanner(
+            err instanceof Error ? err.message : "Could not reach the AI Tutor."
+          );
         }
       }
     },
-    [inputText, isSending, getToken, mode, autoPlayTts, speakTibetan]
+    [
+      inputText,
+      isSending,
+      inputKind,
+      getToken,
+      level,
+      mode,
+      dialect,
+      showGloss,
+      showPhonetics,
+      speed,
+      savedWordKeys,
+      autoPlayTts,
+      speakTibetan,
+    ]
   );
 
+  // Start custom reading passage inside Read mode
+  const handleStartCustomRead = () => {
+    const clean = customReadText.trim();
+    if (!clean) return;
+    setCustomReadOpen(false);
+    setCustomReadText("");
+    const customMsgId = `a_custom_${Date.now()}`;
+    setMessages([
+      {
+        id: customMsgId,
+        role: "assistant",
+        tibetan: clean,
+        english: "Your custom Tibetan passage. Tap Play to listen or Repeat after me to verify your reading.",
+        words: [],
+        suggestedReplies: ["Explain grammar", "Another phrase"],
+      },
+    ]);
+  };
+
+  // ============================================================================
+  // SPEECH RECOGNITION (STT) & REPEAT-AFTER-ME EVALUATION
+  // ============================================================================
   const transcribeAudioBlob = useCallback(
     async (blob: Blob, mimeType: string) => {
       setIsTranscribing(true);
@@ -620,9 +1341,8 @@ export default function AiTutorPage() {
         const formData = new FormData();
         formData.append("audio", blob, `recording.${ext}`);
         formData.append("language", "bo");
-        if (contextHint) {
-          formData.append("context_hint", contextHint);
-        }
+        formData.append("dialect", dialect);
+        if (contextHint) formData.append("context_hint", contextHint);
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/stt`, {
           method: "POST",
@@ -631,7 +1351,6 @@ export default function AiTutorPage() {
         });
 
         const data = await res.json();
-
         if (res.status === 429 || data?.code === "quota_exceeded") {
           setIsTranscribing(false);
           setErrorBanner(
@@ -640,50 +1359,49 @@ export default function AiTutorPage() {
           );
           return;
         }
-
         if (!res.ok) {
-          throw new Error(data?.error || "Speech transcription failed. Please try again.");
+          throw new Error(
+            data?.error || "Could not recognize speech. Please try again or type below."
+          );
         }
 
         const transcript = (data?.transcript || "").trim();
         setIsTranscribing(false);
 
         if (!transcript) {
-          const dbg = data?.debug;
-          if (dbg?.reason === "silent_mic") {
-            setShowControls(true);
+          if (data?.debug?.reason === "silent_mic") {
+            setSettingsOpen(true);
             setErrorBanner(
-              "No voice was detected in your recording. Open Audio Settings above to pick your active microphone."
+              "No voice was detected. Open Tutor settings to select your active microphone, or type below."
             );
           } else {
-            setErrorBanner("No speech detected. Try speaking clearly for 1–3 seconds.");
+            setErrorBanner(
+              "No speech detected. Try speaking clearly for 1–3 seconds, or type below."
+            );
           }
           return;
         }
 
         if (autoSendVoice) {
-          await sendMessage(transcript, true);
+          await sendTurn(transcript, "speech");
         } else {
           setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         }
       } catch (err: unknown) {
         setIsTranscribing(false);
-        const msg = err instanceof Error ? err.message : "Speech transcription failed.";
-        setErrorBanner(msg);
+        setErrorBanner(
+          err instanceof Error
+            ? err.message
+            : "Could not recognize speech. You can type below instead."
+        );
       }
     },
-    [getToken, autoSendVoice, sendMessage]
+    [getToken, dialect, autoSendVoice, sendTurn]
   );
 
-  const evaluateReadingBlob = useCallback(
-    async (blob: Blob, mimeType: string) => {
-      const target = readingText.trim();
-      if (!target) {
-        setErrorBanner("Please enter or choose a Tibetan passage to read first.");
-        return;
-      }
-
-      setIsEvaluatingReading(true);
+  const evaluateRepeatAfterMe = useCallback(
+    async (msgId: string, targetText: string, blob: Blob, mimeType: string) => {
+      setEvaluatingMsgId(msgId);
       setErrorBanner(null);
 
       try {
@@ -697,54 +1415,68 @@ export default function AiTutorPage() {
           : "webm";
 
         const formData = new FormData();
-        formData.append("audio", blob, `reading.${ext}`);
-        formData.append("target_text", target);
+        formData.append("audio", blob, `repeat.${ext}`);
+        formData.append("target_text", targetText);
+        formData.append("level", level);
+        formData.append("dialect", dialect);
+        formData.append("mode", mode);
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/evaluate-reading`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/ai/evaluate-reading`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          }
+        );
 
         const data = await res.json();
-
         if (res.status === 429 || data?.code === "quota_exceeded") {
-          setIsEvaluatingReading(false);
+          setEvaluatingMsgId(null);
           setErrorBanner(
             data?.error ||
               "You have reached your daily AI Tutor usage limit. Please try again after 00:00 UTC."
           );
           return;
         }
-
-        if (!res.ok || !data?.evaluation) {
-          throw new Error(data?.error || "Could not evaluate your reading right now. Please try again.");
+        if (!res.ok) {
+          throw new Error(
+            data?.error || "Could not evaluate your speech right now. Please try again."
+          );
         }
 
-        setReadingEval(data.evaluation);
-        setIsEvaluatingReading(false);
+        const fb: SpeechFeedback | null = data?.feedback
+          ? {
+              status: data.feedback.status === "needs_work" ? "needs_work" : "good",
+              message: data.feedback.message || "",
+            }
+          : null;
+        const evalObj: ReadingEvaluation | null = data?.evaluation || null;
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msgId ? { ...m, feedback: fb, evaluation: evalObj } : m
+          )
+        );
+        setEvaluatingMsgId(null);
       } catch (err: unknown) {
-        setIsEvaluatingReading(false);
-        const msg = err instanceof Error ? err.message : "Could not evaluate your reading.";
-        setErrorBanner(msg);
+        setEvaluatingMsgId(null);
+        setErrorBanner(
+          err instanceof Error ? err.message : "Speech evaluation failed."
+        );
       }
     },
-    [getToken, readingText]
+    [getToken, level, dialect, mode]
   );
 
-  const startRecording = async (intent: "chat" | "reading") => {
-    if (isRecording || isTranscribing || isSending || isEvaluatingReading) return;
-    if (intent === "reading" && !readingText.trim()) {
-      setErrorBanner("Enter or pick a Tibetan passage before recording.");
-      return;
-    }
+  const startRecording = async (repeatTarget?: { msgId: string; text: string }) => {
+    if (isRecording || isTranscribing || isSending || evaluatingMsgId) return;
 
     setErrorBanner(null);
     stopPlayback();
-    recordIntentRef.current = intent;
 
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setErrorBanner("Microphone access is not supported on this device or browser.");
+      setErrorBanner("Microphone access is not supported on this browser. Please type below.");
       return;
     }
 
@@ -762,14 +1494,20 @@ export default function AiTutorPage() {
             autoGainControl: true,
           };
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: audioConstraints,
+      });
       mediaStreamRef.current = stream;
+      recordTargetRef.current = repeatTarget ?? null;
+      setRecordingForMsgId(repeatTarget?.msgId ?? null);
       refreshMicrophones();
 
+      // Live mic level meter
       try {
         const AudioCtx =
           window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext;
         if (AudioCtx) {
           const ctx = new AudioCtx();
           audioCtxRef.current = ctx;
@@ -778,19 +1516,17 @@ export default function AiTutorPage() {
           analyser.fftSize = 256;
           source.connect(analyser);
           const dataArr = new Uint8Array(analyser.frequencyBinCount);
-
-          const tickMeter = () => {
+          const tick = () => {
             analyser.getByteTimeDomainData(dataArr);
             let sum = 0;
             for (let i = 0; i < dataArr.length; i++) {
               const v = (dataArr[i] - 128) / 128;
               sum += v * v;
             }
-            const rms = Math.sqrt(sum / dataArr.length);
-            setMicLevel(Math.min(100, Math.round(rms * 420)));
-            rafMeterRef.current = requestAnimationFrame(tickMeter);
+            setMicLevel(Math.min(100, Math.round(Math.sqrt(sum / dataArr.length) * 420)));
+            rafMeterRef.current = requestAnimationFrame(tick);
           };
-          tickMeter();
+          tick();
         }
       } catch {}
 
@@ -814,20 +1550,23 @@ export default function AiTutorPage() {
       cancelRecordRef.current = false;
 
       recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          recordedChunksRef.current.push(e.data);
-        }
+        if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data);
       };
 
       recorder.onstop = () => {
         const wasCancelled = cancelRecordRef.current;
         const chunks = recordedChunksRef.current;
-        const activeIntent = recordIntentRef.current;
+        const repeatTargetSnapshot = recordTargetRef.current;
         cleanupRecorder();
         if (!wasCancelled && chunks.length > 0) {
           const blob = new Blob(chunks, { type: activeMime });
-          if (activeIntent === "reading") {
-            evaluateReadingBlob(blob, activeMime);
+          if (repeatTargetSnapshot) {
+            evaluateRepeatAfterMe(
+              repeatTargetSnapshot.msgId,
+              repeatTargetSnapshot.text,
+              blob,
+              activeMime
+            );
           } else {
             transcribeAudioBlob(blob, activeMime);
           }
@@ -847,8 +1586,8 @@ export default function AiTutorPage() {
       const errName = err instanceof Error ? err.name : "";
       setErrorBanner(
         errName === "NotAllowedError"
-          ? "Microphone permission was denied. Please enable mic access in your browser/app settings."
-          : "Could not start microphone recording. Open Audio Settings to select a valid microphone."
+          ? "Microphone permission was denied. Enable mic access or type below."
+          : "Could not start recording. Open Tutor settings to pick a valid microphone."
       );
     }
   };
@@ -865,36 +1604,24 @@ export default function AiTutorPage() {
     }
   };
 
-  const handleModeChange = (nextMode: string) => {
-    if (isRecording) stopRecording(true);
-    setErrorBanner(null);
-    setMode(nextMode);
-  };
+  // ============================================================================
+  // GUARD & DERIVED VALUES
+  // ============================================================================
+  if (isChecking) return <div className="min-h-[60vh] bg-paper" />;
+  if (!isDevUnlocked) return null;
 
-  const handleResetChat = () => {
-    chatReqIdRef.current += 1;
-    if (chatAbortRef.current) {
-      chatAbortRef.current.abort();
-      chatAbortRef.current = null;
-    }
-    stopPlayback();
-    clearTtsCache();
-    setIsSending(false);
-    setMessages([]);
-    setReadingEval(null);
-    setErrorBanner(null);
-    setInfoNotice(null);
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem(SESSION_CHAT_KEY);
-    }
-  };
+  const currentLevel = LEVEL_MAP[level];
+  const currentMode = MODE_MAP[mode];
+  const isRecommendedMode = currentLevel.recommendedModes.includes(mode);
+  const starterCards = STARTER_CARDS[mode][currentLevel.tierIndex];
+  const activeInputKindObj =
+    INPUT_KIND_CYCLE.find((k) => k.id === inputKind) || INPUT_KIND_CYCLE[0];
+  const learnerFirstName = user?.firstName || "Scholar";
 
-  if (isChecking) {
-    return <div className="min-h-[60vh] bg-paper" />;
-  }
-  if (!isDevUnlocked) {
-    return null;
-  }
+  const cycleInputKind = () => {
+    const idx = INPUT_KIND_CYCLE.findIndex((k) => k.id === inputKind);
+    setInputKind(INPUT_KIND_CYCLE[(idx + 1) % INPUT_KIND_CYCLE.length].id);
+  };
 
   const formatTimer = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -902,802 +1629,1170 @@ export default function AiTutorPage() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const isReadingMode = mode === "reading";
-
-  const getScoreColors = (score: number) => {
-    if (score >= 85) return "bg-emerald-50 text-emerald-800 border-emerald-200";
-    if (score >= 65) return "bg-amber-50 text-amber-800 border-amber-200";
-    return "bg-rose-50 text-rose-800 border-rose-200";
-  };
-
-  const getWordChipColors = (status: string) => {
-    if (status === "correct")
-      return "bg-emerald-50 text-emerald-900 border-emerald-200 hover:border-emerald-500";
-    if (status === "missed")
-      return "bg-rose-50 text-rose-900 border-rose-200 hover:border-rose-500";
-    return "bg-amber-50 text-amber-900 border-amber-300 hover:border-amber-500";
+  const handleStarterClick = (card: StarterCard) => {
+    if (mode === "ask") {
+      sendTurn(card.english, "english");
+      return;
+    }
+    if (mode === "situations") {
+      const prompt = `${card.tibetan} — ${card.english}`;
+      sendTurn(prompt, "tibetan", { phonetic: card.phonetic, english: card.english });
+      return;
+    }
+    if (mode === "read") {
+      const prompt = `Give me a ${currentLevel.label} Tibetan reading text for: ${card.tibetan} (${card.english})`;
+      sendTurn(prompt, "tibetan", { phonetic: card.phonetic, english: card.english });
+      return;
+    }
+    if (mode === "pronounce") {
+      const prompt = `Let's practice pronouncing: ${card.tibetan} (${card.english})`;
+      sendTurn(prompt, "tibetan", { phonetic: card.phonetic, english: card.english });
+      return;
+    }
+    sendTurn(card.tibetan || card.english, card.tibetan ? "tibetan" : "english", {
+      phonetic: card.phonetic,
+      english: card.english,
+    });
   };
 
   return (
     <div
-      className={`flex flex-col ${
-        isNative ? "h-full pt-safe px-4" : "h-full max-w-4xl mx-auto"
+      className={`flex flex-col h-full bg-paper text-ink ${
+        isNative ? "pt-safe" : ""
       }`}
     >
-      {/* Top Bar */}
-      <div className="shrink-0 mb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-ink text-brand flex items-center justify-center shadow-sm">
-              <Sparkles size={18} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-serif text-xl md:text-2xl text-ink leading-none">
-                  Tibetan AI Tutor
-                </h1>
-              </div>
-              <div className="text-[11px] text-ink-muted mt-1 flex flex-wrap items-center gap-1.5">
-                {health === null ? (
-                  <span>Connecting to Tibetan AI Tutor...</span>
-                ) : health.ready ? (
-                  <>
-                    <CheckCircle2 size={12} className="text-emerald-600" />
-                    <span>Ready · Voice &amp; Text</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle size={12} className="text-amber-600" />
-                    <span>AI Tutor is temporarily unavailable</span>
-                  </>
-                )}
-              </div>
-            </div>
+      {/* ====================================================================
+          1. TOP HEADER BAR (TITLE + LEVEL PILL + SETTINGS POPOVER)
+      ==================================================================== */}
+      <div className="shrink-0 relative z-20 px-4 sm:px-6 pb-2.5 border-b border-border-subtle">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2.5">
+          {/* Left: Title + Ready status dot */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <h1 className="font-serif font-semibold text-xl sm:text-2xl text-ink truncate">
+              AI Tutor
+            </h1>
+            {healthReady === true && (
+              <span
+                className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
+                title="AI Tutor Ready"
+              />
+            )}
+            {healthReady === false && (
+              <span
+                className="w-2 h-2 rounded-full bg-amber-500 shrink-0"
+                title="AI Tutor Unavailable"
+              />
+            )}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {!isReadingMode && (
+          {/* Right: Level Pill + Reset + Settings Gear */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Level Selector Pill (B1 / B2 / PI / I) */}
+            <div className="inline-flex items-center gap-1.5 bg-surface border border-border-subtle rounded-full pl-1 pr-2.5 py-1 shadow-2xs">
+              <span className="bg-brand text-ink font-bold text-[11px] rounded-full px-2 py-0.5 leading-none">
+                {currentLevel.badge}
+              </span>
+              <select
+                value={level}
+                onChange={(e) => handleLevelChange(e.target.value as LevelId)}
+                aria-label="Select Tibetan proficiency level"
+                className="bg-transparent text-xs sm:text-sm font-semibold text-ink focus:outline-none cursor-pointer pr-1"
+              >
+                {LEVELS.map((lv) => (
+                  <option key={lv.id} value={lv.id}>
+                    {lv.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Reset Chat Button */}
+            {messages.length > 0 && (
               <button
                 type="button"
-                onClick={() => setShowTranslations((v) => !v)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-subtle text-xs font-bold text-ink-light hover:border-ink transition-colors"
-                title="Toggle phonetics & English"
+                onClick={handleResetSession}
+                title="Start fresh"
+                className="w-9 h-9 rounded-full bg-surface border border-border-subtle hover:border-ink text-ink-light hover:text-ink flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
               >
-                {showTranslations ? <Eye size={14} /> : <EyeOff size={14} />}
-                <span className="hidden sm:inline">
-                  {showTranslations ? "Gloss On" : "Tibetan Only"}
-                </span>
+                <RotateCcw size={15} />
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={() => {
-                refreshMicrophones();
-                setShowControls((v) => !v);
-              }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${
-                showControls
-                  ? "bg-ink text-white border-ink"
-                  : "bg-surface border-border-subtle text-ink-light hover:border-ink"
-              }`}
-            >
-              <SlidersHorizontal size={14} />
-              <span className="hidden sm:inline">Audio Settings</span>
-            </button>
-
-            {(messages.length > 0 || readingEval) && (
+            {/* Tutor Settings Popover */}
+            <div className="relative" ref={settingsRef}>
               <button
                 type="button"
-                onClick={handleResetChat}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface border border-border-subtle text-xs font-bold text-ink-light hover:border-ink transition-colors"
-                title="Reset session"
+                onClick={() => {
+                  refreshMicrophones();
+                  setSettingsOpen((v) => !v);
+                }}
+                title="Tutor settings"
+                aria-label="Tutor settings"
+                className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors shadow-2xs cursor-pointer ${
+                  settingsOpen
+                    ? "bg-ink text-white border-ink"
+                    : "bg-surface border-border-subtle text-ink hover:border-ink"
+                }`}
               >
-                <RotateCcw size={14} />
+                <Settings size={16} />
               </button>
-            )}
+
+              {settingsOpen && (
+                <div className="absolute right-0 top-11 w-[290px] sm:w-[310px] bg-surface border border-border-strong rounded-2xl shadow-xl p-4 z-40 animate-in fade-in duration-150">
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-2">
+                    Tutor settings
+                  </div>
+
+                  {/* Gloss toggle */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Gloss (English meaning)</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={showGloss}
+                      onClick={() => setShowGloss((v) => !v)}
+                      className={`w-10 h-[22px] rounded-full transition-colors relative cursor-pointer ${
+                        showGloss ? "bg-brand" : "bg-border-subtle"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-xs transition-all ${
+                          showGloss ? "left-[21px]" : "left-[3px]"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Phonetics toggle */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Phonetics</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={showPhonetics}
+                      onClick={() => setShowPhonetics((v) => !v)}
+                      className={`w-10 h-[22px] rounded-full transition-colors relative cursor-pointer ${
+                        showPhonetics ? "bg-brand" : "bg-border-subtle"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-xs transition-all ${
+                          showPhonetics ? "left-[21px]" : "left-[3px]"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Speaking speed */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Speaking speed</span>
+                    <select
+                      value={speed}
+                      onChange={(e) => setSpeed(e.target.value as SpeedId)}
+                      className="bg-paper border border-border-subtle rounded-lg px-2 py-1 text-xs font-semibold text-ink focus:outline-none focus:border-brand cursor-pointer"
+                    >
+                      {SPEED_OPTIONS.map((sp) => (
+                        <option key={sp.id} value={sp.id}>
+                          {sp.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Dialect */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Dialect</span>
+                    <select
+                      value={dialect}
+                      onChange={(e) => setDialect(e.target.value as DialectId)}
+                      className="bg-paper border border-border-subtle rounded-lg px-2 py-1 text-xs font-semibold text-ink focus:outline-none focus:border-brand cursor-pointer"
+                    >
+                      {DIALECT_OPTIONS.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Voice preference */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Tutor voice</span>
+                    <select
+                      value={voiceGender}
+                      onChange={(e) =>
+                        setVoiceGender(e.target.value === "male" ? "male" : "female")
+                      }
+                      className="bg-paper border border-border-subtle rounded-lg px-2 py-1 text-xs font-semibold text-ink focus:outline-none focus:border-brand cursor-pointer"
+                    >
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                  </div>
+
+                  {/* Auto-speak replies */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Auto-speak replies</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={autoPlayTts}
+                      onClick={() => setAutoPlayTts((v) => !v)}
+                      className={`w-10 h-[22px] rounded-full transition-colors relative cursor-pointer ${
+                        autoPlayTts ? "bg-brand" : "bg-border-subtle"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-xs transition-all ${
+                          autoPlayTts ? "left-[21px]" : "left-[3px]"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Auto-send voice */}
+                  <div className="flex items-center justify-between py-2.5 border-b border-border-subtle text-sm">
+                    <span className="text-ink">Auto-send voice</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={autoSendVoice}
+                      onClick={() => setAutoSendVoice((v) => !v)}
+                      className={`w-10 h-[22px] rounded-full transition-colors relative cursor-pointer ${
+                        autoSendVoice ? "bg-brand" : "bg-border-subtle"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow-xs transition-all ${
+                          autoSendVoice ? "left-[21px]" : "left-[3px]"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Microphone Input */}
+                  <div className="pt-2.5">
+                    <label className="block text-[11px] font-semibold text-ink-muted mb-1">
+                      Microphone
+                    </label>
+                    <select
+                      value={selectedMicId}
+                      onChange={(e) => setSelectedMicId(e.target.value)}
+                      className="w-full bg-paper border border-border-subtle rounded-lg px-2.5 py-1.5 text-xs text-ink focus:outline-none focus:border-brand cursor-pointer"
+                    >
+                      <option value="">System Default Mic</option>
+                      {audioDevices.map((d) => (
+                        <option key={d.deviceId} value={d.deviceId}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* 5 Mode Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-          {TUTOR_MODES.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => handleModeChange(m.id)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
-                mode === m.id
-                  ? "bg-brand text-ink shadow-sm"
-                  : "bg-surface border border-border-subtle text-ink-light hover:border-ink"
-              }`}
-            >
-              {m.id === "reading" && <BookOpen size={13} />}
-              {m.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Collapsible Audio Settings Strip (Voice & Microphone ONLY) */}
-        {showControls && (
-          <div className="mt-2.5 p-3.5 bg-surface border border-border-subtle rounded-2xl shadow-sm space-y-3 text-xs animate-in fade-in">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Speaker Voice
-                </label>
-                <select
-                  value={selectedVoice}
-                  onChange={(e) => setSelectedVoice(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
-                >
-                  {SPEAKER_VOICES.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                  Microphone Input
-                </label>
-                <select
-                  value={selectedMicId}
-                  onChange={(e) => setSelectedMicId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-paper border border-border-strong text-ink font-medium focus:outline-none focus:border-brand"
-                >
-                  <option value="">System Default Mic</option>
-                  {audioDevices.map((d) => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 pt-1">
-              <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
-                <input
-                  type="checkbox"
-                  checked={autoPlayTts}
-                  onChange={(e) => setAutoPlayTts(e.target.checked)}
-                  className="accent-ink w-4 h-4 rounded"
-                />
-                Auto-speak chat replies
-              </label>
-
-              <label className="inline-flex items-center gap-2 cursor-pointer font-medium text-ink">
-                <input
-                  type="checkbox"
-                  checked={autoSendVoice}
-                  onChange={(e) => setAutoSendVoice(e.target.checked)}
-                  className="accent-ink w-4 h-4 rounded"
-                />
-                Auto-send after voice transcription
-              </label>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Non-Breaking Info Notice */}
-      {infoNotice && (
-        <div className="shrink-0 mb-2.5 px-4 py-2 rounded-2xl bg-brand-light border border-brand/30 text-ink text-xs font-medium flex items-center justify-between gap-2">
-          <span className="break-words">{infoNotice}</span>
-          <button
-            type="button"
-            onClick={() => setInfoNotice(null)}
-            className="text-ink-muted hover:text-ink shrink-0"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* Error Banner */}
-      {errorBanner && (
-        <div className="shrink-0 mb-2.5 px-4 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <AlertCircle size={15} className="shrink-0" />
-            <span className="break-words">{errorBanner}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setErrorBanner(null)}
-            className="text-rose-600 hover:text-rose-900 shrink-0"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* ======================================================== */}
-      {/* TAB 5: READING PRACTICE STUDIO                           */}
-      {/* ======================================================== */}
-      {isReadingMode ? (
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 space-y-4 pb-6">
-          <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-4 sm:p-6 shadow-sm">
-            <div className="mb-3">
-              <div className="text-eyebrow mb-1">Reading Verification Studio</div>
-              <h2 className="font-serif text-lg sm:text-xl text-ink">
-                Choose a Passage or Paste Your Own Tibetan Text
-              </h2>
-            </div>
-
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {READING_PRESETS.map((preset) => {
-                const isSelected = readingText.trim() === preset.tibetan.trim();
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => {
-                      setReadingText(preset.tibetan);
-                      setReadingEval(null);
-                      setErrorBanner(null);
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                      isSelected
-                        ? "bg-ink text-white"
-                        : "bg-paper border border-border-subtle text-ink-light hover:border-ink"
-                    }`}
-                  >
-                    {preset.title}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="relative">
-              <textarea
-                value={readingText}
-                maxLength={1500}
-                onChange={(e) => {
-                  setReadingText(e.target.value);
-                  if (readingEval) setReadingEval(null);
-                }}
-                rows={3}
-                placeholder="Paste or type any Tibetan Uchen passage you want Gen-la to verify..."
-                className="w-full p-4 sm:p-5 rounded-2xl bg-paper/70 border border-border-strong focus:border-ink focus:outline-none font-tibetan text-[26px] sm:text-[32px] leading-[1.95] text-ink resize-y"
-              />
-              {readingText && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setReadingText("");
-                    setReadingEval(null);
-                  }}
-                  className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-surface border border-border-subtle text-[10px] font-bold uppercase tracking-wider text-ink-muted hover:text-ink"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {READING_PRESETS.find((p) => p.tibetan.trim() === readingText.trim()) && (
-              <p className="text-xs text-ink-muted mt-2 pl-1">
-                Meaning:{" "}
-                {READING_PRESETS.find((p) => p.tibetan.trim() === readingText.trim())?.english}
-              </p>
-            )}
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="max-w-4xl mx-auto mt-2 -mb-[11px] flex items-center gap-1 overflow-x-auto custom-scrollbar">
+          {MODES.map((m) => {
+            const active = mode === m.id;
+            const rec = currentLevel.recommendedModes.includes(m.id);
+            return (
               <button
+                key={m.id}
                 type="button"
-                onClick={() => speakTibetan("reading_model_passage", readingText, false)}
-                disabled={!readingText.trim() || loadingAudioMsgId === "reading_model_passage"}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full border text-xs font-bold transition-colors disabled:opacity-40 ${
-                  playingMsgId === "reading_model_passage"
-                    ? "bg-brand text-ink border-brand"
-                    : "bg-paper border-border-strong text-ink hover:border-ink"
+                onClick={() => handleModeChange(m.id)}
+                className={`relative inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs sm:text-sm whitespace-nowrap border-b-[3px] transition-colors cursor-pointer ${
+                  active
+                    ? "border-brand text-ink font-semibold"
+                    : "border-transparent text-ink-muted hover:text-ink"
                 }`}
               >
-                {loadingAudioMsgId === "reading_model_passage" ? (
-                  <Loader2 size={15} className="animate-spin" />
-                ) : playingMsgId === "reading_model_passage" ? (
-                  <Square size={13} fill="currentColor" />
-                ) : (
-                  <Volume2 size={16} />
+                {renderModeIcon(m.id)}
+                <span>{m.label}</span>
+                {rec && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-brand ml-0.5"
+                    title="Recommended for your level"
+                  />
                 )}
-                {playingMsgId === "reading_model_passage"
-                  ? "Stop Voice"
-                  : "Listen First"}
               </button>
+            );
+          })}
+        </div>
+      </div>
 
-              {isRecording ? (
-                <div className="flex flex-wrap items-center gap-2.5 bg-rose-50 border-2 border-rose-400 rounded-full px-4 py-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="text-xs font-bold text-ink">
-                    Recording... {formatTimer(recordSeconds)}
-                  </span>
-                  <div className="hidden sm:flex items-center gap-1 h-4">
-                    {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
-                      <span
-                        key={idx}
-                        className={`w-1.5 rounded-full transition-all duration-75 ${
-                          micLevel >= thresh ? "bg-emerald-500 h-4" : "bg-border-subtle h-1.5"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => stopRecording(true)}
-                    className="px-2.5 py-1 text-xs font-bold text-ink-muted hover:text-ink"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => stopRecording(false)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700"
-                  >
-                    <Square size={11} fill="currentColor" />
-                    Stop &amp; Evaluate
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => startRecording("reading")}
-                  disabled={!readingText.trim() || isEvaluatingReading}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand text-ink hover:bg-brand-dark disabled:opacity-40 text-sm font-bold shadow-sm transition-transform active:scale-[0.98]"
-                >
-                  {isEvaluatingReading ? (
-                    <>
-                      <Loader2 size={17} className="animate-spin" />
-                      Evaluating your reading...
-                    </>
-                  ) : (
-                    <>
-                      <Mic size={18} />
-                      Read Aloud &amp; Verify
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+      {/* Mode Description Strip */}
+      <div className="shrink-0 px-4 sm:px-6 pt-2.5 pb-1">
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
+          <div>
+            <strong className="text-ink">{currentMode.label}:</strong>{" "}
+            {currentMode.tierDescriptions[currentLevel.tierIndex]}.{" "}
+            {isRecommendedMode && (
+              <span className="text-brand-dark font-bold ml-1">
+                ● Recommended for you
+              </span>
+            )}
           </div>
 
-          {isEvaluatingReading && (
-            <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-6 text-center shadow-sm">
-              <Loader2 size={24} className="animate-spin text-brand-dark mx-auto mb-2" />
-              <p className="text-sm font-bold text-ink">
-                Listening closely to your Tibetan pronunciation...
-              </p>
-              <p className="text-xs text-ink-muted mt-1">
-                Checking silent prefixes, stacked consonants, vowel shifts, and tone register...
-              </p>
+          {mode === "read" && (
+            <button
+              type="button"
+              onClick={() => setCustomReadOpen((v) => !v)}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-ink hover:text-brand-dark underline decoration-brand underline-offset-4 cursor-pointer"
+            >
+              <FileText size={12} />
+              {customReadOpen ? "Close custom text" : "Paste your own Tibetan text"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Custom Reading Passage Input Drawer (Read Mode) */}
+      {mode === "read" && customReadOpen && (
+        <div className="shrink-0 px-4 sm:px-6 pt-2">
+          <div className="max-w-4xl mx-auto bg-surface border border-border-strong rounded-2xl p-4 shadow-sm animate-in fade-in">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-1.5">
+              Paste any Tibetan passage to listen &amp; verify your reading
+            </label>
+            <textarea
+              rows={2}
+              value={customReadText}
+              maxLength={1500}
+              onChange={(e) => setCustomReadText(e.target.value)}
+              placeholder="བཀྲ་ཤིས་བདེ་ལེགས། ..."
+              className="w-full bg-paper/70 border border-border-subtle focus:border-brand rounded-xl p-3 font-tibetan text-2xl leading-[1.8] text-ink outline-none resize-y"
+            />
+            <div className="mt-2.5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setCustomReadOpen(false)}
+                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-ink-muted hover:text-ink cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleStartCustomRead}
+                disabled={!customReadText.trim()}
+                className="px-4 py-1.5 rounded-full bg-ink hover:bg-ink-light text-white text-xs font-bold disabled:opacity-40 cursor-pointer"
+              >
+                Load into Reader
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notices & Error Banners */}
+      {(infoNotice || errorBanner) && (
+        <div className="shrink-0 px-4 sm:px-6 pt-2 space-y-1.5">
+          {infoNotice && (
+            <div className="max-w-4xl mx-auto px-4 py-2 rounded-2xl bg-brand-light border border-brand/30 text-ink text-xs font-medium flex items-center justify-between gap-2">
+              <span>{infoNotice}</span>
+              <button
+                type="button"
+                onClick={() => setInfoNotice(null)}
+                className="text-ink-muted hover:text-ink shrink-0 cursor-pointer"
+              >
+                <X size={14} />
+              </button>
             </div>
           )}
-
-          {readingEval && !isEvaluatingReading && (
-            <div className="space-y-4 animate-in fade-in">
-              <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-5 sm:p-6 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border-subtle">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-16 h-16 rounded-2xl border flex flex-col items-center justify-center shrink-0 ${getScoreColors(
-                        readingEval.overall_score
-                      )}`}
-                    >
-                      <span className="font-serif text-2xl font-bold leading-none">
-                        {readingEval.overall_score}
-                      </span>
-                      <span className="text-[9px] font-bold uppercase tracking-widest mt-0.5">
-                        / 100
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Award size={16} className="text-brand-dark" />
-                      <h3 className="font-serif text-xl text-ink">
-                        {readingEval.grade_label || "Reading Evaluation"}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => startRecording("reading")}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ink text-white hover:bg-ink-light text-xs font-bold transition-colors"
-                  >
-                    <Mic size={14} /> Try Reading Again
-                  </button>
-                </div>
-
-                {readingEval.word_evaluations.length > 0 && (
-                  <div className="py-4 border-b border-border-subtle">
-                    <div className="text-eyebrow mb-2">
-                      Word-by-Word Accuracy (Tap any word to hear pronunciation)
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {readingEval.word_evaluations.map((w, idx) => {
-                        const wId = `eval_word_${idx}`;
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => speakTibetan(wId, w.target, false)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-colors ${getWordChipColors(
-                              w.status
-                            )}`}
-                            title={`${w.expected_phonetic} — ${w.heard_as}`}
-                          >
-                            <span className="font-tibetan text-xl leading-[1.7]">{w.target}</span>
-                            {loadingAudioMsgId === wId ? (
-                              <Loader2 size={12} className="animate-spin opacity-70" />
-                            ) : (
-                              <Volume2 size={12} className="opacity-60" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 space-y-3 text-sm">
-                  {readingEval.what_was_heard && (
-                    <div className="p-3.5 rounded-xl bg-paper border border-border-subtle">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-1">
-                        What Gen-la Heard in Your Audio
-                      </div>
-                      <div className="text-ink leading-relaxed">
-                        {renderRichFeedback(readingEval.what_was_heard)}
-                      </div>
-                    </div>
-                  )}
-
-                  {readingEval.summary_feedback && (
-                    <div className="text-ink-light leading-relaxed">
-                      {renderRichFeedback(readingEval.summary_feedback)}
-                    </div>
-                  )}
-
-                  {readingEval.next_focus && (
-                    <div className="px-4 py-3 rounded-xl bg-brand-light/70 border border-brand/30 text-xs text-ink leading-relaxed">
-                      <span className="font-bold uppercase tracking-wider text-[10px] text-brand-dark mr-1.5">
-                        Next Attempt Focus:
-                      </span>
-                      {renderRichFeedback(readingEval.next_focus)}
-                    </div>
-                  )}
-                </div>
+          {errorBanner && (
+            <div className="max-w-4xl mx-auto px-4 py-2.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <AlertCircle size={15} className="shrink-0" />
+                <span className="break-words">{errorBanner}</span>
               </div>
-
-              {readingEval.word_evaluations.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {readingEval.word_evaluations.map((w, idx) => {
-                    const wId = `eval_card_${idx}`;
-                    const statusBadge =
-                      w.status === "correct"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : w.status === "missed"
-                        ? "bg-rose-50 text-rose-700 border-rose-200"
-                        : "bg-amber-50 text-amber-800 border-amber-200";
-
-                    const statusText =
-                      w.status === "correct"
-                        ? "Correct"
-                        : w.status === "missed"
-                        ? "Missed"
-                        : "Needs Work";
-
-                    return (
-                      <div
-                        key={idx}
-                        className="bg-surface border border-border-subtle rounded-2xl p-4 shadow-sm flex flex-col justify-between gap-2"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="font-tibetan text-2xl leading-[1.8] text-ink">
-                              {w.target}
-                            </div>
-                            <div className="text-xs font-medium text-ink-light italic">
-                              Expected: {w.expected_phonetic}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span
-                              className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-widest ${statusBadge}`}
-                            >
-                              {statusText}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => speakTibetan(wId, w.target, false)}
-                              className="w-8 h-8 rounded-full bg-paper border border-border-subtle hover:border-ink flex items-center justify-center text-ink"
-                              title="Hear pronunciation"
-                            >
-                              {loadingAudioMsgId === wId ? (
-                                <Loader2 size={13} className="animate-spin" />
-                              ) : playingMsgId === wId ? (
-                                <Square size={11} fill="currentColor" />
-                              ) : (
-                                <Volume2 size={14} />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="text-xs text-ink-muted pt-1 border-t border-border-subtle/60 space-y-1">
-                          <div>
-                            <span className="font-bold text-ink">Heard:</span>{" "}
-                            {renderRichFeedback(w.heard_as)}
-                          </div>
-                          {w.tip && (
-                            <div>
-                              <span className="font-bold text-brand-dark">Tip:</span>{" "}
-                              {renderRichFeedback(w.tip)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => setErrorBanner(null)}
+                className="text-rose-600 hover:text-rose-900 shrink-0 cursor-pointer"
+              >
+                <X size={14} />
+              </button>
             </div>
           )}
         </div>
-      ) : (
-        /* ======================================================== */
-        /* TABS 1–4: VOICE & TEXT CHAT WORKSPACE                    */
-        /* ======================================================== */
-        <>
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1 space-y-4 pb-4">
-            {messages.length === 0 ? (
-              <div className="bg-surface border border-border-subtle rounded-[1.5rem] p-6 md:p-8 shadow-sm text-center my-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-light text-brand-dark flex items-center justify-center mx-auto mb-3">
-                  <MessageCircle size={22} />
-                </div>
-                <h2 className="font-serif text-xl md:text-2xl text-ink mb-2">
-                  <span className="font-tibetan text-2xl md:text-3xl mr-2">
-                    བཀྲ་ཤིས་བདེ་ལེགས།
-                  </span>
-                  Practice Speaking &amp; Reading Tibetan
-                </h2>
-                <p className="text-sm text-ink-light max-w-lg mx-auto mb-6">
-                  Tap the microphone to speak in Tibetan, or type in Tibetan, phonetic spelling, or
-                  English. Gen-la replies in spoken Tibetan and can discuss everyday life, Dharma,
-                  prayers, philosophy, or grammar.
-                </p>
+      )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-left">
-                  {STARTER_PROMPTS.map((prompt, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => sendMessage(prompt.tibetan)}
-                      className="p-3.5 rounded-2xl bg-paper/70 border border-border-subtle hover:border-ink transition-all text-left group"
-                    >
-                      <div className="font-tibetan text-xl leading-[1.8] text-ink mb-1">
-                        {prompt.tibetan}
-                      </div>
-                      {showTranslations && (
-                        <>
-                          <div className="text-[11px] font-medium text-ink-light">
-                            {prompt.phonetic}
-                          </div>
-                          <div className="text-[11px] text-ink-muted mt-0.5">
-                            {prompt.english}
-                          </div>
-                        </>
-                      )}
-                    </button>
-                  ))}
+      {/* ====================================================================
+          2. SCROLLABLE STAGE (EMPTY STARTER CARDS OR ACTIVE CONVERSATION)
+      ==================================================================== */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 sm:px-6 py-3">
+        <div className="max-w-4xl mx-auto">
+          {messages.length === 0 ? (
+            <div className="py-3 sm:py-5 animate-in fade-in">
+              {/* Greeting Hero */}
+              <div className="mb-6">
+                <div className="text-xs sm:text-sm text-ink-muted mb-1">
+                  Welcome back, {learnerFirstName}
                 </div>
+                <div className="font-tibetan text-4xl sm:text-[44px] text-ink leading-[1.6]">
+                  {currentMode.greetingTib}
+                </div>
+                {showPhonetics && (
+                  <div className="text-base sm:text-lg text-ink-muted">
+                    {currentMode.greetingPho}
+                  </div>
+                )}
               </div>
-            ) : (
-              messages.map((msg, idx) => {
+
+              {/* Starter Cards Grid */}
+              <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-2.5">
+                {currentMode.cardsLabel}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                {starterCards.map((card, idx) => {
+                  const cardPlayKey = `starter_${mode}_${level}_${idx}`;
+                  const isCardPlaying = playingKey === `${cardPlayKey}:norm`;
+                  const isCardLoading = loadingAudioKey === `${cardPlayKey}:norm`;
+
+                  return (
+                    <div
+                      key={`${mode}_${level}_${idx}`}
+                      onClick={() => handleStarterClick(card)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleStarterClick(card);
+                        }
+                      }}
+                      className={`group bg-surface border border-border-subtle hover:border-brand rounded-[18px] p-4 shadow-sm hover:-translate-y-0.5 transition-all flex flex-col gap-1.5 min-h-[132px] cursor-pointer text-left ${
+                        mode === "ask" ? "justify-center" : ""
+                      }`}
+                    >
+                      {mode !== "ask" && card.tibetan && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            speakTibetan(cardPlayKey, card.tibetan, {
+                              slow: speed === "slow",
+                            });
+                          }}
+                          title="Listen to phrase"
+                          className={`self-end w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                            isCardPlaying
+                              ? "bg-brand text-ink"
+                              : "bg-brand-light text-ink hover:bg-brand"
+                          }`}
+                        >
+                          {isCardLoading ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : isCardPlaying ? (
+                            <Square size={11} fill="currentColor" />
+                          ) : (
+                            <Play size={12} fill="currentColor" className="ml-0.5" />
+                          )}
+                        </button>
+                      )}
+
+                      {card.tibetan && (
+                        <div className="font-tibetan text-[21px] leading-[1.75] text-ink">
+                          {card.tibetan}
+                        </div>
+                      )}
+
+                      {showPhonetics && card.phonetic && (
+                        <div className="text-xs sm:text-sm text-ink-light">
+                          {card.phonetic}
+                        </div>
+                      )}
+
+                      {(mode === "ask" || showGloss) && (
+                        <div
+                          className={
+                            mode === "ask"
+                              ? "text-[15px] font-medium text-ink leading-snug"
+                              : "text-xs sm:text-[13px] text-ink-muted mt-auto pt-1"
+                          }
+                        >
+                          {card.english}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5 pb-4">
+              {messages.map((msg, idx) => {
                 const isLatestAssistant =
                   msg.role === "assistant" && idx === messages.length - 1;
 
+                // ---------------- USER BUBBLE ----------------
                 if (msg.role === "user") {
+                  const hasTibetan = /[\u0F00-\u0FFF]/.test(msg.tibetan);
                   return (
                     <div key={msg.id} className="flex flex-col items-end gap-1">
-                      <div className="max-w-[85%] sm:max-w-[75%] bg-ink text-white rounded-[1.25rem] rounded-br-sm px-4 py-3 shadow-sm">
-                        <div className="font-tibetan text-xl leading-[1.8] text-white">
+                      <div className="max-w-[88%] sm:max-w-[75%] bg-ink text-white rounded-[20px] rounded-tr-[4px] px-4 py-3 shadow-sm">
+                        <div
+                          className={
+                            hasTibetan
+                              ? "font-tibetan text-[22px] sm:text-[24px] leading-[1.8] text-white"
+                              : "text-sm sm:text-base text-white leading-relaxed"
+                          }
+                        >
                           {msg.tibetan}
                         </div>
+                        {showPhonetics && msg.phonetic && (
+                          <div className="text-xs sm:text-sm text-white/80 mt-0.5">
+                            {msg.phonetic}
+                          </div>
+                        )}
+                        {showGloss && msg.english && hasTibetan && (
+                          <div className="text-xs text-white/75 mt-0.5">
+                            {msg.english}
+                          </div>
+                        )}
                       </div>
                       {msg.isVoice && (
-                        <span className="text-[10px] font-medium text-ink-muted/80 pr-1">
-                          Voice message
+                        <span className="text-[10px] font-semibold text-ink-muted pr-1">
+                          Spoken
                         </span>
                       )}
                     </div>
                   );
                 }
 
-                const isPlaying = playingMsgId === msg.id;
-                const isLoadingAudio = loadingAudioMsgId === msg.id;
+                // ---------------- ASSISTANT BUBBLE ----------------
+                const normKey = `${msg.id}:norm`;
+                const slowKey = `${msg.id}:slow`;
+                const isPlayingNorm = playingKey === normKey;
+                const isPlayingSlow = playingKey === slowKey;
+                const isLoadingNorm = loadingAudioKey === normKey;
+                const isLoadingSlow = loadingAudioKey === slowKey;
+                const isRecordingThis =
+                  isRecording && recordingForMsgId === msg.id;
+                const isEvaluatingThis = evaluatingMsgId === msg.id;
+
+                const bubbleWords = msg.words || [];
+                const allSaved =
+                  bubbleWords.length > 0 &&
+                  bubbleWords.every((w) =>
+                    savedWordKeys.has(normalizeWordKey(w.tibetan))
+                  );
+                const selectedWordForThisMsg =
+                  activeGloss && activeGloss.msgId === msg.id
+                    ? activeGloss.word
+                    : null;
+                const selectedWordNorm = selectedWordForThisMsg
+                  ? normalizeWordKey(selectedWordForThisMsg.tibetan)
+                  : null;
+                const isEvalExpanded = Boolean(expandedEvalMsgIds[msg.id]);
 
                 return (
-                  <div key={msg.id} className="flex flex-col items-start gap-2">
-                    <div className="max-w-[95%] sm:max-w-[85%] bg-surface border border-border-subtle rounded-[1.25rem] rounded-bl-sm p-4 sm:p-5 shadow-sm">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="font-tibetan text-[24px] sm:text-[28px] leading-[1.9] pb-1 text-ink">
-                          {msg.tibetan}
-                        </div>
-                        <div className="flex flex-col items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => speakTibetan(msg.id, msg.tibetan, false)}
-                            disabled={isLoadingAudio}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                              isPlaying
-                                ? "bg-brand text-ink"
-                                : "bg-paper border border-border-subtle text-ink hover:border-ink"
-                            }`}
-                            title={isPlaying ? "Stop audio" : "Play voice"}
-                          >
-                            {isLoadingAudio ? (
-                              <Loader2 size={17} className="animate-spin" />
-                            ) : isPlaying ? (
-                              <Square size={15} fill="currentColor" />
-                            ) : (
-                              <Volume2 size={18} />
-                            )}
-                          </button>
-                          {msg.needsTapToPlay && !isPlaying && (
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-brand-dark">
-                              Tap
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {showTranslations && (msg.phonetic || msg.english) && (
-                        <div className="mt-2 pt-2.5 border-t border-border-subtle/70 space-y-1">
-                          {msg.phonetic && (
-                            <p className="text-xs sm:text-sm font-medium text-ink-light italic">
-                              {msg.phonetic}
-                            </p>
-                          )}
-                          {msg.english && (
-                            <p className="text-xs sm:text-sm text-ink-muted">{msg.english}</p>
-                          )}
-                        </div>
-                      )}
-
-                      {msg.feedback && (
-                        <div className="mt-3 px-3.5 py-2.5 rounded-xl bg-brand-light/60 border border-brand/25 text-xs text-ink leading-relaxed">
-                          <span className="font-bold uppercase tracking-wider text-[10px] text-brand-dark mr-1.5">
-                            Gen-la Tip:
-                          </span>
-                          {renderRichFeedback(msg.feedback)}
-                        </div>
-                      )}
+                  <div key={msg.id} className="flex items-start gap-3">
+                    {/* Navy L Avatar */}
+                    <div className="w-9 h-9 rounded-full bg-ink text-paper font-serif font-bold text-sm flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                      L
                     </div>
 
-                    {isLatestAssistant &&
-                      msg.suggestedReplies &&
-                      msg.suggestedReplies.length > 0 &&
-                      !isSending && (
-                        <div className="flex flex-wrap gap-2 pl-1">
-                          {msg.suggestedReplies.map((sr, sIdx) => (
-                            <button
-                              key={sIdx}
-                              type="button"
-                              onClick={() => sendMessage(sr.tibetan)}
-                              className="px-3.5 py-2 rounded-2xl bg-surface border border-border-subtle hover:border-ink text-left transition-all shadow-sm active:scale-[0.99]"
-                            >
-                              <div className="font-tibetan text-base leading-[1.7] text-ink">
-                                {sr.tibetan}
+                    <div className="flex-1 min-w-0 max-w-[660px]">
+                      <div className="bg-surface border border-border-subtle rounded-[20px] rounded-tl-[4px] p-4 sm:p-5 shadow-sm">
+                        {/* Interactive Tibetan Script */}
+                        {msg.tibetan && (
+                          <div className="font-tibetan text-[25px] sm:text-[27px] leading-[1.9] text-ink">
+                            {renderInteractiveTibetan(
+                              msg.tibetan,
+                              bubbleWords,
+                              selectedWordNorm,
+                              (word) =>
+                                setActiveGloss((prev) =>
+                                  prev &&
+                                  prev.msgId === msg.id &&
+                                  normalizeWordKey(prev.word.tibetan) ===
+                                    normalizeWordKey(word.tibetan)
+                                    ? null
+                                    : { msgId: msg.id, word }
+                                )
+                            )}
+                          </div>
+                        )}
+
+                        {/* Tap-to-Gloss Popover Card */}
+                        {selectedWordForThisMsg && (
+                          <div className="mt-2.5 mb-2 p-3 rounded-xl bg-brand-light/70 border border-brand/40 flex flex-wrap items-center justify-between gap-2.5 animate-in fade-in duration-150">
+                            <div className="min-w-0">
+                              <div className="flex items-baseline gap-2 flex-wrap">
+                                <span className="font-tibetan text-xl leading-[1.6] text-ink">
+                                  {selectedWordForThisMsg.tibetan}
+                                </span>
+                                {selectedWordForThisMsg.phonetic && (
+                                  <span className="text-xs font-semibold text-ink-light italic">
+                                    {selectedWordForThisMsg.phonetic}
+                                  </span>
+                                )}
                               </div>
-                              {showTranslations && (
-                                <div className="text-[10px] text-ink-muted">
-                                  {sr.phonetic} · {sr.english}
-                                </div>
+                              <div className="text-xs text-ink mt-0.5">
+                                {selectedWordForThisMsg.meaning}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  speakTibetan(
+                                    `word_${msg.id}_${selectedWordNorm}`,
+                                    selectedWordForThisMsg.tibetan
+                                  )
+                                }
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface border border-border-subtle hover:border-ink text-[11px] font-bold text-ink cursor-pointer"
+                              >
+                                <Volume2 size={12} /> Hear
+                              </button>
+
+                              {selectedWordNorm &&
+                              savedWordKeys.has(selectedWordNorm) ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
+                                  <Check size={12} /> Saved
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={savingWordKey === selectedWordNorm}
+                                  onClick={() =>
+                                    saveWordsToVocabulary(
+                                      [selectedWordForThisMsg],
+                                      msg.id,
+                                      selectedWordNorm || undefined
+                                    )
+                                  }
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-ink text-white hover:bg-ink-light text-[11px] font-bold disabled:opacity-50 cursor-pointer"
+                                >
+                                  {savingWordKey === selectedWordNorm ? (
+                                    <Loader2 size={11} className="animate-spin" />
+                                  ) : (
+                                    <Bookmark size={11} />
+                                  )}
+                                  Save word
+                                </button>
                               )}
+
+                              <button
+                                type="button"
+                                onClick={() => setActiveGloss(null)}
+                                aria-label="Close word gloss"
+                                className="p-1 text-ink-muted hover:text-ink cursor-pointer"
+                              >
+                                <X size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Phonetics line */}
+                        {showPhonetics && msg.phonetic && (
+                          <div className="text-sm sm:text-[15px] text-ink-light mt-1">
+                            {msg.phonetic}
+                          </div>
+                        )}
+
+                        {/* English Gloss / Answer line */}
+                        {(showGloss || mode === "ask") && msg.english && (
+                          <div className="text-xs sm:text-sm text-ink-muted mt-1 leading-relaxed">
+                            {msg.english}
+                          </div>
+                        )}
+
+                        {/* Bubble Action Pills: Play · Slow · Repeat after me · Save to vocabulary */}
+                        {msg.tibetan && (
+                          <div className="flex flex-wrap items-center gap-2 mt-3.5">
+                            <button
+                              type="button"
+                              disabled={isLoadingNorm}
+                              onClick={() =>
+                                speakTibetan(msg.id, msg.tibetan, {
+                                  slow: false,
+                                  msgId: msg.id,
+                                })
+                              }
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors cursor-pointer ${
+                                isPlayingNorm
+                                  ? "bg-brand text-ink border-brand"
+                                  : "bg-paper border-border-subtle text-ink hover:border-ink"
+                              }`}
+                            >
+                              {isLoadingNorm ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : isPlayingNorm ? (
+                                <Square size={10} fill="currentColor" />
+                              ) : (
+                                <Play size={11} fill="currentColor" />
+                              )}
+                              <span>{isPlayingNorm ? "Stop" : "Play"}</span>
                             </button>
-                          ))}
-                        </div>
-                      )}
+
+                            <button
+                              type="button"
+                              disabled={isLoadingSlow}
+                              onClick={() =>
+                                speakTibetan(msg.id, msg.tibetan, {
+                                  slow: true,
+                                  msgId: msg.id,
+                                })
+                              }
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors cursor-pointer ${
+                                isPlayingSlow
+                                  ? "bg-brand text-ink border-brand"
+                                  : "bg-paper border-border-subtle text-ink hover:border-ink"
+                              }`}
+                            >
+                              {isLoadingSlow ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : isPlayingSlow ? (
+                                <Square size={10} fill="currentColor" />
+                              ) : (
+                                <Turtle size={13} />
+                              )}
+                              <span>{isPlayingSlow ? "Stop" : "Slow"}</span>
+                            </button>
+
+                            {isRecordingThis ? (
+                              <button
+                                type="button"
+                                onClick={() => stopRecording(false)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-600 text-white text-xs font-bold animate-pulse cursor-pointer"
+                              >
+                                <Square size={10} fill="currentColor" />
+                                <span>Stop &amp; Check ({formatTimer(recordSeconds)})</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={
+                                  isRecording ||
+                                  isTranscribing ||
+                                  isSending ||
+                                  Boolean(evaluatingMsgId)
+                                }
+                                onClick={() =>
+                                  startRecording({
+                                    msgId: msg.id,
+                                    text: msg.tibetan,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FDECEA] border border-[#F3C2BC] text-[#B3261E] hover:bg-[#fbdad6] text-xs font-semibold transition-colors disabled:opacity-45 cursor-pointer"
+                              >
+                                {isEvaluatingThis ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <span className="w-2 h-2 rounded-full bg-[#B3261E]" />
+                                )}
+                                <span>
+                                  {isEvaluatingThis
+                                    ? "Checking..."
+                                    : "Repeat after me"}
+                                </span>
+                              </button>
+                            )}
+
+                            {bubbleWords.length > 0 && (
+                              <button
+                                type="button"
+                                disabled={allSaved || savingMsgId === msg.id}
+                                onClick={() =>
+                                  saveWordsToVocabulary(bubbleWords, msg.id)
+                                }
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors cursor-pointer ${
+                                  allSaved
+                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700 cursor-default"
+                                    : "bg-paper border-border-subtle text-ink hover:border-ink"
+                                }`}
+                              >
+                                {savingMsgId === msg.id ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : allSaved ? (
+                                  <BookmarkCheck size={13} />
+                                ) : (
+                                  <Bookmark size={13} />
+                                )}
+                                <span>
+                                  {allSaved ? "Saved" : "Save to vocabulary"}
+                                </span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {msg.needsTapToPlay && (
+                          <div className="mt-2 text-[11px] font-semibold text-brand-dark">
+                            Tap Play to hear this reply.
+                          </div>
+                        )}
+
+                        {/* Speech Feedback Box (shown ONLY after learner speaks / Repeat after me) */}
+                        {msg.feedback && msg.feedback.message && (
+                          <div
+                            className={`mt-3 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm border ${
+                              msg.feedback.status === "good"
+                                ? "bg-[#E8F5EE] border-emerald-200 text-[#1E6B43]"
+                                : "bg-amber-50 border-amber-200 text-amber-900"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-2 leading-relaxed">
+                                {msg.feedback.status === "good" ? (
+                                  <CheckCircle2
+                                    size={15}
+                                    className="shrink-0 mt-0.5"
+                                  />
+                                ) : (
+                                  <AlertCircle
+                                    size={15}
+                                    className="shrink-0 mt-0.5"
+                                  />
+                                )}
+                                <span>{msg.feedback.message}</span>
+                              </div>
+
+                              {msg.evaluation && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedEvalMsgIds((prev) => ({
+                                      ...prev,
+                                      [msg.id]: !prev[msg.id],
+                                    }))
+                                  }
+                                  className="inline-flex items-center gap-1 text-[11px] font-bold underline underline-offset-2 shrink-0 cursor-pointer"
+                                >
+                                  <Award size={12} />
+                                  <span>{msg.evaluation.overall_score}/100</span>
+                                  {isEvalExpanded ? (
+                                    <ChevronUp size={12} />
+                                  ) : (
+                                    <ChevronDown size={12} />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Optional Expanded Word-by-Word Pronunciation Details */}
+                            {msg.evaluation && isEvalExpanded && (
+                              <div className="mt-3 pt-2.5 border-t border-current/15 space-y-2 text-xs text-ink">
+                                {msg.evaluation.what_was_heard && (
+                                  <div>
+                                    <span className="font-bold">Heard: </span>
+                                    <span>{msg.evaluation.what_was_heard}</span>
+                                  </div>
+                                )}
+                                {msg.evaluation.word_evaluations.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {msg.evaluation.word_evaluations.map(
+                                      (w, wIdx) => (
+                                        <button
+                                          key={wIdx}
+                                          type="button"
+                                          onClick={() =>
+                                            speakTibetan(
+                                              `eval_${msg.id}_${wIdx}`,
+                                              w.target
+                                            )
+                                          }
+                                          title={`${w.expected_phonetic} · ${w.tip}`}
+                                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs cursor-pointer ${
+                                            w.status === "correct"
+                                              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                                              : w.status === "missed"
+                                              ? "bg-rose-50 border-rose-200 text-rose-900"
+                                              : "bg-amber-50 border-amber-300 text-amber-900"
+                                          }`}
+                                        >
+                                          <span className="font-tibetan text-base leading-[1.5]">
+                                            {w.target}
+                                          </span>
+                                          <Volume2 size={11} className="opacity-60" />
+                                        </button>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+                                {msg.evaluation.next_focus && (
+                                  <div className="text-[11px] text-ink-light pt-0.5">
+                                    <strong className="text-ink">Next focus:</strong>{" "}
+                                    {msg.evaluation.next_focus}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Tasteful Lesson Suggestion Card (Max 1–2/session) */}
+                        {msg.lessonSuggestion && (
+                          <div className="mt-3 flex flex-wrap sm:flex-nowrap items-center gap-2.5 bg-brand-light rounded-xl px-3.5 py-2.5 text-xs sm:text-[13px] text-ink">
+                            <GraduationCap
+                              size={16}
+                              className="text-ink shrink-0"
+                            />
+                            <span className="leading-snug">
+                              Want to learn this properly?{" "}
+                              <strong>{msg.lessonSuggestion.title}</strong> in{" "}
+                              {msg.lessonSuggestion.course}.
+                            </span>
+                            <Link
+                              href={msg.lessonSuggestion.url}
+                              className="sm:ml-auto font-bold text-ink hover:text-brand-dark whitespace-nowrap inline-flex items-center gap-1"
+                            >
+                              Open lesson <ChevronRight size={14} />
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Follow-up Suggested Reply Chips */}
+                      {isLatestAssistant &&
+                        msg.suggestedReplies &&
+                        msg.suggestedReplies.length > 0 &&
+                        !isSending && (
+                          <div className="flex flex-wrap gap-2 mt-2.5">
+                            {msg.suggestedReplies.map((chip, cIdx) => (
+                              <button
+                                key={cIdx}
+                                type="button"
+                                onClick={() =>
+                                  sendTurn(
+                                    chip,
+                                    /[\u0F00-\u0FFF]/.test(chip)
+                                      ? "tibetan"
+                                      : "english"
+                                  )
+                                }
+                                className="px-3.5 py-1.5 rounded-full bg-surface border border-border-subtle hover:border-brand text-xs font-medium text-ink shadow-2xs transition-colors cursor-pointer"
+                              >
+                                <span
+                                  className={
+                                    /[\u0F00-\u0FFF]/.test(chip)
+                                      ? "font-tibetan text-base leading-[1.6]"
+                                      : ""
+                                  }
+                                >
+                                  {chip}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                    </div>
                   </div>
                 );
-              })
-            )}
+              })}
 
-            {(isTranscribing || isSending) && (
-              <div className="flex items-center gap-2 text-xs font-bold text-ink-muted px-2">
-                <Loader2 size={14} className="animate-spin text-brand-dark" />
-                <span>
-                  {isTranscribing
-                    ? "Transcribing your voice..."
-                    : "Gen-la is thinking..."}
-                </span>
-              </div>
-            )}
-
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Bottom Voice + Text Composer */}
-          <div className="shrink-0 pt-2">
-            {isRecording ? (
-              <div className="bg-surface border-2 border-rose-400 rounded-full px-4 py-2.5 flex items-center justify-between gap-3 shadow-md">
-                <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse shrink-0" />
-                  <span className="text-sm font-bold text-ink">
-                    Listening... {formatTimer(recordSeconds)}
+              {(isTranscribing || isSending) && (
+                <div className="flex items-center gap-2 text-xs font-bold text-ink-muted pl-12">
+                  <Loader2 size={14} className="animate-spin text-brand-dark" />
+                  <span>
+                    {isTranscribing
+                      ? "Listening to your speech..."
+                      : "Gen-la is thinking..."}
                   </span>
-
-                  <div className="hidden sm:flex items-center gap-1 h-5">
-                    {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
-                      <span
-                        key={idx}
-                        className={`w-1.5 rounded-full transition-all duration-75 ${
-                          micLevel >= thresh ? "bg-emerald-500 h-4" : "bg-border-subtle h-1.5"
-                        }`}
-                      />
-                    ))}
-                  </div>
                 </div>
+              )}
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => stopRecording(true)}
-                    className="px-3 py-1.5 rounded-full text-xs font-bold text-ink-muted hover:text-ink"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => stopRecording(false)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors"
-                  >
-                    <Square size={12} fill="currentColor" />
-                    Stop &amp; Transcribe
-                  </button>
+              <div ref={chatEndRef} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ====================================================================
+          3. BOTTOM INPUT BAR + FIXED "GO DEEPER WITH LOPLAO" ROW
+      ==================================================================== */}
+      <footer className="shrink-0 px-4 sm:px-6 pt-2 pb-2.5 bg-paper border-t border-border-subtle/70">
+        <div className="max-w-4xl mx-auto">
+          {/* Pill Input Bar (or Active Recording Bar) */}
+          {isRecording ? (
+            <div className="bg-surface border-2 border-brand rounded-full px-3.5 py-2 flex items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-3 h-3 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                <span className="text-xs sm:text-sm font-bold text-ink truncate">
+                  {recordingForMsgId
+                    ? `Repeat after me… ${formatTimer(recordSeconds)}`
+                    : `Listening… ${formatTimer(recordSeconds)}`}
+                </span>
+                <div className="hidden sm:flex items-center gap-1 h-4">
+                  {[10, 22, 36, 50, 66, 82].map((thresh, idx) => (
+                    <span
+                      key={idx}
+                      className={`w-1.5 rounded-full transition-all duration-75 ${
+                        micLevel >= thresh
+                          ? "bg-emerald-500 h-4"
+                          : "bg-border-subtle h-1.5"
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendMessage();
-                }}
-                className="bg-surface border border-border-strong rounded-full p-1.5 flex items-center gap-2 shadow-sm focus-within:border-ink transition-colors"
-              >
+
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => startRecording("chat")}
-                  disabled={isTranscribing || isSending}
-                  className="w-11 h-11 rounded-full bg-brand text-ink hover:bg-brand-dark disabled:opacity-50 flex items-center justify-center shrink-0 transition-transform active:scale-95"
-                  title="Speak in Tibetan"
+                  onClick={() => stopRecording(true)}
+                  className="px-2.5 py-1.5 rounded-full text-xs font-bold text-ink-muted hover:text-ink cursor-pointer"
                 >
-                  <Mic size={20} />
+                  Cancel
                 </button>
-
-                <input
-                  type="text"
-                  value={inputText}
-                  maxLength={1500}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Type Tibetan, phonetic, or English..."
-                  className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm md:text-base text-ink placeholder:text-ink-muted focus:outline-none font-sans"
-                />
-
                 <button
-                  type="submit"
-                  disabled={!inputText.trim() || isSending || isTranscribing}
-                  className="w-11 h-11 rounded-full bg-ink text-white hover:bg-ink-light disabled:opacity-40 flex items-center justify-center shrink-0 transition-transform active:scale-95"
-                  title="Send message"
+                  type="button"
+                  onClick={() => stopRecording(false)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer"
                 >
-                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                  <Square size={11} fill="currentColor" />
+                  <span>{recordingForMsgId ? "Check" : "Send"}</span>
                 </button>
-              </form>
+              </div>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendTurn();
+              }}
+              className="flex items-center gap-2 bg-surface border border-border-subtle focus-within:border-brand rounded-full p-1.5 shadow-sm transition-colors"
+            >
+              <button
+                type="button"
+                onClick={() => startRecording()}
+                disabled={isTranscribing || isSending || Boolean(evaluatingMsgId)}
+                title="Tap to speak"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand hover:bg-brand-dark text-ink flex items-center justify-center shrink-0 transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                <Mic size={20} />
+              </button>
+
+              <input
+                type="text"
+                value={inputText}
+                maxLength={1500}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder={activeInputKindObj.placeholder}
+                className="flex-1 min-w-0 bg-transparent px-2 py-2 text-sm sm:text-[15px] text-ink placeholder:text-ink-muted focus:outline-none"
+              />
+
+              <button
+                type="button"
+                onClick={cycleInputKind}
+                title="Switch input mode (Tibetan / Phonetic / English)"
+                className="px-3 py-1.5 rounded-full bg-brand-light hover:bg-brand/30 text-ink text-xs font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+              >
+                {activeInputKindObj.label} ▾
+              </button>
+
+              <button
+                type="submit"
+                disabled={!inputText.trim() || isSending || isTranscribing}
+                title="Send"
+                className="w-10 h-10 rounded-full bg-ink hover:bg-ink-light text-white flex items-center justify-center shrink-0 transition-transform active:scale-95 disabled:opacity-40 cursor-pointer"
+              >
+                {isSending ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Send size={16} />
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* Contextual Hint Line */}
+          <div className="text-center text-[11px] text-ink-muted mt-1.5">
+            {currentMode.hint}
+          </div>
+
+          {/* Fixed "Go deeper with Loplao" Row */}
+          <div className="mt-2.5 pt-2 border-t border-border-subtle">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-ink-muted">
+                Go deeper with Loplao
+              </span>
+              {isNative && (
+                <button
+                  type="button"
+                  onClick={() => setMobileDeeperOpen((v) => !v)}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-ink-muted hover:text-ink cursor-pointer"
+                >
+                  {mobileDeeperOpen ? "Hide" : "Explore"}
+                  {mobileDeeperOpen ? (
+                    <ChevronDown size={13} />
+                  ) : (
+                    <ChevronUp size={13} />
+                  )}
+                </button>
+              )}
+            </div>
+
+            {(!isNative || mobileDeeperOpen) && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <Link
+                  href="/dashboard/lessons"
+                  className="flex items-center gap-2.5 bg-ink hover:bg-ink-light text-white rounded-xl px-3 py-2 transition-colors"
+                >
+                  <GraduationCap size={18} className="text-brand shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold leading-tight truncate">
+                      {currentLevel.courseName}
+                    </div>
+                    <div className="text-[11px] text-white/75 truncate hidden sm:block">
+                      Structured lessons in Loplao
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className="ml-auto text-white/70 shrink-0"
+                  />
+                </Link>
+
+                <Link
+                  href="/dashboard/practice"
+                  className="flex items-center gap-2.5 bg-brand-light border border-transparent hover:border-brand text-ink rounded-xl px-3 py-2 transition-colors"
+                >
+                  <Bookmark size={17} className="text-brand-dark shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold leading-tight truncate">
+                      Vocabulary &amp; flashcards
+                    </div>
+                    <div className="text-[11px] text-ink-muted truncate hidden sm:block">
+                      Review words you saved
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className="ml-auto text-ink-muted shrink-0"
+                  />
+                </Link>
+
+                <Link
+                  href="/oxford-visitorship"
+                  className="flex items-center gap-2.5 bg-brand-light border border-transparent hover:border-brand text-ink rounded-xl px-3 py-2 transition-colors"
+                >
+                  <Mountain size={17} className="text-brand-dark shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold leading-tight truncate">
+                      Culture &amp; Buddhism
+                    </div>
+                    <div className="text-[11px] text-ink-muted truncate hidden sm:block">
+                      Scholars, heritage &amp; visits
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className="ml-auto text-ink-muted shrink-0"
+                  />
+                </Link>
+              </div>
             )}
           </div>
-        </>
-      )}
+        </div>
+      </footer>
     </div>
   );
 }
