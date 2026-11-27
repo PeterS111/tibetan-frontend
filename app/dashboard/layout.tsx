@@ -434,35 +434,37 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       )}
 
       <main className="flex-1 flex flex-col h-screen min-h-0 overflow-hidden relative">
-        <header className="h-24 border-b border-border-subtle bg-paper flex items-center justify-between px-8 md:px-12 shrink-0">
-          <div>
-            <div className="text-eyebrow text-ink-muted mb-2">
-              Welcome back, {user?.firstName?.toUpperCase() || "STUDENT"}
-            </div>
-            <h2 className="text-2xl font-serif italic text-ink">{currentPageName}</h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col items-end gap-2">
-              <div className="text-eyebrow flex items-center gap-2">Weekly Goal</div>
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-1 bg-border-subtle rounded-none">
-                  <div className="h-full bg-brand w-[60%]" />
-                </div>
-                <div className="w-6 h-6 rounded-full bg-brand shadow-sm" />
+        {!isAiTutorPage && (
+          <header className="h-24 border-b border-border-subtle bg-paper flex items-center justify-between px-8 md:px-12 shrink-0">
+            <div>
+              <div className="text-eyebrow text-ink-muted mb-2">
+                Welcome back, {user?.firstName?.toUpperCase() || "STUDENT"}
               </div>
+              <h2 className="text-2xl font-serif italic text-ink">{currentPageName}</h2>
             </div>
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-ink"
-            >
-              <Menu size={20} />
-            </button>
-          </div>
-        </header>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex flex-col items-end gap-2">
+                <div className="text-eyebrow flex items-center gap-2">Weekly Goal</div>
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-1 bg-border-subtle rounded-none">
+                    <div className="h-full bg-brand w-[60%]" />
+                  </div>
+                  <div className="w-6 h-6 rounded-full bg-brand shadow-sm" />
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 text-ink"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
+          </header>
+        )}
         <div
           className={`flex-1 ${
             isAiTutorPage
-              ? "overflow-hidden p-4 md:p-6"
+              ? "overflow-hidden p-0 pt-3"
               : `overflow-y-auto custom-scrollbar ${
                   isBeginner2Lesson ? "p-4 md:p-6 xl:px-8 xl:py-6" : "p-6 md:p-12"
                 }`
