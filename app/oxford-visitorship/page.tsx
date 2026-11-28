@@ -85,7 +85,7 @@ const HOW_TO_APPLY_COPY = {
   intro:
     "Applications must be submitted in English and include a current CV and a one-page statement of purpose explaining your academic interests, relevant experience, and reasons for applying.",
   deadlineLabel: "Application deadline:",
-  deadlineValue: "To be announced.",
+  deadlineValue: "11 January 2027.",
   interviewNote:
     "Shortlisted applicants will be invited to an online interview. Details of the interview schedule and the 2027 visiting period will be communicated to shortlisted candidates.",
   ctaLabel: "Apply by Email",
