@@ -11,18 +11,16 @@ import {
   FileText,
   LogOut,
   ChevronRight,
-  ChevronDown,
   User as UserIcon,
   BookOpen,
   Info,
   Landmark,
-  KeyRound,
   Unlock,
   Lock,
   Loader2,
   Eye,
-  EyeOff,
   Receipt,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -36,17 +34,19 @@ export default function ProfilePage() {
   const { signOut, openUserProfile } = useClerk();
   const { getToken } = useAuth();
   const { isNative } = usePlatform();
-  const { isDevUnlocked, isPaymentsOwner, unlockDevBypass, lockDevBypass } = useDevBypass();
+  const {
+    isDevApproved,
+    isPreviewingStudent,
+    isPaymentsOwner,
+    setPreviewAsStudent,
+  } = useDevBypass();
 
   const [wordsKnown, setWordsKnown] = useState(0);
-  const [devCode, setDevCode] = useState("");
-  const [showDevCode, setShowDevCode] = useState(false);
-  const [isSubmittingDev, setIsSubmittingDev] = useState(false);
+  const [isTogglingPreview, setIsTogglingPreview] = useState(false);
   const [devFeedback, setDevFeedback] = useState<{
     type: "error" | "success";
     msg: string;
   } | null>(null);
-  const [mobileDevExpanded, setMobileDevExpanded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -88,36 +88,28 @@ export default function ProfilePage() {
     };
   }, [user, isLoaded, getToken]);
 
-  const handleUnlockSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!devCode.trim() || isSubmittingDev) return;
-
-    setIsSubmittingDev(true);
+  const handleToggleStudentPreview = async () => {
+    if (isTogglingPreview) return;
+    setIsTogglingPreview(true);
     setDevFeedback(null);
-    const result = await unlockDevBypass(devCode.trim());
-    setIsSubmittingDev(false);
+
+    const nextPreview = !isPreviewingStudent;
+    const result = await setPreviewAsStudent(nextPreview);
+    setIsTogglingPreview(false);
 
     if (result.ok) {
-      setDevCode("");
       setDevFeedback({
         type: "success",
-        msg: "Developer access confirmed. All lessons, sections, and AI Tutor are now unlocked.",
+        msg: nextPreview
+          ? "Student Preview active — viewing Loplao with standard course locks and student navigation."
+          : "Developer Mode active — all lessons, sections, and AI Tutor are unlocked.",
       });
     } else {
       setDevFeedback({
         type: "error",
-        msg: result.error || "Incorrect developer password.",
+        msg: result.error || "Could not update preview mode.",
       });
     }
-  };
-
-  const handleLockClick = async () => {
-    setDevFeedback(null);
-    await lockDevBypass();
-    setDevFeedback({
-      type: "success",
-      msg: "Developer bypass disabled. Standard course locks are now active.",
-    });
   };
 
   if (!isLoaded) {
@@ -129,64 +121,78 @@ export default function ProfilePage() {
   const menuItemClass =
     "w-full flex items-center justify-between p-4 bg-white active:bg-surface-muted transition-colors";
 
-  const renderDevBypassControls = () => (
-    <div>
-      {isDevUnlocked ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-          <div className="flex items-center gap-2.5 text-emerald-800 text-xs font-bold">
-            <Unlock size={16} className="shrink-0" />
-            <span>Developer Bypass Active — All lessons &amp; AI Tutor unlocked</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleLockClick}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-full bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-100 transition-colors shrink-0"
-          >
-            <Lock size={13} /> Lock Website
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleUnlockSubmit} className="flex flex-col sm:flex-row gap-2.5">
-          <div className="relative flex-1">
-            <input
-              type={showDevCode ? "text" : "password"}
-              value={devCode}
-              onChange={(e) => setDevCode(e.target.value)}
-              placeholder="Enter developer password"
-              autoComplete="off"
-              className="w-full px-4 py-2.5 pr-10 text-sm bg-paper/70 border border-border-strong rounded-full text-ink placeholder:text-ink-muted focus:outline-none focus:border-brand"
-            />
-            <button
-              type="button"
-              onClick={() => setShowDevCode(!showDevCode)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink"
-              aria-label="Toggle password visibility"
-            >
-              {showDevCode ? <EyeOff size={15} /> : <Eye size={15} />}
-            </button>
-          </div>
-          <button
-            type="submit"
-            disabled={isSubmittingDev || !devCode.trim()}
-            className="px-6 py-2.5 rounded-full bg-ink text-white hover:bg-ink-light disabled:opacity-50 text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors shrink-0"
-          >
-            {isSubmittingDev ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
-            Confirm
-          </button>
-        </form>
-      )}
-
-      {devFeedback && (
-        <p
-          className={`mt-2.5 text-xs font-bold ${
-            devFeedback.type === "error" ? "text-rose-600" : "text-emerald-700"
+  const renderDeveloperModeControls = () => {
+    if (!isDevApproved) return null;
+    return (
+      <div>
+        <div
+          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl p-4 border ${
+            isPreviewingStudent
+              ? "bg-amber-50 border-amber-200"
+              : "bg-emerald-50 border-emerald-200"
           }`}
         >
-          {devFeedback.msg}
-        </p>
-      )}
-    </div>
-  );
+          <div className="min-w-0">
+            <div
+              className={`flex items-center gap-2 text-xs font-bold ${
+                isPreviewingStudent ? "text-amber-900" : "text-emerald-800"
+              }`}
+            >
+              {isPreviewingStudent ? (
+                <Eye size={15} className="shrink-0" />
+              ) : (
+                <Unlock size={15} className="shrink-0" />
+              )}
+              <span>
+                {isPreviewingStudent
+                  ? "Student Preview Active — Standard course locks enabled"
+                  : "Developer Access Active — All lessons & AI Tutor unlocked"}
+              </span>
+            </div>
+            <p className="text-[11px] text-ink-light mt-1">
+              {isPreviewingStudent
+                ? "You are currently seeing the website exactly as a regular student sees it."
+                : "Approved automatically via your pre-approved developer email."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            disabled={isTogglingPreview}
+            onClick={handleToggleStudentPreview}
+            className={`inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-full transition-colors shrink-0 cursor-pointer disabled:opacity-50 ${
+              isPreviewingStudent
+                ? "bg-ink text-white hover:bg-ink-light"
+                : "bg-white border border-emerald-300 text-emerald-900 hover:bg-emerald-100"
+            }`}
+          >
+            {isTogglingPreview ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : isPreviewingStudent ? (
+              <Unlock size={13} />
+            ) : (
+              <Lock size={13} />
+            )}
+            <span>
+              {isPreviewingStudent
+                ? "Return to Developer Mode"
+                : "Preview as Student"}
+            </span>
+          </button>
+        </div>
+
+        {devFeedback && (
+          <p
+            className={`mt-2.5 text-xs font-bold ${
+              devFeedback.type === "error" ? "text-rose-600" : "text-emerald-700"
+            }`}
+          >
+            {devFeedback.msg}
+          </p>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -198,7 +204,7 @@ export default function ProfilePage() {
         {isNative ? "Profile" : "Settings"}
       </h1>
 
-      {/* 1. Custom User ID Card (+ Inline Developer Bypass underneath Name & Email on Web) */}
+      {/* 1. Custom User ID Card (+ Inline Developer Mode Card for Pre-Approved Emails on Web) */}
       <div className="bg-white rounded-[1.5rem] p-5 sm:p-6 shadow-sm border border-border-subtle mb-6 relative overflow-hidden">
         <div className="absolute -right-6 -top-6 w-24 h-24 bg-brand/10 rounded-full blur-xl" />
 
@@ -218,21 +224,28 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-ink text-lg truncate">
-              {user?.fullName || "Tibetan Scholar"}
-            </h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="font-bold text-ink text-lg truncate">
+                {user?.fullName || "Tibetan Scholar"}
+              </h2>
+              {isDevApproved && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-light text-brand-dark border border-brand/30 text-[9px] font-bold uppercase tracking-widest">
+                  <ShieldCheck size={10} /> Developer
+                </span>
+              )}
+            </div>
             <p className="text-sm text-ink-muted truncate">
               {user?.primaryEmailAddress?.emailAddress || "No email linked"}
             </p>
           </div>
         </div>
 
-        {!isNative && (
+        {!isNative && isDevApproved && (
           <div className="mt-5 pt-5 border-t border-border-subtle relative z-10">
             <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-2.5">
-              <KeyRound size={12} className="text-brand-dark" /> Developer Bypass
+              <ShieldCheck size={12} className="text-brand-dark" /> Developer Access · Pre-Approved
             </div>
-            {renderDevBypassControls()}
+            {renderDeveloperModeControls()}
           </div>
         )}
       </div>
@@ -240,6 +253,7 @@ export default function ProfilePage() {
       {/* Dev-Only AI Tutor Card (only renders when isDevUnlocked === true) */}
       <DevAiTutorBanner className="mb-4" />
 
+      {/* Owner Vault Card (strictly the 3 Owner accounts, independent of Student Preview) */}
       {isPaymentsOwner && (
         <Link
           href="/dashboard/payments"
@@ -253,14 +267,14 @@ export default function ProfilePage() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="font-serif font-medium text-base text-ink truncate">
-                    Payments &amp; Orders
+                    Owner Vault · Payments, AI Costs &amp; Dev Access
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-brand-light text-brand-dark border border-brand/30 text-[9px] font-bold uppercase tracking-widest shrink-0">
                     Owner
                   </span>
                 </div>
                 <p className="text-xs text-ink-muted truncate">
-                  Password-protected · Courses, Shop orders &amp; Donations
+                  Password-protected · Courses, Shop, Donations, AI Token Costs &amp; Developer Emails
                 </p>
               </div>
             </div>
@@ -291,14 +305,16 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 3. Account Actions (+ Mobile Developer Bypass Button under Profile) */}
+      {/* 3. Account Actions (+ Mobile Student Preview Toggle for Pre-Approved Developers) */}
       <div className="text-[11px] font-bold uppercase tracking-widest text-ink-muted mb-3 pl-2">
         Account Management
       </div>
       <div className={menuGroupClass}>
         <button
           onClick={() => openUserProfile()}
-          className={`${menuItemClass} ${isNative ? "border-b border-border-subtle" : ""}`}
+          className={`${menuItemClass} ${
+            isNative && isDevApproved ? "border-b border-border-subtle" : ""
+          }`}
         >
           <div className="flex items-center gap-3 text-ink">
             <div className="w-8 h-8 rounded-full bg-brand-light text-brand-dark flex items-center justify-center">
@@ -309,40 +325,13 @@ export default function ProfilePage() {
           <ChevronRight size={18} className="text-ink-muted" />
         </button>
 
-        {isNative && (
-          <>
-            <button
-              type="button"
-              onClick={() => setMobileDevExpanded(!mobileDevExpanded)}
-              className={menuItemClass}
-            >
-              <div className="flex items-center gap-3 text-ink">
-                <div className="w-8 h-8 rounded-full bg-surface-muted text-ink flex items-center justify-center">
-                  <KeyRound size={16} />
-                </div>
-                <div className="text-left">
-                  <span className="font-medium text-[15px] block">Developer Bypass</span>
-                  {isDevUnlocked && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
-                      Unlocked
-                    </span>
-                  )}
-                </div>
-              </div>
-              <ChevronDown
-                size={18}
-                className={`text-ink-muted transition-transform ${
-                  mobileDevExpanded ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {mobileDevExpanded && (
-              <div className="px-4 pb-5 pt-2 bg-surface-muted/40 border-t border-border-subtle">
-                {renderDevBypassControls()}
-              </div>
-            )}
-          </>
+        {isNative && isDevApproved && (
+          <div className="p-4 bg-surface-muted/35">
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-ink-muted mb-2.5">
+              <ShieldCheck size={12} className="text-brand-dark" /> Developer Access · Pre-Approved
+            </div>
+            {renderDeveloperModeControls()}
+          </div>
         )}
       </div>
 

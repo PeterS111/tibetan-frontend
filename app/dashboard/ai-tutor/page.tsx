@@ -530,6 +530,18 @@ const STARTER_CARDS: Record<ModeId, [StarterCard[], StarterCard[], StarterCard[]
 };
 
 const SESSION_THREADS_KEY = "loplao_ai_tutor_v5_threads";
+const SESSION_CONV_IDS_KEY = "loplao_ai_tutor_v5_conv_ids";
+
+const makeConversationId = (m: ModeId) =>
+  `conv_${m}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+const createInitialConvIds = (): Record<ModeId, string> => ({
+  converse: makeConversationId("converse"),
+  situations: makeConversationId("situations"),
+  pronounce: makeConversationId("pronounce"),
+  read: makeConversationId("read"),
+  ask: makeConversationId("ask"),
+});
 const PREFS_KEY = "loplao_ai_tutor_v5_prefs";
 
 function normalizeWordKey(tib: string): string {
@@ -672,6 +684,7 @@ export default function AiTutorPage() {
 
   // Independent conversation threads per mode
   const [messagesByMode, setMessagesByMode] = useState<MessagesByMode>(createEmptyThreads);
+  const [convIdsByMode, setConvIdsByMode] = useState<Record<ModeId, string>>(createInitialConvIds);
   const [inputText, setInputText] = useState<string>("");
   const [inputKind, setInputKind] = useState<InputKind>("tibetan");
   const [activeGloss, setActiveGloss] = useState<{ msgId: string; word: GlossWord } | null>(null);
@@ -705,6 +718,8 @@ export default function AiTutorPage() {
   const settingsRef = useRef<HTMLDivElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const threadsRef = useRef<MessagesByMode>(createEmptyThreads());
+  const convIdsRef = useRef<Record<ModeId, string>>(createInitialConvIds());
+  const persistentAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ttsCacheRef = useRef<Map<string, string>>(new Map());
   const ttsReqIdRef = useRef<number>(0);
@@ -724,6 +739,15 @@ export default function AiTutorPage() {
   useEffect(() => {
     threadsRef.current = messagesByMode;
   }, [messagesByMode]);
+
+  useEffect(() => {
+    convIdsRef.current = convIdsByMode;
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem(SESSION_CONV_IDS_KEY, JSON.stringify(convIdsByMode));
+      } catch {}
+    }
+  }, [convIdsByMode]);
 
   const activeMessages = messagesByMode[mode];
 
@@ -752,6 +776,19 @@ export default function AiTutorPage() {
             read: Array.isArray(parsed.read) ? parsed.read : [],
             ask: Array.isArray(parsed.ask) ? parsed.ask : [],
           });
+        }
+      }
+      const savedConvIds = sessionStorage.getItem(SESSION_CONV_IDS_KEY);
+      if (savedConvIds) {
+        const parsedIds = JSON.parse(savedConvIds);
+        if (parsedIds && typeof parsedIds === "object") {
+          setConvIdsByMode((prev) => ({
+            converse: typeof parsedIds.converse === "string" ? parsedIds.converse : prev.converse,
+            situations: typeof parsedIds.situations === "string" ? parsedIds.situations : prev.situations,
+            pronounce: typeof parsedIds.pronounce === "string" ? parsedIds.pronounce : prev.pronounce,
+            read: typeof parsedIds.read === "string" ? parsedIds.read : prev.read,
+            ask: typeof parsedIds.ask === "string" ? parsedIds.ask : prev.ask,
+          }));
         }
       }
       const savedPrefs = localStorage.getItem(PREFS_KEY);
@@ -991,6 +1028,7 @@ export default function AiTutorPage() {
     setIsSending(false);
     setEvaluatingMsgId(null);
     updateModeMessages(mode, () => []);
+    setConvIdsByMode((prev) => ({ ...prev, [mode]: makeConversationId(mode) }));
     setActiveGloss(null);
     setExpandedEvalMsgIds({});
     setErrorBanner(null);
@@ -1029,8 +1067,19 @@ export default function AiTutorPage() {
 
       const playBlobUrl = async (blobUrl: string) => {
         if (myReqId !== ttsReqIdRef.current) return;
-        const audio = new Audio(blobUrl);
+        if (!persistentAudioRef.current) {
+          persistentAudioRef.current = new Audio();
+        }
+        const audio = persistentAudioRef.current;
+        audio.pause();
+        audio.src = blobUrl;
         audio.playbackRate = playbackRate;
+        const audioAny = audio as HTMLAudioElement & {
+          preservesPitch?: boolean;
+          webkitPreservesPitch?: boolean;
+        };
+        if ("preservesPitch" in audioAny) audioAny.preservesPitch = true;
+        if ("webkitPreservesPitch" in audioAny) audioAny.webkitPreservesPitch = true;
         audioRef.current = audio;
         setLoadingAudioKey(null);
         setPlayingKey(playTag);
@@ -1104,6 +1153,8 @@ export default function AiTutorPage() {
             text: clean,
             dialect,
             voice_gender: voiceGender,
+            conversation_id: convIdsRef.current[opts?.targetMode ?? mode] || "",
+            mode: opts?.targetMode ?? mode,
           }),
           signal: controller.signal,
         });
@@ -1327,6 +1378,7 @@ export default function AiTutorPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            conversation_id: convIdsRef.current[targetMode] || "",
             level,
             mode: targetMode,
             dialect,
@@ -1463,6 +1515,8 @@ export default function AiTutorPage() {
         formData.append("language", "bo");
         formData.append("dialect", dialect);
         if (contextHint) formData.append("context_hint", contextHint);
+        formData.append("conversation_id", convIdsRef.current[mode] || "");
+        formData.append("mode", mode);
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ai/stt`, {
           method: "POST",
@@ -1546,6 +1600,7 @@ export default function AiTutorPage() {
         formData.append("level", level);
         formData.append("dialect", dialect);
         formData.append("mode", targetMode);
+        formData.append("conversation_id", convIdsRef.current[targetMode] || "");
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/ai/evaluate-reading`,

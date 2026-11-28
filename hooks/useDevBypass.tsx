@@ -14,19 +14,21 @@ import { usePathname, useRouter } from "next/navigation";
 import { usePlatform } from "@/hooks/usePlatform";
 
 interface DevBypassContextValue {
+  isDevApproved: boolean;
+  isPreviewingStudent: boolean;
   isDevUnlocked: boolean;
   isPaymentsOwner: boolean;
   isChecking: boolean;
-  unlockDevBypass: (password: string) => Promise<{ ok: boolean; error?: string }>;
-  lockDevBypass: () => Promise<void>;
+  setPreviewAsStudent: (preview: boolean) => Promise<{ ok: boolean; error?: string }>;
 }
 
 const DevBypassContext = createContext<DevBypassContextValue>({
+  isDevApproved: false,
+  isPreviewingStudent: false,
   isDevUnlocked: false,
   isPaymentsOwner: false,
   isChecking: true,
-  unlockDevBypass: async () => ({ ok: false, error: "Not initialized" }),
-  lockDevBypass: async () => {},
+  setPreviewAsStudent: async () => ({ ok: false, error: "Not initialized" }),
 });
 
 export function DevBypassProvider({ children }: { children: ReactNode }) {
@@ -36,26 +38,34 @@ export function DevBypassProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { isNative } = usePlatform();
 
-  const [isDevUnlocked, setIsDevUnlocked] = useState<boolean>(false);
+  const [isDevApproved, setIsDevApproved] = useState<boolean>(false);
+  const [isPreviewingStudent, setIsPreviewingStudent] = useState<boolean>(false);
   const [isPaymentsOwner, setIsPaymentsOwner] = useState<boolean>(false);
   const [modules, setModules] = useState<any[]>([]);
   const [isChecking, setIsChecking] = useState<boolean>(true);
 
-  const storageKey = user?.id ? `tibetan_dev_unlocked_${user.id}` : null;
+  const isDevUnlocked = isDevApproved && !isPreviewingStudent;
+
+  const approvedKey = user?.id ? `tibetan_dev_approved_${user.id}` : null;
+  const previewKey = user?.id ? `tibetan_dev_preview_${user.id}` : null;
   const ownerStorageKey = user?.id ? `tibetan_payments_owner_${user.id}` : null;
 
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn || !user) {
-      setIsDevUnlocked(false);
+      setIsDevApproved(false);
+      setIsPreviewingStudent(false);
       setIsPaymentsOwner(false);
       setIsChecking(false);
       return;
     }
 
     if (typeof window !== "undefined") {
-      if (storageKey && localStorage.getItem(storageKey) === "true") {
-        setIsDevUnlocked(true);
+      if (approvedKey && localStorage.getItem(approvedKey) === "true") {
+        setIsDevApproved(true);
+      }
+      if (previewKey && localStorage.getItem(previewKey) === "true") {
+        setIsPreviewingStudent(true);
       }
       if (ownerStorageKey && localStorage.getItem(ownerStorageKey) === "true") {
         setIsPaymentsOwner(true);
@@ -74,17 +84,25 @@ export function DevBypassProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         if (!isMounted) return;
 
-        const unlocked = Boolean(data?.profile?.is_dev_unlocked);
+        const approved = Boolean(
+          data?.profile?.is_dev_approved ?? data?.profile?.is_dev_unlocked
+        );
+        const previewing = Boolean(data?.profile?.dev_preview_student) && approved;
         const owner = Boolean(data?.profile?.is_payments_owner);
-        setIsDevUnlocked(unlocked);
+
+        setIsDevApproved(approved);
+        setIsPreviewingStudent(previewing);
         setIsPaymentsOwner(owner);
 
         if (Array.isArray(data?.modules)) {
           setModules(data.modules);
         }
         if (typeof window !== "undefined") {
-          if (storageKey) {
-            localStorage.setItem(storageKey, unlocked ? "true" : "false");
+          if (approvedKey) {
+            localStorage.setItem(approvedKey, approved ? "true" : "false");
+          }
+          if (previewKey) {
+            localStorage.setItem(previewKey, previewing ? "true" : "false");
           }
           if (ownerStorageKey) {
             localStorage.setItem(ownerStorageKey, owner ? "true" : "false");
@@ -101,13 +119,13 @@ export function DevBypassProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, [user, isLoaded, isSignedIn, getToken, storageKey, ownerStorageKey]);
+  }, [user, isLoaded, isSignedIn, getToken, approvedKey, previewKey, ownerStorageKey]);
 
   // Global URL Route Guards
   useEffect(() => {
     if (isChecking || !pathname) return;
 
-    // 1. Payments Vault: strictly restricted to Payments Owners (Developer Bypass does NOT grant access!)
+    // 1. Owner Vault: strictly restricted to Payments Owners
     if (pathname.startsWith("/dashboard/payments")) {
       if (!isPaymentsOwner) {
         router.replace("/dashboard");
@@ -145,59 +163,52 @@ export function DevBypassProvider({ children }: { children: ReactNode }) {
     }
   }, [pathname, isChecking, isDevUnlocked, isPaymentsOwner, modules, router, isNative]);
 
-  const unlockDevBypass = useCallback(
-    async (password: string): Promise<{ ok: boolean; error?: string }> => {
+  const setPreviewAsStudent = useCallback(
+    async (preview: boolean): Promise<{ ok: boolean; error?: string }> => {
       try {
         const token = await getToken();
         if (!token) return { ok: false, error: "Authentication token unavailable." };
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/dev-bypass/unlock`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/dev-mode/preview`,
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ password }),
+            body: JSON.stringify({ preview_student: preview }),
           }
         );
         const data = await res.json();
 
         if (!res.ok) {
-          return { ok: false, error: data?.error || "Incorrect developer password." };
+          return { ok: false, error: data?.error || "Could not update preview mode." };
         }
 
-        setIsDevUnlocked(true);
-        if (typeof window !== "undefined" && storageKey) {
-          localStorage.setItem(storageKey, "true");
+        const nextPreview = Boolean(data?.dev_preview_student);
+        setIsPreviewingStudent(nextPreview);
+        if (typeof window !== "undefined" && previewKey) {
+          localStorage.setItem(previewKey, nextPreview ? "true" : "false");
         }
         return { ok: true };
       } catch {
         return { ok: false, error: "Could not reach server. Please try again." };
       }
     },
-    [getToken, storageKey]
+    [getToken, previewKey]
   );
-
-  const lockDevBypass = useCallback(async () => {
-    setIsDevUnlocked(false);
-    if (typeof window !== "undefined" && storageKey) {
-      localStorage.setItem(storageKey, "false");
-    }
-    try {
-      const token = await getToken();
-      if (!token) return;
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dev-bypass/lock`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {}
-  }, [getToken, storageKey]);
 
   return (
     <DevBypassContext.Provider
-      value={{ isDevUnlocked, isPaymentsOwner, isChecking, unlockDevBypass, lockDevBypass }}
+      value={{
+        isDevApproved,
+        isPreviewingStudent,
+        isDevUnlocked,
+        isPaymentsOwner,
+        isChecking,
+        setPreviewAsStudent,
+      }}
     >
       {children}
     </DevBypassContext.Provider>

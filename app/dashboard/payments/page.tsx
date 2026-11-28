@@ -29,9 +29,12 @@ import {
   EyeOff,
   ShieldCheck,
   X,
+  Cpu,
+  Users,
 } from "lucide-react";
 import { useDevBypass } from "@/hooks/useDevBypass";
 import { usePlatform } from "@/hooks/usePlatform";
+import { OwnerAiUsageTab, OwnerDevAllowlistTab } from "@/app/components/admin/OwnerAiAndDevTabs";
 
 interface PaymentItemDetail {
   id?: string;
@@ -184,6 +187,7 @@ export default function AdminPaymentsPage() {
   const [vaultChecking, setVaultChecking] = useState(true);
   const [passwordConfigured, setPasswordConfigured] = useState(true);
   const [vaultToken, setVaultToken] = useState<string | null>(null);
+  const [vaultTab, setVaultTab] = useState<"payments" | "ai_usage" | "dev_access">("payments");
   const [ownerEmailOptions, setOwnerEmailOptions] = useState<OwnerEmailOption[]>([]);
 
   // Unlock form state
@@ -1050,7 +1054,7 @@ export default function AdminPaymentsPage() {
             Payments &amp; Orders
           </h1>
           <p className="text-sm text-ink-light">
-            Every Course fee, Shop order, and Donation — clearly separated in one place.
+            Manage Payments & Orders, AI Tutor token costs, and pre-approved Developer emails in one secure vault.
           </p>
         </div>
 
@@ -1111,6 +1115,59 @@ export default function AdminPaymentsPage() {
         </div>
       )}
 
+      {/* OWNER_VAULT_TABS_START */}
+      <div className="flex flex-wrap items-center gap-2 mb-7 pb-3 border-b border-border-subtle">
+        <button
+          type="button"
+          onClick={() => setVaultTab("payments")}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
+            vaultTab === "payments"
+              ? "bg-ink text-white shadow-xs"
+              : "bg-surface border border-border-subtle text-ink-light hover:border-ink"
+          }`}
+        >
+          <Receipt size={15} />
+          <span>Payments &amp; Orders</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setVaultTab("ai_usage")}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
+            vaultTab === "ai_usage"
+              ? "bg-ink text-white shadow-xs"
+              : "bg-surface border border-border-subtle text-ink-light hover:border-ink"
+          }`}
+        >
+          <Cpu size={15} />
+          <span>AI Usage &amp; Costs</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setVaultTab("dev_access")}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
+            vaultTab === "dev_access"
+              ? "bg-ink text-white shadow-xs"
+              : "bg-surface border border-border-subtle text-ink-light hover:border-ink"
+          }`}
+        >
+          <Users size={15} />
+          <span>Developer Access</span>
+        </button>
+      </div>
+
+      {vaultTab === "ai_usage" && (
+        <OwnerAiUsageTab vaultToken={vaultToken} onUnauthorized={lockVault} />
+      )}
+
+      {vaultTab === "dev_access" && (
+        <OwnerDevAllowlistTab vaultToken={vaultToken} onUnauthorized={lockVault} />
+      )}
+
+      {vaultTab === "payments" && (
+        <>
+      {/* OWNER_VAULT_TABS_END */}
       {/* 2. FOUR COLOUR-CODED CATEGORY SUMMARY CARDS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-8">
         <button
@@ -1734,6 +1791,9 @@ export default function AdminPaymentsPage() {
             );
           })}
         </div>
+      )}
+
+        </>
       )}
 
       {/* Modal for Email-Verified Change Password (when already unlocked) */}
