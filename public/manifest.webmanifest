@@ -1,9 +1,12 @@
 {
+  "id": "/",
   "name": "Loplao — Learn Tibetan",
   "short_name": "Loplao",
   "description": "Learn Tibetan script, pronunciation, and everyday conversation with Loplao — an Oxford-based Tibetan language school and cultural community.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#FAF6EC",
   "theme_color": "#0E2C4D",
   "icons": [
@@ -23,13 +26,25 @@
       "src": "/icons/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ]
 }

@@ -11,10 +11,12 @@ const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 export default function ClerkClientProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
-  // Hide the native splash screen once the React tree has mounted
+  // Hide the native splash screen once mounted, or register WebAPK service worker on web
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       SplashScreen.hide().catch(console.warn);
+    } else if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
   }, []);
 
